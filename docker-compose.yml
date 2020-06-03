@@ -3,7 +3,7 @@ version: "3.8"
 services:
   dissolution-api:
     build: .
-    image: dissolution-api:1.0
+    image: dissolution-api:latest
     labels:
       - traefik.http.routers.dissolution-api.rule=Host(`chs-dev`) && PathPrefix(`/dissolution-api/`)
     ports:

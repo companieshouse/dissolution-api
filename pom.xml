@@ -26,9 +26,6 @@
         <repository>
             <id>Companies House</id>
             <url>http://repository.aws.chdev.org:8081/artifactory/virtual-release</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
         </repository>
     </repositories>
 
@@ -114,11 +111,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.2.0</version>
-            </plugin>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.5</version>
             </plugin>
             <plugin>
                 <groupId>org.sonarsource.scanner.maven</groupId>
