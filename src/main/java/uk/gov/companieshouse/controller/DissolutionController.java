@@ -16,9 +16,6 @@ public class DissolutionController {
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DissolutionController.class);
 
-    public DissolutionController() {
-
-    }
     @Operation(summary = "Check if Dissolution API is working", tags = "Dissolution")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Dissolution API is up"),
