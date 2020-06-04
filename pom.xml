@@ -41,6 +41,11 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
             <version>${version.spring.boot}</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-mongodb</artifactId>
+            <version>${version.spring.boot}</version>
+        </dependency>
 
         <!-- Swagger documentation -->
         <dependency>
@@ -113,9 +118,26 @@
                 <version>3.2.0</version>
             </plugin>
             <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.5</version>
+            </plugin>
+            <plugin>
                 <groupId>org.sonarsource.scanner.maven</groupId>
                 <artifactId>sonar-maven-plugin</artifactId>
                 <version>3.7.0.1746</version>
+            </plugin>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>2.2.0</version>
+                <configuration>
+                    <container>
+                        <jvmFlags>
+                            <jvmFlag>-Djava.security.egd=file:/dev/./urandom</jvmFlag>
+                        </jvmFlags>
+                    </container>
+                </configuration>
             </plugin>
         </plugins>
     </build>
