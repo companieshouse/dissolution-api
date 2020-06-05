@@ -12,6 +12,14 @@ Required tools:
 - [Docker for Mac](https://hub.docker.com/editions/community/docker-ce-desktop-mac)
 - [Docker-Compose](https://docs.docker.com/compose/install/)
 
+Once installed, open Docker for Mac and navigate to Preferences -> Resources and change the settings to Memory => 4 GB, CPUs 4, SWAP = 1 GB.
+
+Add `127.0.0.1 chs-dev cdn.chs-dev account.chs-dev` to your `/etc/hosts` file.
+
+Login to the Companies House AWS account and run the following command in a fresh terminal session:
+
+`docker login -u AWS -p "$(aws ecr get-login-password)" https://169942020521.dkr.ecr.eu-west-1.amazonaws.com`
+
 To bring the environment up, run `docker-compose up` in the project folder. You must be connected to CH VPN in order to download dependencies.
 
 After making local changes to the app, Ctrl+C on the running `docker-compose` terminal session and run `docker-compose up --build` command.
