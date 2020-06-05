@@ -4,8 +4,19 @@ services:
   dissolution-api:
     build: .
     image: dissolution-api:latest
+    container_name: dissolution-api
     labels:
       - traefik.http.routers.dissolution-api.rule=Host(`chs-dev`) && PathPrefix(`/dissolution-api/`)
+    environment:
+      - CDN_HOST=cdn.chs-dev
+      - CACHE_SERVER=redis
+      - CACHE_DB=0
+      - CACHE_PASSWORD=''
+      - COOKIE_NAME=SID
+      - COOKIE_DOMAIN=chs-dev
+      - COOKIE_SECURE_ONLY=0
+      - COOKIE_SECRET=ChGovUk-XQrbf3sLj2abFxIY2TlapsJ
+      - DEFAULT_SESSION_EXPIRATION=3600
     ports:
       - 3001:3001
     networks:
