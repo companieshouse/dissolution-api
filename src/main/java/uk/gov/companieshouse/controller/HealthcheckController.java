@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/dissolution")
+@RequestMapping("/dissolution-request")
 public class HealthcheckController {
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(HealthcheckController.class);
