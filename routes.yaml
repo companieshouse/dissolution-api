@@ -1,0 +1,6 @@
+app_name: dissolution-api
+group: api
+weight: 900
+routes:
+  1: ^/companies/(.*)/close-a-company/.*
+  2: ^/companies/(.*)/close-a-company
