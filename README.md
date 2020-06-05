@@ -18,12 +18,6 @@ After making local changes to the app, Ctrl+C on the running `docker-compose` te
 
 Make local changes to the app, Ctrl/+C on the running `docker-compose` terminal session and re-run the command.
 
-## Useful Endpoints
-
-### Health
-
-http://localhost:3001/actuator/health
-
 ### API Documentation (Swagger)
 
 http://localhost:3001/swagger-ui.html

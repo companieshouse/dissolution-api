@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/dissolution")
-public class DissolutionController {
+public class HealthcheckController {
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DissolutionController.class);
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(HealthcheckController.class);
 
     @Operation(summary = "Check if Dissolution API is working", tags = "Dissolution")
     @ApiResponses(value = {
