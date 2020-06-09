@@ -7,7 +7,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.ResponseEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.OK;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HealthcheckControllerTest {
@@ -19,6 +19,6 @@ public class HealthcheckControllerTest {
     public void When_HealthcheckEndpointIsCalled_Expect_200() {
         ResponseEntity<String> response = controller.healthcheck();
 
-        assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
+        assertThat(response.getStatusCode()).isEqualTo(OK);
     }
 }
