@@ -4,4 +4,4 @@ server:
 spring:
   data:
     mongodb:
-      uri: ${APPEALS_API_MONGODB_URL}
+      uri: ${DISSOLUTION_API_MONGODB_URL}
