@@ -8,7 +8,7 @@ services:
     labels:
       - traefik.http.routers.dissolution-api.rule=Host(`chs-dev`) && PathPrefix(`/dissolution-api/`)
     environment:
-      - APPEALS_API_MONGODB_URL=mongodb://mongo/dissolutions
+      - DISSOLUTION_API_MONGODB_URL=mongodb://mongo/dissolutions
       - CDN_HOST=cdn.chs-dev
       - CACHE_SERVER=redis
       - CACHE_DB=0
