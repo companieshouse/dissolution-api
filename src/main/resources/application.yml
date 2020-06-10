@@ -1,2 +1,7 @@
 server:
   port: 3001
+
+spring:
+  data:
+    mongodb:
+      uri: ${APPEALS_API_MONGODB_URL}
