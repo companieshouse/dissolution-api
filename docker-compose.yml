@@ -3,12 +3,11 @@ version: "3.8"
 services:
   dissolution-api:
     build: .
-    image: dissolution-api:latest
     container_name: dissolution-api
     labels:
       - traefik.http.routers.dissolution-api.rule=Host(`chs-dev`) && PathPrefix(`/dissolution-api/`)
     environment:
-      - DISSOLUTION_API_MONGODB_URL=mongodb://mongo/dissolutions
+      - DISSOLUTIONS_API_MONGODB_URL=mongodb://mongo/dissolutions
       - CDN_HOST=cdn.chs-dev
       - CACHE_SERVER=redis
       - CACHE_DB=0
@@ -23,6 +22,19 @@ services:
     networks:
       - chs-dev
     working_dir: /app
+  mongo:
+    container_name: mongo
+    image: mongo:4
+    environment:
+      - MONGO_INITDB_DATABASE=account
+    volumes:
+      - ./services/infrastructure/mongo.initdb.js:/docker-entrypoint-initdb.d/mongo.initdb.js
+    networks:
+      - chs-dev
+    expose:
+      - 27017
+    ports:
+      - 27017:27017
 
 networks:
   chs-dev: {}
