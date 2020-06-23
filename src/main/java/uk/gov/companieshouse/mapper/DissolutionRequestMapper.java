@@ -8,35 +8,40 @@ import uk.gov.companieshouse.GenerateEtagUtil;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class DissolutionRequestMapper {
 
     public Dissolution mapToDissolution(CreateDissolutionRequestDTO body, String companyNumber, String userId, String email, String ip, String reference) {
-        return new Dissolution() {{
-            setModifiedDateTime(LocalDateTime.now());
-            setData(mapToDissolutionData(body, reference));
-            setCompany(mapToCompany(companyNumber));
-            setCreatedBy(mapToCreatedBy(userId, email, ip));
-        }};
+        final Dissolution dissolution = new Dissolution();
+
+        dissolution.setModifiedDateTime(LocalDateTime.now());
+        dissolution.setData(mapToDissolutionData(body, reference));
+        dissolution.setCompany(mapToCompany(companyNumber));
+        dissolution.setCreatedBy(mapToCreatedBy(userId, email, ip));
+
+        return dissolution;
     }
 
     private DissolutionData mapToDissolutionData(CreateDissolutionRequestDTO body, String reference) {
-        return new DissolutionData() {{
-            setETag(GenerateEtagUtil.generateEtag());
-            setApplication(mapToDissolutionApplication(reference));
-            setDirectors(mapToDissolutionDirectors(body.getDirectors()));
-        }};
+        final DissolutionData data = new DissolutionData();
+
+        data.setETag(GenerateEtagUtil.generateEtag());
+        data.setApplication(mapToDissolutionApplication(reference));
+        data.setDirectors(mapToDissolutionDirectors(body.getDirectors()));
+
+        return data;
     }
 
     private DissolutionApplication mapToDissolutionApplication(String reference) {
-        return new DissolutionApplication() {{
-            setReference(reference);
-            setStatus(DissolutionApplication.DissolutionStatus.PENDING_APPROVAL);
-            setType(DissolutionApplication.DissolutionType.DS01);
-        }};
+        final DissolutionApplication application = new DissolutionApplication();
+
+        application.setReference(reference);
+        application.setStatus(DissolutionApplication.DissolutionStatus.PENDING_APPROVAL);
+        application.setType(DissolutionApplication.DissolutionType.DS01);
+
+        return application;
     }
 
     private List<DissolutionDirector> mapToDissolutionDirectors(List<DirectorRequestDTO> directors) {
@@ -44,26 +49,32 @@ public class DissolutionRequestMapper {
     }
 
     private DissolutionDirector mapToDissolutionDirector(DirectorRequestDTO body) {
-        return new DissolutionDirector() {{
-            setName(body.getName());
-            setEmail(body.getEmail());
-            Optional.ofNullable(body.getOnBehalfName()).ifPresent(this::setOnBehalfName);
-        }};
+        final DissolutionDirector director = new DissolutionDirector();
+
+        director.setName(body.getName());
+        director.setEmail(body.getEmail());
+        director.setOnBehalfName(body.getOnBehalfName());
+
+        return director;
     }
 
     private Company mapToCompany(String companyNumber) {
-        return new Company() {{
-            setNumber(companyNumber);
-            setName("PLACEHOLDER COMPANY NAME"); // TODO - replace with actual name once Company Profile API integration is added
-        }};
+        final Company company = new Company();
+
+        company.setNumber(companyNumber);
+        company.setName("PLACEHOLDER COMPANY NAME"); // TODO - replace with actual name once Company Profile API integration is added
+
+        return company;
     }
 
     private CreatedBy mapToCreatedBy(String userId, String email, String ip) {
-        return new CreatedBy() {{
-            setUserId(userId);
-            setEmail(email);
-            setIpAddress(ip);
-            setDateTime(LocalDateTime.now());
-        }};
+        final CreatedBy createdBy = new CreatedBy();
+
+        createdBy.setUserId(userId);
+        createdBy.setEmail(email);
+        createdBy.setIpAddress(ip);
+        createdBy.setDateTime(LocalDateTime.now());
+
+        return createdBy;
     }
 }

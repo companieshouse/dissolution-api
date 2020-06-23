@@ -9,16 +9,20 @@ import uk.gov.companieshouse.model.dto.CreateDissolutionResponseDTO;
 public class DissolutionResponseMapper {
 
     public CreateDissolutionResponseDTO mapToCreateDissolutionResponse(Dissolution dissolution) {
-        return new CreateDissolutionResponseDTO() {{
-            setApplicationReferenceNumber(dissolution.getData().getApplication().getReference());
-            setLinks(generateLinks(dissolution.getCompany().getNumber()));
-        }};
+        final CreateDissolutionResponseDTO response = new CreateDissolutionResponseDTO();
+
+        response.setApplicationReferenceNumber(dissolution.getData().getApplication().getReference());
+        response.setLinks(generateLinks(dissolution.getCompany().getNumber()));
+
+        return response;
     }
 
     private CreateDissolutionLinksDTO generateLinks(String companyNumber) {
-        return new CreateDissolutionLinksDTO() {{
-            setSelf(String.format("/dissolution-request/%s", companyNumber));
-            setPayment(String.format("/dissolution-request/%s/payment", companyNumber));
-        }};
+        final CreateDissolutionLinksDTO links = new CreateDissolutionLinksDTO();
+
+        links.setSelf(String.format("/dissolution-request/%s", companyNumber));
+        links.setPayment(String.format("/dissolution-request/%s/payment", companyNumber));
+
+        return links;
     }
 }

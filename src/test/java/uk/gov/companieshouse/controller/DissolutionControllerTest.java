@@ -73,7 +73,7 @@ public class DissolutionControllerTest {
         final CreateDissolutionRequestDTO body = generateCreateDissolutionRequestDTO();
         body.setDirectors(Collections.emptyList());
 
-        assertBodyValidation(body, "{'directors':['At least 1 director must be provided']}");
+        assertBodyValidation(body, "{'directors':'At least 1 director must be provided'}");
     }
 
     @Test
@@ -85,7 +85,7 @@ public class DissolutionControllerTest {
 
         body.setDirectors(Collections.singletonList(director));
 
-        assertBodyValidation(body, "{'directors[0].name':['must not be blank']}");
+        assertBodyValidation(body, "{'directors[0].name':'must not be blank'}");
     }
 
     @Test
@@ -97,7 +97,7 @@ public class DissolutionControllerTest {
 
         body.setDirectors(Collections.singletonList(director));
 
-        assertBodyValidation(body, "{'directors[0].email':['must not be blank']}");
+        assertBodyValidation(body, "{'directors[0].email':'must not be blank'}");
     }
 
     @Test
@@ -109,7 +109,7 @@ public class DissolutionControllerTest {
 
         body.setDirectors(Collections.singletonList(director));
 
-        assertBodyValidation(body, "{'directors[0].email':['must be a well-formed email address']}");
+        assertBodyValidation(body, "{'directors[0].email':'must be a well-formed email address'}");
     }
 
     @Test
@@ -121,7 +121,7 @@ public class DissolutionControllerTest {
 
         body.setDirectors(Collections.singletonList(director));
 
-        assertBodyValidation(body, "{'directors[0].name':['size must be between 1 and 250']}");
+        assertBodyValidation(body, "{'directors[0].name':'size must be between 1 and 250'}");
     }
 
     @Test
@@ -133,7 +133,7 @@ public class DissolutionControllerTest {
 
         body.setDirectors(Collections.singletonList(director));
 
-        assertBodyValidation(body, "{'directors[0].onBehalfName':['size must be between 1 and 250']}");
+        assertBodyValidation(body, "{'directors[0].onBehalfName':'size must be between 1 and 250'}");
     }
 
     @Test

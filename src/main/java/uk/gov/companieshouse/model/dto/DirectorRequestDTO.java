@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.validation.constraints.*;
 
 public class DirectorRequestDTO {
@@ -12,6 +14,7 @@ public class DirectorRequestDTO {
     @Email
     private String email;
 
+    @JsonProperty("on_behalf_name")
     @Size(min = 1, max = 250)
     private String onBehalfName;
 
