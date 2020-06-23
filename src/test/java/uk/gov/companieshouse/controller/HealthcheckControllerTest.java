@@ -1,24 +1,27 @@
 package uk.gov.companieshouse.controller;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.http.ResponseEntity;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.web.servlet.MockMvc;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(MockitoJUnitRunner.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 public class HealthcheckControllerTest {
 
-    @InjectMocks
-    HealthcheckController controller;
+    private static final String HEALTHCHECK_URI = "/dissolution-request/healthcheck";
+
+    @Autowired
+    private MockMvc mockMvc;
 
     @Test
-    public void When_HealthcheckEndpointIsCalled_Expect_200() {
-        ResponseEntity<String> response = controller.healthcheck();
-
-        assertThat(response.getStatusCode()).isEqualTo(OK);
+    public void isHealthy_returnsOk() throws Exception {
+        mockMvc
+            .perform(get(HEALTHCHECK_URI))
+            .andExpect(status().isOk());
     }
 }

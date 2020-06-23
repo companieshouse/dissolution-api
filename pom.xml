@@ -20,6 +20,8 @@
         <!-- Versions -->
         <version.spring.boot>2.2.6.RELEASE</version.spring.boot>
         <version.springdoc.openapi>1.3.9</version.springdoc.openapi>
+        <api-helper-java.version>1.4.2</api-helper-java.version>
+        <commons-lang3.version>3.10</commons-lang3.version>
     </properties>
 
     <repositories>
@@ -45,6 +47,20 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
             <version>${version.spring.boot}</version>
+        </dependency>
+
+        <!-- CH Helpers -->
+        <dependency>
+            <groupId>uk.gov.companieshouse</groupId>
+            <artifactId>api-helper-java</artifactId>
+            <version>${api-helper-java.version}</version>
+        </dependency>
+
+        <!-- Utils -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
         </dependency>
 
         <!-- Swagger documentation -->
