@@ -15,6 +15,8 @@ import uk.gov.companieshouse.service.DissolutionService;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import static uk.gov.companieshouse.util.EricHelper.getEmail;
+
 @RestController
 @RequestMapping("/dissolution-request/{company-number}")
 public class DissolutionController extends BaseController {
@@ -38,7 +40,7 @@ public class DissolutionController extends BaseController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DissolutionCreateResponse> submitDissolutionRequest(
         @RequestHeader("ERIC-identity") String userId,
-        @RequestHeader("ERIC-Authorised-User") String email, // TODO - extract email from header
+        @RequestHeader("ERIC-Authorised-User") String authorisedUser,
         @PathVariable("company-number") final String companyNumber,
         @Valid @RequestBody final DissolutionCreateRequest body,
         HttpServletRequest request) {
@@ -52,7 +54,7 @@ public class DissolutionController extends BaseController {
         }
 
         try {
-            final DissolutionCreateResponse response = dissolutionService.create(body, companyNumber, userId, request.getRemoteAddr(), email);
+            final DissolutionCreateResponse response = dissolutionService.create(body, companyNumber, userId, request.getRemoteAddr(), getEmail(authorisedUser));
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
