@@ -1,6 +1,6 @@
 package uk.gov.companieshouse.model.dto;
 
-public class CreateDissolutionLinksDTO {
+public class DissolutionCreateLinks {
 
     private String self;
     private String payment;

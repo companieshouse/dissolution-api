@@ -6,8 +6,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
-import uk.gov.companieshouse.model.dto.CreateDissolutionRequestDTO;
-import uk.gov.companieshouse.model.dto.CreateDissolutionResponseDTO;
+import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
+import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
 import java.util.Optional;
@@ -32,17 +32,17 @@ public class DissolutionServiceTest {
 
     @Test
     public void create_createsADissolutionRequest_returnsCreateResponse() throws Exception {
-        final CreateDissolutionRequestDTO body = DissolutionFixtures.generateCreateDissolutionRequestDTO();
+        final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
         final String companyNumber = "12345678";
         final String userId = "123";
         final String ip = "192.168.0.1";
         final String email = "user@mail.com";
 
-        final CreateDissolutionResponseDTO response = DissolutionFixtures.generateCreateDissolutionResponseDTO();
+        final DissolutionCreateResponse response = DissolutionFixtures.generateDissolutionCreateResponse();
 
         when(creator.create(body, companyNumber, userId, ip, email)).thenReturn(response);
 
-        final CreateDissolutionResponseDTO result = service.create(body, companyNumber, userId, ip, email);
+        final DissolutionCreateResponse result = service.create(body, companyNumber, userId, ip, email);
 
         verify(creator).create(body, companyNumber, userId, ip, email);
 

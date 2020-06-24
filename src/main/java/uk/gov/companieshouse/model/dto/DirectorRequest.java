@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.*;
 
-public class DirectorRequestDTO {
+public class DirectorRequest {
 
     @NotBlank
     @Size(min = 1, max = 250)

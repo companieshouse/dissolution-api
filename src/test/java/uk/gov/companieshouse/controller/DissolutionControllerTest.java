@@ -10,9 +10,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import uk.gov.companieshouse.model.dto.CreateDissolutionRequestDTO;
-import uk.gov.companieshouse.model.dto.CreateDissolutionResponseDTO;
-import uk.gov.companieshouse.model.dto.DirectorRequestDTO;
+import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
+import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
+import uk.gov.companieshouse.model.dto.DirectorRequest;
 import uk.gov.companieshouse.service.DissolutionService;
 
 import java.util.Collections;
@@ -52,7 +52,7 @@ public class DissolutionControllerTest {
     public void submitDissolutionRequest_returnsBadRequest_ifEricIdentityHeaderIsNotProvided() throws Exception {
         final HttpHeaders headers = new HttpHeaders() {{ add(AUTHORISED_USER_HEADER, EMAIL); }};
 
-        final CreateDissolutionRequestDTO body = generateCreateDissolutionRequestDTO();
+        final DissolutionCreateRequest body = generateDissolutionCreateRequest();
 
         assertHeadersValidation(headers, "Missing request header 'ERIC-identity' for method parameter of type String");
     }
@@ -63,14 +63,14 @@ public class DissolutionControllerTest {
             add(IDENTITY_HEADER, USER_ID);
         }};
 
-        final CreateDissolutionRequestDTO body = generateCreateDissolutionRequestDTO();
+        final DissolutionCreateRequest body = generateDissolutionCreateRequest();
 
         assertHeadersValidation(headers, "Missing request header 'ERIC-Authorised-User' for method parameter of type String");
     }
 
     @Test
     public void submitDissolutionRequest_returnsUnprocessableEntity_ifNoDirectorsAreProvided() throws Exception {
-        final CreateDissolutionRequestDTO body = generateCreateDissolutionRequestDTO();
+        final DissolutionCreateRequest body = generateDissolutionCreateRequest();
         body.setDirectors(Collections.emptyList());
 
         assertBodyValidation(body, "{'directors':'At least 1 director must be provided'}");
@@ -78,9 +78,9 @@ public class DissolutionControllerTest {
 
     @Test
     public void submitDissolutionRequest_returnsUnprocessableEntity_ifANameIsNotProvided() throws Exception {
-        final CreateDissolutionRequestDTO body = generateCreateDissolutionRequestDTO();
+        final DissolutionCreateRequest body = generateDissolutionCreateRequest();
 
-        final DirectorRequestDTO director = generateDirectorRequestDTO();
+        final DirectorRequest director = generateDirectorRequest();
         director.setName(null);
 
         body.setDirectors(Collections.singletonList(director));
@@ -90,9 +90,9 @@ public class DissolutionControllerTest {
 
     @Test
     public void submitDissolutionRequest_returnsUnprocessableEntity_ifAnEmailIsNotProvided() throws Exception {
-        final CreateDissolutionRequestDTO body = generateCreateDissolutionRequestDTO();
+        final DissolutionCreateRequest body = generateDissolutionCreateRequest();
 
-        final DirectorRequestDTO director = generateDirectorRequestDTO();
+        final DirectorRequest director = generateDirectorRequest();
         director.setEmail(null);
 
         body.setDirectors(Collections.singletonList(director));
@@ -102,9 +102,9 @@ public class DissolutionControllerTest {
 
     @Test
     public void submitDissolutionRequest_returnsUnprocessableEntity_ifAnInvalidEmailIsProvided() throws Exception {
-        final CreateDissolutionRequestDTO body = generateCreateDissolutionRequestDTO();
+        final DissolutionCreateRequest body = generateDissolutionCreateRequest();
 
-        final DirectorRequestDTO director = generateDirectorRequestDTO();
+        final DirectorRequest director = generateDirectorRequest();
         director.setEmail("invalid email format");
 
         body.setDirectors(Collections.singletonList(director));
@@ -114,9 +114,9 @@ public class DissolutionControllerTest {
 
     @Test
     public void submitDissolutionRequest_returnsUnprocessableEntity_ifAnInvalidNameIsProvided() throws Exception {
-        final CreateDissolutionRequestDTO body = generateCreateDissolutionRequestDTO();
+        final DissolutionCreateRequest body = generateDissolutionCreateRequest();
 
-        final DirectorRequestDTO director = generateDirectorRequestDTO();
+        final DirectorRequest director = generateDirectorRequest();
         director.setName("x".repeat(251));
 
         body.setDirectors(Collections.singletonList(director));
@@ -126,9 +126,9 @@ public class DissolutionControllerTest {
 
     @Test
     public void submitDissolutionRequest_returnsUnprocessableEntity_ifAnInvalidOnBehalfNameIsProvided() throws Exception {
-        final CreateDissolutionRequestDTO body = generateCreateDissolutionRequestDTO();
+        final DissolutionCreateRequest body = generateDissolutionCreateRequest();
 
-        final DirectorRequestDTO director = generateDirectorRequestDTO();
+        final DirectorRequest director = generateDirectorRequest();
         director.setOnBehalfName("x".repeat(251));
 
         body.setDirectors(Collections.singletonList(director));
@@ -143,7 +143,7 @@ public class DissolutionControllerTest {
             add(AUTHORISED_USER_HEADER, EMAIL);
         }};
 
-        final CreateDissolutionRequestDTO body = generateCreateDissolutionRequestDTO();
+        final DissolutionCreateRequest body = generateDissolutionCreateRequest();
 
         mockMvc
             .perform(
@@ -157,7 +157,7 @@ public class DissolutionControllerTest {
 
     @Test
     public void submitDissolutionRequest_returnsConflict_ifDissolutionAlreadyExistsForCompany() throws Exception {
-        final CreateDissolutionRequestDTO body = generateCreateDissolutionRequestDTO();
+        final DissolutionCreateRequest body = generateDissolutionCreateRequest();
 
         when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(true);
 
@@ -172,11 +172,11 @@ public class DissolutionControllerTest {
 
     @Test
     public void submitDissolutionRequest_returnsCreated_andCreateResponse_ifDissolutionIsCreatedSuccessfully() throws Exception {
-        final CreateDissolutionRequestDTO body = generateCreateDissolutionRequestDTO();
-        final CreateDissolutionResponseDTO response = generateCreateDissolutionResponseDTO();
+        final DissolutionCreateRequest body = generateDissolutionCreateRequest();
+        final DissolutionCreateResponse response = generateDissolutionCreateResponse();
 
         when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(false);
-        when(service.create(isA(CreateDissolutionRequestDTO.class), eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenReturn(response);
+        when(service.create(isA(DissolutionCreateRequest.class), eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenReturn(response);
 
         mockMvc
             .perform(
@@ -187,15 +187,15 @@ public class DissolutionControllerTest {
             .andExpect(status().isCreated())
             .andExpect(content().json(asJsonString(response)));
 
-        verify(service).create(isA(CreateDissolutionRequestDTO.class), eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL));
+        verify(service).create(isA(DissolutionCreateRequest.class), eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL));
     }
 
     @Test
     public void submitDissolutionRequest_returnsInternalServerError_ifExceptionOccursWhenCreatingDissolution() throws Exception {
-        final CreateDissolutionRequestDTO body = generateCreateDissolutionRequestDTO();
+        final DissolutionCreateRequest body = generateDissolutionCreateRequest();
 
         when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(false);
-        when(service.create(isA(CreateDissolutionRequestDTO.class), eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenThrow(new RuntimeException());
+        when(service.create(isA(DissolutionCreateRequest.class), eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenThrow(new RuntimeException());
 
         mockMvc
             .perform(
@@ -205,7 +205,7 @@ public class DissolutionControllerTest {
                     .content(asJsonString(body)))
             .andExpect(status().isInternalServerError());
 
-        verify(service).create(isA(CreateDissolutionRequestDTO.class), eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL));
+        verify(service).create(isA(DissolutionCreateRequest.class), eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL));
     }
 
     private void assertHeadersValidation(HttpHeaders headers, String expectedReason) throws Exception {
@@ -214,13 +214,13 @@ public class DissolutionControllerTest {
                 post(DISSOLUTION_URI, COMPANY_NUMBER)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .headers(headers)
-                    .content(asJsonString(generateCreateDissolutionRequestDTO()))
+                    .content(asJsonString(generateDissolutionCreateRequest()))
             )
             .andExpect(status().isBadRequest())
             .andExpect(status().reason(expectedReason));
     }
 
-    private void assertBodyValidation(CreateDissolutionRequestDTO body, String expectedErrorJson) throws Exception {
+    private void assertBodyValidation(DissolutionCreateRequest body, String expectedErrorJson) throws Exception {
         mockMvc
             .perform(
                 post(DISSOLUTION_URI, COMPANY_NUMBER)

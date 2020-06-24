@@ -1,25 +1,25 @@
 package uk.gov.companieshouse.fixtures;
 
 import uk.gov.companieshouse.model.db.*;
-import uk.gov.companieshouse.model.dto.CreateDissolutionRequestDTO;
-import uk.gov.companieshouse.model.dto.CreateDissolutionResponseDTO;
-import uk.gov.companieshouse.model.dto.DirectorRequestDTO;
+import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
+import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
+import uk.gov.companieshouse.model.dto.DirectorRequest;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
 
 public class DissolutionFixtures {
 
-    public static CreateDissolutionRequestDTO generateCreateDissolutionRequestDTO() {
-        final CreateDissolutionRequestDTO request = new CreateDissolutionRequestDTO();
+    public static DissolutionCreateRequest generateDissolutionCreateRequest() {
+        final DissolutionCreateRequest request = new DissolutionCreateRequest();
 
-        request.setDirectors(Collections.singletonList(generateDirectorRequestDTO()));
+        request.setDirectors(Collections.singletonList(generateDirectorRequest()));
 
         return request;
     }
 
-    public static DirectorRequestDTO generateDirectorRequestDTO() {
-        final DirectorRequestDTO director = new DirectorRequestDTO();
+    public static DirectorRequest generateDirectorRequest() {
+        final DirectorRequest director = new DirectorRequest();
 
         director.setName("John Doe");
         director.setEmail("user@mail.com");
@@ -27,8 +27,8 @@ public class DissolutionFixtures {
         return director;
     }
 
-    public static CreateDissolutionResponseDTO generateCreateDissolutionResponseDTO() {
-        return new CreateDissolutionResponseDTO();
+    public static DissolutionCreateResponse generateDissolutionCreateResponse() {
+        return new DissolutionCreateResponse();
     }
 
     public static Dissolution generateDissolution() {

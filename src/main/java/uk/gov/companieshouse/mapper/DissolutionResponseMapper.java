@@ -2,14 +2,14 @@ package uk.gov.companieshouse.mapper;
 
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.model.db.Dissolution;
-import uk.gov.companieshouse.model.dto.CreateDissolutionLinksDTO;
-import uk.gov.companieshouse.model.dto.CreateDissolutionResponseDTO;
+import uk.gov.companieshouse.model.dto.DissolutionCreateLinks;
+import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
 
 @Service
 public class DissolutionResponseMapper {
 
-    public CreateDissolutionResponseDTO mapToCreateDissolutionResponse(Dissolution dissolution) {
-        final CreateDissolutionResponseDTO response = new CreateDissolutionResponseDTO();
+    public DissolutionCreateResponse mapToDissolutionCreateResponse(Dissolution dissolution) {
+        final DissolutionCreateResponse response = new DissolutionCreateResponse();
 
         response.setApplicationReferenceNumber(dissolution.getData().getApplication().getReference());
         response.setLinks(generateLinks(dissolution.getCompany().getNumber()));
@@ -17,8 +17,8 @@ public class DissolutionResponseMapper {
         return response;
     }
 
-    private CreateDissolutionLinksDTO generateLinks(String companyNumber) {
-        final CreateDissolutionLinksDTO links = new CreateDissolutionLinksDTO();
+    private DissolutionCreateLinks generateLinks(String companyNumber) {
+        final DissolutionCreateLinks links = new DissolutionCreateLinks();
 
         links.setSelf(String.format("/dissolution-request/%s", companyNumber));
         links.setPayment(String.format("/dissolution-request/%s/payment", companyNumber));

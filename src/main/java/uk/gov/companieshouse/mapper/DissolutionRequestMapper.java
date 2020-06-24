@@ -2,8 +2,8 @@ package uk.gov.companieshouse.mapper;
 
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.model.db.*;
-import uk.gov.companieshouse.model.dto.CreateDissolutionRequestDTO;
-import uk.gov.companieshouse.model.dto.DirectorRequestDTO;
+import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
+import uk.gov.companieshouse.model.dto.DirectorRequest;
 import uk.gov.companieshouse.GenerateEtagUtil;
 
 import java.time.LocalDateTime;
@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 @Service
 public class DissolutionRequestMapper {
 
-    public Dissolution mapToDissolution(CreateDissolutionRequestDTO body, String companyNumber, String userId, String email, String ip, String reference) {
+    public Dissolution mapToDissolution(DissolutionCreateRequest body, String companyNumber, String userId, String email, String ip, String reference) {
         final Dissolution dissolution = new Dissolution();
 
         dissolution.setModifiedDateTime(LocalDateTime.now());
@@ -24,7 +24,7 @@ public class DissolutionRequestMapper {
         return dissolution;
     }
 
-    private DissolutionData mapToDissolutionData(CreateDissolutionRequestDTO body, String reference) {
+    private DissolutionData mapToDissolutionData(DissolutionCreateRequest body, String reference) {
         final DissolutionData data = new DissolutionData();
 
         data.setETag(GenerateEtagUtil.generateEtag());
@@ -44,11 +44,11 @@ public class DissolutionRequestMapper {
         return application;
     }
 
-    private List<DissolutionDirector> mapToDissolutionDirectors(List<DirectorRequestDTO> directors) {
+    private List<DissolutionDirector> mapToDissolutionDirectors(List<DirectorRequest> directors) {
         return directors.stream().map(this::mapToDissolutionDirector).collect(Collectors.toList());
     }
 
-    private DissolutionDirector mapToDissolutionDirector(DirectorRequestDTO body) {
+    private DissolutionDirector mapToDissolutionDirector(DirectorRequest body) {
         final DissolutionDirector director = new DissolutionDirector();
 
         director.setName(body.getName());

@@ -8,8 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import uk.gov.companieshouse.model.dto.CreateDissolutionRequestDTO;
-import uk.gov.companieshouse.model.dto.CreateDissolutionResponseDTO;
+import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
+import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
 import uk.gov.companieshouse.service.DissolutionService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,19 +28,19 @@ public class DissolutionController extends BaseController {
 
     @Operation(summary = "Create Dissolution Request", tags = "Dissolution")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Dissolution Request created"),
-            @ApiResponse(responseCode = "400", description = "Missing headers"),
-            @ApiResponse(responseCode = "401", description = "Unauthorised"),
-            @ApiResponse(responseCode = "409", description = "Dissolution Request already exists for company"),
-            @ApiResponse(responseCode = "422", description = "Invalid request format"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+        @ApiResponse(responseCode = "201", description = "Dissolution Request created"),
+        @ApiResponse(responseCode = "400", description = "Missing headers"),
+        @ApiResponse(responseCode = "401", description = "Unauthorised"),
+        @ApiResponse(responseCode = "409", description = "Dissolution Request already exists for company"),
+        @ApiResponse(responseCode = "422", description = "Invalid request format"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreateDissolutionResponseDTO> submitDissolutionRequest(
+    public ResponseEntity<DissolutionCreateResponse> submitDissolutionRequest(
         @RequestHeader("ERIC-identity") String userId,
         @RequestHeader("ERIC-Authorised-User") String email, // TODO - extract email from header
         @PathVariable("company-number") final String companyNumber,
-        @Valid @RequestBody final CreateDissolutionRequestDTO body,
+        @Valid @RequestBody final DissolutionCreateRequest body,
         HttpServletRequest request) {
 
         if (StringUtils.isBlank(userId)) {
@@ -52,7 +52,7 @@ public class DissolutionController extends BaseController {
         }
 
         try {
-            final CreateDissolutionResponseDTO response = dissolutionService.create(body, companyNumber, userId, request.getRemoteAddr(), email);
+            final DissolutionCreateResponse response = dissolutionService.create(body, companyNumber, userId, request.getRemoteAddr(), email);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

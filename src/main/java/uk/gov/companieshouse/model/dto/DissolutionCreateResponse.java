@@ -1,9 +1,12 @@
 package uk.gov.companieshouse.model.dto;
 
-public class CreateDissolutionResponseDTO {
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+public class DissolutionCreateResponse {
+
+    @JsonProperty("application_reference_number")
     private String applicationReferenceNumber;
-    private CreateDissolutionLinksDTO links;
+    private DissolutionCreateLinks links;
 
     public String getApplicationReferenceNumber() {
         return applicationReferenceNumber;
@@ -13,11 +16,11 @@ public class CreateDissolutionResponseDTO {
         this.applicationReferenceNumber = applicationReferenceNumber;
     }
 
-    public CreateDissolutionLinksDTO getLinks() {
+    public DissolutionCreateLinks getLinks() {
         return links;
     }
 
-    public void setLinks(CreateDissolutionLinksDTO links) {
+    public void setLinks(DissolutionCreateLinks links) {
         this.links = links;
     }
 }

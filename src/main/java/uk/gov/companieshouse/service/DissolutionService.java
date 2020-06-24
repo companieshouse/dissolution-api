@@ -2,8 +2,8 @@ package uk.gov.companieshouse.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.model.dto.CreateDissolutionRequestDTO;
-import uk.gov.companieshouse.model.dto.CreateDissolutionResponseDTO;
+import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
+import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
 @Service
@@ -18,7 +18,7 @@ public class DissolutionService {
         this.repository = repository;
     }
 
-    public CreateDissolutionResponseDTO create(CreateDissolutionRequestDTO body, String companyNumber, String userId, String ip, String email) {
+    public DissolutionCreateResponse create(DissolutionCreateRequest body, String companyNumber, String userId, String ip, String email) {
         return creator.create(body, companyNumber, userId, ip, email);
     }
 

@@ -9,8 +9,8 @@ import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.model.db.Dissolution;
-import uk.gov.companieshouse.model.dto.CreateDissolutionRequestDTO;
-import uk.gov.companieshouse.model.dto.CreateDissolutionResponseDTO;
+import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
+import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,7 +37,7 @@ public class DissolutionCreatorTest {
 
     @Test
     public void create_generatesAReferenceNumber_mapsToDissolution_savesInDatabase_returnsCreateResponse() throws Exception {
-        final CreateDissolutionRequestDTO body = DissolutionFixtures.generateCreateDissolutionRequestDTO();
+        final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
         final String companyNumber = "12345678";
         final String userId = "123";
         final String ip = "192.168.0.1";
@@ -45,17 +45,17 @@ public class DissolutionCreatorTest {
 
         final String reference = "ABC123";
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
-        final CreateDissolutionResponseDTO response = DissolutionFixtures.generateCreateDissolutionResponseDTO();
+        final DissolutionCreateResponse response = DissolutionFixtures.generateDissolutionCreateResponse();
 
         when(referenceGenerator.generateApplicationReference()).thenReturn(reference);
         when(requestMapper.mapToDissolution(body, companyNumber, userId, email, ip, reference)).thenReturn(dissolution);
-        when(responseMapper.mapToCreateDissolutionResponse(dissolution)).thenReturn(response);
+        when(responseMapper.mapToDissolutionCreateResponse(dissolution)).thenReturn(response);
 
-        final CreateDissolutionResponseDTO result = creator.create(body, companyNumber, userId, ip, email);
+        final DissolutionCreateResponse result = creator.create(body, companyNumber, userId, ip, email);
 
         verify(referenceGenerator).generateApplicationReference();
         verify(requestMapper).mapToDissolution(body, companyNumber, userId, email, ip, reference);
-        verify(responseMapper).mapToCreateDissolutionResponse(dissolution);
+        verify(responseMapper).mapToDissolutionCreateResponse(dissolution);
 
         assertEquals(response, result);
     }

@@ -5,8 +5,8 @@ import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.model.db.Dissolution;
 import uk.gov.companieshouse.model.db.DissolutionApplication;
 import uk.gov.companieshouse.model.db.DissolutionDirector;
-import uk.gov.companieshouse.model.dto.CreateDissolutionRequestDTO;
-import uk.gov.companieshouse.model.dto.DirectorRequestDTO;
+import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
+import uk.gov.companieshouse.model.dto.DirectorRequest;
 
 import java.util.Arrays;
 
@@ -24,7 +24,7 @@ public class DissolutionRequestMapperTest {
 
     @Test
     public void mapToDissolution_setsModifiedDateTime() {
-        final CreateDissolutionRequestDTO body = DissolutionFixtures.generateCreateDissolutionRequestDTO();
+        final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
 
         final Dissolution dissolution = mapper.mapToDissolution(body, COMPANY_NUMBER, USER_ID, EMAIL, IP_ADDRESS, REFERENCE);
 
@@ -33,7 +33,7 @@ public class DissolutionRequestMapperTest {
 
     @Test
     public void mapToDissolution_setsApplicationData_includingDefaultStatus() {
-        final CreateDissolutionRequestDTO body = DissolutionFixtures.generateCreateDissolutionRequestDTO();
+        final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
 
         final Dissolution dissolution = mapper.mapToDissolution(body, COMPANY_NUMBER, USER_ID, EMAIL, IP_ADDRESS, REFERENCE);
 
@@ -44,14 +44,14 @@ public class DissolutionRequestMapperTest {
 
     @Test
     public void mapToDissolution_setsDirectorsToSignFromRequestBody() {
-        final CreateDissolutionRequestDTO body = DissolutionFixtures.generateCreateDissolutionRequestDTO();
+        final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
 
-        final DirectorRequestDTO director1 = DissolutionFixtures.generateDirectorRequestDTO();
+        final DirectorRequest director1 = DissolutionFixtures.generateDirectorRequest();
         director1.setName("Director who will sign themselves");
         director1.setEmail("director@mail.com");
         director1.setOnBehalfName(null);
 
-        final DirectorRequestDTO director2 = DissolutionFixtures.generateDirectorRequestDTO();
+        final DirectorRequest director2 = DissolutionFixtures.generateDirectorRequest();
         director2.setName("Director who will let someone sign on behalf of them");
         director2.setEmail("accountant@mail.com");
         director2.setOnBehalfName("Mr Accountant");
@@ -75,7 +75,7 @@ public class DissolutionRequestMapperTest {
 
     @Test
     public void mapToDissolution_setsCompanyInformation() {
-        final CreateDissolutionRequestDTO body = DissolutionFixtures.generateCreateDissolutionRequestDTO();
+        final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
 
         final Dissolution dissolution = mapper.mapToDissolution(body, COMPANY_NUMBER, USER_ID, EMAIL, IP_ADDRESS, REFERENCE);
 
@@ -85,7 +85,7 @@ public class DissolutionRequestMapperTest {
 
     @Test
     public void mapToDissolution_setsCreatedByInformation() {
-        final CreateDissolutionRequestDTO body = DissolutionFixtures.generateCreateDissolutionRequestDTO();
+        final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
 
         final Dissolution dissolution = mapper.mapToDissolution(body, COMPANY_NUMBER, USER_ID, EMAIL, IP_ADDRESS, REFERENCE);
 
