@@ -1,13 +1,15 @@
 package uk.gov.companieshouse.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import uk.gov.companieshouse.exception.ConflictException;
+import uk.gov.companieshouse.exception.UnauthorisedException;
 import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
 import uk.gov.companieshouse.service.DissolutionService;
@@ -19,7 +21,7 @@ import static uk.gov.companieshouse.util.EricHelper.getEmail;
 
 @RestController
 @RequestMapping("/dissolution-request/{company-number}")
-public class DissolutionController extends BaseController {
+public class DissolutionController {
 
     private final DissolutionService dissolutionService;
 
@@ -31,14 +33,11 @@ public class DissolutionController extends BaseController {
     @Operation(summary = "Create Dissolution Request", tags = "Dissolution")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Dissolution Request created"),
-        @ApiResponse(responseCode = "400", description = "Missing headers"),
-        @ApiResponse(responseCode = "401", description = "Unauthorised"),
-        @ApiResponse(responseCode = "409", description = "Dissolution Request already exists for company"),
-        @ApiResponse(responseCode = "422", description = "Invalid request format"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
+        @ApiResponse(responseCode = "409", description = "Dissolution Request already exists for company", content = @Content),
     })
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<DissolutionCreateResponse> submitDissolutionRequest(
+    @ResponseStatus(HttpStatus.CREATED)
+    public DissolutionCreateResponse submitDissolutionRequest(
         @RequestHeader("ERIC-identity") String userId,
         @RequestHeader("ERIC-Authorised-User") String authorisedUser,
         @PathVariable("company-number") final String companyNumber,
@@ -46,18 +45,13 @@ public class DissolutionController extends BaseController {
         HttpServletRequest request) {
 
         if (StringUtils.isBlank(userId)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new UnauthorisedException();
         }
 
         if (dissolutionService.doesDissolutionRequestExistForCompany(companyNumber)) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            throw new ConflictException();
         }
 
-        try {
-            final DissolutionCreateResponse response = dissolutionService.create(body, companyNumber, userId, request.getRemoteAddr(), getEmail(authorisedUser));
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        return dissolutionService.create(body, companyNumber, userId, request.getRemoteAddr(), getEmail(authorisedUser));
     }
 }
