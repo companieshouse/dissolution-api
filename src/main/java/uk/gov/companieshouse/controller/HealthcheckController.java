@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/dissolution-request")
+@RequestMapping("/dissolution-request/healthcheck")
 public class HealthcheckController {
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(HealthcheckController.class);
@@ -21,8 +21,8 @@ public class HealthcheckController {
             @ApiResponse(responseCode = "200", description = "Dissolution API is up"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/healthcheck")
-    public ResponseEntity<String> healthcheck() {
+    @GetMapping()
+    public ResponseEntity<String> isHealthy() {
 
         LOGGER.debug("Healthcheck endpoint hit.");
 
