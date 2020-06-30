@@ -7,7 +7,10 @@ import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.model.db.Dissolution;
 import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
+import uk.gov.companieshouse.model.dto.DissolutionGetResponse;
 import uk.gov.companieshouse.repository.DissolutionRepository;
+
+import java.util.Optional;
 
 @Service
 public class DissolutionCreator {
@@ -37,5 +40,11 @@ public class DissolutionCreator {
         repository.insert(dissolution);
 
         return responseMapper.mapToDissolutionCreateResponse(dissolution);
+    }
+
+    public DissolutionGetResponse get(String companyNumber) {
+        Optional<Dissolution> dissolution = repository.findByCompanyNumber(companyNumber);
+
+        return responseMapper.mapToDissolutionGetResponse(dissolution.get());
     }
 }

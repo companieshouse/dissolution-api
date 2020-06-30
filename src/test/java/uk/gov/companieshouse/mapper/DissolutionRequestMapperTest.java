@@ -7,6 +7,8 @@ import uk.gov.companieshouse.model.db.DissolutionApplication;
 import uk.gov.companieshouse.model.db.DissolutionDirector;
 import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.DirectorRequest;
+import uk.gov.companieshouse.model.enums.ApplicationStatusEnum;
+import uk.gov.companieshouse.model.enums.ApplicationTypeEnum;
 
 import java.util.Arrays;
 
@@ -38,8 +40,8 @@ public class DissolutionRequestMapperTest {
         final Dissolution dissolution = mapper.mapToDissolution(body, COMPANY_NUMBER, USER_ID, EMAIL, IP_ADDRESS, REFERENCE);
 
         assertEquals(REFERENCE, dissolution.getData().getApplication().getReference());
-        assertEquals(DissolutionApplication.DissolutionStatus.PENDING_APPROVAL, dissolution.getData().getApplication().getStatus());
-        assertEquals(DissolutionApplication.DissolutionType.DS01, dissolution.getData().getApplication().getType());
+        assertEquals(ApplicationStatusEnum.PENDING_APPROVAL, dissolution.getData().getApplication().getStatus());
+        assertEquals(ApplicationTypeEnum.DS01, dissolution.getData().getApplication().getType());
     }
 
     @Test

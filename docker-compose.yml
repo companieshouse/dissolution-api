@@ -5,7 +5,7 @@ services:
     build: .
     container_name: dissolution-api
     labels:
-      - traefik.http.routers.dissolution-api.rule=Host(`chs-dev`) && PathPrefix(`/dissolution-api/`)
+      - traefik.http.routers.dissolution-api.rule=Host(`chs-dev`) && PathPrefix(`/dissolution-request/`)
     environment:
       - DISSOLUTIONS_API_MONGODB_URL=mongodb://mongo/dissolutions
       - CDN_HOST=cdn.chs-dev

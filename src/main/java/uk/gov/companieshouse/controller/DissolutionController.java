@@ -9,9 +9,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import uk.gov.companieshouse.exception.ConflictException;
+import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.UnauthorisedException;
 import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
+import uk.gov.companieshouse.model.dto.DissolutionGetResponse;
 import uk.gov.companieshouse.service.DissolutionService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -53,5 +55,21 @@ public class DissolutionController {
         }
 
         return dissolutionService.create(body, companyNumber, userId, request.getRemoteAddr(), getEmail(authorisedUser));
+    }
+
+    @Operation(summary = "Get Dissolution Application", tags = "Dissolution")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Dissolution Application found", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Dissolution Application not found")
+    })
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public DissolutionGetResponse getDissolutionApplication(@PathVariable("company-number") final String companyNumber) {
+        if (!dissolutionService.doesDissolutionRequestExistForCompany(companyNumber)) {
+            throw new DissolutionNotFoundException();
+        }
+
+        return dissolutionService.get(companyNumber);
+
     }
 }

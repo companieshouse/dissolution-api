@@ -1,18 +1,13 @@
 package uk.gov.companieshouse.model.db;
 
+import uk.gov.companieshouse.model.enums.ApplicationStatusEnum;
+import uk.gov.companieshouse.model.enums.ApplicationTypeEnum;
+
 public class DissolutionApplication {
 
-    public static enum DissolutionType {
-        DS01
-    }
-
-    public static enum DissolutionStatus {
-        PENDING_APPROVAL
-    }
-
     private String reference;
-    private DissolutionType type;
-    private DissolutionStatus status;
+    private ApplicationTypeEnum type;
+    private ApplicationStatusEnum status;
 
     public String getReference() {
         return reference;
@@ -22,19 +17,19 @@ public class DissolutionApplication {
         this.reference = reference;
     }
 
-    public DissolutionType getType() {
+    public ApplicationTypeEnum getType() {
         return type;
     }
 
-    public void setType(DissolutionType type) {
+    public void setType(ApplicationTypeEnum type) {
         this.type = type;
     }
 
-    public DissolutionStatus getStatus() {
+    public ApplicationStatusEnum getStatus() {
         return status;
     }
 
-    public void setStatus(DissolutionStatus status) {
+    public void setStatus(ApplicationStatusEnum status) {
         this.status = status;
     }
 }

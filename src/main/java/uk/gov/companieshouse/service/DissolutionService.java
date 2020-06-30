@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
+import uk.gov.companieshouse.model.dto.DissolutionGetResponse;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
 @Service
@@ -24,5 +25,9 @@ public class DissolutionService {
 
     public boolean doesDissolutionRequestExistForCompany(String companyNumber) {
         return repository.findByCompanyNumber(companyNumber).isPresent();
+    }
+
+    public DissolutionGetResponse get(String companyNumber) {
+        return creator.get(companyNumber);
     }
 }

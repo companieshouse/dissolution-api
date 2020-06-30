@@ -5,6 +5,8 @@ import uk.gov.companieshouse.model.db.*;
 import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.DirectorRequest;
 import uk.gov.companieshouse.GenerateEtagUtil;
+import uk.gov.companieshouse.model.enums.ApplicationStatusEnum;
+import uk.gov.companieshouse.model.enums.ApplicationTypeEnum;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,8 +40,8 @@ public class DissolutionRequestMapper {
         final DissolutionApplication application = new DissolutionApplication();
 
         application.setReference(reference);
-        application.setStatus(DissolutionApplication.DissolutionStatus.PENDING_APPROVAL);
-        application.setType(DissolutionApplication.DissolutionType.DS01);
+        application.setStatus(ApplicationStatusEnum.PENDING_APPROVAL);
+        application.setType(ApplicationTypeEnum.DS01);
 
         return application;
     }

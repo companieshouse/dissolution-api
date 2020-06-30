@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import uk.gov.companieshouse.exception.ConflictException;
+import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.UnauthorisedException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -49,5 +50,11 @@ public class ExceptionHandlerController {
     @ExceptionHandler(RuntimeException.class)
     public void handleRuntime(RuntimeException ex, HttpServletRequest request) {
         LOGGER.error("[Internal server error] - {}", request.getRequestURL().toString(), ex);
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(DissolutionNotFoundException.class)
+    public void handleNotFound(RuntimeException ex, HttpServletRequest request) {
+        LOGGER.error("[Not found] - {}", request.getRequestURL().toString(), ex);
     }
 }
