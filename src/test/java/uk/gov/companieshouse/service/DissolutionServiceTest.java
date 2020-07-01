@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
+import uk.gov.companieshouse.model.dto.DissolutionGetResponse;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
 import java.util.Optional;
@@ -69,5 +70,19 @@ public class DissolutionServiceTest {
         final boolean result = service.doesDissolutionRequestExistForCompany(companyNumber);
 
         assertFalse(result);
+    }
+
+    @Test
+    public void get_getsADissolution_returnsGetResponse() throws Exception {
+        final String companyNumber = "12345678";
+        final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse();
+
+        when(creator.get(companyNumber)).thenReturn(response);
+
+        final DissolutionGetResponse result = service.get(companyNumber);
+
+        verify(creator).get(companyNumber);
+
+        assertEquals(response, result);
     }
 }

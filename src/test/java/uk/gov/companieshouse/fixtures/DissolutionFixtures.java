@@ -4,6 +4,7 @@ import uk.gov.companieshouse.model.db.*;
 import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.DirectorRequest;
+import uk.gov.companieshouse.model.dto.DissolutionGetResponse;
 import uk.gov.companieshouse.model.enums.ApplicationStatusEnum;
 import uk.gov.companieshouse.model.enums.ApplicationTypeEnum;
 
@@ -31,6 +32,10 @@ public class DissolutionFixtures {
 
     public static DissolutionCreateResponse generateDissolutionCreateResponse() {
         return new DissolutionCreateResponse();
+    }
+
+    public static DissolutionGetResponse generateDissolutionGetResponse() {
+        return new DissolutionGetResponse();
     }
 
     public static Dissolution generateDissolution() {

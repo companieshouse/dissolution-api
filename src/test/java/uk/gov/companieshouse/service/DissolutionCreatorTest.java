@@ -11,7 +11,10 @@ import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.model.db.Dissolution;
 import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
+import uk.gov.companieshouse.model.dto.DissolutionGetResponse;
 import uk.gov.companieshouse.repository.DissolutionRepository;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
@@ -36,7 +39,7 @@ public class DissolutionCreatorTest {
     private DissolutionResponseMapper responseMapper;
 
     @Test
-    public void create_generatesAReferenceNumber_mapsToDissolution_savesInDatabase_returnsCreateResponse() throws Exception {
+    public void create_generatesAReferenceNumber_mapsToDissolution_savesInDatabase_returnsCreateResponse() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
         final String companyNumber = "12345678";
         final String userId = "123";
@@ -56,6 +59,23 @@ public class DissolutionCreatorTest {
         verify(referenceGenerator).generateApplicationReference();
         verify(requestMapper).mapToDissolution(body, companyNumber, userId, email, ip, reference);
         verify(responseMapper).mapToDissolutionCreateResponse(dissolution);
+
+        assertEquals(response, result);
+    }
+
+    @Test
+    public void get_findsDissolution_mapsToDissolutionResponse_returnsGetResponse() {
+        final String companyNumber = "12345678";
+        final Dissolution dissolution = DissolutionFixtures.generateDissolution();
+        final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse();
+
+        when(repository.findByCompanyNumber(companyNumber)).thenReturn(Optional.of(dissolution));
+        when(responseMapper.mapToDissolutionGetResponse(dissolution)).thenReturn(response);
+
+        final DissolutionGetResponse result = creator.get(companyNumber);
+
+        verify(repository).findByCompanyNumber(companyNumber);
+        verify(responseMapper).mapToDissolutionGetResponse(dissolution);
 
         assertEquals(response, result);
     }

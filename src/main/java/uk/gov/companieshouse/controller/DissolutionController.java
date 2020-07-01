@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +28,7 @@ import static uk.gov.companieshouse.util.EricHelper.getEmail;
 public class DissolutionController {
 
     private final DissolutionService dissolutionService;
+    Logger logger = LoggerFactory.getLogger(DissolutionController.class);
 
     public DissolutionController(DissolutionService dissolutionService) {
         super();
@@ -54,6 +57,8 @@ public class DissolutionController {
             throw new ConflictException();
         }
 
+        logger.debug("[POST] Submitting dissolution request for company number {}", companyNumber);
+
         return dissolutionService.create(body, companyNumber, userId, request.getRemoteAddr(), getEmail(authorisedUser));
     }
 
@@ -64,10 +69,19 @@ public class DissolutionController {
     })
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public DissolutionGetResponse getDissolutionApplication(@PathVariable("company-number") final String companyNumber) {
+    public DissolutionGetResponse getDissolutionApplication(
+            @RequestHeader("ERIC-identity") String userId,
+            @PathVariable("company-number") final String companyNumber) {
+
+        if (StringUtils.isBlank(userId)) {
+            throw new UnauthorisedException();
+        }
+
         if (!dissolutionService.doesDissolutionRequestExistForCompany(companyNumber)) {
             throw new DissolutionNotFoundException();
         }
+
+        logger.debug("[GET] Getting dissolution info for company number {}", companyNumber);
 
         return dissolutionService.get(companyNumber);
 

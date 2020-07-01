@@ -9,12 +9,9 @@ import uk.gov.companieshouse.model.dto.DissolutionLinks;
 import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static uk.gov.companieshouse.GenerateEtagUtil.generateEtag;
 import static uk.gov.companieshouse.model.Constants.DISSOLUTION_KIND;
 
 @Service
@@ -32,7 +29,7 @@ public class DissolutionResponseMapper {
     public DissolutionGetResponse mapToDissolutionGetResponse(Dissolution dissolution) {
         final DissolutionGetResponse response = new DissolutionGetResponse();
 
-        response.setETag(generateEtag());
+        response.setETag(dissolution.getData().getETag());
         response.setKind(DISSOLUTION_KIND);
         response.setLinks(generateLinks(dissolution.getCompany().getNumber()));
         response.setApplicationStatus(dissolution.getData().getApplication().getStatus());
@@ -55,12 +52,12 @@ public class DissolutionResponseMapper {
         return links;
     }
 
-    private List<DissolutionGetDirector> mapToDissolutionGetDirectors(List<DissolutionDirector> directors) {
+    public List<DissolutionGetDirector> mapToDissolutionGetDirectors(List<DissolutionDirector> directors) {
         return directors.stream().map(dir -> {
             DissolutionGetDirector getDirector = new DissolutionGetDirector();
             getDirector.setName(dir.getName());
             getDirector.setEmail(dir.getEmail());
-            getDirector.setApprovedAt(Timestamp.valueOf(LocalDateTime.now())); // TODO actual mapping
+//            getDirector.setApprovedAt(Timestamp.valueOf(LocalDateTime.now())); // TODO actual mapping
             return getDirector;
         }).collect(Collectors.toList());
     }

@@ -1,7 +1,0 @@
-server:
-  port: 3001
-
-spring:
-  data:
-    mongodb:
-      uri: ${DISSOLUTIONS_API_MONGODB_URL}
