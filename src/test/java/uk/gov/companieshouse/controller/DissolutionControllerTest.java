@@ -228,7 +228,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void getDissolutionRequest_returnsNotFound_ifDissolutionAlreadyExistsForCompany() throws Exception {
+    public void getDissolutionRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
         when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(false);
 
         mockMvc

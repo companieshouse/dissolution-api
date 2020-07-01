@@ -21,6 +21,8 @@ import uk.gov.companieshouse.service.DissolutionService;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import java.util.Optional;
+
 import static uk.gov.companieshouse.util.EricHelper.getEmail;
 
 @RestController
@@ -77,12 +79,10 @@ public class DissolutionController {
             throw new UnauthorisedException();
         }
 
-        if (!dissolutionService.doesDissolutionRequestExistForCompany(companyNumber)) {
-            throw new DissolutionNotFoundException();
-        }
-
         logger.debug("[GET] Getting dissolution info for company number {}", companyNumber);
 
-        return dissolutionService.get(companyNumber);
+        return dissolutionService
+                .get(companyNumber)
+                .orElseThrow(DissolutionNotFoundException::new);
     }
 }

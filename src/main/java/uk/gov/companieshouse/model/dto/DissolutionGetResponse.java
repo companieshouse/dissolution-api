@@ -3,8 +3,8 @@ package uk.gov.companieshouse.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import uk.gov.companieshouse.model.db.DissolutionGetDirector;
-import uk.gov.companieshouse.model.enums.ApplicationStatusEnum;
-import uk.gov.companieshouse.model.enums.ApplicationTypeEnum;
+import uk.gov.companieshouse.model.enums.ApplicationStatus;
+import uk.gov.companieshouse.model.enums.ApplicationType;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -12,22 +12,32 @@ import java.util.List;
 public class DissolutionGetResponse {
 
     private String ETag;
+
     private String kind;
+
     private DissolutionLinks links;
+
     @JsonProperty("application_status")
-    private ApplicationStatusEnum applicationStatus;
+    private ApplicationStatus applicationStatus;
+
     @JsonProperty("application_reference")
     private String applicationReference;
+
     @JsonProperty("application_type")
-    private ApplicationTypeEnum applicationType;
+    private ApplicationType applicationType;
+
     @JsonProperty("company_name")
     private String companyName;
+
     @JsonProperty("company_number")
     private String companyNumber;
+
     @JsonProperty("created_at")
     private Timestamp createdAt;
+
     @JsonProperty("created_by")
     private String createdBy;
+
     private List<DissolutionGetDirector> directors;
 
     public String getETag() {
@@ -54,11 +64,11 @@ public class DissolutionGetResponse {
         this.links = links;
     }
 
-    public ApplicationStatusEnum getApplicationStatus() {
+    public ApplicationStatus getApplicationStatus() {
         return applicationStatus;
     }
 
-    public void setApplicationStatus(ApplicationStatusEnum applicationStatus) {
+    public void setApplicationStatus(ApplicationStatus applicationStatus) {
         this.applicationStatus = applicationStatus;
     }
 
@@ -70,11 +80,11 @@ public class DissolutionGetResponse {
         this.applicationReference = applicationReference;
     }
 
-    public ApplicationTypeEnum getApplicationType() {
+    public ApplicationType getApplicationType() {
         return applicationType;
     }
 
-    public void setApplicationType(ApplicationTypeEnum applicationType) {
+    public void setApplicationType(ApplicationType applicationType) {
         this.applicationType = applicationType;
     }
 

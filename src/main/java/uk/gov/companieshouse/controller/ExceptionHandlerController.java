@@ -49,12 +49,12 @@ public class ExceptionHandlerController {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(RuntimeException.class)
     public void handleRuntime(RuntimeException ex, HttpServletRequest request) {
-        LOGGER.error("[Internal server error] - {}", request.getRequestURL().toString(), ex);
+        LOGGER.info("[Internal server error] - {}", request.getRequestURL().toString(), ex);
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(DissolutionNotFoundException.class)
     public void handleNotFound(RuntimeException ex, HttpServletRequest request) {
-        LOGGER.error("[Not found] - {}", request.getRequestURL().toString(), ex);
+        LOGGER.info("[Not found] - {}", request.getRequestURL().toString(), ex);
     }
 }

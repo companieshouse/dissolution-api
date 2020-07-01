@@ -7,15 +7,19 @@ import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.DissolutionGetResponse;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
+import java.util.Optional;
+
 @Service
 public class DissolutionService {
 
     private final DissolutionCreator creator;
+    private final DissolutionGetter getter;
     private final DissolutionRepository repository;
 
     @Autowired
-    public DissolutionService(DissolutionCreator creator, DissolutionRepository repository) {
+    public DissolutionService(DissolutionCreator creator, DissolutionGetter getter, DissolutionRepository repository) {
         this.creator = creator;
+        this.getter = getter;
         this.repository = repository;
     }
 
@@ -27,7 +31,7 @@ public class DissolutionService {
         return repository.findByCompanyNumber(companyNumber).isPresent();
     }
 
-    public DissolutionGetResponse get(String companyNumber) {
-        return creator.get(companyNumber);
+    public Optional<DissolutionGetResponse> get(String companyNumber) {
+        return getter.get(companyNumber);
     }
 }

@@ -52,12 +52,13 @@ public class DissolutionResponseMapper {
         return links;
     }
 
-    public List<DissolutionGetDirector> mapToDissolutionGetDirectors(List<DissolutionDirector> directors) {
+    private List<DissolutionGetDirector> mapToDissolutionGetDirectors(List<DissolutionDirector> directors) {
         return directors.stream().map(dir -> {
             DissolutionGetDirector getDirector = new DissolutionGetDirector();
             getDirector.setName(dir.getName());
             getDirector.setEmail(dir.getEmail());
-//            getDirector.setApprovedAt(Timestamp.valueOf(LocalDateTime.now())); // TODO actual mapping
+            getDirector.setOnBehalfName(dir.getOnBehalfName());
+            getDirector.setApprovedAt(null); // TODO Actual approvedAt implementation
             return getDirector;
         }).collect(Collectors.toList());
     }
