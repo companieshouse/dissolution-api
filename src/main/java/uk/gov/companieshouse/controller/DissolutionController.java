@@ -37,17 +37,17 @@ public class DissolutionController {
 
     @Operation(summary = "Create Dissolution Request", tags = "Dissolution")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Dissolution Request created"),
-        @ApiResponse(responseCode = "409", description = "Dissolution Request already exists for company", content = @Content),
+            @ApiResponse(responseCode = "201", description = "Dissolution Request created"),
+            @ApiResponse(responseCode = "409", description = "Dissolution Request already exists for company", content = @Content),
     })
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public DissolutionCreateResponse submitDissolutionRequest(
-        @RequestHeader("ERIC-identity") String userId,
-        @RequestHeader("ERIC-Authorised-User") String authorisedUser,
-        @PathVariable("company-number") final String companyNumber,
-        @Valid @RequestBody final DissolutionCreateRequest body,
-        HttpServletRequest request) {
+            @RequestHeader("ERIC-identity") String userId,
+            @RequestHeader("ERIC-Authorised-User") String authorisedUser,
+            @PathVariable("company-number") final String companyNumber,
+            @Valid @RequestBody final DissolutionCreateRequest body,
+            HttpServletRequest request) {
 
         if (StringUtils.isBlank(userId)) {
             throw new UnauthorisedException();
@@ -84,6 +84,5 @@ public class DissolutionController {
         logger.debug("[GET] Getting dissolution info for company number {}", companyNumber);
 
         return dissolutionService.get(companyNumber);
-
     }
 }
