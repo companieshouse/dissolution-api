@@ -1,13 +1,13 @@
 package uk.gov.companieshouse.model.enums;
 
-public enum ApplicationStatus {
+public enum DissolutionStatus {
     PENDING_APPROVAL("pending-approval"),
     PENDING_PAYMENT("pending-payment"),
     PAID("paid");
 
     public final String label;
 
-    ApplicationStatus(String label) {
+    DissolutionStatus(String label) {
         this.label = label;
     }
 }

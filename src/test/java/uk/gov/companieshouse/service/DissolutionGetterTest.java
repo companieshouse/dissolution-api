@@ -15,7 +15,6 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -47,5 +46,18 @@ public class DissolutionGetterTest {
 
         assertTrue(result.isPresent());
         assertEquals(response, result.get());
+    }
+
+    @Test
+    public void get_doesNotFindDissolution_returnsOptionalEmpty() {
+        final String companyNumber = "12345678";
+
+        when(repository.findByCompanyNumber(companyNumber)).thenReturn(Optional.empty());
+
+        final Optional<DissolutionGetResponse> result = getter.get(companyNumber);
+
+        verify(repository).findByCompanyNumber(companyNumber);
+
+        assertTrue(result.isEmpty());
     }
 }

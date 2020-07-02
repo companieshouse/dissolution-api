@@ -9,13 +9,14 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
+import uk.gov.companieshouse.model.dto.DirectorRequest;
 import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
-import uk.gov.companieshouse.model.dto.DirectorRequest;
+import uk.gov.companieshouse.model.dto.DissolutionGetResponse;
 import uk.gov.companieshouse.service.DissolutionService;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
@@ -229,7 +230,7 @@ public class DissolutionControllerTest {
 
     @Test
     public void getDissolutionRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
-        when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(false);
+        when(service.get(COMPANY_NUMBER)).thenReturn(Optional.empty());
 
         mockMvc
                 .perform(
@@ -237,6 +238,20 @@ public class DissolutionControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .headers(createHttpHeaders()))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void getDissolutionRequest_dissolutionInfo_ifDissolutionExists() throws Exception {
+        final DissolutionGetResponse response = generateDissolutionGetResponse();
+
+        when(service.get(COMPANY_NUMBER)).thenReturn(Optional.of(response));
+
+        mockMvc
+                .perform(
+                        get(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(createHttpHeaders()))
+                .andExpect(status().isOk());
     }
 
     private void assertHeadersValidation(HttpHeaders headers, String expectedReason) throws Exception {

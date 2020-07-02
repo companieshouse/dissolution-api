@@ -3,8 +3,8 @@ package uk.gov.companieshouse.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import uk.gov.companieshouse.model.db.DissolutionGetDirector;
-import uk.gov.companieshouse.model.enums.ApplicationStatus;
-import uk.gov.companieshouse.model.enums.ApplicationType;
+import uk.gov.companieshouse.model.enums.DissolutionStatus;
+import uk.gov.companieshouse.model.enums.DissolutionType;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -18,13 +18,13 @@ public class DissolutionGetResponse {
     private DissolutionLinks links;
 
     @JsonProperty("application_status")
-    private ApplicationStatus applicationStatus;
+    private DissolutionStatus dissolutionStatus;
 
     @JsonProperty("application_reference")
     private String applicationReference;
 
     @JsonProperty("application_type")
-    private ApplicationType applicationType;
+    private DissolutionType dissolutionType;
 
     @JsonProperty("company_name")
     private String companyName;
@@ -64,12 +64,12 @@ public class DissolutionGetResponse {
         this.links = links;
     }
 
-    public ApplicationStatus getApplicationStatus() {
-        return applicationStatus;
+    public DissolutionStatus getDissolutionStatus() {
+        return dissolutionStatus;
     }
 
-    public void setApplicationStatus(ApplicationStatus applicationStatus) {
-        this.applicationStatus = applicationStatus;
+    public void setDissolutionStatus(DissolutionStatus dissolutionStatus) {
+        this.dissolutionStatus = dissolutionStatus;
     }
 
     public String getApplicationReference() {
@@ -80,12 +80,12 @@ public class DissolutionGetResponse {
         this.applicationReference = applicationReference;
     }
 
-    public ApplicationType getApplicationType() {
-        return applicationType;
+    public DissolutionType getDissolutionType() {
+        return dissolutionType;
     }
 
-    public void setApplicationType(ApplicationType applicationType) {
-        this.applicationType = applicationType;
+    public void setDissolutionType(DissolutionType dissolutionType) {
+        this.dissolutionType = dissolutionType;
     }
 
     public String getCompanyName() {

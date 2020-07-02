@@ -21,8 +21,6 @@ import uk.gov.companieshouse.service.DissolutionService;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import java.util.Optional;
-
 import static uk.gov.companieshouse.util.EricHelper.getEmail;
 
 @RestController
@@ -30,7 +28,7 @@ import static uk.gov.companieshouse.util.EricHelper.getEmail;
 public class DissolutionController {
 
     private final DissolutionService dissolutionService;
-    Logger logger = LoggerFactory.getLogger(DissolutionController.class);
+    private final Logger logger = LoggerFactory.getLogger(DissolutionController.class);
 
     public DissolutionController(DissolutionService dissolutionService) {
         super();

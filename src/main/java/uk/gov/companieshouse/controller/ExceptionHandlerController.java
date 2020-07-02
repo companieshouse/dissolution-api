@@ -49,7 +49,7 @@ public class ExceptionHandlerController {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(RuntimeException.class)
     public void handleRuntime(RuntimeException ex, HttpServletRequest request) {
-        LOGGER.info("[Internal server error] - {}", request.getRequestURL().toString(), ex);
+        LOGGER.error("[Internal server error] - {}", request.getRequestURL().toString(), ex);
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)

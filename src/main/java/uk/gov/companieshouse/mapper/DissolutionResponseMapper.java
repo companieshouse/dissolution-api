@@ -4,9 +4,9 @@ import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.model.db.Dissolution;
 import uk.gov.companieshouse.model.db.DissolutionDirector;
 import uk.gov.companieshouse.model.db.DissolutionGetDirector;
+import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.DissolutionLinks;
-import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -32,9 +32,9 @@ public class DissolutionResponseMapper {
         response.setETag(dissolution.getData().getETag());
         response.setKind(DISSOLUTION_KIND);
         response.setLinks(generateLinks(dissolution.getCompany().getNumber()));
-        response.setApplicationStatus(dissolution.getData().getApplication().getStatus());
+        response.setDissolutionStatus(dissolution.getData().getApplication().getStatus());
         response.setApplicationReference(dissolution.getData().getApplication().getReference());
-        response.setApplicationType(dissolution.getData().getApplication().getType());
+        response.setDissolutionType(dissolution.getData().getApplication().getType());
         response.setCompanyName(dissolution.getCompany().getName());
         response.setCompanyNumber(dissolution.getCompany().getNumber());
         response.setCreatedAt(Timestamp.valueOf(dissolution.getCreatedBy().getDateTime()));

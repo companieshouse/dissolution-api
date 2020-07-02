@@ -1,12 +1,12 @@
 package uk.gov.companieshouse.fixtures;
 
 import uk.gov.companieshouse.model.db.*;
+import uk.gov.companieshouse.model.dto.DirectorRequest;
 import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
-import uk.gov.companieshouse.model.dto.DirectorRequest;
 import uk.gov.companieshouse.model.dto.DissolutionGetResponse;
-import uk.gov.companieshouse.model.enums.ApplicationStatus;
-import uk.gov.companieshouse.model.enums.ApplicationType;
+import uk.gov.companieshouse.model.enums.DissolutionStatus;
+import uk.gov.companieshouse.model.enums.DissolutionType;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -63,8 +63,8 @@ public class DissolutionFixtures {
         final DissolutionApplication application = new DissolutionApplication();
 
         application.setReference("ABC123");
-        application.setType(ApplicationType.DS01);
-        application.setStatus(ApplicationStatus.PENDING_APPROVAL);
+        application.setType(DissolutionType.DS01);
+        application.setStatus(DissolutionStatus.PENDING_APPROVAL);
 
         return application;
     }
