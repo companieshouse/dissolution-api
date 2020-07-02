@@ -32,9 +32,9 @@ public class DissolutionResponseMapper {
         response.setETag(dissolution.getData().getETag());
         response.setKind(DISSOLUTION_KIND);
         response.setLinks(generateLinks(dissolution.getCompany().getNumber()));
-        response.setDissolutionStatus(dissolution.getData().getApplication().getStatus());
+        response.setApplicationStatus(dissolution.getData().getApplication().getStatus());
         response.setApplicationReference(dissolution.getData().getApplication().getReference());
-        response.setDissolutionType(dissolution.getData().getApplication().getType());
+        response.setApplicationType(dissolution.getData().getApplication().getType());
         response.setCompanyName(dissolution.getCompany().getName());
         response.setCompanyNumber(dissolution.getCompany().getNumber());
         response.setCreatedAt(Timestamp.valueOf(dissolution.getCreatedBy().getDateTime()));

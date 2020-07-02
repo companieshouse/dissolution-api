@@ -251,7 +251,8 @@ public class DissolutionControllerTest {
                         get(DISSOLUTION_URI, COMPANY_NUMBER)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .headers(createHttpHeaders()))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().json(asJsonString(response)));
     }
 
     private void assertHeadersValidation(HttpHeaders headers, String expectedReason) throws Exception {

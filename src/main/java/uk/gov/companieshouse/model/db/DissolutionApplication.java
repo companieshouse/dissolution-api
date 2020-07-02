@@ -1,13 +1,13 @@
 package uk.gov.companieshouse.model.db;
 
-import uk.gov.companieshouse.model.enums.DissolutionStatus;
-import uk.gov.companieshouse.model.enums.DissolutionType;
+import uk.gov.companieshouse.model.enums.ApplicationStatus;
+import uk.gov.companieshouse.model.enums.ApplicationType;
 
 public class DissolutionApplication {
 
     private String reference;
-    private DissolutionType type;
-    private DissolutionStatus status;
+    private ApplicationType type;
+    private ApplicationStatus status;
 
     public String getReference() {
         return reference;
@@ -17,19 +17,19 @@ public class DissolutionApplication {
         this.reference = reference;
     }
 
-    public DissolutionType getType() {
+    public ApplicationType getType() {
         return type;
     }
 
-    public void setType(DissolutionType type) {
+    public void setType(ApplicationType type) {
         this.type = type;
     }
 
-    public DissolutionStatus getStatus() {
+    public ApplicationStatus getStatus() {
         return status;
     }
 
-    public void setStatus(DissolutionStatus status) {
+    public void setStatus(ApplicationStatus status) {
         this.status = status;
     }
 }

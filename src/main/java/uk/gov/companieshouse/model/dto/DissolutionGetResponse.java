@@ -3,8 +3,8 @@ package uk.gov.companieshouse.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import uk.gov.companieshouse.model.db.DissolutionGetDirector;
-import uk.gov.companieshouse.model.enums.DissolutionStatus;
-import uk.gov.companieshouse.model.enums.DissolutionType;
+import uk.gov.companieshouse.model.enums.ApplicationStatus;
+import uk.gov.companieshouse.model.enums.ApplicationType;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -18,13 +18,13 @@ public class DissolutionGetResponse {
     private DissolutionLinks links;
 
     @JsonProperty("application_status")
-    private DissolutionStatus dissolutionStatus;
+    private ApplicationStatus applicationStatus;
 
     @JsonProperty("application_reference")
     private String applicationReference;
 
     @JsonProperty("application_type")
-    private DissolutionType dissolutionType;
+    private ApplicationType applicationType;
 
     @JsonProperty("company_name")
     private String companyName;
@@ -64,12 +64,12 @@ public class DissolutionGetResponse {
         this.links = links;
     }
 
-    public DissolutionStatus getDissolutionStatus() {
-        return dissolutionStatus;
+    public ApplicationStatus getApplicationStatus() {
+        return applicationStatus;
     }
 
-    public void setDissolutionStatus(DissolutionStatus dissolutionStatus) {
-        this.dissolutionStatus = dissolutionStatus;
+    public void setApplicationStatus(ApplicationStatus applicationStatus) {
+        this.applicationStatus = applicationStatus;
     }
 
     public String getApplicationReference() {
@@ -80,12 +80,12 @@ public class DissolutionGetResponse {
         this.applicationReference = applicationReference;
     }
 
-    public DissolutionType getDissolutionType() {
-        return dissolutionType;
+    public ApplicationType getApplicationType() {
+        return applicationType;
     }
 
-    public void setDissolutionType(DissolutionType dissolutionType) {
-        this.dissolutionType = dissolutionType;
+    public void setApplicationType(ApplicationType applicationType) {
+        this.applicationType = applicationType;
     }
 
     public String getCompanyName() {

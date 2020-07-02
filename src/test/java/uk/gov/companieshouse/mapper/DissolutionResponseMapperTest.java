@@ -6,8 +6,8 @@ import uk.gov.companieshouse.model.db.Dissolution;
 import uk.gov.companieshouse.model.db.DissolutionDirector;
 import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.DissolutionGetResponse;
-import uk.gov.companieshouse.model.enums.DissolutionStatus;
-import uk.gov.companieshouse.model.enums.DissolutionType;
+import uk.gov.companieshouse.model.enums.ApplicationStatus;
+import uk.gov.companieshouse.model.enums.ApplicationType;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -21,8 +21,8 @@ public class DissolutionResponseMapperTest {
     private static final String COMPANY_NUMBER = "12345678";
     private static final String COMPANY_NAME = "Example Name";
     private static final String ETAG = "ETag123";
-    private static final DissolutionStatus STATUS = DissolutionStatus.PAID;
-    private static final DissolutionType TYPE = DissolutionType.DS01;
+    private static final ApplicationStatus STATUS = ApplicationStatus.PAID;
+    private static final ApplicationType TYPE = ApplicationType.DS01;
     private static final String REFERENCE = "reference123";
     private static final LocalDateTime CREATED_AT = LocalDateTime.now();
     private static final String USER_ID = "user123";
@@ -71,9 +71,9 @@ public class DissolutionResponseMapperTest {
         assertEquals(DISSOLUTION_KIND, result.getKind());
         assertEquals("/dissolution-request/12345678", result.getLinks().getSelf());
         assertEquals("/dissolution-request/12345678/payment", result.getLinks().getPayment());
-        assertEquals(STATUS, result.getDissolutionStatus());
+        assertEquals(STATUS, result.getApplicationStatus());
         assertEquals(REFERENCE, result.getApplicationReference());
-        assertEquals(TYPE, result.getDissolutionType());
+        assertEquals(TYPE, result.getApplicationType());
         assertEquals(COMPANY_NAME, result.getCompanyName());
         assertEquals(COMPANY_NUMBER, result.getCompanyNumber());
         assertEquals(Timestamp.valueOf(CREATED_AT), result.getCreatedAt());
