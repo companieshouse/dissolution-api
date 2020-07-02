@@ -9,18 +9,20 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
+import uk.gov.companieshouse.model.dto.DirectorRequest;
 import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
-import uk.gov.companieshouse.model.dto.DirectorRequest;
+import uk.gov.companieshouse.model.dto.DissolutionGetResponse;
 import uk.gov.companieshouse.service.DissolutionService;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -50,7 +52,9 @@ public class DissolutionControllerTest {
 
     @Test
     public void submitDissolutionRequest_returnsBadRequest_ifEricIdentityHeaderIsNotProvided() throws Exception {
-        final HttpHeaders headers = new HttpHeaders() {{ add(AUTHORISED_USER_HEADER, EMAIL); }};
+        final HttpHeaders headers = new HttpHeaders() {{
+            add(AUTHORISED_USER_HEADER, EMAIL);
+        }};
 
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
 
@@ -146,13 +150,13 @@ public class DissolutionControllerTest {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
 
         mockMvc
-            .perform(
-                post(DISSOLUTION_URI, COMPANY_NUMBER)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                    .headers(headers)
-                    .content(asJsonString(body))
-            )
-            .andExpect(status().isUnauthorized());
+                .perform(
+                        post(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(headers)
+                                .content(asJsonString(body))
+                )
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -162,12 +166,12 @@ public class DissolutionControllerTest {
         when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(true);
 
         mockMvc
-            .perform(
-                post(DISSOLUTION_URI, COMPANY_NUMBER)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                    .headers(createHttpHeaders())
-                    .content(asJsonString(body)))
-            .andExpect(status().isConflict());
+                .perform(
+                        post(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(createHttpHeaders())
+                                .content(asJsonString(body)))
+                .andExpect(status().isConflict());
     }
 
     @Test
@@ -179,13 +183,13 @@ public class DissolutionControllerTest {
         when(service.create(isA(DissolutionCreateRequest.class), eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenReturn(response);
 
         mockMvc
-            .perform(
-                post(DISSOLUTION_URI, COMPANY_NUMBER)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                    .headers(createHttpHeaders())
-                    .content(asJsonString(body)))
-            .andExpect(status().isCreated())
-            .andExpect(content().json(asJsonString(response)));
+                .perform(
+                        post(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(createHttpHeaders())
+                                .content(asJsonString(body)))
+                .andExpect(status().isCreated())
+                .andExpect(content().json(asJsonString(response)));
 
         verify(service).create(isA(DissolutionCreateRequest.class), eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL));
     }
@@ -198,38 +202,81 @@ public class DissolutionControllerTest {
         when(service.create(isA(DissolutionCreateRequest.class), eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenThrow(new RuntimeException());
 
         mockMvc
-            .perform(
-                post(DISSOLUTION_URI, COMPANY_NUMBER)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                    .headers(createHttpHeaders())
-                    .content(asJsonString(body)))
-            .andExpect(status().isInternalServerError());
+                .perform(
+                        post(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(createHttpHeaders())
+                                .content(asJsonString(body)))
+                .andExpect(status().isInternalServerError());
 
         verify(service).create(isA(DissolutionCreateRequest.class), eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL));
     }
 
+    @Test
+    public void getDissolutionRequest_returnsUnauthorised_ifEricIdentityHeaderIsBlank() throws Exception {
+        final HttpHeaders headers = new HttpHeaders() {{
+            add(IDENTITY_HEADER, "");
+            add(AUTHORISED_USER_HEADER, EMAIL);
+        }};
+
+        mockMvc
+                .perform(
+                        get(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(headers)
+                )
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void getDissolutionRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
+        when(service.get(COMPANY_NUMBER)).thenReturn(Optional.empty());
+
+        mockMvc
+                .perform(
+                        get(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(createHttpHeaders()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void getDissolutionRequest_returnsDissolutionInfo_ifDissolutionExists() throws Exception {
+        final DissolutionGetResponse response = generateDissolutionGetResponse();
+
+        when(service.get(COMPANY_NUMBER)).thenReturn(Optional.of(response));
+
+        mockMvc
+                .perform(
+                        get(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(createHttpHeaders()))
+                .andExpect(status().isOk())
+                .andExpect(content().json(asJsonString(response)));
+    }
+
     private void assertHeadersValidation(HttpHeaders headers, String expectedReason) throws Exception {
         mockMvc
-            .perform(
-                post(DISSOLUTION_URI, COMPANY_NUMBER)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                    .headers(headers)
-                    .content(asJsonString(generateDissolutionCreateRequest()))
-            )
-            .andExpect(status().isBadRequest())
-            .andExpect(status().reason(expectedReason));
+                .perform(
+                        post(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(headers)
+                                .content(asJsonString(generateDissolutionCreateRequest()))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(status().reason(expectedReason));
     }
 
     private void assertBodyValidation(DissolutionCreateRequest body, String expectedErrorJson) throws Exception {
         mockMvc
-            .perform(
-                post(DISSOLUTION_URI, COMPANY_NUMBER)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                    .headers(createHttpHeaders())
-                    .content(asJsonString(body))
-            )
-            .andExpect(status().isUnprocessableEntity())
-            .andExpect(content().json(expectedErrorJson));
+                .perform(
+                        post(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(createHttpHeaders())
+                                .content(asJsonString(body))
+                )
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(content().json(expectedErrorJson));
     }
 
     private <T> String asJsonString(T body) {

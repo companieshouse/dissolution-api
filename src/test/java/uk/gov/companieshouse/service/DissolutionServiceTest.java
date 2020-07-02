@@ -8,13 +8,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
+import uk.gov.companieshouse.model.dto.DissolutionGetResponse;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -26,6 +25,9 @@ public class DissolutionServiceTest {
 
     @Mock
     private DissolutionCreator creator;
+
+    @Mock
+    private DissolutionGetter getter;
 
     @Mock
     private DissolutionRepository repository;
@@ -69,5 +71,20 @@ public class DissolutionServiceTest {
         final boolean result = service.doesDissolutionRequestExistForCompany(companyNumber);
 
         assertFalse(result);
+    }
+
+    @Test
+    public void get_getsADissolution_returnsGetResponse() throws Exception {
+        final String companyNumber = "12345678";
+        final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse();
+
+        when(getter.get(companyNumber)).thenReturn(Optional.of(response));
+
+        final Optional<DissolutionGetResponse> result = service.get(companyNumber);
+
+        verify(getter).get(companyNumber);
+
+        assertTrue(result.isPresent());
+        assertEquals(response, result.get());
     }
 }

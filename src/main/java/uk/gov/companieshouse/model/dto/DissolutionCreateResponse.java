@@ -6,7 +6,7 @@ public class DissolutionCreateResponse {
 
     @JsonProperty("application_reference_number")
     private String applicationReferenceNumber;
-    private DissolutionCreateLinks links;
+    private DissolutionLinks links;
 
     public String getApplicationReferenceNumber() {
         return applicationReferenceNumber;
@@ -16,11 +16,11 @@ public class DissolutionCreateResponse {
         this.applicationReferenceNumber = applicationReferenceNumber;
     }
 
-    public DissolutionCreateLinks getLinks() {
+    public DissolutionLinks getLinks() {
         return links;
     }
 
-    public void setLinks(DissolutionCreateLinks links) {
+    public void setLinks(DissolutionLinks links) {
         this.links = links;
     }
 }

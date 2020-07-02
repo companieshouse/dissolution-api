@@ -36,7 +36,7 @@ public class DissolutionCreatorTest {
     private DissolutionResponseMapper responseMapper;
 
     @Test
-    public void create_generatesAReferenceNumber_mapsToDissolution_savesInDatabase_returnsCreateResponse() throws Exception {
+    public void create_generatesAReferenceNumber_mapsToDissolution_savesInDatabase_returnsCreateResponse() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
         final String companyNumber = "12345678";
         final String userId = "123";
