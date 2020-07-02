@@ -241,7 +241,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void getDissolutionRequest_dissolutionInfo_ifDissolutionExists() throws Exception {
+    public void getDissolutionRequest_returnsDissolutionInfo_ifDissolutionExists() throws Exception {
         final DissolutionGetResponse response = generateDissolutionGetResponse();
 
         when(service.get(COMPANY_NUMBER)).thenReturn(Optional.of(response));
