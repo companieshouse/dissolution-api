@@ -17,7 +17,7 @@ services:
       - COOKIE_SECURE_ONLY=0
       - COOKIE_SECRET=ChGovUk-XQrbf3sLj2abFxIY2TlapsJ
       - DEFAULT_SESSION_EXPIRATION=3600
-      - LOG_LEVEL=DEBUG
+      - LOGLEVEL=info
     ports:
       - 3001:3001
     networks:

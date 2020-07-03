@@ -1,6 +1,6 @@
 logging:
   level:
-    ROOT: ${LOG_LEVEL}
+    ROOT: ${LOGLEVEL}
 server:
   port: 3001
 spring:
