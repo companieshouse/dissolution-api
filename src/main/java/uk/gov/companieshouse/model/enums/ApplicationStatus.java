@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.model.enums;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum ApplicationStatus {
     PENDING_APPROVAL("pending-approval"),
     PENDING_PAYMENT("pending-payment"),
@@ -11,6 +13,7 @@ public enum ApplicationStatus {
         this.value = value;
     }
 
+    @JsonValue
     public String getValue() {
         return value;
     }
