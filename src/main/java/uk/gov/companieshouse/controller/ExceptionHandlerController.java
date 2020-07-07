@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import uk.gov.companieshouse.exception.ConflictException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.UnauthorisedException;
+import uk.gov.companieshouse.exception.DirectorNotPendingApprovalException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -56,5 +57,11 @@ public class ExceptionHandlerController {
     @ExceptionHandler(DissolutionNotFoundException.class)
     public void handleNotFound(RuntimeException ex, HttpServletRequest request) {
         LOGGER.info("[Not found] - {}", request.getRequestURL().toString(), ex);
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(DirectorNotPendingApprovalException.class)
+    public void handleDirectorNotPendingApproval(RuntimeException ex, HttpServletRequest request) {
+        LOGGER.info("[Bad Request] - {}", request.getRequestURL().toString(), ex);
     }
 }

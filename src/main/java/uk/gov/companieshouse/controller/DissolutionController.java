@@ -10,12 +10,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import uk.gov.companieshouse.exception.DirectorNotPendingApprovalException;
 import uk.gov.companieshouse.exception.ConflictException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.UnauthorisedException;
 import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.DissolutionGetResponse;
+import uk.gov.companieshouse.model.dto.DissolutionPatchResponse;
 import uk.gov.companieshouse.service.DissolutionService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -82,5 +84,38 @@ public class DissolutionController {
         return dissolutionService
                 .get(companyNumber)
                 .orElseThrow(DissolutionNotFoundException::new);
+    }
+
+    @Operation(summary = "Patch Dissolution Application", tags = "Dissolution")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Dissolution Application patched", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Dissolution Application not found"),
+            @ApiResponse(responseCode = "400", description = "Dissolution Request does not have a director pending approval")
+    })
+    @PatchMapping
+    @ResponseStatus(HttpStatus.OK)
+    public DissolutionPatchResponse patchDissolutionApplication(
+            @RequestHeader("ERIC-identity") String userId,
+            @RequestHeader("ERIC-Authorised-User") String authorisedUser,
+            @PathVariable("company-number") final String companyNumber,
+            HttpServletRequest request) {
+
+        if (StringUtils.isBlank(userId) || StringUtils.isBlank(authorisedUser)) {
+            throw new UnauthorisedException();
+        }
+
+        if (!dissolutionService.doesDissolutionRequestExistForCompany(companyNumber)) {
+            throw new DissolutionNotFoundException();
+        }
+
+        final String userEmail = getEmail(authorisedUser);
+
+        if (!dissolutionService.isDirectorPendingApproval(companyNumber, userEmail)) {
+            throw new DirectorNotPendingApprovalException();
+        }
+
+        logger.debug("[PATCH] Patching dissolution info for company number {}", companyNumber);
+
+        return dissolutionService.patch(companyNumber, userId, request.getRemoteAddr(), userEmail);
     }
 }

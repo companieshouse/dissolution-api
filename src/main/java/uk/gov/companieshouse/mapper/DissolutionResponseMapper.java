@@ -7,9 +7,11 @@ import uk.gov.companieshouse.model.db.DissolutionGetDirector;
 import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.DissolutionLinks;
+import uk.gov.companieshouse.model.dto.DissolutionPatchResponse;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static uk.gov.companieshouse.model.Constants.DISSOLUTION_KIND;
@@ -43,6 +45,13 @@ public class DissolutionResponseMapper {
         return response;
     }
 
+    public DissolutionPatchResponse mapToDissolutionPatchResponse(String companyNumber) {
+        final DissolutionPatchResponse response = new DissolutionPatchResponse();
+
+        response.setLinks(generateLinks(companyNumber));
+        return response;
+    }
+
     private DissolutionLinks generateLinks(String companyNumber) {
         final DissolutionLinks links = new DissolutionLinks();
 
@@ -58,7 +67,9 @@ public class DissolutionResponseMapper {
             getDirector.setName(dir.getName());
             getDirector.setEmail(dir.getEmail());
             getDirector.setOnBehalfName(dir.getOnBehalfName());
-            getDirector.setApprovedAt(null); // TODO Actual approvedAt implementation
+            Optional
+                    .ofNullable(dir.getDirectorApproval())
+                    .ifPresent(approval -> getDirector.setApprovedAt(Timestamp.valueOf(approval.getDateTime())));
             return getDirector;
         }).collect(Collectors.toList());
     }

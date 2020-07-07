@@ -9,10 +9,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.companieshouse.model.dto.DirectorRequest;
-import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
-import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
-import uk.gov.companieshouse.model.dto.DissolutionGetResponse;
+import uk.gov.companieshouse.model.dto.*;
 import uk.gov.companieshouse.service.DissolutionService;
 
 import java.util.Collections;
@@ -24,6 +21,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.*;
@@ -253,6 +251,71 @@ public class DissolutionControllerTest {
                                 .headers(createHttpHeaders()))
                 .andExpect(status().isOk())
                 .andExpect(content().json(asJsonString(response)));
+    }
+
+    @Test
+    public void patchDissolutionRequest_returnsUnauthorised_ifEricIdentityHeaderIsBlank() throws Exception {
+        final HttpHeaders headers = new HttpHeaders() {{
+            add(IDENTITY_HEADER, "");
+            add(AUTHORISED_USER_HEADER, EMAIL);
+        }};
+
+        mockMvc
+                .perform(
+                        patch(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(headers)
+                )
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void patchDissolutionRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
+        when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(false);
+
+        mockMvc
+                .perform(
+                        patch(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(createHttpHeaders()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void submitDissolutionRequest_returnsOK_andPatchResponse_ifDissolutionIsPatchedSuccessfully() throws Exception {
+        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+        final DissolutionPatchResponse response = generateDissolutionPatchResponse();
+
+        when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(true);
+        when(service.isDirectorPendingApproval(eq(COMPANY_NUMBER), eq(EMAIL))).thenReturn(true);
+        when(service.patch(eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenReturn(response);
+
+        mockMvc
+                .perform(
+                        patch(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(createHttpHeaders())
+                                .content(asJsonString(body)))
+                .andExpect(status().isOk())
+                .andExpect(content().json(asJsonString(response)));
+
+        verify(service).patch(eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL));
+    }
+
+    @Test
+    public void submitDissolutionRequest_returnsBadRequest_ifDirectorNotPendingApproval() throws Exception {
+        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+
+        when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(true);
+        when(service.isDirectorPendingApproval(eq(COMPANY_NUMBER), eq(EMAIL))).thenReturn(false);
+
+        mockMvc
+                .perform(
+                        patch(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(createHttpHeaders())
+                                .content(asJsonString(body)))
+                .andExpect(status().isBadRequest());
     }
 
     private void assertHeadersValidation(HttpHeaders headers, String expectedReason) throws Exception {
