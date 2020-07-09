@@ -1,9 +1,11 @@
 package uk.gov.companieshouse.model.db;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.sql.Timestamp;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class DissolutionGetDirector {
 
     private String name;

@@ -38,7 +38,7 @@ public class DissolutionResponseMapper {
         response.setCompanyName(dissolution.getCompany().getName());
         response.setCompanyNumber(dissolution.getCompany().getNumber());
         response.setCreatedAt(Timestamp.valueOf(dissolution.getCreatedBy().getDateTime()));
-        response.setCreatedBy(dissolution.getCreatedBy().getUserId());
+        response.setCreatedBy(dissolution.getCreatedBy().getEmail());
         response.setDirectors(mapToDissolutionGetDirectors(dissolution.getData().getDirectors()));
         return response;
     }
