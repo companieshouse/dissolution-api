@@ -26,6 +26,7 @@ public class DissolutionResponseMapperTest {
     private static final String REFERENCE = "reference123";
     private static final LocalDateTime CREATED_AT = LocalDateTime.now();
     private static final String USER_ID = "user123";
+    private static final String EMAIL = "user@email.com";
 
     private final DissolutionResponseMapper mapper = new DissolutionResponseMapper();
 
@@ -62,7 +63,7 @@ public class DissolutionResponseMapperTest {
         dissolution.getData().getApplication().setStatus(STATUS);
         dissolution.getData().getApplication().setType(TYPE);
 
-        dissolution.getCreatedBy().setUserId(USER_ID);
+        dissolution.getCreatedBy().setEmail(EMAIL);
         dissolution.getCreatedBy().setDateTime(CREATED_AT);
 
         final DissolutionGetResponse result = mapper.mapToDissolutionGetResponse(dissolution);
@@ -77,7 +78,7 @@ public class DissolutionResponseMapperTest {
         assertEquals(COMPANY_NAME, result.getCompanyName());
         assertEquals(COMPANY_NUMBER, result.getCompanyNumber());
         assertEquals(Timestamp.valueOf(CREATED_AT), result.getCreatedAt());
-        assertEquals(USER_ID, result.getCreatedBy());
+        assertEquals(EMAIL, result.getCreatedBy());
     }
 
     @Test

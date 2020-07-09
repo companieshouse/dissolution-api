@@ -4,5 +4,5 @@ public final class Constants {
 
     private Constants() {}
 
-    public static final String DISSOLUTION_KIND = "dissolution#dissolution";
+    public static final String DISSOLUTION_KIND = "dissolution-request#dissolution-request";
 }
