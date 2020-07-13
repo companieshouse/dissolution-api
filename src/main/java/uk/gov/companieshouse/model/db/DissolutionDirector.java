@@ -5,6 +5,7 @@ public class DissolutionDirector {
     private String name;
     private String email;
     private String onBehalfName;
+    private DirectorApproval approval;
 
     public String getName() {
         return name;
@@ -28,5 +29,17 @@ public class DissolutionDirector {
 
     public void setOnBehalfName(String onBehalfName) {
         this.onBehalfName = onBehalfName;
+    }
+
+    public boolean hasDirectorApproval() {
+        return approval != null;
+    }
+
+    public DirectorApproval getDirectorApproval() {
+        return approval;
+    }
+
+    public void setDirectorApproval(DirectorApproval approval) {
+        this.approval = approval;
     }
 }

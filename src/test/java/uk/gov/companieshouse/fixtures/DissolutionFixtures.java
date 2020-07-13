@@ -1,17 +1,25 @@
 package uk.gov.companieshouse.fixtures;
 
 import uk.gov.companieshouse.model.db.*;
-import uk.gov.companieshouse.model.dto.DirectorRequest;
-import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
-import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
-import uk.gov.companieshouse.model.dto.DissolutionGetResponse;
+import uk.gov.companieshouse.model.dto.*;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public class DissolutionFixtures {
+
+    public static DissolutionPatchRequest generateDissolutionPatchRequest() {
+        final DissolutionPatchRequest request = new DissolutionPatchRequest();
+
+        request.setEmail("user@mail.com");
+        request.setHasApproved(true);
+
+        return request;
+    }
 
     public static DissolutionCreateRequest generateDissolutionCreateRequest() {
         final DissolutionCreateRequest request = new DissolutionCreateRequest();
@@ -28,6 +36,10 @@ public class DissolutionFixtures {
         director.setEmail("user@mail.com");
 
         return director;
+    }
+
+    public static DissolutionPatchResponse generateDissolutionPatchResponse() {
+        return new DissolutionPatchResponse();
     }
 
     public static DissolutionCreateResponse generateDissolutionCreateResponse() {
@@ -78,6 +90,25 @@ public class DissolutionFixtures {
         return director;
     }
 
+    public static List<DissolutionDirector> generateDissolutionDirectorList() {
+        final List<DissolutionDirector> directorList = new ArrayList<>();
+        final DissolutionDirector director = new DissolutionDirector();
+
+        director.setName("John Doe");
+        director.setEmail("john@doe.com");
+
+        directorList.add(director);
+
+        final DissolutionDirector directorTwo = new DissolutionDirector();
+
+        directorTwo.setName("Fred Mercure");
+        directorTwo.setEmail("fred@mercure.com");
+
+        directorList.add(directorTwo);
+
+        return directorList;
+    }
+
     public static Company generateCompany() {
         final Company company = new Company();
 
@@ -96,5 +127,15 @@ public class DissolutionFixtures {
         createdBy.setDateTime(LocalDateTime.now());
 
         return createdBy;
+    }
+
+    public static DirectorApproval generateDirectorApproval() {
+        final DirectorApproval approval = new DirectorApproval();
+
+        approval.setUserId("user123");
+        approval.setIpAddress("192.168.0.2");
+        approval.setDateTime(LocalDateTime.now());
+
+        return approval;
     }
 }

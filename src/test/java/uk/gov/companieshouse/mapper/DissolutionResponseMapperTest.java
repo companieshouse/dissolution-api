@@ -6,6 +6,8 @@ import uk.gov.companieshouse.model.db.Dissolution;
 import uk.gov.companieshouse.model.db.DissolutionDirector;
 import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.DissolutionGetResponse;
+import uk.gov.companieshouse.model.dto.DissolutionLinks;
+import uk.gov.companieshouse.model.dto.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 
@@ -13,8 +15,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static uk.gov.companieshouse.model.Constants.DISSOLUTION_KIND;
 
 public class DissolutionResponseMapperTest {
@@ -89,11 +90,15 @@ public class DissolutionResponseMapperTest {
         director1.setName("Director who will sign themselves");
         director1.setEmail("director@mail.com");
         director1.setOnBehalfName(null);
+        director1.setDirectorApproval(DissolutionFixtures.generateDirectorApproval());
+        final Timestamp expectedTimestamp1 = Timestamp.valueOf(director1.getDirectorApproval().getDateTime());
 
         final DissolutionDirector director2 = DissolutionFixtures.generateDissolutionDirector();
         director2.setName("Director who will let someone sign on behalf of them");
         director2.setEmail("accountant@mail.com");
         director2.setOnBehalfName("Mr Accountant");
+        director2.setDirectorApproval(DissolutionFixtures.generateDirectorApproval());
+        final Timestamp expectedTimestamp2 = Timestamp.valueOf(director2.getDirectorApproval().getDateTime());
 
         dissolution.getData().setDirectors(Arrays.asList(director1, director2));
 
@@ -102,13 +107,26 @@ public class DissolutionResponseMapperTest {
         assertEquals("Director who will sign themselves", result.getDirectors().get(0).getName());
         assertEquals("director@mail.com", result.getDirectors().get(0).getEmail());
         assertNull(result.getDirectors().get(0).getOnBehalfName());
-        assertNull(result.getDirectors().get(0).getApprovedAt()); // TODO change once approvedAt is implemented
+        assertNotNull(result.getDirectors().get(0).getApprovedAt());
+        assertEquals(expectedTimestamp1, result.getDirectors().get(0).getApprovedAt());
 
         assertEquals("Director who will let someone sign on behalf of them", result.getDirectors().get(1).getName());
         assertEquals("accountant@mail.com", result.getDirectors().get(1).getEmail());
         assertEquals("Mr Accountant", result.getDirectors().get(1).getOnBehalfName());
-        assertNull(result.getDirectors().get(1).getApprovedAt()); // TODO change once approvedAt is implemented
+        assertNotNull(result.getDirectors().get(1).getApprovedAt());
+        assertEquals(expectedTimestamp2, result.getDirectors().get(1).getApprovedAt());
 
         assertEquals(2, result.getDirectors().size());
+    }
+
+    @Test
+    public void mapToDissolutionPatchResponse_mapsCompanyNumberToDissolutionLinks() {
+        final DissolutionPatchResponse result = mapper.mapToDissolutionPatchResponse(COMPANY_NUMBER);
+        final DissolutionLinks link = result.getLinks();
+        final String expectedSelfLink = String.format("/dissolution-request/%s", COMPANY_NUMBER);
+        final String expectedPayLink = String.format("/dissolution-request/%s/payment", COMPANY_NUMBER);
+
+        assertEquals(expectedSelfLink, link.getSelf());
+        assertEquals(expectedPayLink, link.getPayment());
     }
 }
