@@ -1,0 +1,101 @@
+package uk.gov.companieshouse.model.dto;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public class PaymentItem {
+    private String description;
+
+    @JsonProperty("description_identifier")
+    private String descriptionIdentifier;
+
+    @JsonProperty("description_values")
+    private PaymentDescriptionValues descriptionValues;
+
+    @JsonProperty("product_type")
+    private String productType;
+
+    private String amount;
+
+    @JsonProperty("available_payment_methods")
+    private String[] availablePaymentMethods;
+
+    @JsonProperty("class_of_payment")
+    private String[] classOfPayment;
+
+    private String kind;
+
+    @JsonProperty("resource_kind")
+    private String resourceKind;
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getDescriptionIdentifier() {
+        return descriptionIdentifier;
+    }
+
+    public void setDescriptionIdentifier(String descriptionIdentifier) {
+        this.descriptionIdentifier = descriptionIdentifier;
+    }
+
+    public PaymentDescriptionValues getDescriptionValues() {
+        return descriptionValues;
+    }
+
+    public void setDescriptionValues(PaymentDescriptionValues descriptionValues) {
+        this.descriptionValues = descriptionValues;
+    }
+
+    public String getProductType() {
+        return productType;
+    }
+
+    public void setProductType(String productType) {
+        this.productType = productType;
+    }
+
+    public String getAmount() {
+        return amount;
+    }
+
+    public void setAmount(String amount) {
+        this.amount = amount;
+    }
+
+    public String[] getAvailablePaymentMethods() {
+        return availablePaymentMethods;
+    }
+
+    public void setAvailablePaymentMethods(String[] availablePaymentMethods) {
+        this.availablePaymentMethods = availablePaymentMethods;
+    }
+
+    public String[] getClassOfPayment() {
+        return classOfPayment;
+    }
+
+    public void setClassOfPayment(String[] classOfPayment) {
+        this.classOfPayment = classOfPayment;
+    }
+
+    public String getKind() {
+        return kind;
+    }
+
+    public void setKind(String kind) {
+        this.kind = kind;
+    }
+
+    public String getResourceKind() {
+        return resourceKind;
+    }
+
+    public void setResourceKind(String resourceKind) {
+        this.resourceKind = resourceKind;
+    }
+}
