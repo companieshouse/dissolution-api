@@ -19,9 +19,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.*;
@@ -255,6 +253,8 @@ public class DissolutionControllerTest {
 
     @Test
     public void patchDissolutionRequest_returnsUnauthorised_ifEricIdentityHeaderIsBlank() throws Exception {
+        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+
         final HttpHeaders headers = new HttpHeaders() {{
             add(IDENTITY_HEADER, "");
             add(AUTHORISED_USER_HEADER, EMAIL);
@@ -265,24 +265,29 @@ public class DissolutionControllerTest {
                         patch(DISSOLUTION_URI, COMPANY_NUMBER)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .headers(headers)
+                                .content(asJsonString(body))
                 )
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     public void patchDissolutionRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
+        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+
         when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(false);
 
         mockMvc
                 .perform(
                         patch(DISSOLUTION_URI, COMPANY_NUMBER)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .headers(createHttpHeaders()))
+                                .headers(createHttpHeaders())
+                                .content(asJsonString(body))
+                )
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    public void submitDissolutionRequest_returnsOK_andPatchResponse_ifDissolutionIsPatchedSuccessfully() throws Exception {
+    public void patchDissolutionRequest_returnsOK_andPatchResponse_ifDissolutionIsPatchedSuccessfully() throws Exception {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         final DissolutionPatchResponse response = generateDissolutionPatchResponse();
 
@@ -303,7 +308,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void submitDissolutionRequest_returnsBadRequest_ifDirectorNotPendingApproval() throws Exception {
+    public void patchDissolutionRequest_returnsBadRequest_ifDirectorNotPendingApproval() throws Exception {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
 
         when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(true);

@@ -10,14 +10,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import uk.gov.companieshouse.exception.DirectorNotPendingApprovalException;
 import uk.gov.companieshouse.exception.ConflictException;
+import uk.gov.companieshouse.exception.DirectorNotPendingApprovalException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.UnauthorisedException;
-import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
-import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
-import uk.gov.companieshouse.model.dto.DissolutionGetResponse;
-import uk.gov.companieshouse.model.dto.DissolutionPatchResponse;
+import uk.gov.companieshouse.model.dto.*;
 import uk.gov.companieshouse.service.DissolutionService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -98,6 +95,7 @@ public class DissolutionController {
             @RequestHeader("ERIC-identity") String userId,
             @RequestHeader("ERIC-Authorised-User") String authorisedUser,
             @PathVariable("company-number") final String companyNumber,
+            @Valid @RequestBody final DissolutionPatchRequest body,
             HttpServletRequest request) {
 
         if (StringUtils.isBlank(userId) || StringUtils.isBlank(authorisedUser)) {
@@ -108,14 +106,12 @@ public class DissolutionController {
             throw new DissolutionNotFoundException();
         }
 
-        final String userEmail = getEmail(authorisedUser);
-
-        if (!dissolutionService.isDirectorPendingApproval(companyNumber, userEmail)) {
+        if (!dissolutionService.isDirectorPendingApproval(companyNumber, body.getEmail())) {
             throw new DirectorNotPendingApprovalException();
         }
 
         logger.debug("[PATCH] Patching dissolution info for company number {}", companyNumber);
 
-        return dissolutionService.patch(companyNumber, userId, request.getRemoteAddr(), userEmail);
+        return dissolutionService.patch(companyNumber, userId, request.getRemoteAddr(), body.getEmail());
     }
 }
