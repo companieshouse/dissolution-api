@@ -18,5 +18,4 @@ public final class Constants {
    public static final String PAYMENT_AMOUNT = "8";
    public static final String PAYMENT_AVAILABLE_PAYMENT_METHOD = "credit-card";
    public static final String PAYMENT_CLASS_OF_PAYMENT = "data-maintenance";
-
 }

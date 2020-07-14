@@ -40,6 +40,7 @@ public class DissolutionGetResponse {
 
     private List<DissolutionGetDirector> directors;
 
+    @JsonProperty("ETag")
     public String getETag() {
         return ETag;
     }

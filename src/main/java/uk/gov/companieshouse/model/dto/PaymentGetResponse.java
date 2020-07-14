@@ -11,6 +11,7 @@ public class PaymentGetResponse {
     private PaymentLinks links;
     private List<PaymentItem> items;
 
+    @JsonProperty("ETag")
     public String getETag() {
         return ETag;
     }
