@@ -1,8 +1,11 @@
 package uk.gov.companieshouse.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 public class PaymentGetResponse {
+    @JsonProperty("ETag")
     private String ETag;
     private String kind;
     private PaymentLinks links;

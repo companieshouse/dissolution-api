@@ -10,7 +10,7 @@ import java.sql.Timestamp;
 import java.util.List;
 
 public class DissolutionGetResponse {
-
+    @JsonProperty("ETag")
     private String ETag;
 
     private String kind;

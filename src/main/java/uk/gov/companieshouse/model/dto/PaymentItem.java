@@ -2,6 +2,8 @@ package uk.gov.companieshouse.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
+
 public class PaymentItem {
     private String description;
 
@@ -17,10 +19,10 @@ public class PaymentItem {
     private String amount;
 
     @JsonProperty("available_payment_methods")
-    private String[] availablePaymentMethods;
+    private List<String> availablePaymentMethods;
 
     @JsonProperty("class_of_payment")
-    private String[] classOfPayment;
+    private List<String> classOfPayment;
 
     private String kind;
 
@@ -67,19 +69,19 @@ public class PaymentItem {
         this.amount = amount;
     }
 
-    public String[] getAvailablePaymentMethods() {
+    public List<String> getAvailablePaymentMethods() {
         return availablePaymentMethods;
     }
 
-    public void setAvailablePaymentMethods(String[] availablePaymentMethods) {
+    public void setAvailablePaymentMethods(List<String> availablePaymentMethods) {
         this.availablePaymentMethods = availablePaymentMethods;
     }
 
-    public String[] getClassOfPayment() {
+    public List<String> getClassOfPayment() {
         return classOfPayment;
     }
 
-    public void setClassOfPayment(String[] classOfPayment) {
+    public void setClassOfPayment(List<String> classOfPayment) {
         this.classOfPayment = classOfPayment;
     }
 
