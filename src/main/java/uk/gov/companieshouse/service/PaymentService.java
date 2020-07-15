@@ -14,10 +14,6 @@ import static uk.gov.companieshouse.model.Constants.*;
 public class PaymentService {
 
     public PaymentGetResponse get(String eTag, String companyNumber) {
-        return createPaymentGetResponse(eTag, companyNumber);
-    }
-
-    private PaymentGetResponse createPaymentGetResponse(String eTag, String companyNumber) {
         PaymentGetResponse response = new PaymentGetResponse() {{
             setETag(eTag);
             setKind(PAYMENT_KIND);

@@ -33,8 +33,7 @@ public class PaymentController {
     })
     @GetMapping()
     @ResponseStatus(HttpStatus.OK)
-    public PaymentGetResponse getPaymentUIData(
-            @PathVariable("company-number") final String companyNumber) {
+    public PaymentGetResponse getPaymentUIData(@PathVariable("company-number") final String companyNumber) {
 
         logger.debug("[GET] Submitting payment UI data request for company number {}", companyNumber);
 
