@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.service;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.companieshouse.service.dissolution.ReferenceGenerator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

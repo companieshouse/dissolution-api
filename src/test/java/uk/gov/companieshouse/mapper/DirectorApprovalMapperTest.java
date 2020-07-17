@@ -1,15 +1,10 @@
 package uk.gov.companieshouse.mapper;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import uk.gov.companieshouse.fixtures.DissolutionFixtures;
-import uk.gov.companieshouse.model.db.DirectorApproval;
-import uk.gov.companieshouse.model.db.Dissolution;
-import uk.gov.companieshouse.model.db.DissolutionDirector;
+import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 
-import java.util.List;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class DirectorApprovalMapperTest {
     private static final String USER_ID = "user123";

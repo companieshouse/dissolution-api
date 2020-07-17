@@ -1,11 +1,24 @@
-package uk.gov.companieshouse.model.db;
+package uk.gov.companieshouse.model.dto.dissolution;
 
-public class DissolutionDirector {
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+
+public class DirectorRequest {
+
+    @NotBlank
+    @Size(min = 1, max = 250)
     private String name;
+
+    @NotBlank
+    @Email
     private String email;
+
+    @JsonProperty("on_behalf_name")
+    @Size(min = 1, max = 250)
     private String onBehalfName;
-    private DirectorApproval approval;
 
     public String getName() {
         return name;
@@ -29,17 +42,5 @@ public class DissolutionDirector {
 
     public void setOnBehalfName(String onBehalfName) {
         this.onBehalfName = onBehalfName;
-    }
-
-    public boolean hasDirectorApproval() {
-        return approval != null;
-    }
-
-    public DirectorApproval getDirectorApproval() {
-        return approval;
-    }
-
-    public void setDirectorApproval(DirectorApproval approval) {
-        this.approval = approval;
     }
 }

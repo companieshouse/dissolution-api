@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.model.dto;
+package uk.gov.companieshouse.model.dto.dissolution;
 
 public class DissolutionPatchResponse {
     private DissolutionLinks links;

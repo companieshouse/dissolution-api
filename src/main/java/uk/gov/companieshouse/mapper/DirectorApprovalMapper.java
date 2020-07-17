@@ -1,11 +1,9 @@
 package uk.gov.companieshouse.mapper;
 
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.model.db.DirectorApproval;
-import uk.gov.companieshouse.model.db.DissolutionDirector;
+import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 public class DirectorApprovalMapper {

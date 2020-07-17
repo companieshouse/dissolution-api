@@ -8,19 +8,27 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.companieshouse.model.dto.DissolutionGetResponse;
-import uk.gov.companieshouse.model.dto.PaymentGetResponse;
-import uk.gov.companieshouse.service.DissolutionService;
-import uk.gov.companieshouse.service.PaymentService;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
+import uk.gov.companieshouse.model.dto.payment.PaymentGetResponse;
+import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
+import uk.gov.companieshouse.model.enums.ApplicationStatus;
+import uk.gov.companieshouse.model.enums.PaymentStatus;
+import uk.gov.companieshouse.service.dissolution.DissolutionService;
+import uk.gov.companieshouse.service.payment.PaymentService;
 
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionGetResponse;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentGetResponse;
+import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -67,6 +75,60 @@ public class PaymentControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 )
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void patchPaymentDataRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
+        final PaymentPatchRequest body = generatePaymentPatchRequest();
+
+        when(dissolutionService.get(COMPANY_NUMBER)).thenReturn(Optional.empty());
+
+        mockMvc
+                .perform(
+                        patch(PAYMENT_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(asJsonString(body))
+                )
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void patchPaymentDataRequest_returnsBadRequest_ifDissolutionStatusIsNotPendingPayment() throws Exception {
+        final DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
+        dissolutionGetResponse.setApplicationStatus(ApplicationStatus.PENDING_APPROVAL);
+
+        final PaymentPatchRequest body = generatePaymentPatchRequest();
+
+        when(dissolutionService.get(COMPANY_NUMBER)).thenReturn(Optional.of(dissolutionGetResponse));
+
+        mockMvc
+                .perform(
+                        patch(PAYMENT_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(asJsonString(body))
+                )
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void patchPaymentDataRequest_returnsOK_ifDissolutionExistsAndItsStatusIsPendingPayment() throws Exception {
+        final DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
+        dissolutionGetResponse.setApplicationStatus(ApplicationStatus.PENDING_PAYMENT);
+
+        final PaymentPatchRequest body = generatePaymentPatchRequest();
+        body.setStatus(PaymentStatus.PAID);
+
+        when(dissolutionService.get(COMPANY_NUMBER)).thenReturn(Optional.of(dissolutionGetResponse));
+
+        mockMvc
+                .perform(
+                        patch(PAYMENT_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(asJsonString(body))
+                )
+                .andExpect(status().isOk());
+
+        verify(dissolutionService).updatePaymentStatus(isA(PaymentPatchRequest.class), eq(COMPANY_NUMBER));
     }
 
     private <T> String asJsonString(T body) {

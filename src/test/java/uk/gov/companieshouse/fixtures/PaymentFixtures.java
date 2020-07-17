@@ -1,10 +1,10 @@
 package uk.gov.companieshouse.fixtures;
 
-import uk.gov.companieshouse.model.dto.PaymentDescriptionValues;
-import uk.gov.companieshouse.model.dto.PaymentGetResponse;
-import uk.gov.companieshouse.model.dto.PaymentItem;
-import uk.gov.companieshouse.model.dto.PaymentLinks;
+import uk.gov.companieshouse.model.dto.payment.*;
+import uk.gov.companieshouse.model.enums.PaymentStatus;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class PaymentFixtures {
@@ -32,5 +32,13 @@ public class PaymentFixtures {
         response.setItems(List.of(item));
 
         return response;
+    }
+
+    public static PaymentPatchRequest generatePaymentPatchRequest() {
+        return new PaymentPatchRequest() {{
+            setPaidAt(Timestamp.valueOf(LocalDateTime.now()));
+            setPaymentReference("ABCDEFGH1234567");
+            setStatus(PaymentStatus.PAID);
+        }};
     }
 }

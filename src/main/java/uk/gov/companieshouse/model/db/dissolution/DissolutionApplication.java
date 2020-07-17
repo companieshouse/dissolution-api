@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.model.db;
+package uk.gov.companieshouse.model.db.dissolution;
 
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;
@@ -6,7 +6,9 @@ import uk.gov.companieshouse.model.enums.ApplicationType;
 public class DissolutionApplication {
 
     private String reference;
+
     private ApplicationType type;
+
     private ApplicationStatus status;
 
     public String getReference() {

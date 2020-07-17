@@ -1,7 +1,9 @@
-package uk.gov.companieshouse.model.db;
+package uk.gov.companieshouse.model.db.dissolution;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import uk.gov.companieshouse.model.db.payment.PaymentInformation;
 
 import java.time.LocalDateTime;
 
@@ -11,13 +13,17 @@ public class Dissolution {
     @Id
     private String id;
 
+    @Field("modified_date_time")
     private LocalDateTime modifiedDateTime;
 
     private DissolutionData data;
 
     private Company company;
 
+    @Field("created_by")
     private CreatedBy createdBy;
+
+    private PaymentInformation payment;
 
     public String getId() {
         return id;
@@ -57,5 +63,13 @@ public class Dissolution {
 
     public void setCreatedBy(CreatedBy createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public PaymentInformation getPaymentInformation() {
+        return payment;
+    }
+
+    public void setPaymentInformation(PaymentInformation paymentInformation) {
+        this.payment = paymentInformation;
     }
 }

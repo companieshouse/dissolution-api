@@ -1,12 +1,12 @@
-package uk.gov.companieshouse.service;
+package uk.gov.companieshouse.service.dissolution;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
-import uk.gov.companieshouse.model.db.Dissolution;
-import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
-import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
+import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
 @Service

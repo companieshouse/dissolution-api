@@ -9,8 +9,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.companieshouse.model.dto.*;
-import uk.gov.companieshouse.service.DissolutionService;
+import uk.gov.companieshouse.model.dto.dissolution.*;
+import uk.gov.companieshouse.service.dissolution.DissolutionService;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -293,7 +293,7 @@ public class DissolutionControllerTest {
 
         when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(true);
         when(service.isDirectorPendingApproval(eq(COMPANY_NUMBER), eq(EMAIL))).thenReturn(true);
-        when(service.patch(eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenReturn(response);
+        when(service.addDirectorApproval(eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenReturn(response);
 
         mockMvc
                 .perform(
@@ -304,7 +304,7 @@ public class DissolutionControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(asJsonString(response)));
 
-        verify(service).patch(eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL));
+        verify(service).addDirectorApproval(eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL));
     }
 
     @Test
@@ -359,6 +359,7 @@ public class DissolutionControllerTest {
         final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(IDENTITY_HEADER, USER_ID);
         httpHeaders.add(AUTHORISED_USER_HEADER, EMAIL);
+
         return httpHeaders;
     }
 }

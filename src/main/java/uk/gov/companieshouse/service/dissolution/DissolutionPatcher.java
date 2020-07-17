@@ -1,18 +1,19 @@
-package uk.gov.companieshouse.service;
+package uk.gov.companieshouse.service.dissolution;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
-import uk.gov.companieshouse.model.db.DirectorApproval;
-import uk.gov.companieshouse.model.db.Dissolution;
-import uk.gov.companieshouse.model.db.DissolutionDirector;
-import uk.gov.companieshouse.model.dto.DissolutionPatchResponse;
+import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
+import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
+import uk.gov.companieshouse.model.db.payment.PaymentInformation;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
+import uk.gov.companieshouse.model.enums.PaymentMethod;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
+import java.sql.Timestamp;
 
 @Service
 public class DissolutionPatcher {
@@ -23,26 +24,42 @@ public class DissolutionPatcher {
 
     @Autowired
     public DissolutionPatcher(
-        DissolutionRepository repository,
-        DissolutionResponseMapper responseMapper,
-        DirectorApprovalMapper approvalMapper) {
+            DissolutionRepository repository,
+            DissolutionResponseMapper responseMapper,
+            DirectorApprovalMapper approvalMapper) {
         this.repository = repository;
         this.responseMapper = responseMapper;
         this.approvalMapper = approvalMapper;
     }
 
-    public DissolutionPatchResponse patch(String companyNumber, String userId, String ip, String email) {
+    public DissolutionPatchResponse addDirectorApproval(String companyNumber, String userId, String ip, String email) {
         final Dissolution dissolution = this.repository.findByCompanyNumber(companyNumber).get();
 
         this.addDirectorApproval(userId, ip, email, dissolution);
 
         if (!this.hasDirectorsLeftToApprove(dissolution)) {
-            this.setDissolutionToPendingPayment(dissolution);
+            dissolution
+                    .getData()
+                    .getApplication()
+                    .setStatus(ApplicationStatus.PENDING_PAYMENT);
         }
 
         this.repository.save(dissolution);
 
         return this.responseMapper.mapToDissolutionPatchResponse(companyNumber);
+    }
+
+    public void updatePaymentStatus(String paymentReference, Timestamp paidAt, String companyNumber) {
+        final Dissolution dissolution = this.repository.findByCompanyNumber(companyNumber).get();
+
+        this.addPaymentInformation(paymentReference, paidAt, dissolution);
+
+        dissolution
+                .getData()
+                .getApplication()
+                .setStatus(ApplicationStatus.PAID);
+
+        this.repository.save(dissolution);
     }
 
     private DissolutionDirector findDirector(String email, Dissolution dissolution) {
@@ -53,6 +70,15 @@ public class DissolutionPatcher {
                 .filter(director -> director.getEmail().equals(email))
                 .findFirst()
                 .get();
+    }
+
+    private void addPaymentInformation(String paymentReference, Timestamp paidAt, Dissolution dissolution) {
+        final PaymentInformation information = new PaymentInformation();
+        information.setMethod(PaymentMethod.CREDIT_CARD);
+        information.setReference(paymentReference);
+        information.setDateTime(paidAt.toLocalDateTime());
+
+        dissolution.setPaymentInformation(information);
     }
 
     private void addDirectorApproval(String userId, String ip, String email, Dissolution dissolution) {
@@ -67,12 +93,5 @@ public class DissolutionPatcher {
                 .getDirectors()
                 .stream()
                 .anyMatch(director -> director.getDirectorApproval() == null);
-    }
-
-    private void setDissolutionToPendingPayment(Dissolution dissolution) {
-        dissolution
-                .getData()
-                .getApplication()
-                .setStatus(ApplicationStatus.PENDING_PAYMENT);
     }
 }

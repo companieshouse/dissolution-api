@@ -7,10 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import uk.gov.companieshouse.exception.ConflictException;
-import uk.gov.companieshouse.exception.DissolutionNotFoundException;
-import uk.gov.companieshouse.exception.UnauthorisedException;
-import uk.gov.companieshouse.exception.DirectorNotPendingApprovalException;
+import uk.gov.companieshouse.exception.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -60,7 +57,7 @@ public class ExceptionHandlerController {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(DirectorNotPendingApprovalException.class)
+    @ExceptionHandler({DirectorNotPendingApprovalException.class, DissolutionApplicationWrongStatusException.class})
     public void handleDirectorNotPendingApproval(RuntimeException ex, HttpServletRequest request) {
         LOGGER.info("[Bad Request] - {}", request.getRequestURL().toString(), ex);
     }

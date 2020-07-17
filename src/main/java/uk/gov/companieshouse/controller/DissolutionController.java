@@ -14,8 +14,8 @@ import uk.gov.companieshouse.exception.ConflictException;
 import uk.gov.companieshouse.exception.DirectorNotPendingApprovalException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.UnauthorisedException;
-import uk.gov.companieshouse.model.dto.*;
-import uk.gov.companieshouse.service.DissolutionService;
+import uk.gov.companieshouse.model.dto.dissolution.*;
+import uk.gov.companieshouse.service.dissolution.DissolutionService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -112,6 +112,6 @@ public class DissolutionController {
 
         logger.debug("[PATCH] Patching dissolution info for company number {}", companyNumber);
 
-        return dissolutionService.patch(companyNumber, userId, request.getRemoteAddr(), body.getEmail());
+        return dissolutionService.addDirectorApproval(companyNumber, userId, request.getRemoteAddr(), body.getEmail());
     }
 }

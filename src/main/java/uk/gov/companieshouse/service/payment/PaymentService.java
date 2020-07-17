@@ -1,10 +1,10 @@
-package uk.gov.companieshouse.service;
+package uk.gov.companieshouse.service.payment;
 
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.model.dto.PaymentDescriptionValues;
-import uk.gov.companieshouse.model.dto.PaymentGetResponse;
-import uk.gov.companieshouse.model.dto.PaymentItem;
-import uk.gov.companieshouse.model.dto.PaymentLinks;
+import uk.gov.companieshouse.model.dto.payment.PaymentDescriptionValues;
+import uk.gov.companieshouse.model.dto.payment.PaymentGetResponse;
+import uk.gov.companieshouse.model.dto.payment.PaymentItem;
+import uk.gov.companieshouse.model.dto.payment.PaymentLinks;
 
 import java.util.List;
 

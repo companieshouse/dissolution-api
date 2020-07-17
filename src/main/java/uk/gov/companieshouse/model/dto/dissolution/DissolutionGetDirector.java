@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.model.db;
+package uk.gov.companieshouse.model.dto.dissolution;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -9,9 +9,12 @@ import java.sql.Timestamp;
 public class DissolutionGetDirector {
 
     private String name;
+
     private String email;
+
     @JsonProperty("approved_at")
     private Timestamp approvedAt;
+
     @JsonProperty("on_behalf_name")
     private String onBehalfName;
 

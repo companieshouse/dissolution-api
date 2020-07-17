@@ -9,22 +9,25 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
-import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
-import uk.gov.companieshouse.model.db.DirectorApproval;
-import uk.gov.companieshouse.model.db.Dissolution;
-import uk.gov.companieshouse.model.db.DissolutionDirector;
-import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
-import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
-import uk.gov.companieshouse.model.dto.DissolutionPatchResponse;
+import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
+import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
+import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
+import uk.gov.companieshouse.model.enums.PaymentMethod;
 import uk.gov.companieshouse.repository.DissolutionRepository;
+import uk.gov.companieshouse.service.dissolution.DissolutionPatcher;
 
+import java.sql.Timestamp;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 
 @ExtendWith(MockitoExtension.class)
 public class DissolutionPatcherTest {
@@ -67,7 +70,7 @@ public class DissolutionPatcherTest {
         when(responseMapper.mapToDissolutionPatchResponse(COMPANY_NUMBER)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
-        patcher.patch(COMPANY_NUMBER, USER_ID, IP_ADDRESS, EMAIL);
+        patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP_ADDRESS, EMAIL);
 
         verify(repository).save(dissolutionCaptor.capture());
 
@@ -80,7 +83,7 @@ public class DissolutionPatcherTest {
         when(responseMapper.mapToDissolutionPatchResponse(COMPANY_NUMBER)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
-        final DissolutionPatchResponse result = patcher.patch(COMPANY_NUMBER, USER_ID, IP_ADDRESS, EMAIL);
+        final DissolutionPatchResponse result = patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP_ADDRESS, EMAIL);
 
         verify(responseMapper).mapToDissolutionPatchResponse(COMPANY_NUMBER);
         verify(repository).save(dissolutionCaptor.capture());
@@ -103,7 +106,7 @@ public class DissolutionPatcherTest {
         when(responseMapper.mapToDissolutionPatchResponse(COMPANY_NUMBER)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
-        patcher.patch(COMPANY_NUMBER, USER_ID, IP_ADDRESS, EMAIL);
+        patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP_ADDRESS, EMAIL);
 
         verify(repository).save(dissolutionCaptor.capture());
 
@@ -111,5 +114,20 @@ public class DissolutionPatcherTest {
                 ApplicationStatus.PENDING_APPROVAL,
                 dissolutionCaptor.getValue().getData().getApplication().getStatus()
         );
+    }
+
+    @Test
+    public void patch_updatesDissolutionWithPaymentInformation_savesInDatabase() {
+        PaymentPatchRequest data = generatePaymentPatchRequest();
+
+        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
+
+        patcher.updatePaymentStatus(data.getPaymentReference(), data.getPaidAt(), COMPANY_NUMBER);
+        verify(repository).save(dissolutionCaptor.capture());
+
+        assertEquals(ApplicationStatus.PAID, dissolutionCaptor.getValue().getData().getApplication().getStatus());
+        assertEquals(data.getPaymentReference(), dissolutionCaptor.getValue().getPaymentInformation().getReference());
+        assertEquals(data.getPaidAt(), Timestamp.valueOf(dissolutionCaptor.getValue().getPaymentInformation().getDateTime()));
+        assertEquals(PaymentMethod.CREDIT_CARD, dissolutionCaptor.getValue().getPaymentInformation().getMethod());
     }
 }

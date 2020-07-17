@@ -1,19 +1,21 @@
-package uk.gov.companieshouse.model.db;
+package uk.gov.companieshouse.model.db.dissolution;
 
 import java.util.List;
 
 public class DissolutionData {
 
-    private String eTag;
+    private String etag;
+
     private DissolutionApplication application;
+
     private List<DissolutionDirector> directors;
 
     public String getETag() {
-        return eTag;
+        return etag;
     }
 
     public void setETag(String eTag) {
-        this.eTag = eTag;
+        this.etag = eTag;
     }
 
     public DissolutionApplication getApplication() {

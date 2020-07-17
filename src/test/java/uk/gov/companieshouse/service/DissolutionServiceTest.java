@@ -6,22 +6,23 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
-import uk.gov.companieshouse.model.db.Dissolution;
-import uk.gov.companieshouse.model.db.DissolutionData;
-import uk.gov.companieshouse.model.db.DissolutionDirector;
-import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
-import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
-import uk.gov.companieshouse.model.dto.DissolutionGetResponse;
-import uk.gov.companieshouse.model.dto.DissolutionPatchResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
+import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.repository.DissolutionRepository;
+import uk.gov.companieshouse.service.dissolution.DissolutionCreator;
+import uk.gov.companieshouse.service.dissolution.DissolutionGetter;
+import uk.gov.companieshouse.service.dissolution.DissolutionPatcher;
+import uk.gov.companieshouse.service.dissolution.DissolutionService;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.doubleThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 
 @ExtendWith(MockitoExtension.class)
 public class DissolutionServiceTest {
@@ -40,78 +41,69 @@ public class DissolutionServiceTest {
 
     @Mock
     private DissolutionRepository repository;
+    public static final String COMPANY_NUMBER = "12345678";
+    public static final String USER_ID = "123";
+    public static final String IP = "192.168.0.1";
+    public static final String EMAIL = "user@mail.com";
 
     @Test
     public void create_createsADissolutionRequest_returnsCreateResponse() throws Exception {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
-        final String companyNumber = "12345678";
-        final String userId = "123";
-        final String ip = "192.168.0.1";
-        final String email = "user@mail.com";
 
         final DissolutionCreateResponse response = DissolutionFixtures.generateDissolutionCreateResponse();
 
-        when(creator.create(body, companyNumber, userId, ip, email)).thenReturn(response);
+        when(creator.create(body, COMPANY_NUMBER, USER_ID, IP, EMAIL)).thenReturn(response);
 
-        final DissolutionCreateResponse result = service.create(body, companyNumber, userId, ip, email);
+        final DissolutionCreateResponse result = service.create(body, COMPANY_NUMBER, USER_ID, IP, EMAIL);
 
-        verify(creator).create(body, companyNumber, userId, ip, email);
+        verify(creator).create(body, COMPANY_NUMBER, USER_ID, IP, EMAIL);
 
         assertEquals(response, result);
     }
 
     @Test
     public void doesDissolutionRequestExistForCompany_returnsTrue_ifDissolutionForCompanyExists() {
-        final String companyNumber = "1234";
+        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(DissolutionFixtures.generateDissolution()));
 
-        when(repository.findByCompanyNumber(companyNumber)).thenReturn(Optional.of(DissolutionFixtures.generateDissolution()));
-
-        final boolean result = service.doesDissolutionRequestExistForCompany(companyNumber);
+        final boolean result = service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER);
 
         assertTrue(result);
     }
 
     @Test
     public void doesDissolutionRequestExistForCompany_returnsFalse_ifDissolutionForCompanyDoesNotExist() {
-        final String companyNumber = "1234";
+        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
 
-        when(repository.findByCompanyNumber(companyNumber)).thenReturn(Optional.empty());
-
-        final boolean result = service.doesDissolutionRequestExistForCompany(companyNumber);
+        final boolean result = service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER);
 
         assertFalse(result);
     }
 
     @Test
     public void get_getsADissolution_returnsGetResponse() throws Exception {
-        final String companyNumber = "12345678";
         final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse();
 
-        when(getter.get(companyNumber)).thenReturn(Optional.of(response));
+        when(getter.get(COMPANY_NUMBER)).thenReturn(Optional.of(response));
 
-        final Optional<DissolutionGetResponse> result = service.get(companyNumber);
+        final Optional<DissolutionGetResponse> result = service.get(COMPANY_NUMBER);
 
-        verify(getter).get(companyNumber);
+        verify(getter).get(COMPANY_NUMBER);
 
         assertTrue(result.isPresent());
         assertEquals(response, result.get());
     }
 
     @Test
-    public void patch_patchesADissolution_returnsPatchResponse() throws Exception {
-        final String companyNumber = "12345678";
-        final String userId = "123";
-        final String ip = "192.168.0.1";
-        final String email = "user@mail.com";
+    public void addDirectorApproval_addsDirectorApproval_returnsPatchResponse() throws Exception {
         final DissolutionPatchResponse response = DissolutionFixtures.generateDissolutionPatchResponse();
 
-        when(patcher.patch(companyNumber, userId, ip, email)).thenReturn(response);
+        when(patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP, EMAIL)).thenReturn(response);
 
-        final DissolutionPatchResponse result = service.patch(companyNumber, userId, ip, email);
+        final DissolutionPatchResponse result = service.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP, EMAIL);
 
-        verify(patcher).patch(companyNumber, userId, ip, email);
+        verify(patcher).addDirectorApproval(COMPANY_NUMBER, USER_ID, IP, EMAIL);
 
-        assertTrue(result != null);
+        assertNotNull(result);
         assertEquals(response, result);
     }
 
@@ -127,5 +119,14 @@ public class DissolutionServiceTest {
         verify(getter).isDirectorPendingApproval(companyNumber, email);
 
         assertTrue(result);
+    }
+
+    @Test
+    public void updatePaymentStatus_updatesPaymentStatus_returnNothing() {
+        PaymentPatchRequest data = generatePaymentPatchRequest();
+
+        service.updatePaymentStatus(data, COMPANY_NUMBER);
+
+        verify(patcher).updatePaymentStatus(data.getPaymentReference(), data.getPaidAt(), COMPANY_NUMBER);
     }
 }

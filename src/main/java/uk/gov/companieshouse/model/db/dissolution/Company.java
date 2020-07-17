@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.model.db;
+package uk.gov.companieshouse.model.db.dissolution;
 
 public class Company {
 

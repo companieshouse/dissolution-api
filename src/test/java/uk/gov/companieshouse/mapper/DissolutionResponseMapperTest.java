@@ -2,12 +2,12 @@ package uk.gov.companieshouse.mapper;
 
 import org.junit.jupiter.api.Test;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
-import uk.gov.companieshouse.model.db.Dissolution;
-import uk.gov.companieshouse.model.db.DissolutionDirector;
-import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
-import uk.gov.companieshouse.model.dto.DissolutionGetResponse;
-import uk.gov.companieshouse.model.dto.DissolutionLinks;
-import uk.gov.companieshouse.model.dto.DissolutionPatchResponse;
+import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionLinks;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 

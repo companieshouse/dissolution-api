@@ -1,22 +1,17 @@
-package uk.gov.companieshouse.model.dto;
+package uk.gov.companieshouse.model.db.dissolution;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-import javax.validation.constraints.*;
+public class DissolutionDirector {
 
-public class DirectorRequest {
-
-    @NotBlank
-    @Size(min = 1, max = 250)
     private String name;
 
-    @NotBlank
-    @Email
     private String email;
 
-    @JsonProperty("on_behalf_name")
-    @Size(min = 1, max = 250)
+    @Field("on_behalf_name")
     private String onBehalfName;
+
+    private DirectorApproval approval;
 
     public String getName() {
         return name;
@@ -40,5 +35,17 @@ public class DirectorRequest {
 
     public void setOnBehalfName(String onBehalfName) {
         this.onBehalfName = onBehalfName;
+    }
+
+    public boolean hasDirectorApproval() {
+        return approval != null;
+    }
+
+    public DirectorApproval getDirectorApproval() {
+        return approval;
+    }
+
+    public void setDirectorApproval(DirectorApproval approval) {
+        this.approval = approval;
     }
 }

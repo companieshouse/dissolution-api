@@ -1,10 +1,17 @@
-package uk.gov.companieshouse.model.db;
+package uk.gov.companieshouse.model.db.dissolution;
+
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
 
 public class DirectorApproval {
+    @Field("user_id")
     private String userId;
+
+    @Field("ip_address")
     private String ipAddress;
+
+    @Field("date_time")
     private LocalDateTime dateTime;
 
     public String getUserId() {

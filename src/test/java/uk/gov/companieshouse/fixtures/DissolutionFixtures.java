@@ -1,7 +1,7 @@
 package uk.gov.companieshouse.fixtures;
 
-import uk.gov.companieshouse.model.db.*;
-import uk.gov.companieshouse.model.dto.*;
+import uk.gov.companieshouse.model.db.dissolution.*;
+import uk.gov.companieshouse.model.dto.dissolution.*;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 

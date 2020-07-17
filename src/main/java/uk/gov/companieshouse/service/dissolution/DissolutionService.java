@@ -1,16 +1,14 @@
-package uk.gov.companieshouse.service;
+package uk.gov.companieshouse.service.dissolution;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.model.db.Dissolution;
-import uk.gov.companieshouse.model.db.DissolutionDirector;
-import uk.gov.companieshouse.model.dto.DissolutionCreateRequest;
-import uk.gov.companieshouse.model.dto.DissolutionCreateResponse;
-import uk.gov.companieshouse.model.dto.DissolutionGetResponse;
-import uk.gov.companieshouse.model.dto.DissolutionPatchResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
+import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -33,8 +31,12 @@ public class DissolutionService {
         return creator.create(body, companyNumber, userId, ip, email);
     }
 
-    public DissolutionPatchResponse patch(String companyNumber, String userId, String ip, String email) {
-        return patcher.patch(companyNumber, userId, ip, email);
+    public DissolutionPatchResponse addDirectorApproval(String companyNumber, String userId, String ip, String email) {
+        return patcher.addDirectorApproval(companyNumber, userId, ip, email);
+    }
+
+    public void updatePaymentStatus(PaymentPatchRequest data, String companyNumber) {
+        patcher.updatePaymentStatus(data.getPaymentReference(), data.getPaidAt(), companyNumber);
     }
 
     public boolean doesDissolutionRequestExistForCompany(String companyNumber) {
