@@ -1,3 +1,4 @@
 package uk.gov.companieshouse.exception;
 
-public class UnauthorisedException extends RuntimeException {}
+public class UnauthorisedException extends RuntimeException {
+}
