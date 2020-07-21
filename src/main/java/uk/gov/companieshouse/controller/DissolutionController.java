@@ -63,7 +63,7 @@ public class DissolutionController {
         logger.debug("[POST] Submitting dissolution request for company number {}", companyNumber);
 
         if (StringUtils.isBlank(userId)) {
-            throw new UnauthorisedException("ERIC headers are missing");
+            throw new UnauthorisedException();
         }
 
         if (dissolutionService.doesDissolutionRequestExistForCompany(companyNumber)) {
@@ -87,12 +87,12 @@ public class DissolutionController {
         logger.debug("[GET] Getting dissolution info for company number {}", companyNumber);
 
         if (StringUtils.isBlank(userId)) {
-            throw new UnauthorisedException("ERIC headers are missing");
+            throw new UnauthorisedException();
         }
 
         return dissolutionService
                 .get(companyNumber)
-                .orElseThrow(() -> new NotFoundException("Dissolution not found"));
+                .orElseThrow(NotFoundException::new);
     }
 
     @Operation(summary = "Patch Dissolution Application", tags = "Dissolution")
@@ -113,11 +113,11 @@ public class DissolutionController {
         logger.debug("[PATCH] Updating dissolution info for company number {}", companyNumber);
 
         if (StringUtils.isBlank(userId) || StringUtils.isBlank(authorisedUser)) {
-            throw new UnauthorisedException("ERIC headers are missing");
+            throw new UnauthorisedException();
         }
 
         if (!dissolutionService.doesDissolutionRequestExistForCompany(companyNumber)) {
-            throw new NotFoundException("Dissolution not found");
+            throw new NotFoundException();
         }
 
         if (!dissolutionService.isDirectorPendingApproval(companyNumber, body.getEmail())) {

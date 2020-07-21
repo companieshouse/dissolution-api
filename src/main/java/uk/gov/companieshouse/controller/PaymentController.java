@@ -51,7 +51,7 @@ public class PaymentController {
 
         DissolutionGetResponse dissolutionInfo = dissolutionService
                 .get(companyNumber)
-                .orElseThrow(() -> new NotFoundException("Dissolution not found"));
+                .orElseThrow(NotFoundException::new);
 
         return paymentService.get(dissolutionInfo.getETag(), companyNumber);
 
@@ -72,10 +72,10 @@ public class PaymentController {
 
         DissolutionGetResponse dissolutionInfo = dissolutionService
                 .get(companyNumber)
-                .orElseThrow(() -> new NotFoundException("Dissolution not found"));
+                .orElseThrow(NotFoundException::new);
 
         if (dissolutionInfo.getApplicationStatus() != ApplicationStatus.PENDING_PAYMENT) {
-            throw new BadRequestException("Dissolution status is not 'pending-payment'");
+            throw new BadRequestException("Dissolution status is not " + ApplicationStatus.PENDING_PAYMENT.getValue());
         }
 
         if (PaymentStatus.PAID.equals(body.getStatus())) {
