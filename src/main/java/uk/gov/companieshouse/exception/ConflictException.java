@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.exception.generic;
+package uk.gov.companieshouse.exception;
 
 public class ConflictException extends RuntimeException {
     public ConflictException(String message) {

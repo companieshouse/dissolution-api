@@ -13,10 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.companieshouse.exception.dissolution.DissolutionApplicationWrongStatusException;
-import uk.gov.companieshouse.exception.dissolution.DissolutionNotFoundException;
-import uk.gov.companieshouse.exception.generic.BadRequestException;
-import uk.gov.companieshouse.exception.generic.NotFoundException;
+import uk.gov.companieshouse.exception.BadRequestException;
+import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
@@ -51,16 +49,12 @@ public class PaymentController {
 
         logger.debug("[GET] Getting payment UI data for company number {}", companyNumber);
 
-        try {
-            DissolutionGetResponse dissolutionInfo = dissolutionService
-                    .get(companyNumber)
-                    .orElseThrow(DissolutionNotFoundException::new);
+        DissolutionGetResponse dissolutionInfo = dissolutionService
+                .get(companyNumber)
+                .orElseThrow(() -> new NotFoundException("Dissolution not found"));
 
-            return paymentService.get(dissolutionInfo.getETag(), companyNumber);
+        return paymentService.get(dissolutionInfo.getETag(), companyNumber);
 
-        } catch (DissolutionNotFoundException e) {
-            throw new NotFoundException(e.getMessage());
-        }
     }
 
     @Operation(summary = "Patch Payment Status", tags = "Dissolution")
@@ -76,23 +70,17 @@ public class PaymentController {
 
         logger.debug("[PATCH] Updating payment information for company number {} with payment status {}", companyNumber, body.getStatus());
 
-        try {
-            DissolutionGetResponse dissolutionInfo = dissolutionService
-                    .get(companyNumber)
-                    .orElseThrow(DissolutionNotFoundException::new);
+        DissolutionGetResponse dissolutionInfo = dissolutionService
+                .get(companyNumber)
+                .orElseThrow(() -> new NotFoundException("Dissolution not found"));
 
-            if (dissolutionInfo.getApplicationStatus() != ApplicationStatus.PENDING_PAYMENT) {
-                throw new DissolutionApplicationWrongStatusException();
-            }
-
-            if (PaymentStatus.PAID.equals(body.getStatus())) {
-                dissolutionService.updatePaymentStatus(body, companyNumber);
-            }
-
-        } catch (DissolutionNotFoundException e) {
-            throw new NotFoundException(e.getMessage());
-        } catch (DissolutionApplicationWrongStatusException e) {
-            throw new BadRequestException(e.getMessage());
+        if (dissolutionInfo.getApplicationStatus() != ApplicationStatus.PENDING_PAYMENT) {
+            throw new BadRequestException("Dissolution status is not 'pending-payment'");
         }
+
+        if (PaymentStatus.PAID.equals(body.getStatus())) {
+            dissolutionService.updatePaymentStatus(body, companyNumber);
+        }
+
     }
 }

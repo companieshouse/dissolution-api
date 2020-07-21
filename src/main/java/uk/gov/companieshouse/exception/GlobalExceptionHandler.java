@@ -7,10 +7,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import uk.gov.companieshouse.exception.generic.BadRequestException;
-import uk.gov.companieshouse.exception.generic.ConflictException;
-import uk.gov.companieshouse.exception.generic.NotFoundException;
-import uk.gov.companieshouse.exception.generic.UnauthorisedException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.exception.generic;
+package uk.gov.companieshouse.exception;
 
 public class UnauthorisedException extends RuntimeException {
     public UnauthorisedException(String message) {

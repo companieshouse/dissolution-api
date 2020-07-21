@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.exception.generic;
+package uk.gov.companieshouse.exception;
 
 public class NotFoundException extends RuntimeException {
     public NotFoundException(String message) {

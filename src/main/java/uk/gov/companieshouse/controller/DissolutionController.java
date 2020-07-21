@@ -18,14 +18,10 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.companieshouse.exception.dissolution.DirectorNotPendingApprovalException;
-import uk.gov.companieshouse.exception.dissolution.DissolutionAlreadyExistsException;
-import uk.gov.companieshouse.exception.dissolution.DissolutionNotFoundException;
-import uk.gov.companieshouse.exception.dissolution.MissingEricHeadersException;
-import uk.gov.companieshouse.exception.generic.BadRequestException;
-import uk.gov.companieshouse.exception.generic.ConflictException;
-import uk.gov.companieshouse.exception.generic.NotFoundException;
-import uk.gov.companieshouse.exception.generic.UnauthorisedException;
+import uk.gov.companieshouse.exception.BadRequestException;
+import uk.gov.companieshouse.exception.ConflictException;
+import uk.gov.companieshouse.exception.NotFoundException;
+import uk.gov.companieshouse.exception.UnauthorisedException;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
@@ -66,22 +62,15 @@ public class DissolutionController {
 
         logger.debug("[POST] Submitting dissolution request for company number {}", companyNumber);
 
-        try {
-            if (StringUtils.isBlank(userId)) {
-                throw new MissingEricHeadersException();
-            }
-
-            if (dissolutionService.doesDissolutionRequestExistForCompany(companyNumber)) {
-                throw new DissolutionAlreadyExistsException();
-            }
-
-            return dissolutionService.create(body, companyNumber, userId, request.getRemoteAddr(), getEmail(authorisedUser));
-
-        } catch (MissingEricHeadersException e) {
-            throw new UnauthorisedException(e.getMessage());
-        } catch (DissolutionAlreadyExistsException e) {
-            throw new ConflictException(e.getMessage());
+        if (StringUtils.isBlank(userId)) {
+            throw new UnauthorisedException("ERIC headers are missing");
         }
+
+        if (dissolutionService.doesDissolutionRequestExistForCompany(companyNumber)) {
+            throw new ConflictException("Dissolution already exists");
+        }
+
+        return dissolutionService.create(body, companyNumber, userId, request.getRemoteAddr(), getEmail(authorisedUser));
     }
 
     @Operation(summary = "Get Dissolution Application", tags = "Dissolution")
@@ -97,20 +86,13 @@ public class DissolutionController {
 
         logger.debug("[GET] Getting dissolution info for company number {}", companyNumber);
 
-        try {
-            if (StringUtils.isBlank(userId)) {
-                throw new MissingEricHeadersException();
-            }
-
-            return dissolutionService
-                    .get(companyNumber)
-                    .orElseThrow(DissolutionNotFoundException::new);
-
-        } catch (MissingEricHeadersException e) {
-            throw new UnauthorisedException(e.getMessage());
-        } catch (DissolutionNotFoundException e) {
-            throw new NotFoundException(e.getMessage());
+        if (StringUtils.isBlank(userId)) {
+            throw new UnauthorisedException("ERIC headers are missing");
         }
+
+        return dissolutionService
+                .get(companyNumber)
+                .orElseThrow(() -> new NotFoundException("Dissolution not found"));
     }
 
     @Operation(summary = "Patch Dissolution Application", tags = "Dissolution")
@@ -130,27 +112,18 @@ public class DissolutionController {
 
         logger.debug("[PATCH] Updating dissolution info for company number {}", companyNumber);
 
-        try {
-            if (StringUtils.isBlank(userId) || StringUtils.isBlank(authorisedUser)) {
-                throw new MissingEricHeadersException();
-            }
-
-            if (!dissolutionService.doesDissolutionRequestExistForCompany(companyNumber)) {
-                throw new DissolutionNotFoundException();
-            }
-
-            if (!dissolutionService.isDirectorPendingApproval(companyNumber, body.getEmail())) {
-                throw new DirectorNotPendingApprovalException();
-            }
-
-            return dissolutionService.addDirectorApproval(companyNumber, userId, request.getRemoteAddr(), body.getEmail());
-
-        } catch (MissingEricHeadersException e) {
-            throw new UnauthorisedException(e.getMessage());
-        } catch (DissolutionNotFoundException e) {
-            throw new NotFoundException(e.getMessage());
-        } catch (DirectorNotPendingApprovalException e) {
-            throw new BadRequestException(e.getMessage());
+        if (StringUtils.isBlank(userId) || StringUtils.isBlank(authorisedUser)) {
+            throw new UnauthorisedException("ERIC headers are missing");
         }
+
+        if (!dissolutionService.doesDissolutionRequestExistForCompany(companyNumber)) {
+            throw new NotFoundException("Dissolution not found");
+        }
+
+        if (!dissolutionService.isDirectorPendingApproval(companyNumber, body.getEmail())) {
+            throw new BadRequestException("Director is not pending approval");
+        }
+
+        return dissolutionService.addDirectorApproval(companyNumber, userId, request.getRemoteAddr(), body.getEmail());
     }
 }
