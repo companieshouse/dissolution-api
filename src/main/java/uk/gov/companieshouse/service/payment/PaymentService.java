@@ -14,32 +14,34 @@ import static uk.gov.companieshouse.model.Constants.*;
 public class PaymentService {
 
     public PaymentGetResponse get(String eTag, String companyNumber) {
-        PaymentGetResponse response = new PaymentGetResponse() {{
-            setETag(eTag);
-            setKind(PAYMENT_KIND);
-            setLinks(new PaymentLinks() {{
-                setSelf("/dissolution-request/" + companyNumber + "/payment");
-                setDissolutionRequest("/dissolution-request/" + companyNumber);
-            }});
-        }};
+        PaymentGetResponse response = new PaymentGetResponse();
+        PaymentLinks paymentLinks = new PaymentLinks();
+        paymentLinks.setSelf("/dissolution-request/" + companyNumber + "/payment");
+        paymentLinks.setDissolutionRequest("/dissolution-request/" + companyNumber);
 
         PaymentItem item = createPaymentItem();
+
+        response.setETag(eTag);
+        response.setKind(PAYMENT_KIND);
+        response.setLinks(paymentLinks);
         response.setItems(List.of(item));
 
         return response;
     }
 
     private PaymentItem createPaymentItem() {
-        return new PaymentItem() {{
-            setDescription(PAYMENT_DESCRIPTION);
-            setDescriptionIdentifier(PAYMENT_DESCRIPTION_IDENTIFIER);
-            setDescriptionValues(new PaymentDescriptionValues());
-            setProductType(PAYMENT_PRODUCT_TYPE);
-            setAmount(PAYMENT_AMOUNT);
-            setAvailablePaymentMethods(List.of(PAYMENT_AVAILABLE_PAYMENT_METHOD));
-            setClassOfPayment(List.of(PAYMENT_CLASS_OF_PAYMENT));
-            setKind(PAYMENT_ITEM_KIND);
-            setResourceKind(PAYMENT_RESOURCE_KIND);
-        }};
+        PaymentItem item = new PaymentItem();
+
+        item.setDescription(PAYMENT_DESCRIPTION);
+        item.setDescriptionIdentifier(PAYMENT_DESCRIPTION_IDENTIFIER);
+        item.setDescriptionValues(new PaymentDescriptionValues());
+        item.setProductType(PAYMENT_PRODUCT_TYPE);
+        item.setAmount(PAYMENT_AMOUNT);
+        item.setAvailablePaymentMethods(List.of(PAYMENT_AVAILABLE_PAYMENT_METHOD));
+        item.setClassOfPayment(List.of(PAYMENT_CLASS_OF_PAYMENT));
+        item.setKind(PAYMENT_ITEM_KIND);
+        item.setResourceKind(PAYMENT_RESOURCE_KIND);
+
+        return item;
     }
 }

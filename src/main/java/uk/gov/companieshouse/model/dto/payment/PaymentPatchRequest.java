@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.model.dto.payment;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import uk.gov.companieshouse.model.enums.PaymentStatus;
 
 import java.sql.Timestamp;
@@ -8,8 +9,10 @@ import java.sql.Timestamp;
 public class PaymentPatchRequest {
     private PaymentStatus status;
 
+    @JsonProperty("payment_reference")
     private String paymentReference;
 
+    @JsonProperty("paid_at")
     private Timestamp paidAt;
 
     public PaymentStatus getStatus() {

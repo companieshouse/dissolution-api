@@ -36,7 +36,7 @@ public class DissolutionService {
     }
 
     public void updatePaymentStatus(PaymentPatchRequest data, String companyNumber) {
-        patcher.updatePaymentStatus(data.getPaymentReference(), data.getPaidAt(), companyNumber);
+        patcher.updatePaymentInformation(data.getPaymentReference(), data.getPaidAt(), companyNumber);
     }
 
     public boolean doesDissolutionRequestExistForCompany(String companyNumber) {

@@ -9,7 +9,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.companieshouse.model.dto.dissolution.*;
+import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 
 import java.util.Collections;
@@ -48,9 +53,8 @@ public class DissolutionControllerTest {
 
     @Test
     public void submitDissolutionRequest_returnsBadRequest_ifEricIdentityHeaderIsNotProvided() throws Exception {
-        final HttpHeaders headers = new HttpHeaders() {{
-            add(AUTHORISED_USER_HEADER, EMAIL);
-        }};
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add(AUTHORISED_USER_HEADER, EMAIL);
 
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
 
@@ -59,9 +63,8 @@ public class DissolutionControllerTest {
 
     @Test
     public void submitDissolutionRequest_returnsBadRequest_ifEricAuthorisedUserHeaderIsNotProvided() throws Exception {
-        final HttpHeaders headers = new HttpHeaders() {{
-            add(IDENTITY_HEADER, USER_ID);
-        }};
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add(IDENTITY_HEADER, USER_ID);
 
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
 
@@ -138,10 +141,9 @@ public class DissolutionControllerTest {
 
     @Test
     public void submitDissolutionRequest_returnsUnauthorised_ifEricIdentityHeaderIsBlank() throws Exception {
-        final HttpHeaders headers = new HttpHeaders() {{
-            add(IDENTITY_HEADER, "");
-            add(AUTHORISED_USER_HEADER, EMAIL);
-        }};
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add(IDENTITY_HEADER, "");
+        headers.add(AUTHORISED_USER_HEADER, EMAIL);
 
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
 
@@ -210,10 +212,9 @@ public class DissolutionControllerTest {
 
     @Test
     public void getDissolutionRequest_returnsUnauthorised_ifEricIdentityHeaderIsBlank() throws Exception {
-        final HttpHeaders headers = new HttpHeaders() {{
-            add(IDENTITY_HEADER, "");
-            add(AUTHORISED_USER_HEADER, EMAIL);
-        }};
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add(IDENTITY_HEADER, "");
+        headers.add(AUTHORISED_USER_HEADER, EMAIL);
 
         mockMvc
                 .perform(
@@ -255,10 +256,9 @@ public class DissolutionControllerTest {
     public void patchDissolutionRequest_returnsUnauthorised_ifEricIdentityHeaderIsBlank() throws Exception {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
 
-        final HttpHeaders headers = new HttpHeaders() {{
-            add(IDENTITY_HEADER, "");
-            add(AUTHORISED_USER_HEADER, EMAIL);
-        }};
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add(IDENTITY_HEADER, "");
+        headers.add(AUTHORISED_USER_HEADER, EMAIL);
 
         mockMvc
                 .perform(

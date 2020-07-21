@@ -20,8 +20,7 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -111,7 +110,7 @@ public class PaymentControllerTest {
     }
 
     @Test
-    public void patchPaymentDataRequest_returnsOK_ifDissolutionExistsAndItsStatusIsPendingPayment() throws Exception {
+    public void patchPaymentDataRequest_returnsOK_updatesPaymentInfo_PaidPaymentIsProvided() throws Exception {
         final DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
         dissolutionGetResponse.setApplicationStatus(ApplicationStatus.PENDING_PAYMENT);
 
@@ -129,6 +128,48 @@ public class PaymentControllerTest {
                 .andExpect(status().isOk());
 
         verify(dissolutionService).updatePaymentStatus(isA(PaymentPatchRequest.class), eq(COMPANY_NUMBER));
+    }
+
+    @Test
+    public void patchPaymentDataRequest_returnsOK_doesNotUpdatePaymentInfo_ifFailedPaymentIsProvided() throws Exception {
+        final DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
+        dissolutionGetResponse.setApplicationStatus(ApplicationStatus.PENDING_PAYMENT);
+
+        final PaymentPatchRequest body = generatePaymentPatchRequest();
+        body.setStatus(PaymentStatus.FAILED);
+
+        when(dissolutionService.get(COMPANY_NUMBER)).thenReturn(Optional.of(dissolutionGetResponse));
+
+        mockMvc
+                .perform(
+                        patch(PAYMENT_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(asJsonString(body))
+                )
+                .andExpect(status().isOk());
+
+        verify(dissolutionService, never()).updatePaymentStatus(isA(PaymentPatchRequest.class), eq(COMPANY_NUMBER));
+    }
+
+    @Test
+    public void patchPaymentDataRequest_returnsOK_doesNotUpdatePaymentInfo_ifCancelledPaymentIsProvided() throws Exception {
+        final DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
+        dissolutionGetResponse.setApplicationStatus(ApplicationStatus.PENDING_PAYMENT);
+
+        final PaymentPatchRequest body = generatePaymentPatchRequest();
+        body.setStatus(PaymentStatus.CANCELLED);
+
+        when(dissolutionService.get(COMPANY_NUMBER)).thenReturn(Optional.of(dissolutionGetResponse));
+
+        mockMvc
+                .perform(
+                        patch(PAYMENT_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(asJsonString(body))
+                )
+                .andExpect(status().isOk());
+
+        verify(dissolutionService, never()).updatePaymentStatus(isA(PaymentPatchRequest.class), eq(COMPANY_NUMBER));
     }
 
     private <T> String asJsonString(T body) {

@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
+import uk.gov.companieshouse.mapper.PaymentInformationMapper;
 import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
@@ -21,15 +22,18 @@ public class DissolutionPatcher {
     private final DissolutionRepository repository;
     private final DissolutionResponseMapper responseMapper;
     private final DirectorApprovalMapper approvalMapper;
+    private final PaymentInformationMapper paymentInformationMapper;
 
     @Autowired
     public DissolutionPatcher(
             DissolutionRepository repository,
             DissolutionResponseMapper responseMapper,
-            DirectorApprovalMapper approvalMapper) {
+            DirectorApprovalMapper approvalMapper,
+            PaymentInformationMapper paymentInformationMapper) {
         this.repository = repository;
         this.responseMapper = responseMapper;
         this.approvalMapper = approvalMapper;
+        this.paymentInformationMapper = paymentInformationMapper;
     }
 
     public DissolutionPatchResponse addDirectorApproval(String companyNumber, String userId, String ip, String email) {
@@ -38,10 +42,7 @@ public class DissolutionPatcher {
         this.addDirectorApproval(userId, ip, email, dissolution);
 
         if (!this.hasDirectorsLeftToApprove(dissolution)) {
-            dissolution
-                    .getData()
-                    .getApplication()
-                    .setStatus(ApplicationStatus.PENDING_PAYMENT);
+            setDissolutionStatus(dissolution, ApplicationStatus.PENDING_PAYMENT);
         }
 
         this.repository.save(dissolution);
@@ -49,15 +50,12 @@ public class DissolutionPatcher {
         return this.responseMapper.mapToDissolutionPatchResponse(companyNumber);
     }
 
-    public void updatePaymentStatus(String paymentReference, Timestamp paidAt, String companyNumber) {
+    public void updatePaymentInformation(String paymentReference, Timestamp paidAt, String companyNumber) {
         final Dissolution dissolution = this.repository.findByCompanyNumber(companyNumber).get();
 
         this.addPaymentInformation(paymentReference, paidAt, dissolution);
 
-        dissolution
-                .getData()
-                .getApplication()
-                .setStatus(ApplicationStatus.PAID);
+        setDissolutionStatus(dissolution, ApplicationStatus.PAID);
 
         this.repository.save(dissolution);
     }
@@ -73,10 +71,7 @@ public class DissolutionPatcher {
     }
 
     private void addPaymentInformation(String paymentReference, Timestamp paidAt, Dissolution dissolution) {
-        final PaymentInformation information = new PaymentInformation();
-        information.setMethod(PaymentMethod.CREDIT_CARD);
-        information.setReference(paymentReference);
-        information.setDateTime(paidAt.toLocalDateTime());
+        final PaymentInformation information = paymentInformationMapper.mapToPaymentInformation(PaymentMethod.CREDIT_CARD, paymentReference, paidAt);
 
         dissolution.setPaymentInformation(information);
     }
@@ -93,5 +88,12 @@ public class DissolutionPatcher {
                 .getDirectors()
                 .stream()
                 .anyMatch(director -> director.getDirectorApproval() == null);
+    }
+
+    private void setDissolutionStatus(Dissolution dissolution, ApplicationStatus status) {
+        dissolution
+                .getData()
+                .getApplication()
+                .setStatus(status);
     }
 }

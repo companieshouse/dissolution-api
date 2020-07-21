@@ -6,9 +6,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-import uk.gov.companieshouse.exception.DissolutionApplicationWrongStatusException;
-import uk.gov.companieshouse.exception.DissolutionNotFoundException;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import uk.gov.companieshouse.exception.dissolution.DissolutionApplicationWrongStatusException;
+import uk.gov.companieshouse.exception.dissolution.DissolutionNotFoundException;
+import uk.gov.companieshouse.exception.generic.BadRequestException;
+import uk.gov.companieshouse.exception.generic.NotFoundException;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
@@ -41,13 +49,18 @@ public class PaymentController {
     @ResponseStatus(HttpStatus.OK)
     public PaymentGetResponse getPaymentUIData(@PathVariable("company-number") final String companyNumber) {
 
-        logger.debug("[GET] Submitting payment UI data request for company number {}", companyNumber);
+        logger.debug("[GET] Getting payment UI data for company number {}", companyNumber);
 
-        DissolutionGetResponse dissolutionInfo = dissolutionService
-                .get(companyNumber)
-                .orElseThrow(DissolutionNotFoundException::new);
+        try {
+            DissolutionGetResponse dissolutionInfo = dissolutionService
+                    .get(companyNumber)
+                    .orElseThrow(DissolutionNotFoundException::new);
 
-        return paymentService.get(dissolutionInfo.getETag(), companyNumber);
+            return paymentService.get(dissolutionInfo.getETag(), companyNumber);
+
+        } catch (DissolutionNotFoundException e) {
+            throw new NotFoundException(e.getMessage());
+        }
     }
 
     @Operation(summary = "Patch Payment Status", tags = "Dissolution")
@@ -61,18 +74,25 @@ public class PaymentController {
     public void patchPaymentData(@PathVariable("company-number") final String companyNumber,
                                  @Valid @RequestBody final PaymentPatchRequest body) {
 
-        logger.debug("[PATCH] Submitting payment data update request for company number {}", companyNumber);
+        logger.debug("[PATCH] Updating payment information for company number {} with payment status {}", companyNumber, body.getStatus());
 
-        DissolutionGetResponse dissolutionInfo = dissolutionService
-                .get(companyNumber)
-                .orElseThrow(DissolutionNotFoundException::new);
+        try {
+            DissolutionGetResponse dissolutionInfo = dissolutionService
+                    .get(companyNumber)
+                    .orElseThrow(DissolutionNotFoundException::new);
 
-        if (dissolutionInfo.getApplicationStatus() != ApplicationStatus.PENDING_PAYMENT) {
-            throw new DissolutionApplicationWrongStatusException();
-        }
+            if (dissolutionInfo.getApplicationStatus() != ApplicationStatus.PENDING_PAYMENT) {
+                throw new DissolutionApplicationWrongStatusException();
+            }
 
-        if (PaymentStatus.PAID.equals(body.getStatus())) {
-            dissolutionService.updatePaymentStatus(body, companyNumber);
+            if (PaymentStatus.PAID.equals(body.getStatus())) {
+                dissolutionService.updatePaymentStatus(body, companyNumber);
+            }
+
+        } catch (DissolutionNotFoundException e) {
+            throw new NotFoundException(e.getMessage());
+        } catch (DissolutionApplicationWrongStatusException e) {
+            throw new BadRequestException(e.getMessage());
         }
     }
 }

@@ -127,6 +127,6 @@ public class DissolutionServiceTest {
 
         service.updatePaymentStatus(data, COMPANY_NUMBER);
 
-        verify(patcher).updatePaymentStatus(data.getPaymentReference(), data.getPaidAt(), COMPANY_NUMBER);
+        verify(patcher).updatePaymentInformation(data.getPaymentReference(), data.getPaidAt(), COMPANY_NUMBER);
     }
 }
