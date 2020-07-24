@@ -22,6 +22,8 @@
         <version.springdoc.openapi>1.3.9</version.springdoc.openapi>
         <api-helper-java.version>1.4.2</api-helper-java.version>
         <commons-lang3.version>3.10</commons-lang3.version>
+        <sdk-manager-java.version>1.5.2</sdk-manager-java.version>
+        <api-sdk-java.version>4.2.7</api-sdk-java.version>
     </properties>
 
     <repositories>
@@ -47,6 +49,20 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
             <version>${version.spring.boot}</version>
+        </dependency>
+
+        <!-- CH SDK Manager -->
+        <dependency>
+            <groupId>uk.gov.companieshouse</groupId>
+            <artifactId>sdk-manager-java</artifactId>
+            <version>${sdk-manager-java.version}</version>
+        </dependency>
+
+        <!-- CH Api SDK -->
+        <dependency>
+            <groupId>uk.gov.companieshouse</groupId>
+            <artifactId>api-sdk-java</artifactId>
+            <version>${api-sdk-java.version}</version>
         </dependency>
 
         <!-- CH Helpers -->
