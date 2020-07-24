@@ -1,10 +1,8 @@
 package uk.gov.companieshouse.config;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
-public class ApiConfig {
+public abstract class ApiConfig {
 
     @Value("${api.key}")
     private String apiKey;

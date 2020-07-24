@@ -57,7 +57,7 @@ public class GlobalExceptionHandler {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(BadRequestException.class)
-    public void handleDirectorNotPendingApproval(RuntimeException ex, HttpServletRequest request) {
+    public void handleBadRequest(RuntimeException ex, HttpServletRequest request) {
         LOGGER.info("[Bad Request] - {}", request.getRequestURL().toString(), ex);
     }
 }

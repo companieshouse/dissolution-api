@@ -5,6 +5,9 @@ api:
 barcodeGenerator:
   host: ${BARCODE_SERVICE_URL}
 
+companyProfile:
+  host: ${CHS_COMPANY_PROFILE_API_LOCAL_URL}
+
 logging:
   level:
     ROOT: ${LOGLEVEL}

@@ -5,5 +5,8 @@ api:
 barcodeGenerator:
   host: http://barcode-generator
 
+companyProfile:
+  host: http://company-profile-api
+
 server:
   port: 3001
