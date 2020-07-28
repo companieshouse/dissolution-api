@@ -5,8 +5,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
-import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
@@ -44,22 +42,21 @@ public class DissolutionServiceTest {
     @Mock
     private DissolutionRepository repository;
     public static final String COMPANY_NUMBER = "12345678";
-    public static final String COMPANY_NAME = "ComComp";
     public static final String USER_ID = "123";
     public static final String IP = "192.168.0.1";
     public static final String EMAIL = "user@mail.com";
 
     @Test
-    public void create_createsADissolutionRequest_returnsCreateResponse() {
+    public void create_createsADissolutionRequest_returnsCreateResponse() throws Exception {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
+
         final DissolutionCreateResponse response = DissolutionFixtures.generateDissolutionCreateResponse();
-        final CompanyProfileApi company = CompanyProfileFixtures.generateCompanyProfileApi();
 
-        when(creator.create(body, company, USER_ID, IP, EMAIL)).thenReturn(response);
+        when(creator.create(body, COMPANY_NUMBER, USER_ID, IP, EMAIL)).thenReturn(response);
 
-        final DissolutionCreateResponse result = service.create(body, company, USER_ID, IP, EMAIL);
+        final DissolutionCreateResponse result = service.create(body, COMPANY_NUMBER, USER_ID, IP, EMAIL);
 
-        verify(creator).create(body, company, USER_ID, IP, EMAIL);
+        verify(creator).create(body, COMPANY_NUMBER, USER_ID, IP, EMAIL);
 
         assertEquals(response, result);
     }

@@ -2,7 +2,6 @@ package uk.gov.companieshouse.mapper;
 
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.GenerateEtagUtil;
-import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
 import uk.gov.companieshouse.model.db.dissolution.*;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
@@ -16,12 +15,12 @@ import java.util.stream.Collectors;
 @Service
 public class DissolutionRequestMapper {
 
-    public Dissolution mapToDissolution(DissolutionCreateRequest body, CompanyProfileApi company, String userId, String email, String ip, String reference) {
+    public Dissolution mapToDissolution(DissolutionCreateRequest body, String companyNumber, String userId, String email, String ip, String reference) {
         final Dissolution dissolution = new Dissolution();
 
         dissolution.setModifiedDateTime(LocalDateTime.now());
         dissolution.setData(mapToDissolutionData(body, reference));
-        dissolution.setCompany(mapToCompany(company.getCompanyNumber(), company.getCompanyName()));
+        dissolution.setCompany(mapToCompany(companyNumber));
         dissolution.setCreatedBy(mapToCreatedBy(userId, email, ip));
 
         return dissolution;
@@ -61,11 +60,11 @@ public class DissolutionRequestMapper {
         return director;
     }
 
-    private Company mapToCompany(String companyNumber, String companyName) {
+    private Company mapToCompany(String companyNumber) {
         final Company company = new Company();
 
         company.setNumber(companyNumber);
-        company.setName(companyName);
+        company.setName("PLACEHOLDER COMPANY NAME"); // TODO - replace with actual name once Company Profile API integration is added
 
         return company;
     }
