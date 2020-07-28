@@ -3,8 +3,9 @@ package uk.gov.companieshouse.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
-import uk.gov.companieshouse.exception.ServiceException;
+import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -19,12 +20,12 @@ public class DissolutionValidator {
         this.companyOfficerService = companyOfficerService;
     }
 
-    public Optional<String> checkBusinessRules(CompanyProfileApi companyProfileApi) {
+    public Optional<String> checkBusinessRules(CompanyProfileApi companyProfileApi, List<DirectorRequest> selectedDirectors) {
         if (!companyProfileService.isCompanyClosable(companyProfileApi)) {
             return Optional.of("Company must be of a closable type and have an active status");
         }
 
-        if (!companyOfficerService.hasEnoughOfficersSelected(companyProfileApi.getCompanyNumber())) {
+        if (!companyOfficerService.hasEnoughOfficersSelected(companyProfileApi.getCompanyNumber(), selectedDirectors)) {
             return Optional.of("A majority of directors must be selected");
         }
 

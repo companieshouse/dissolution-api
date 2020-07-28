@@ -6,6 +6,7 @@ import uk.gov.companieshouse.api.model.officers.OfficerRoleApi;
 import uk.gov.companieshouse.fixtures.CompanyOfficerFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
+import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 import uk.gov.companieshouse.service.CompanyOfficerValidator;
 
 import java.time.LocalDateTime;
@@ -26,13 +27,13 @@ public class CompanyOfficerValidatorTest {
 
     @Test
     public void mapCompanyOfficersToIsOverHalfSelected_halfDirectorsSelected_returnsTrue() {
-        final DissolutionDirector directorOne = new DissolutionDirector();
+        final DirectorRequest directorOne = new DirectorRequest();
         directorOne.setName(DIRECTOR_NAME);
         directorOne.setEmail(DIRECTOR_EMAIL);
-        final DissolutionDirector directorTwo = new DissolutionDirector();
+        final DirectorRequest directorTwo = new DirectorRequest();
         directorTwo.setName(DIRECTOR_NAME_TWO);
         directorTwo.setEmail(DIRECTOR_EMAIL_TWO);
-        final List<DissolutionDirector> selectedDirectors = Arrays.asList(directorOne, directorTwo);
+        final List<DirectorRequest> selectedDirectors = Arrays.asList(directorOne, directorTwo);
 
         final CompanyOfficerApi companyOfficerApiOne = new CompanyOfficerApi();
         companyOfficerApiOne.setName(DIRECTOR_NAME);
@@ -60,13 +61,13 @@ public class CompanyOfficerValidatorTest {
 
     @Test
     public void mapCompanyOfficersToIsOverHalfSelected_allDirectorsSelected_returnsTrue() {
-        final DissolutionDirector directorOne = new DissolutionDirector();
+        final DirectorRequest directorOne = new DirectorRequest();
         directorOne.setName(DIRECTOR_NAME);
         directorOne.setEmail(DIRECTOR_EMAIL);
-        final DissolutionDirector directorTwo = new DissolutionDirector();
+        final DirectorRequest directorTwo = new DirectorRequest();
         directorTwo.setName(DIRECTOR_NAME_TWO);
         directorTwo.setEmail(DIRECTOR_EMAIL_TWO);
-        final List<DissolutionDirector> selectedDirectors = Arrays.asList(directorOne, directorTwo);
+        final List<DirectorRequest> selectedDirectors = Arrays.asList(directorOne, directorTwo);
 
         final CompanyOfficerApi companyOfficerApiOne = new CompanyOfficerApi();
         companyOfficerApiOne.setName(DIRECTOR_NAME);
@@ -89,7 +90,7 @@ public class CompanyOfficerValidatorTest {
 
     @Test
     public void mapCompanyOfficersToIsOverHalfSelected_noDirectorsSelected_returnsFalse() {
-        final List<DissolutionDirector> selectedDirectors = Collections.emptyList();
+        final List<DirectorRequest> selectedDirectors = Collections.emptyList();
         final List<CompanyOfficerApi> companyOfficers = CompanyOfficerFixtures.generateCompanyOfficerList();
 
         final boolean hasOverHalfDirectorsSelected =
@@ -100,13 +101,13 @@ public class CompanyOfficerValidatorTest {
 
     @Test
     public void mapCompanyOfficersToIsOverHalfSelected_wrongDirectorsSelected_returnsFalse() {
-        final DissolutionDirector directorOne = new DissolutionDirector();
+        final DirectorRequest directorOne = new DirectorRequest();
         directorOne.setName(DIRECTOR_NAME);
         directorOne.setEmail(DIRECTOR_EMAIL);
-        final DissolutionDirector directorTwo = new DissolutionDirector();
+        final DirectorRequest directorTwo = new DirectorRequest();
         directorTwo.setName(DIRECTOR_NAME_TWO);
         directorTwo.setEmail(DIRECTOR_EMAIL_TWO);
-        final List<DissolutionDirector> selectedDirectors = Arrays.asList(directorOne, directorTwo);
+        final List<DirectorRequest> selectedDirectors = Arrays.asList(directorOne, directorTwo);
 
         final CompanyOfficerApi companyOfficerApiOne = new CompanyOfficerApi();
         companyOfficerApiOne.setName("Other officer");
@@ -129,10 +130,10 @@ public class CompanyOfficerValidatorTest {
 
     @Test
     public void mapCompanyOfficersToIsOverHalfSelected_lessThanHalfDirectorsSelected_returnsFalse() {
-        final DissolutionDirector directorOne = new DissolutionDirector();
+        final DirectorRequest directorOne = new DirectorRequest();
         directorOne.setName(DIRECTOR_NAME);
         directorOne.setEmail(DIRECTOR_EMAIL);
-        final List<DissolutionDirector> selectedDirectors = Arrays.asList(directorOne);
+        final List<DirectorRequest> selectedDirectors = Arrays.asList(directorOne);
 
         final CompanyOfficerApi companyOfficerApiOne = new CompanyOfficerApi();
         companyOfficerApiOne.setName(DIRECTOR_NAME);

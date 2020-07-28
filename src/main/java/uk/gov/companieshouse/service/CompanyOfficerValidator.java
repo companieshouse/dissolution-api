@@ -3,7 +3,7 @@ package uk.gov.companieshouse.service;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.model.officers.CompanyOfficerApi;
 import uk.gov.companieshouse.api.model.officers.OfficerRoleApi;
-import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
+import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public class CompanyOfficerValidator {
     public boolean areMajorityOfCompanyOfficersSelected(
             List<CompanyOfficerApi> companyOfficers,
-            List<DissolutionDirector> selectedDirectors
+            List<DirectorRequest> selectedDirectors
             ) {
 
         final List<String> activeOfficers = this.mapCompanyOfficersToActiveList(companyOfficers);
@@ -40,10 +40,10 @@ public class CompanyOfficerValidator {
                 .collect(Collectors.toList());
     }
 
-    private List<String> mapDissolutionDirectorsToSelectedOfficers(List<DissolutionDirector> directors) {
+    private List<String> mapDissolutionDirectorsToSelectedOfficers(List<DirectorRequest> directors) {
         return directors
                 .stream()
-                .map(dissolutionDirector -> dissolutionDirector.getName())
+                .map(DirectorRequest::getName)
                 .collect(Collectors.toList());
     }
 }

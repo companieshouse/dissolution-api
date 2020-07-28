@@ -23,6 +23,7 @@ import uk.gov.companieshouse.service.CompanyOfficerService;
 import uk.gov.companieshouse.service.CompanyProfileService;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -204,7 +205,7 @@ public class DissolutionControllerTest {
         when(service.create(isA(DissolutionCreateRequest.class), eq(company), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenReturn(response);
         when(companyProfileService.isCompanyClosable(company)).thenReturn(true);
         when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER)).thenReturn(company);
-        when(companyOfficerService.hasEnoughOfficersSelected(COMPANY_NUMBER)).thenReturn(true);
+        when(companyOfficerService.hasEnoughOfficersSelected(COMPANY_NUMBER, body.getDirectors())).thenReturn(true);
 
         mockMvc
                 .perform(
@@ -228,8 +229,8 @@ public class DissolutionControllerTest {
         when(service.create(isA(DissolutionCreateRequest.class), eq(company), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenThrow(new RuntimeException());
         when(companyProfileService.isCompanyClosable(company)).thenReturn(true);
         when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER)).thenReturn(company);
-        when(companyOfficerService.hasEnoughOfficersSelected(COMPANY_NUMBER)).thenReturn(true);
-        when(dissolutionValidator.checkBusinessRules(company)).thenReturn(Optional.empty());
+        when(companyOfficerService.hasEnoughOfficersSelected(COMPANY_NUMBER, body.getDirectors())).thenReturn(true);
+        when(dissolutionValidator.checkBusinessRules(company, body.getDirectors())).thenReturn(Optional.empty());
 
         mockMvc
                 .perform(
@@ -274,7 +275,7 @@ public class DissolutionControllerTest {
         when(service.isDirectorPendingApproval(eq(COMPANY_NUMBER), eq(EMAIL))).thenReturn(true);
         when(service.create(eq(body), eq(company), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenReturn(response);
         when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER)).thenReturn(company);
-        when(dissolutionValidator.checkBusinessRules(company)).thenReturn(Optional.of("Bad Request"));
+        when(dissolutionValidator.checkBusinessRules(eq(company), isA(List.class))).thenReturn(Optional.of("Bad Request"));
 
         mockMvc
                 .perform(
@@ -283,6 +284,8 @@ public class DissolutionControllerTest {
                                 .headers(createHttpHeaders())
                                 .content(asJsonString(body)))
                 .andExpect(status().isBadRequest());
+
+        verify(dissolutionValidator).checkBusinessRules(eq(company), isA(List.class));
     }
 
     @Test

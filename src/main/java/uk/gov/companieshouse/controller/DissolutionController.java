@@ -91,7 +91,7 @@ public class DissolutionController {
         }
 
         dissolutionValidator
-                .checkBusinessRules(companyProfileApi)
+                .checkBusinessRules(companyProfileApi, body.getDirectors())
                 .ifPresent(error -> { throw new BadRequestException(error); });
 
         return dissolutionService.create(body, companyProfileApi, userId, request.getRemoteAddr(), getEmail(authorisedUser));

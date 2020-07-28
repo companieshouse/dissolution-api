@@ -7,9 +7,6 @@ import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.exception.URIValidationException;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
-import uk.gov.companieshouse.api.model.officers.CompanyOfficerApi;
-import uk.gov.companieshouse.exception.ServiceException;
-import java.util.List;
 
 @Component
 public class CompanyProfileClient {

@@ -11,6 +11,7 @@ import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.fixtures.CompanyOfficerFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
 import java.util.List;
@@ -40,15 +41,14 @@ public class CompanyOfficerServiceTest {
     @Test
     public void hasEnoughOfficersSelected_areMajorityOfCompanyOfficersSelected_returnsTrue() {
         final List<CompanyOfficerApi> officers = CompanyOfficerFixtures.generateCompanyOfficerList();
-        final Dissolution dissolution = DissolutionFixtures.generateDissolution();
+        final DissolutionCreateRequest dissolutionRequest = DissolutionFixtures.generateDissolutionCreateRequest();
 
-        when(companyOfficerValidator.areMajorityOfCompanyOfficersSelected(officers, dissolution.getData().getDirectors())).thenReturn(true);
-        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
+        when(companyOfficerValidator.areMajorityOfCompanyOfficersSelected(officers, dissolutionRequest.getDirectors())).thenReturn(true);
         when(companyOfficersClient.getCompanyOfficers(COMPANY_NUMBER)).thenReturn(officers);
 
-        final boolean result = companyOfficerService.hasEnoughOfficersSelected(COMPANY_NUMBER);
+        final boolean result = companyOfficerService.hasEnoughOfficersSelected(COMPANY_NUMBER, dissolutionRequest.getDirectors());
 
-        verify(companyOfficerValidator).areMajorityOfCompanyOfficersSelected(officers, dissolution.getData().getDirectors());
+        verify(companyOfficerValidator).areMajorityOfCompanyOfficersSelected(officers, dissolutionRequest.getDirectors());
 
         assertTrue(result);
     }
@@ -56,15 +56,15 @@ public class CompanyOfficerServiceTest {
     @Test
     public void hasEnoughOfficersSelected_areMajorityOfCompanyOfficersSelected_returnsFalse() {
         final List<CompanyOfficerApi> officers = CompanyOfficerFixtures.generateCompanyOfficerList();
-        final Dissolution dissolution = DissolutionFixtures.generateDissolution();
+        final DissolutionCreateRequest dissolutionRequest = DissolutionFixtures.generateDissolutionCreateRequest();
 
-        when(companyOfficerValidator.areMajorityOfCompanyOfficersSelected(officers, dissolution.getData().getDirectors())).thenReturn(false);
-        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
+
+        when(companyOfficerValidator.areMajorityOfCompanyOfficersSelected(officers, dissolutionRequest.getDirectors())).thenReturn(false);
         when(companyOfficersClient.getCompanyOfficers(COMPANY_NUMBER)).thenReturn(officers);
 
-        final boolean result = companyOfficerService.hasEnoughOfficersSelected(COMPANY_NUMBER);
+        final boolean result = companyOfficerService.hasEnoughOfficersSelected(COMPANY_NUMBER, dissolutionRequest.getDirectors());
 
-        verify(companyOfficerValidator).areMajorityOfCompanyOfficersSelected(officers, dissolution.getData().getDirectors());
+        verify(companyOfficerValidator).areMajorityOfCompanyOfficersSelected(officers, dissolutionRequest.getDirectors());
 
         assertFalse(result);
     }
