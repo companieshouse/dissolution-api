@@ -25,6 +25,8 @@ public class Dissolution {
 
     private PaymentInformation payment;
 
+    private DissolutionCertificate certificate;
+
     public String getId() {
         return id;
     }
@@ -71,5 +73,13 @@ public class Dissolution {
 
     public void setPaymentInformation(PaymentInformation paymentInformation) {
         this.payment = paymentInformation;
+    }
+
+    public DissolutionCertificate getCertificate() {
+        return certificate;
+    }
+
+    public void setCertificate(DissolutionCertificate certificate) {
+        this.certificate = certificate;
     }
 }

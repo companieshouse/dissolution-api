@@ -47,7 +47,7 @@ public class PaymentController {
     @ResponseStatus(HttpStatus.OK)
     public PaymentGetResponse getPaymentUIData(@PathVariable("company-number") final String companyNumber) {
 
-        logger.debug("[GET] Getting payment UI data for company number {}", companyNumber);
+        logger.info("[GET] Getting payment UI data for company number {}", companyNumber);
 
         DissolutionGetResponse dissolutionInfo = dissolutionService
                 .get(companyNumber)
@@ -68,7 +68,7 @@ public class PaymentController {
     public void patchPaymentData(@PathVariable("company-number") final String companyNumber,
                                  @Valid @RequestBody final PaymentPatchRequest body) {
 
-        logger.debug("[PATCH] Updating payment information for company number {} with payment status {}", companyNumber, body.getStatus());
+        logger.info("[PATCH] Updating payment information for company number {} with payment status {}", companyNumber, body.getStatus());
 
         DissolutionGetResponse dissolutionInfo = dissolutionService
                 .get(companyNumber)
@@ -81,6 +81,5 @@ public class PaymentController {
         if (PaymentStatus.PAID.equals(body.getStatus())) {
             dissolutionService.updatePaymentStatus(body, companyNumber);
         }
-
     }
 }

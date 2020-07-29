@@ -37,6 +37,12 @@ public class DissolutionGetResponse {
     @JsonProperty("created_by")
     private String createdBy;
 
+    @JsonProperty("certificate_bucket")
+    private String certificateBucket;
+
+    @JsonProperty("certificate_key")
+    private String certificateKey;
+
     private List<DissolutionGetDirector> directors;
 
     @JsonProperty("ETag")
@@ -126,5 +132,21 @@ public class DissolutionGetResponse {
 
     public void setDirectors(List<DissolutionGetDirector> directors) {
         this.directors = directors;
+    }
+
+    public String getCertificateBucket() {
+        return certificateBucket;
+    }
+
+    public void setCertificateBucket(String certificateBucket) {
+        this.certificateBucket = certificateBucket;
+    }
+
+    public String getCertificateKey() {
+        return certificateKey;
+    }
+
+    public void setCertificateKey(String certificateKey) {
+        this.certificateKey = certificateKey;
     }
 }

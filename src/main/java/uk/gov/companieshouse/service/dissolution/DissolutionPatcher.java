@@ -13,6 +13,7 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.PaymentMethod;
 import uk.gov.companieshouse.repository.DissolutionRepository;
+import uk.gov.companieshouse.service.dissolution.certificate.DissolutionCertificateGenerator;
 
 import java.sql.Timestamp;
 
@@ -23,17 +24,20 @@ public class DissolutionPatcher {
     private final DissolutionResponseMapper responseMapper;
     private final DirectorApprovalMapper approvalMapper;
     private final PaymentInformationMapper paymentInformationMapper;
+    private final DissolutionCertificateGenerator certificateGenerator;
 
     @Autowired
     public DissolutionPatcher(
             DissolutionRepository repository,
             DissolutionResponseMapper responseMapper,
             DirectorApprovalMapper approvalMapper,
-            PaymentInformationMapper paymentInformationMapper) {
+            PaymentInformationMapper paymentInformationMapper,
+            DissolutionCertificateGenerator certificateGenerator) {
         this.repository = repository;
         this.responseMapper = responseMapper;
         this.approvalMapper = approvalMapper;
         this.paymentInformationMapper = paymentInformationMapper;
+        this.certificateGenerator = certificateGenerator;
     }
 
     public DissolutionPatchResponse addDirectorApproval(String companyNumber, String userId, String ip, String email) {
@@ -43,6 +47,7 @@ public class DissolutionPatcher {
 
         if (!this.hasDirectorsLeftToApprove(dissolution)) {
             setDissolutionStatus(dissolution, ApplicationStatus.PENDING_PAYMENT);
+            dissolution.setCertificate(this.certificateGenerator.generateDissolutionCertificate(dissolution));
         }
 
         this.repository.save(dissolution);

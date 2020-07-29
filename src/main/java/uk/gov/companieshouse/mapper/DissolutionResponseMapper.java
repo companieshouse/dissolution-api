@@ -2,6 +2,7 @@ package uk.gov.companieshouse.mapper;
 
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.dto.dissolution.*;
 
@@ -38,6 +39,11 @@ public class DissolutionResponseMapper {
         response.setCreatedAt(Timestamp.valueOf(dissolution.getCreatedBy().getDateTime()));
         response.setCreatedBy(dissolution.getCreatedBy().getEmail());
         response.setDirectors(mapToDissolutionGetDirectors(dissolution.getData().getDirectors()));
+
+        Optional
+                .ofNullable(dissolution.getCertificate())
+                .ifPresent(certificate -> setCertificateDetails(response, certificate));
+
         return response;
     }
 
@@ -58,15 +64,25 @@ public class DissolutionResponseMapper {
     }
 
     private List<DissolutionGetDirector> mapToDissolutionGetDirectors(List<DissolutionDirector> directors) {
-        return directors.stream().map(dir -> {
-            DissolutionGetDirector getDirector = new DissolutionGetDirector();
-            getDirector.setName(dir.getName());
-            getDirector.setEmail(dir.getEmail());
-            getDirector.setOnBehalfName(dir.getOnBehalfName());
-            Optional
-                    .ofNullable(dir.getDirectorApproval())
-                    .ifPresent(approval -> getDirector.setApprovedAt(Timestamp.valueOf(approval.getDateTime())));
-            return getDirector;
-        }).collect(Collectors.toList());
+        return directors.stream().map(this::mapToDissolutionGetDirector).collect(Collectors.toList());
+    }
+
+    private DissolutionGetDirector mapToDissolutionGetDirector(DissolutionDirector director) {
+        DissolutionGetDirector getDirector = new DissolutionGetDirector();
+
+        getDirector.setName(director.getName());
+        getDirector.setEmail(director.getEmail());
+        getDirector.setOnBehalfName(director.getOnBehalfName());
+
+        Optional
+                .ofNullable(director.getDirectorApproval())
+                .ifPresent(approval -> getDirector.setApprovedAt(Timestamp.valueOf(approval.getDateTime())));
+
+        return getDirector;
+    }
+
+    private void setCertificateDetails(DissolutionGetResponse response, DissolutionCertificate certificate) {
+        response.setCertificateBucket(certificate.getBucket());
+        response.setCertificateKey(certificate.getKey());
     }
 }

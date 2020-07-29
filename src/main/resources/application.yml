@@ -1,8 +1,22 @@
+api:
+  key: ${CHS_API_KEY}
+
+dissolution:
+  pdfBucket: ${DISSOLUTION_PDF_BUCKET}
+
+documentRender:
+  host: ${DOCUMENT_RENDER_SERVICE_HOST}
+
+env:
+  name: ${ENV_NAME}
+
 logging:
   level:
-    ROOT: ${LOGLEVEL}
+    root: ${LOGLEVEL}
+
 server:
   port: 3001
+
 spring:
   data:
     mongodb:
