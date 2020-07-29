@@ -75,8 +75,6 @@ public class DocumentRenderClientTest {
 
     @Test
     void generateAndStoreDocument_providesTheCorrectHeaders() throws Exception {
-
-
         mockBackEnd.enqueue(
                 new MockResponse()
                         .setResponseCode(HttpStatus.CREATED.value())
@@ -101,5 +99,4 @@ public class DocumentRenderClientTest {
     public static void tearDown() throws IOException {
         mockBackEnd.shutdown();
     }
-
 }
