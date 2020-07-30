@@ -31,3 +31,19 @@ spring:
   data:
     mongodb:
       uri: ${DISSOLUTIONS_API_MONGODB_URL}
+email:
+  appId: ${EMAIL_APP_ID}
+  topic: ${EMAIL_TOPIC}
+  successfulPayment:
+    subject: ${SUCCESSFUL_PAYMENT_EMAIL_SUBJECT}
+    messageType: ${SUCCESSFUL_PAYMENT_MESSAGE_TYPE}
+kafka:
+  config:
+    acks: ${KAFKA_CONFIG_ACKS}
+    retries: ${KAFKA_CONFIG_RETRIES}
+    isRoundRobin: ${KAFKA_CONFIG_IS_ROUND_ROBIN}
+  schema:
+    registry:
+      url: ${SCHEMA_REGISTRY_URL}
+    uri:
+      email-send: ${EMAIL_SCHEMA_URI}

@@ -54,7 +54,6 @@ public class PaymentController {
                 .orElseThrow(NotFoundException::new);
 
         return paymentService.get(dissolutionInfo.getETag(), companyNumber);
-
     }
 
     @Operation(summary = "Patch Payment Status", tags = "Dissolution")
@@ -65,8 +64,10 @@ public class PaymentController {
     })
     @PatchMapping()
     @ResponseStatus(HttpStatus.OK)
-    public void patchPaymentData(@PathVariable("company-number") final String companyNumber,
-                                 @Valid @RequestBody final PaymentPatchRequest body) {
+    public void patchPaymentData(
+        @PathVariable("company-number") final String companyNumber,
+        @Valid @RequestBody final PaymentPatchRequest body
+    ) {
 
         logger.info("[PATCH] Updating payment information for company number {} with payment status {}", companyNumber, body.getStatus());
 
