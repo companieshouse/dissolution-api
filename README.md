@@ -6,25 +6,25 @@
 - [Spring Boot](https://spring.io/projects/spring-boot)
 - [Swagger OpenAPI](https://swagger.io/docs/specification/about/)
 
-### Running locally with Docker  
+## Running locally
 
-Required tools:
-- [Docker for Mac](https://hub.docker.com/editions/community/docker-ce-desktop-mac)
-- [Docker-Compose](https://docs.docker.com/compose/install/)
+1. Clone [Docker CHS Development](https://github.com/companieshouse/docker-chs-development) and follow the steps in the README.
 
-Once installed, open Docker for Mac and navigate to Preferences -> Resources and change the settings to Memory => 4 GB, CPUs 4, SWAP = 1 GB.
+2. Enable the `dissolution` module
 
-Add `127.0.0.1 chs-dev cdn.chs-dev account.chs-dev` to your `/etc/hosts` file.
+3. Dissolution API can be accessed using `http://api.chs.local:4001/dissolution-request` from within a docker container.
 
-Login to the Companies House AWS account and run the following command in a fresh terminal session:
+## To make local changes
 
-`docker login -u AWS -p "$(aws ecr get-login-password)" https://169942020521.dkr.ecr.eu-west-1.amazonaws.com`
+Development mode is available for this service in [Docker CHS Development](https://github.com/companieshouse/docker-chs-development).
 
-To bring the environment up, run `docker-compose up` in the project folder. You must be connected to CH VPN in order to download dependencies.
+    ./bin/chs-dev development enable dissolution-api
 
-After making local changes to the app, Ctrl+C on the running `docker-compose` terminal session and run `docker-compose up --build` command.
+## To build the Docker container
 
-Make local changes to the app, Ctrl/+C on the running `docker-compose` terminal session and re-run the command.
+You must be connected to the VPN.
+
+    docker build -t 169942020521.dkr.ecr.eu-west-1.amazonaws.com/local/dissolution-api:latest .
 
 ### API Documentation (Swagger)
 
