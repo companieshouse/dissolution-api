@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.mapper;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
@@ -8,6 +9,7 @@ import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateData
 import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateDirector;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -35,15 +37,21 @@ public class DissolutionCertificateMapperTest {
     public void mapToCertificateData_setsDirectorInformation_fromDissolution() {
         final Dissolution dissolution = generateDissolution();
 
+        final DirectorApproval approvalOne = generateDirectorApproval();
+        approvalOne.setDateTime(LocalDateTime.of(2020, 10, 20, 0, 0));
+
         final DissolutionDirector directorOne = generateDissolutionDirector();
         directorOne.setName("Director One");
         directorOne.setOnBehalfName(null);
-        directorOne.setDirectorApproval(generateDirectorApproval());
+        directorOne.setDirectorApproval(approvalOne);
+
+        final DirectorApproval approvalTwo = generateDirectorApproval();
+        approvalTwo.setDateTime(LocalDateTime.of(2019, 9, 19, 0, 0));
 
         final DissolutionDirector directorTwo = generateDissolutionDirector();
         directorTwo.setName("Director Two");
         directorTwo.setOnBehalfName("Some on behalf name");
-        directorTwo.setDirectorApproval(generateDirectorApproval());
+        directorTwo.setDirectorApproval(approvalTwo);
 
         dissolution.getData().setDirectors(Arrays.asList(directorOne, directorTwo));
 
@@ -53,12 +61,12 @@ public class DissolutionCertificateMapperTest {
 
         final DissolutionCertificateDirector certificateDirector1 = result.getDirectors().get(0);
         assertEquals("Director One", certificateDirector1.getName());
-        assertEquals(Timestamp.valueOf(directorOne.getDirectorApproval().getDateTime()), certificateDirector1.getApprovalDate());
+        assertEquals("20-10-2020", certificateDirector1.getApprovalDate());
         assertNull(certificateDirector1.getOnBehalfName());
 
         final DissolutionCertificateDirector certificateDirector2 = result.getDirectors().get(1);
         assertEquals("Director Two", certificateDirector2.getName());
-        assertEquals(Timestamp.valueOf(directorTwo.getDirectorApproval().getDateTime()), certificateDirector2.getApprovalDate());
+        assertEquals("19-09-2019", certificateDirector2.getApprovalDate());
         assertEquals("Some on behalf name", certificateDirector2.getOnBehalfName());
     }
 

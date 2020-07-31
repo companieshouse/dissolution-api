@@ -165,7 +165,7 @@ public class DissolutionFixtures {
         final DissolutionCertificateDirector director = new DissolutionCertificateDirector();
 
         director.setName("Mr Director");
-        director.setApprovalDate(Timestamp.valueOf(LocalDateTime.now()));
+        director.setApprovalDate("2020-01-01");
 
         return director;
     }

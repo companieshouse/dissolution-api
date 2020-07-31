@@ -1,12 +1,10 @@
 package uk.gov.companieshouse.model.dto.documentRender;
 
-import java.sql.Timestamp;
-
 public class DissolutionCertificateDirector {
 
     private String name;
     private String onBehalfName;
-    private Timestamp approvalDate;
+    private String approvalDate;
 
     public String getName() {
         return name;
@@ -24,11 +22,11 @@ public class DissolutionCertificateDirector {
         this.onBehalfName = onBehalfName;
     }
 
-    public Timestamp getApprovalDate() {
+    public String getApprovalDate() {
         return approvalDate;
     }
 
-    public void setApprovalDate(Timestamp approvalDate) {
+    public void setApprovalDate(String approvalDate) {
         this.approvalDate = approvalDate;
     }
 }

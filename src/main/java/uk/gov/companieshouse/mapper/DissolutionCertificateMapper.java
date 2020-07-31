@@ -10,12 +10,15 @@ import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateDire
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Timestamp;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class DissolutionCertificateMapper {
+
+    private static final String APPROVAL_DATE_FORMAT = "dd-MM-yyyy";
 
     public DissolutionCertificateData mapToCertificateData(Dissolution dissolution) {
         final DissolutionCertificateData data = new DissolutionCertificateData();
@@ -46,10 +49,14 @@ public class DissolutionCertificateMapper {
         final DissolutionCertificateDirector certificateDirector = new DissolutionCertificateDirector();
 
         certificateDirector.setName(director.getName());
-        certificateDirector.setApprovalDate(Timestamp.valueOf(director.getDirectorApproval().getDateTime()));
+        certificateDirector.setApprovalDate(getFormattedApprovalDate(director));
         Optional.ofNullable(director.getOnBehalfName()).ifPresent(certificateDirector::setOnBehalfName);
 
         return certificateDirector;
+    }
+
+    private String getFormattedApprovalDate(DissolutionDirector director) {
+        return director.getDirectorApproval().getDateTime().format(DateTimeFormatter.ofPattern(APPROVAL_DATE_FORMAT));
     }
 
     private URI mapToURI(String location) {
