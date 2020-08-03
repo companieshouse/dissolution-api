@@ -48,6 +48,11 @@
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
             <version>${version.spring.boot}</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+            <version>${version.spring.boot}</version>
+        </dependency>
 
         <!-- CH Helpers -->
         <dependency>
@@ -90,6 +95,18 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <version>${version.spring.boot}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.7.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>mockwebserver</artifactId>
+            <version>4.7.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

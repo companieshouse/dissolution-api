@@ -5,11 +5,21 @@ import uk.gov.companieshouse.model.enums.ApplicationType;
 
 public class DissolutionApplication {
 
+    private String barcode;
+
     private String reference;
 
     private ApplicationType type;
 
     private ApplicationStatus status;
+
+    public String getBarcode() {
+        return barcode;
+    }
+
+    public void setBarcode(String barcode) {
+        this.barcode = barcode;
+    }
 
     public String getReference() {
         return reference;
