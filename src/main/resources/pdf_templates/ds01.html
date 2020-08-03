@@ -18,11 +18,6 @@
             width: 100%;
         }
 
-        #page-container {
-            width: 600px;
-            margin: 0 auto
-        }
-
         .upper {
             height: 280px;
         }
@@ -50,6 +45,10 @@
             font-size: 22px;
         }
 
+        header {
+            display: block;
+        }
+
         h1 {
             width: 350px;
             float: right;
@@ -64,7 +63,6 @@
         }
 
         h2 {
-            margin-top: 30px;
             text-align: center;
             font-weight: bold;
             font-size: 20px;
@@ -87,7 +85,7 @@
             float: left;
         }
 
-        .company-data table tr td:nth-child(1) {
+        .company-data table tr td:first-child {
             width: 175px;
         }
 
@@ -95,7 +93,7 @@
             height: 25px;
         }
 
-        .director-data-table tr td:nth-child(1) {
+        .director-data-table tr td:first-child {
             padding-left: 10px;
             width: 210px;
         }
@@ -132,7 +130,7 @@
     </style>
 </head>
 
-<body id="page-container" xml:lang="en">
+<body xml:lang="en">
 <header class="upper">
     <div class="ch-logo">
         <img src="https://document-render-assets-registry.s3-eu-west-1.amazonaws.com/dissolution/images/ch_logo.jpg"
@@ -180,8 +178,8 @@
         <h2>Declaration of director(s)</h2>
 
         <p>I/We as the majority of directors apply for this company to be struck off the Register and declare that none
-            of
-            the circumstances described in section 1004 and 1005 of the Companies Act 2006 (being circumstances in which
+            of the circumstances described in section 1004 and 1005 of the Companies Act 2006 (being circumstances in
+            which
             the directors would otherwise be prohibited under those sections from making an application) exists in
             relation
             to the company.</p>
