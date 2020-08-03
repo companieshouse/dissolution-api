@@ -25,11 +25,6 @@
 
         .upper {
             height: 280px;
-            float: left;
-        }
-
-        .lower {
-            float: left;
         }
 
         .ch-logo {
@@ -55,7 +50,7 @@
             font-size: 22px;
         }
 
-        .box {
+        h1 {
             width: 350px;
             float: right;
             border: 5px solid black;
@@ -63,6 +58,9 @@
             text-align: center;
             font-size: 30px;
             display: block;
+            font-weight: normal;
+            margin-top: 5px;
+            margin-bottom: 5px;
         }
 
         .company-data-table {
@@ -72,14 +70,18 @@
             float: left;
         }
 
-        .header {
+        h2 {
             margin-top: 30px;
             text-align: center;
             font-weight: bold;
             font-size: 20px;
         }
 
-        .para {
+        h3 {
+            font-weight: bold
+        }
+
+        p {
             text-align: justify;
             text-justify: inter-word;
             margin-top: 25px;
@@ -136,7 +138,7 @@
 <div class="upper">
     <div class="ch-logo">
         <img src="https://document-render-assets-registry.s3-eu-west-1.amazonaws.com/dissolution/images/ch_logo.jpg"
-             alt=""/>
+             alt="Companies House logo"/>
     </div>
 
     <div class="application-type">
@@ -144,7 +146,7 @@
         <span class="application-type-small">(ef)</span>
     </div>
 
-    <div class="box">Application to strike off</div>
+    <h1>Application to strike off</h1>
 
     <div class="company-data-table">
         <table>
@@ -161,28 +163,27 @@
         </table>
     </div>
 </div>
+
 <div class="lower">
     <hr/>
-    <h2 class="header">Important notice for all interested parties</h2>
 
-    <p class="para">This company has applied to be struck off and dissolved.
+    <h2>Important notice for all interested parties</h2>
+
+    <p>This company has applied to be struck off and dissolved.
         The registrar will proceed unless there is reasonable cause not to, and on dissolution any assets remaining in
-        the
-        company will be passed to the Crown.
-        Guidance is available on grounds for objection. If in doubt seek professional advice.</p>
+        the company will be passed to the Crown. Guidance is available on grounds for objection. If in doubt seek
+        professional advice.</p>
 
     <hr/>
 
-    <h2 class="header">Declaration of director(s)</h2>
+    <h2>Declaration of director(s)</h2>
 
-    <p class="para">I/We as the majority of directors apply for this company to be struck off the Register and
-        declare that none of the
-        circumstances described in section 1004 and 1005 of the Companies Act 2006 (being circumstances in which the
-        directors
-        would otherwise be prohibited under those sections from making an application) exists in relation to the
-        company.</p>
+    <p>I/We as the majority of directors apply for this company to be struck off the Register and
+        declare that none of the circumstances described in section 1004 and 1005 of the Companies Act 2006
+        (being circumstances in which the directors would otherwise be prohibited under those sections from making an
+        application) exists in relation to the company.</p>
 
-    <h3 style="font-weight: bold">Authorising company Director(s):</h3>
+    <h3>Authorising company Director(s):</h3>
 
     <table>
         <tbody>
@@ -203,6 +204,7 @@
         {{end}}
         </tbody>
     </table>
+
     <hr/>
 </div>
 </body>
