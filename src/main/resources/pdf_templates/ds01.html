@@ -150,7 +150,6 @@
 
     <div class="company-data-table">
         <table>
-            <tbody>
             <tr class="company-data-tr">
                 <td class="company-data-td">Company Name:</td>
                 <td>{{.companyName}}</td>
@@ -159,12 +158,11 @@
                 <td class="company-data-td">Company Number:</td>
                 <td>{{.companyNumber}}</td>
             </tr>
-            </tbody>
         </table>
     </div>
 </div>
 
-<div class="lower">
+<div>
     <hr/>
 
     <h2>Important notice for all interested parties</h2>
@@ -186,7 +184,6 @@
     <h3>Authorising company Director(s):</h3>
 
     <table>
-        <tbody>
         {{range $k, $director:= .directors }}
         <tr class="director-data-row">
             <td class="director-data-left">{{$director.name}}</td>
@@ -202,7 +199,6 @@
             </td>
         </tr>
         {{end}}
-        </tbody>
     </table>
 
     <hr/>
