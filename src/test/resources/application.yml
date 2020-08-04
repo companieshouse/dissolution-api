@@ -8,6 +8,9 @@ barcodeGenerator:
 cdn:
   host: http://cdn
 
+companyProfile:
+  host: http://company-profile-api
+
 dissolution:
   pdfBucket: some-pdf-bucket
 

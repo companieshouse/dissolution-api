@@ -5,9 +5,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
+import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
@@ -41,6 +43,13 @@ public class DissolutionCreatorTest {
     @Mock
     private DissolutionResponseMapper responseMapper;
 
+    public static final String COMPANY_NUMBER = "12345678";
+    public static final String COMPANY_NAME = "ComComp";
+    public static final String USER_ID = "123";
+    public static final String IP = "192.168.0.1";
+    public static final String EMAIL = "user@mail.com";
+    public static final String REFERENCE = "ABC123";
+
     @Test
     public void create_generatesAReferenceNumber_mapsToDissolution_savesInDatabase_returnsCreateResponse() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
@@ -54,19 +63,22 @@ public class DissolutionCreatorTest {
 
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
         final DissolutionCreateResponse response = DissolutionFixtures.generateDissolutionCreateResponse();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        company.setCompanyNumber(COMPANY_NUMBER);
+        company.setCompanyName(COMPANY_NAME);
 
-        when(referenceGenerator.generateApplicationReference()).thenReturn(reference);
+        when(referenceGenerator.generateApplicationReference()).thenReturn(REFERENCE);
         when(barcodeGenerator.generateBarcode()).thenReturn(barcode);
-        when(requestMapper.mapToDissolution(body, companyNumber, userId, email, ip, reference, barcode)).thenReturn(dissolution);
+        when(requestMapper.mapToDissolution(body, company, USER_ID, EMAIL, IP, REFERENCE, barcode)).thenReturn(dissolution);
         when(responseMapper.mapToDissolutionCreateResponse(dissolution)).thenReturn(response);
 
-        final DissolutionCreateResponse result = creator.create(body, companyNumber, userId, ip, email);
+        final DissolutionCreateResponse result = creator.create(body, company, USER_ID, IP, EMAIL);
 
         verify(referenceGenerator).generateApplicationReference();
         verify(barcodeGenerator).generateBarcode();
-        verify(requestMapper).mapToDissolution(body, companyNumber, userId, email, ip, reference, barcode);
-        verify(repository).insert(dissolution);
+        verify(requestMapper).mapToDissolution(body, company, USER_ID, EMAIL, IP, REFERENCE, barcode);
         verify(responseMapper).mapToDissolutionCreateResponse(dissolution);
+        verify(repository).insert(dissolution);
 
         assertEquals(response, result);
     }

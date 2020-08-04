@@ -8,6 +8,9 @@ barcodeGenerator:
 cdn:
   host: ${CDN_HOST}
 
+companyProfile:
+  host: ${CHS_COMPANY_PROFILE_API_LOCAL_URL}
+
 dissolution:
   pdfBucket: ${DISSOLUTION_PDF_BUCKET}
 

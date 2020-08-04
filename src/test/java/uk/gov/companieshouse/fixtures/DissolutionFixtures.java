@@ -9,7 +9,7 @@ import uk.gov.companieshouse.model.enums.ApplicationType;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -94,22 +94,17 @@ public class DissolutionFixtures {
     }
 
     public static List<DissolutionDirector> generateDissolutionDirectorList() {
-        final List<DissolutionDirector> directorList = new ArrayList<>();
         final DissolutionDirector director = new DissolutionDirector();
 
         director.setName("John Doe");
         director.setEmail("john@doe.com");
-
-        directorList.add(director);
 
         final DissolutionDirector directorTwo = new DissolutionDirector();
 
         directorTwo.setName("Fred Mercure");
         directorTwo.setEmail("fred@mercure.com");
 
-        directorList.add(directorTwo);
-
-        return directorList;
+        return Arrays.asList(director,directorTwo);
     }
 
     public static Company generateCompany() {
