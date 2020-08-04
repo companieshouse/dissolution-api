@@ -5,6 +5,9 @@ api:
 barcodeGenerator:
   host: ${BARCODE_SERVICE_URL}
 
+cdn:
+  host: ${CDN_HOST}
+
 dissolution:
   pdfBucket: ${DISSOLUTION_PDF_BUCKET}
 

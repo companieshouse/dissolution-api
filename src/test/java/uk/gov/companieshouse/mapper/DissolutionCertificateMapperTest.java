@@ -1,6 +1,11 @@
 package uk.gov.companieshouse.mapper;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.config.DocumentRenderConfig;
 import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
@@ -8,17 +13,36 @@ import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateData;
 import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateDirector;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.*;
 
+@ExtendWith(MockitoExtension.class)
 public class DissolutionCertificateMapperTest {
 
-    final DissolutionCertificateMapper mapper = new DissolutionCertificateMapper();
+    private static final String CDN_HOST = "http://some-cdn-host";
+
+    @InjectMocks
+    private DissolutionCertificateMapper mapper;
+
+    @Mock
+    private DocumentRenderConfig config;
+
+    @Test
+    public void mapToCertificateData_setsCdnInfo_fromConfig() {
+        final Dissolution dissolution = generateDissolution();
+        dissolution.getData().setDirectors(Collections.emptyList());
+
+        when(config.getCdnHost()).thenReturn(CDN_HOST);
+
+        final DissolutionCertificateData result = mapper.mapToCertificateData(dissolution);
+
+        assertEquals(CDN_HOST, result.getCdn());
+    }
 
     @Test
     public void mapToCertificateData_setsCompanyNameAndNumber_fromDissolution() {
@@ -26,6 +50,8 @@ public class DissolutionCertificateMapperTest {
         dissolution.getCompany().setName("some company");
         dissolution.getCompany().setNumber("12345");
         dissolution.getData().setDirectors(Collections.emptyList());
+
+        when(config.getCdnHost()).thenReturn(CDN_HOST);
 
         final DissolutionCertificateData result = mapper.mapToCertificateData(dissolution);
 
@@ -54,6 +80,8 @@ public class DissolutionCertificateMapperTest {
         directorTwo.setDirectorApproval(approvalTwo);
 
         dissolution.getData().setDirectors(Arrays.asList(directorOne, directorTwo));
+
+        when(config.getCdnHost()).thenReturn(CDN_HOST);
 
         final DissolutionCertificateData result = mapper.mapToCertificateData(dissolution);
 

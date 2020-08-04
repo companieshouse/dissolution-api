@@ -4,9 +4,18 @@ import java.util.List;
 
 public class DissolutionCertificateData {
 
+    private String cdn;
     private String companyNumber;
     private String companyName;
     private List<DissolutionCertificateDirector> directors;
+
+    public String getCdn() {
+        return cdn;
+    }
+
+    public void setCdn(String cdn) {
+        this.cdn = cdn;
+    }
 
     public String getCompanyNumber() {
         return companyNumber;

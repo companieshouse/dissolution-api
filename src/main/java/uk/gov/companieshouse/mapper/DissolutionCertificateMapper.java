@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.mapper;
 
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.config.DocumentRenderConfig;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
@@ -20,9 +21,16 @@ public class DissolutionCertificateMapper {
 
     private static final String APPROVAL_DATE_FORMAT = "dd-MM-yyyy";
 
+    private final DocumentRenderConfig config;
+
+    public DissolutionCertificateMapper(DocumentRenderConfig config) {
+        this.config = config;
+    }
+
     public DissolutionCertificateData mapToCertificateData(Dissolution dissolution) {
         final DissolutionCertificateData data = new DissolutionCertificateData();
 
+        data.setCdn(config.getCdnHost());
         data.setCompanyName(dissolution.getCompany().getName());
         data.setCompanyNumber(dissolution.getCompany().getNumber());
         data.setDirectors(mapToCertificateDirectors(dissolution.getData().getDirectors()));

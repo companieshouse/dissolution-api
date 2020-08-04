@@ -5,6 +5,9 @@ api:
 barcodeGenerator:
   host: http://barcode-generator
 
+cdn:
+  host: http://cdn
+
 dissolution:
   pdfBucket: some-pdf-bucket
 
