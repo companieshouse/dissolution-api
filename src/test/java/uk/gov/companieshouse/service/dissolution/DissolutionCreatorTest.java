@@ -12,6 +12,7 @@ import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.repository.DissolutionRepository;
+import uk.gov.companieshouse.service.barcode.BarcodeGenerator;
 import uk.gov.companieshouse.service.dissolution.DissolutionCreator;
 import uk.gov.companieshouse.service.dissolution.ReferenceGenerator;
 
@@ -27,6 +28,9 @@ public class DissolutionCreatorTest {
 
     @Mock
     ReferenceGenerator referenceGenerator;
+
+    @Mock
+    BarcodeGenerator barcodeGenerator;
 
     @Mock
     DissolutionRequestMapper requestMapper;
@@ -46,17 +50,22 @@ public class DissolutionCreatorTest {
         final String email = "user@mail.com";
 
         final String reference = "ABC123";
+        final String barcode = "BARC0D3";
+
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
         final DissolutionCreateResponse response = DissolutionFixtures.generateDissolutionCreateResponse();
 
         when(referenceGenerator.generateApplicationReference()).thenReturn(reference);
-        when(requestMapper.mapToDissolution(body, companyNumber, userId, email, ip, reference)).thenReturn(dissolution);
+        when(barcodeGenerator.generateBarcode()).thenReturn(barcode);
+        when(requestMapper.mapToDissolution(body, companyNumber, userId, email, ip, reference, barcode)).thenReturn(dissolution);
         when(responseMapper.mapToDissolutionCreateResponse(dissolution)).thenReturn(response);
 
         final DissolutionCreateResponse result = creator.create(body, companyNumber, userId, ip, email);
 
         verify(referenceGenerator).generateApplicationReference();
-        verify(requestMapper).mapToDissolution(body, companyNumber, userId, email, ip, reference);
+        verify(barcodeGenerator).generateBarcode();
+        verify(requestMapper).mapToDissolution(body, companyNumber, userId, email, ip, reference, barcode);
+        verify(repository).insert(dissolution);
         verify(responseMapper).mapToDissolutionCreateResponse(dissolution);
 
         assertEquals(response, result);

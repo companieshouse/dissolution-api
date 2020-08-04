@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.service.documentRender;
+package uk.gov.companieshouse.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -8,11 +8,13 @@ import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.repository.DissolutionRepository;
+import uk.gov.companieshouse.service.barcode.BarcodeGenerator;
 
 @Service
 public class DissolutionCreator {
 
     private final ReferenceGenerator referenceGenerator;
+    private final BarcodeGenerator barcodeGenerator;
     private final DissolutionRequestMapper requestMapper;
     private final DissolutionRepository repository;
     private final DissolutionResponseMapper responseMapper;
@@ -20,10 +22,12 @@ public class DissolutionCreator {
     @Autowired
     public DissolutionCreator(
         ReferenceGenerator referenceGenerator,
+        BarcodeGenerator barcodeGenerator,
         DissolutionRequestMapper requestMapper,
         DissolutionRepository repository,
         DissolutionResponseMapper responseMapper) {
         this.referenceGenerator = referenceGenerator;
+        this.barcodeGenerator = barcodeGenerator;
         this.requestMapper = requestMapper;
         this.repository = repository;
         this.responseMapper = responseMapper;
@@ -32,7 +36,9 @@ public class DissolutionCreator {
     public DissolutionCreateResponse create(DissolutionCreateRequest body, String companyNumber, String userId, String ip, String email) {
         final String reference = referenceGenerator.generateApplicationReference();
 
-        final Dissolution dissolution = requestMapper.mapToDissolution(body, companyNumber, userId, email, ip, reference);
+        final String barcode = barcodeGenerator.generateBarcode();
+
+        final Dissolution dissolution = requestMapper.mapToDissolution(body, companyNumber, userId, email, ip, reference, barcode);
 
         repository.insert(dissolution);
 

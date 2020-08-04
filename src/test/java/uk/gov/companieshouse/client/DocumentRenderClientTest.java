@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.service.documentRender;
+package uk.gov.companieshouse.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.mockwebserver.MockResponse;
@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import uk.gov.companieshouse.client.DocumentRenderClient;
 import uk.gov.companieshouse.config.DocumentRenderConfig;
 import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateData;
 

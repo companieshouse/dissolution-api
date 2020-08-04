@@ -1,5 +1,9 @@
 api:
   key: some-api-key
+  url: http://api
+
+barcodeGenerator:
+  host: http://barcode-generator
 
 dissolution:
   pdfBucket: some-pdf-bucket

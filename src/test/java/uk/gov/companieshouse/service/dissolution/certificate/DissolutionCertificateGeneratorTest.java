@@ -10,7 +10,7 @@ import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
 import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateData;
 import uk.gov.companieshouse.model.enums.ApplicationType;
-import uk.gov.companieshouse.service.documentRender.DocumentRenderClient;
+import uk.gov.companieshouse.client.DocumentRenderClient;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;

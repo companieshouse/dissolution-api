@@ -8,7 +8,7 @@ import uk.gov.companieshouse.mapper.DissolutionCertificateMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
 import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateData;
-import uk.gov.companieshouse.service.documentRender.DocumentRenderClient;
+import uk.gov.companieshouse.client.DocumentRenderClient;
 
 @Service
 public class DissolutionCertificateGenerator {
