@@ -5,7 +5,7 @@
 
 <head>
     <meta content="application/xhtml+xml; charset=UTF-8" http-equiv="content-type"/>
-    <title>DS01</title>
+    <title>DS01 - Application to strike off {{.companyName}}</title>
 
     <style type="text/css">
         body {
@@ -143,10 +143,10 @@
 </head>
 
 <body xml:lang="en">
-<header class="upper">
+<header role="banner">
     <div class="info">
         <div class="ch-logo">
-            <img src="https://document-render-assets-registry.s3-eu-west-1.amazonaws.com/dissolution/images/ch_logo.jpg"
+            <img src="http://{{.cdn}}/images/ch_digital_logo_non_transparent.jpg"
                  alt="Companies House logo"/>
         </div>
 
@@ -172,7 +172,7 @@
     </div>
 </header>
 
-<div>
+<main role="main">
     <hr/>
 
     <section>
@@ -224,6 +224,6 @@
         </table>
     </section>
     <hr id="bottom-line"/>
-</div>
+</main>
 </body>
 </html>
