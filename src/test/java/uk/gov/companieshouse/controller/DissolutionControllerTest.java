@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.client.CompanyProfileClient;
 import uk.gov.companieshouse.config.ApiConfig;
+import uk.gov.companieshouse.model.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
@@ -19,7 +20,6 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.service.DissolutionValidator;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
-import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
 
 import java.util.Collections;
 import java.util.List;
@@ -172,7 +172,7 @@ public class DissolutionControllerTest {
     @Test
     public void submitDissolutionRequest_returnsConflict_ifDissolutionAlreadyExistsForCompany() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
-        final CompanyProfileApi company = generateCompanyProfileApi();
+        final CompanyProfile company = generateCompanyProfile();
         company.setCompanyName(COMPANY_NAME);
 
         when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(true);
@@ -191,7 +191,7 @@ public class DissolutionControllerTest {
     public void submitDissolutionRequest_returnsCreated_andCreateResponse_ifDissolutionIsCreatedSuccessfully() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
         final DissolutionCreateResponse response = generateDissolutionCreateResponse();
-        final CompanyProfileApi company = generateCompanyProfileApi();
+        final CompanyProfile company = generateCompanyProfile();
         company.setCompanyName(COMPANY_NAME);
 
         when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(false);
@@ -213,7 +213,7 @@ public class DissolutionControllerTest {
     @Test
     public void submitDissolutionRequest_returnsInternalServerError_ifExceptionOccursWhenCreatingDissolution() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
-        final CompanyProfileApi company = generateCompanyProfileApi();
+        final CompanyProfile company = generateCompanyProfile();
         company.setCompanyName(COMPANY_NAME);
 
         when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(false);
@@ -236,7 +236,7 @@ public class DissolutionControllerTest {
     public void submitDissolutionRequest_returnsNotFound_ifCompanyNotFound() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
         final DissolutionCreateResponse response = generateDissolutionCreateResponse();
-        final CompanyProfileApi company = generateCompanyProfileApi();
+        final CompanyProfile company = generateCompanyProfile();
         company.setCompanyName(COMPANY_NAME);
 
         when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(false);
@@ -257,7 +257,7 @@ public class DissolutionControllerTest {
     public void submitDissolutionRequest_returnsBadRequest_ifValidationFails() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
         final DissolutionCreateResponse response = generateDissolutionCreateResponse();
-        final CompanyProfileApi company = generateCompanyProfileApi();
+        final CompanyProfile company = generateCompanyProfile();
         company.setCompanyName(COMPANY_NAME);
 
         when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(false);

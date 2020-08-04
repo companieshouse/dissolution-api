@@ -1,18 +1,18 @@
 package uk.gov.companieshouse.fixtures;
 
-import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
+import uk.gov.companieshouse.model.CompanyProfile;
 import uk.gov.companieshouse.model.enums.CompanyStatus;
 import uk.gov.companieshouse.model.enums.CompanyType;
 
 public class CompanyProfileFixtures {
-    public static CompanyProfileApi generateCompanyProfileApi() {
-        final CompanyProfileApi companyProfileApi = new CompanyProfileApi();
+    public static CompanyProfile generateCompanyProfile() {
+        final CompanyProfile companyProfile = new CompanyProfile();
 
-        companyProfileApi.setCompanyName("My Company");
-        companyProfileApi.setType(CompanyType.LTD.getValue());
-        companyProfileApi.setCompanyNumber("10001");
-        companyProfileApi.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
+        companyProfile.setCompanyName("My Company");
+        companyProfile.setType(CompanyType.LTD.getValue());
+        companyProfile.setCompanyNumber("10001");
+        companyProfile.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
 
-        return companyProfileApi;
+        return companyProfile;
     }
 }

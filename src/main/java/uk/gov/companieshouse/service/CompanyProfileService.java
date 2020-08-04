@@ -2,7 +2,7 @@ package uk.gov.companieshouse.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
+import uk.gov.companieshouse.model.CompanyProfile;
 
 @Service
 public class CompanyProfileService {
@@ -13,7 +13,7 @@ public class CompanyProfileService {
         this.validator = validator;
     }
 
-    public boolean isCompanyClosable(CompanyProfileApi company) {
+    public boolean isCompanyClosable(CompanyProfile company) {
         return this.validator.isCompanyClosable(company);
     }
 }

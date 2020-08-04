@@ -5,11 +5,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
+import uk.gov.companieshouse.model.CompanyProfile;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
@@ -63,7 +63,7 @@ public class DissolutionCreatorTest {
 
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
         final DissolutionCreateResponse response = DissolutionFixtures.generateDissolutionCreateResponse();
-        final CompanyProfileApi company = CompanyProfileFixtures.generateCompanyProfileApi();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setCompanyNumber(COMPANY_NUMBER);
         company.setCompanyName(COMPANY_NAME);
 
