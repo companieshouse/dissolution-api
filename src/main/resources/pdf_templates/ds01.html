@@ -89,7 +89,7 @@
             width: 100%;
         }
 
-        .company-data table tr td:first-child {
+        .company-data-left {
             width: 175px;
         }
 
@@ -97,12 +97,12 @@
             height: 25px;
         }
 
-        .director-data-table tr td:first-child {
+        .director-data-left {
             padding-left: 10px;
             width: 210px;
         }
 
-        .director-data-table tr td:nth-child(2) {
+        .director-data-right {
             width: 320px;
             padding-top: 30px;
         }
@@ -161,11 +161,11 @@
     <div class="company-data">
         <table>
             <tr>
-                <td>Company Name:</td>
+                <td class="company-data-left">Company Name:</td>
                 <td>{{.companyName}}</td>
             </tr>
             <tr>
-                <td>Company Number:</td>
+                <td class="company-data-left">Company Number:</td>
                 <td>{{.companyNumber}}</td>
             </tr>
         </table>
@@ -200,8 +200,8 @@
         <table class="director-data-table">
             {{range $k, $director:= .directors }}
                 <tr>
-                    <td>{{$director.name}}</td>
-                    <td>
+                    <td class="director-data-left">{{$director.name}}</td>
+                    <td class="director-data-right">
                         <div>
                             {{if $director.onBehalfName}}
                                 <span class="label">{{$director.onBehalfName}} pp {{$director.name}}</span>
