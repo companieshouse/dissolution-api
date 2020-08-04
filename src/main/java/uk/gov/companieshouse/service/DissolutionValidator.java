@@ -2,7 +2,7 @@ package uk.gov.companieshouse.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.model.CompanyProfile;
+import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 
 import java.util.List;

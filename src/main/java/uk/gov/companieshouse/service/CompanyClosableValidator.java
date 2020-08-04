@@ -1,7 +1,7 @@
 package uk.gov.companieshouse.service;
 
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.model.CompanyProfile;
+import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.enums.CompanyStatus;
 import uk.gov.companieshouse.model.enums.CompanyType;
 

@@ -2,7 +2,7 @@ package uk.gov.companieshouse.mapper;
 
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.GenerateEtagUtil;
-import uk.gov.companieshouse.model.CompanyProfile;
+import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.db.dissolution.*;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;

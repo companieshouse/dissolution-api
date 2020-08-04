@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriTemplate;
 import uk.gov.companieshouse.config.CompanyProfileConfig;
-import uk.gov.companieshouse.model.CompanyProfile;
+import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 
 @Service
 public class CompanyProfileClient {

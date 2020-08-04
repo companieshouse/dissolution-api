@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.client.CompanyProfileClient;
 import uk.gov.companieshouse.exception.*;
-import uk.gov.companieshouse.model.CompanyProfile;
+import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;

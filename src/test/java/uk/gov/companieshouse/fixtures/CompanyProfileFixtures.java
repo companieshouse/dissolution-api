@@ -1,6 +1,6 @@
 package uk.gov.companieshouse.fixtures;
 
-import uk.gov.companieshouse.model.CompanyProfile;
+import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.enums.CompanyStatus;
 import uk.gov.companieshouse.model.enums.CompanyType;
 

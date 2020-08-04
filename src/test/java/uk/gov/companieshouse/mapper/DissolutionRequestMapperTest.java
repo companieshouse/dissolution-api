@@ -3,7 +3,7 @@ package uk.gov.companieshouse.mapper;
 import org.junit.jupiter.api.Test;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
-import uk.gov.companieshouse.model.CompanyProfile;
+import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;

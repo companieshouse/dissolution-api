@@ -9,7 +9,7 @@ import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
-import uk.gov.companieshouse.model.CompanyProfile;
+import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;

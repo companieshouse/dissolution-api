@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.model;
+package uk.gov.companieshouse.model.dto.companyProfile;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
