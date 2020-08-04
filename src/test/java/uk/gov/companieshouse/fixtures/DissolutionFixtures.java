@@ -2,12 +2,8 @@ package uk.gov.companieshouse.fixtures;
 
 import uk.gov.companieshouse.model.db.dissolution.*;
 import uk.gov.companieshouse.model.dto.dissolution.*;
-import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
-import uk.gov.companieshouse.api.model.officers.CompanyOfficerApi;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;
-import uk.gov.companieshouse.model.enums.CompanyStatus;
-import uk.gov.companieshouse.model.enums.CompanyType;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;

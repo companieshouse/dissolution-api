@@ -5,8 +5,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriTemplate;
-import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
 import uk.gov.companieshouse.config.CompanyProfileConfig;
+import uk.gov.companieshouse.model.CompanyProfile;
 
 @Service
 public class CompanyProfileClient {
@@ -29,7 +29,7 @@ public class CompanyProfileClient {
         this.companyProfileConfig = companyProfileConfig;
     }
 
-    public CompanyProfileApi getCompanyProfile(String companyNumber) {
+    public CompanyProfile getCompanyProfile(String companyNumber) {
         try {
             return WebClient
                     .create(companyProfileConfig.getCompanyProfileHost())
@@ -40,7 +40,7 @@ public class CompanyProfileClient {
                     .header(HEADER_CONTENT_TYPE, HEADER_CONTENT_TYPE_VALUE)
                     .retrieve()
                     .onStatus(HttpStatus.NOT_FOUND::equals, clientResponse -> { throw new CompanyNotFoundException(); })
-                    .bodyToMono(CompanyProfileApi.class)
+                    .bodyToMono(CompanyProfile.class)
                     .block();
         } catch (CompanyNotFoundException ex) {
             return null;

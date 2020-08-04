@@ -1,9 +1,9 @@
 package uk.gov.companieshouse.mapper;
 
 import org.junit.jupiter.api.Test;
-import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
+import uk.gov.companieshouse.model.CompanyProfile;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
@@ -30,7 +30,7 @@ public class DissolutionRequestMapperTest {
     @Test
     public void mapToDissolution_setsModifiedDateTime() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
-        final CompanyProfileApi company = CompanyProfileFixtures.generateCompanyProfileApi();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setCompanyNumber(COMPANY_NUMBER);
         company.setCompanyName(COMPANY_NAME);
 
@@ -42,7 +42,7 @@ public class DissolutionRequestMapperTest {
     @Test
     public void mapToDissolution_setsApplicationData_includingDefaultStatus() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
-        final CompanyProfileApi company = CompanyProfileFixtures.generateCompanyProfileApi();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setCompanyNumber(COMPANY_NUMBER);
         company.setCompanyName(COMPANY_NAME);
 
@@ -57,7 +57,7 @@ public class DissolutionRequestMapperTest {
     @Test
     public void mapToDissolution_setsDirectorsToSignFromRequestBody() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
-        final CompanyProfileApi company = CompanyProfileFixtures.generateCompanyProfileApi();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setCompanyNumber(COMPANY_NUMBER);
         company.setCompanyName(COMPANY_NAME);
 
@@ -91,7 +91,7 @@ public class DissolutionRequestMapperTest {
     @Test
     public void mapToDissolution_setsCompanyInformation() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
-        final CompanyProfileApi company = CompanyProfileFixtures.generateCompanyProfileApi();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setCompanyNumber(COMPANY_NUMBER);
         company.setCompanyName(COMPANY_NAME);
 
@@ -104,7 +104,7 @@ public class DissolutionRequestMapperTest {
     @Test
     public void mapToDissolution_setsCreatedByInformation() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
-        final CompanyProfileApi company = CompanyProfileFixtures.generateCompanyProfileApi();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setCompanyNumber(COMPANY_NUMBER);
         company.setCompanyName(COMPANY_NAME);
 

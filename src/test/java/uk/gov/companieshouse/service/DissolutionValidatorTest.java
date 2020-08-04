@@ -5,10 +5,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
-import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
-import uk.gov.companieshouse.fixtures.DissolutionFixtures;
+import uk.gov.companieshouse.model.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 
 import java.util.Arrays;
@@ -34,49 +32,49 @@ public class DissolutionValidatorTest {
 
     @Test
     public void checkBusinessRules_allRulesSatisfied_returnsEmptyOptional() {
-        final CompanyProfileApi companyProfileApi = CompanyProfileFixtures.generateCompanyProfileApi();
+        final CompanyProfile companyProfile = CompanyProfileFixtures.generateCompanyProfile();
         final DirectorRequest directorOne = new DirectorRequest();
         directorOne.setName(DIRECTOR_NAME);
         directorOne.setEmail(DIRECTOR_EMAIL);
         final List<DirectorRequest> selectedDirectors = Arrays.asList(directorOne);
 
-        when(companyProfileService.isCompanyClosable(companyProfileApi)).thenReturn(true);
-        when(companyOfficerService.hasEnoughOfficersSelected(companyProfileApi.getCompanyNumber(), selectedDirectors))
+        when(companyProfileService.isCompanyClosable(companyProfile)).thenReturn(true);
+        when(companyOfficerService.hasEnoughOfficersSelected(companyProfile.getCompanyNumber(), selectedDirectors))
                 .thenReturn(true);
 
-        final Optional<String> validationMessage = dissolutionValidator.checkBusinessRules(companyProfileApi, selectedDirectors);
+        final Optional<String> validationMessage = dissolutionValidator.checkBusinessRules(companyProfile, selectedDirectors);
 
         assertEquals(Optional.empty(), validationMessage);
     }
 
     @Test
     public void checkBusinessRules_comapnyNotClosable_returnsValidationMessage() {
-        final CompanyProfileApi companyProfileApi = CompanyProfileFixtures.generateCompanyProfileApi();
+        final CompanyProfile companyProfile = CompanyProfileFixtures.generateCompanyProfile();
         final DirectorRequest directorOne = new DirectorRequest();
         directorOne.setName(DIRECTOR_NAME);
         directorOne.setEmail(DIRECTOR_EMAIL);
         final List<DirectorRequest> selectedDirectors = Arrays.asList(directorOne);
 
-        when(companyProfileService.isCompanyClosable(companyProfileApi)).thenReturn(false);
+        when(companyProfileService.isCompanyClosable(companyProfile)).thenReturn(false);
 
-        final Optional<String> validationMessage = dissolutionValidator.checkBusinessRules(companyProfileApi, selectedDirectors);
+        final Optional<String> validationMessage = dissolutionValidator.checkBusinessRules(companyProfile, selectedDirectors);
 
         assertEquals(Optional.of("Company must be of a closable type and have an active status"), validationMessage);
     }
 
     @Test
     public void checkBusinessRules_notEnoughDirectorsSelected_returnsValidationMessage() {
-        final CompanyProfileApi companyProfileApi = CompanyProfileFixtures.generateCompanyProfileApi();
+        final CompanyProfile companyProfile = CompanyProfileFixtures.generateCompanyProfile();
         final DirectorRequest directorOne = new DirectorRequest();
         directorOne.setName(DIRECTOR_NAME);
         directorOne.setEmail(DIRECTOR_EMAIL);
         final List<DirectorRequest> selectedDirectors = Arrays.asList(directorOne);
 
-        when(companyProfileService.isCompanyClosable(companyProfileApi)).thenReturn(true);
-        when(companyOfficerService.hasEnoughOfficersSelected(companyProfileApi.getCompanyNumber(), selectedDirectors))
+        when(companyProfileService.isCompanyClosable(companyProfile)).thenReturn(true);
+        when(companyOfficerService.hasEnoughOfficersSelected(companyProfile.getCompanyNumber(), selectedDirectors))
                 .thenReturn(false);
 
-        final Optional<String> validationMessage = dissolutionValidator.checkBusinessRules(companyProfileApi, selectedDirectors);
+        final Optional<String> validationMessage = dissolutionValidator.checkBusinessRules(companyProfile, selectedDirectors);
 
         assertEquals(Optional.of("A majority of directors must be selected"), validationMessage);
     }
