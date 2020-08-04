@@ -16,15 +16,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
 import uk.gov.companieshouse.config.CompanyProfileConfig;
+import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.fixtures.CompanyProfileFixtures.generateCompanyProfileApi;
+import static uk.gov.companieshouse.fixtures.CompanyProfileFixtures.generateCompanyProfile;
 
 @ExtendWith(MockitoExtension.class)
 public class CompanyProfileClientTest {
@@ -56,8 +56,8 @@ public class CompanyProfileClientTest {
     }
 
     @Test
-    public void getCompanyProfile_callsCompanyProfileApi_returnsCompanyProfile() throws Exception {
-        final CompanyProfileApi company = generateCompanyProfileApi();
+    public void getCompanyProfile_callsCompanyProfile_returnsCompanyProfile() throws Exception {
+        final CompanyProfile company = generateCompanyProfile();
 
         mockBackEnd.enqueue(
                 new MockResponse()
@@ -66,7 +66,7 @@ public class CompanyProfileClientTest {
                         .setBody(asJsonString(company))
         );
 
-        final CompanyProfileApi result = client.getCompanyProfile(COMPANY_NUMBER);
+        final CompanyProfile result = client.getCompanyProfile(COMPANY_NUMBER);
 
         assertEquals(asJsonString(company), asJsonString(result));
 
@@ -77,12 +77,12 @@ public class CompanyProfileClientTest {
     }
 
     @Test
-    public void getCompanyProfile_callsCompanyProfileApi_providesTheCorrectHeaders() throws Exception {
+    public void getCompanyProfile_callsCompanyProfile_providesTheCorrectHeaders() throws Exception {
         mockBackEnd.enqueue(
                 new MockResponse()
                         .setResponseCode(HttpStatus.OK.value())
                         .setHeader("Content-Type", "application/json")
-                        .setBody(asJsonString(generateCompanyProfileApi()))
+                        .setBody(asJsonString(generateCompanyProfile()))
         );
 
         client.getCompanyProfile(COMPANY_NUMBER);
@@ -103,7 +103,7 @@ public class CompanyProfileClientTest {
                         .setBody("{}")
         );
 
-        final CompanyProfileApi result = client.getCompanyProfile(COMPANY_NUMBER);
+        final CompanyProfile result = client.getCompanyProfile(COMPANY_NUMBER);
 
         assertNull(result);
     }

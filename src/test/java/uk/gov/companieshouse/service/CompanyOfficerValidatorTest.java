@@ -1,20 +1,16 @@
 package uk.gov.companieshouse.service;
 
 import org.junit.jupiter.api.Test;
-import uk.gov.companieshouse.api.model.officers.CompanyOfficerApi;
-import uk.gov.companieshouse.api.model.officers.OfficerRoleApi;
-import uk.gov.companieshouse.fixtures.CompanyOfficerFixtures;
-import uk.gov.companieshouse.fixtures.DissolutionFixtures;
-import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
+import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
-import uk.gov.companieshouse.service.CompanyOfficerValidator;
+import uk.gov.companieshouse.model.enums.OfficerRole;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.*;
+import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
 
 public class CompanyOfficerValidatorTest {
     private static final String DIRECTOR_NAME = "Jeff";
@@ -23,139 +19,154 @@ public class CompanyOfficerValidatorTest {
     private static final String DIRECTOR_EMAIL_TWO = "bill@email.com";
     private static final String DIRECTOR_NAME_THREE = "Ted";
 
-    private final CompanyOfficerValidator mapper = new CompanyOfficerValidator();
+    private final CompanyOfficerValidator validator = new CompanyOfficerValidator();
 
     @Test
-    public void mapCompanyOfficersToIsOverHalfSelected_halfDirectorsSelected_returnsTrue() {
+    public void areMajorityOfCompanyOfficersSelected_halfDirectorsSelected_returnsTrue() {
         final DirectorRequest directorOne = new DirectorRequest();
         directorOne.setName(DIRECTOR_NAME);
         directorOne.setEmail(DIRECTOR_EMAIL);
+
         final DirectorRequest directorTwo = new DirectorRequest();
         directorTwo.setName(DIRECTOR_NAME_TWO);
         directorTwo.setEmail(DIRECTOR_EMAIL_TWO);
+
         final List<DirectorRequest> selectedDirectors = Arrays.asList(directorOne, directorTwo);
 
-        final CompanyOfficerApi companyOfficerApiOne = new CompanyOfficerApi();
-        companyOfficerApiOne.setName(DIRECTOR_NAME);
-        companyOfficerApiOne.setOfficerRole(OfficerRoleApi.DIRECTOR);
-        companyOfficerApiOne.setAppointedOn(LocalDateTime.now().minusWeeks(1).toLocalDate());
-        final CompanyOfficerApi companyOfficerApiTwo = new CompanyOfficerApi();
-        companyOfficerApiTwo.setName(DIRECTOR_NAME_TWO);
-        companyOfficerApiTwo.setOfficerRole(OfficerRoleApi.DIRECTOR);
-        companyOfficerApiTwo.setAppointedOn(LocalDateTime.now().minusWeeks(1).toLocalDate());
-        final CompanyOfficerApi companyOfficerApiThree = new CompanyOfficerApi();
-        companyOfficerApiThree.setName(DIRECTOR_NAME_THREE);
-        companyOfficerApiThree.setOfficerRole(OfficerRoleApi.DIRECTOR);
-        companyOfficerApiThree.setAppointedOn(LocalDateTime.now().minusWeeks(1).toLocalDate());
-        final List<CompanyOfficerApi> companyOfficers = Arrays.asList(
-                companyOfficerApiOne,
-                companyOfficerApiTwo,
-                companyOfficerApiThree
+        final CompanyOfficer officerOne = new CompanyOfficer();
+        officerOne.setName(DIRECTOR_NAME);
+        officerOne.setOfficerRole(OfficerRole.DIRECTOR.getValue());
+        officerOne.setResignedOn(null);
+
+        final CompanyOfficer officerTwo = new CompanyOfficer();
+        officerTwo.setName(DIRECTOR_NAME_TWO);
+        officerTwo.setOfficerRole(OfficerRole.DIRECTOR.getValue());
+        officerTwo.setResignedOn(null);
+
+        final CompanyOfficer officerThree = new CompanyOfficer();
+        officerThree.setName(DIRECTOR_NAME_THREE);
+        officerThree.setOfficerRole(OfficerRole.DIRECTOR.getValue());
+        officerThree.setResignedOn(null);
+
+        final List<CompanyOfficer> companyOfficers = Arrays.asList(
+                officerOne,
+                officerTwo,
+                officerThree
         );
 
         final boolean hasOverHalfDirectorsSelected =
-                mapper.areMajorityOfCompanyOfficersSelected(companyOfficers, selectedDirectors);
+                validator.areMajorityOfCompanyOfficersSelected(companyOfficers, selectedDirectors);
 
         assertTrue(hasOverHalfDirectorsSelected);
     }
 
     @Test
-    public void mapCompanyOfficersToIsOverHalfSelected_allDirectorsSelected_returnsTrue() {
+    public void areMajorityOfCompanyOfficersSelected_allDirectorsSelected_returnsTrue() {
         final DirectorRequest directorOne = new DirectorRequest();
         directorOne.setName(DIRECTOR_NAME);
         directorOne.setEmail(DIRECTOR_EMAIL);
+
         final DirectorRequest directorTwo = new DirectorRequest();
         directorTwo.setName(DIRECTOR_NAME_TWO);
         directorTwo.setEmail(DIRECTOR_EMAIL_TWO);
+
         final List<DirectorRequest> selectedDirectors = Arrays.asList(directorOne, directorTwo);
 
-        final CompanyOfficerApi companyOfficerApiOne = new CompanyOfficerApi();
-        companyOfficerApiOne.setName(DIRECTOR_NAME);
-        companyOfficerApiOne.setOfficerRole(OfficerRoleApi.DIRECTOR);
-        companyOfficerApiOne.setAppointedOn(LocalDateTime.now().minusWeeks(1).toLocalDate());
-        final CompanyOfficerApi companyOfficerApiTwo = new CompanyOfficerApi();
-        companyOfficerApiTwo.setName(DIRECTOR_NAME_TWO);
-        companyOfficerApiTwo.setOfficerRole(OfficerRoleApi.DIRECTOR);
-        companyOfficerApiTwo.setAppointedOn(LocalDateTime.now().minusWeeks(1).toLocalDate());
-        final List<CompanyOfficerApi> companyOfficers = Arrays.asList(
-                companyOfficerApiOne,
-                companyOfficerApiTwo
+        final CompanyOfficer officerOne = new CompanyOfficer();
+        officerOne.setName(DIRECTOR_NAME);
+        officerOne.setOfficerRole(OfficerRole.DIRECTOR.getValue());
+        officerOne.setResignedOn(null);
+
+        final CompanyOfficer officerTwo = new CompanyOfficer();
+        officerTwo.setName(DIRECTOR_NAME_TWO);
+        officerTwo.setOfficerRole(OfficerRole.DIRECTOR.getValue());
+        officerTwo.setResignedOn(null);
+
+        final List<CompanyOfficer> companyOfficers = Arrays.asList(
+                officerOne,
+                officerTwo
         );
 
         final boolean hasOverHalfDirectorsSelected =
-                mapper.areMajorityOfCompanyOfficersSelected(companyOfficers, selectedDirectors);
+                validator.areMajorityOfCompanyOfficersSelected(companyOfficers, selectedDirectors);
 
         assertTrue(hasOverHalfDirectorsSelected);
     }
 
     @Test
-    public void mapCompanyOfficersToIsOverHalfSelected_noDirectorsSelected_returnsFalse() {
+    public void areMajorityOfCompanyOfficersSelected_noDirectorsSelected_returnsFalse() {
         final List<DirectorRequest> selectedDirectors = Collections.emptyList();
-        final List<CompanyOfficerApi> companyOfficers = CompanyOfficerFixtures.generateCompanyOfficerList();
+        final List<CompanyOfficer> companyOfficers = Collections.singletonList(generateCompanyOfficer());
 
         final boolean hasOverHalfDirectorsSelected =
-                mapper.areMajorityOfCompanyOfficersSelected(companyOfficers, selectedDirectors);
+                validator.areMajorityOfCompanyOfficersSelected(companyOfficers, selectedDirectors);
 
         assertFalse(hasOverHalfDirectorsSelected);
     }
 
     @Test
-    public void mapCompanyOfficersToIsOverHalfSelected_wrongDirectorsSelected_returnsFalse() {
+    public void areMajorityOfCompanyOfficersSelected_wrongDirectorsSelected_returnsFalse() {
         final DirectorRequest directorOne = new DirectorRequest();
         directorOne.setName(DIRECTOR_NAME);
         directorOne.setEmail(DIRECTOR_EMAIL);
+
         final DirectorRequest directorTwo = new DirectorRequest();
         directorTwo.setName(DIRECTOR_NAME_TWO);
         directorTwo.setEmail(DIRECTOR_EMAIL_TWO);
         final List<DirectorRequest> selectedDirectors = Arrays.asList(directorOne, directorTwo);
 
-        final CompanyOfficerApi companyOfficerApiOne = new CompanyOfficerApi();
-        companyOfficerApiOne.setName("Other officer");
-        companyOfficerApiOne.setOfficerRole(OfficerRoleApi.DIRECTOR);
-        companyOfficerApiOne.setAppointedOn(LocalDateTime.now().minusWeeks(1).toLocalDate());
-        final CompanyOfficerApi companyOfficerApiTwo = new CompanyOfficerApi();
-        companyOfficerApiTwo.setName("Not the same officer");
-        companyOfficerApiTwo.setOfficerRole(OfficerRoleApi.DIRECTOR);
-        companyOfficerApiTwo.setAppointedOn(LocalDateTime.now().minusWeeks(1).toLocalDate());
-        final List<CompanyOfficerApi> companyOfficers = Arrays.asList(
-                companyOfficerApiOne,
-                companyOfficerApiTwo
+        final CompanyOfficer officerOne = new CompanyOfficer();
+        officerOne.setName("Other officer");
+        officerOne.setOfficerRole(OfficerRole.DIRECTOR.getValue());
+        officerOne.setResignedOn(null);
+
+        final CompanyOfficer officerTwo = new CompanyOfficer();
+        officerTwo.setName("Not the same officer");
+        officerTwo.setOfficerRole(OfficerRole.DIRECTOR.getValue());
+        officerTwo.setResignedOn(null);
+
+        final List<CompanyOfficer> companyOfficers = Arrays.asList(
+                officerOne,
+                officerTwo
         );
 
         final boolean hasOverHalfDirectorsSelected =
-                mapper.areMajorityOfCompanyOfficersSelected(companyOfficers, selectedDirectors);
+                validator.areMajorityOfCompanyOfficersSelected(companyOfficers, selectedDirectors);
 
         assertFalse(hasOverHalfDirectorsSelected);
     }
 
     @Test
-    public void mapCompanyOfficersToIsOverHalfSelected_lessThanHalfDirectorsSelected_returnsFalse() {
+    public void areMajorityOfCompanyOfficersSelected_lessThanHalfDirectorsSelected_returnsFalse() {
         final DirectorRequest directorOne = new DirectorRequest();
         directorOne.setName(DIRECTOR_NAME);
         directorOne.setEmail(DIRECTOR_EMAIL);
+
         final List<DirectorRequest> selectedDirectors = Arrays.asList(directorOne);
 
-        final CompanyOfficerApi companyOfficerApiOne = new CompanyOfficerApi();
-        companyOfficerApiOne.setName(DIRECTOR_NAME);
-        companyOfficerApiOne.setOfficerRole(OfficerRoleApi.DIRECTOR);
-        companyOfficerApiOne.setAppointedOn(LocalDateTime.now().minusWeeks(1).toLocalDate());
-        final CompanyOfficerApi companyOfficerApiTwo = new CompanyOfficerApi();
-        companyOfficerApiTwo.setName(DIRECTOR_NAME_TWO);
-        companyOfficerApiTwo.setOfficerRole(OfficerRoleApi.DIRECTOR);
-        companyOfficerApiTwo.setAppointedOn(LocalDateTime.now().minusWeeks(1).toLocalDate());
-        final CompanyOfficerApi companyOfficerApiThree = new CompanyOfficerApi();
-        companyOfficerApiThree.setName(DIRECTOR_NAME_THREE);
-        companyOfficerApiThree.setOfficerRole(OfficerRoleApi.DIRECTOR);
-        companyOfficerApiThree.setAppointedOn(LocalDateTime.now().minusWeeks(1).toLocalDate());
-        final List<CompanyOfficerApi> companyOfficers = Arrays.asList(
-                companyOfficerApiOne,
-                companyOfficerApiTwo,
-                companyOfficerApiThree
+        final CompanyOfficer officerOne = new CompanyOfficer();
+        officerOne.setName(DIRECTOR_NAME);
+        officerOne.setOfficerRole(OfficerRole.DIRECTOR.getValue());
+        officerOne.setResignedOn(null);
+
+        final CompanyOfficer officerTwo = new CompanyOfficer();
+        officerTwo.setName(DIRECTOR_NAME_TWO);
+        officerTwo.setOfficerRole(OfficerRole.DIRECTOR.getValue());
+        officerTwo.setResignedOn(null);
+
+        final CompanyOfficer officerThree = new CompanyOfficer();
+        officerThree.setName(DIRECTOR_NAME_THREE);
+        officerThree.setOfficerRole(OfficerRole.DIRECTOR.getValue());
+        officerThree.setResignedOn(null);
+
+        final List<CompanyOfficer> companyOfficers = Arrays.asList(
+                officerOne,
+                officerTwo,
+                officerThree
         );
 
-
         final boolean hasOverHalfDirectorsSelected =
-                mapper.areMajorityOfCompanyOfficersSelected(companyOfficers, selectedDirectors);
+                validator.areMajorityOfCompanyOfficersSelected(companyOfficers, selectedDirectors);
 
         assertFalse(hasOverHalfDirectorsSelected);
     }

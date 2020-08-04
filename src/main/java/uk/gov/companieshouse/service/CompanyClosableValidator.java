@@ -1,7 +1,7 @@
 package uk.gov.companieshouse.service;
 
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
+import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.enums.CompanyStatus;
 import uk.gov.companieshouse.model.enums.CompanyType;
 
@@ -15,7 +15,7 @@ public class CompanyClosableValidator {
             CompanyType.PLC.getValue()
     );
 
-    public boolean isCompanyClosable(CompanyProfileApi company) {
+    public boolean isCompanyClosable(CompanyProfile company) {
         return isCompanyTypeClosable(company.getType()) && isCompanyActive(company.getCompanyStatus());
     }
 

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.client.CompanyProfileClient;
 import uk.gov.companieshouse.exception.*;
+import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
@@ -27,7 +28,6 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.service.DissolutionValidator;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
-import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
 import uk.gov.companieshouse.service.CompanyOfficerService;
 import uk.gov.companieshouse.service.CompanyProfileService;
 
@@ -80,7 +80,7 @@ public class DissolutionController {
             throw new UnauthorisedException();
         }
 
-        final CompanyProfileApi companyProfileApi = Optional
+        final CompanyProfile companyProfile = Optional
                 .ofNullable(companyProfileClient.getCompanyProfile(companyNumber))
                 .orElseThrow(NotFoundException::new);
 
@@ -89,10 +89,10 @@ public class DissolutionController {
         }
 
         dissolutionValidator
-                .checkBusinessRules(companyProfileApi, body.getDirectors())
+                .checkBusinessRules(companyProfile, body.getDirectors())
                 .ifPresent(error -> { throw new BadRequestException(error); });
 
-        return dissolutionService.create(body, companyProfileApi, userId, request.getRemoteAddr(), getEmail(authorisedUser));
+        return dissolutionService.create(body, companyProfile, userId, request.getRemoteAddr(), getEmail(authorisedUser));
     }
 
     @Operation(summary = "Get Dissolution Application", tags = "Dissolution")

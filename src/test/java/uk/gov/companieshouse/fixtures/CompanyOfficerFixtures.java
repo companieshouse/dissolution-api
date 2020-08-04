@@ -1,32 +1,28 @@
 package uk.gov.companieshouse.fixtures;
 
-import uk.gov.companieshouse.api.model.officers.CompanyOfficerApi;
-import uk.gov.companieshouse.api.model.officers.OfficersApi;
+import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
+import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficersResponse;
+import uk.gov.companieshouse.model.enums.OfficerRole;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
 
 public class CompanyOfficerFixtures {
-    public static OfficersApi generateOfficersApi() {
-        final OfficersApi officersApi = new OfficersApi();
 
-        officersApi.setItems(generateCompanyOfficerList());
+    public static CompanyOfficersResponse generateCompanyOfficersResponse() {
+        final CompanyOfficersResponse response = new CompanyOfficersResponse();
 
-        return officersApi;
+        response.setItems(Collections.singletonList(generateCompanyOfficer()));
+
+        return response;
     }
 
-    public static List<CompanyOfficerApi> generateCompanyOfficerList() {
-        final CompanyOfficerApi officerOne = new CompanyOfficerApi();
+    public static CompanyOfficer generateCompanyOfficer() {
+        final CompanyOfficer officer = new CompanyOfficer();
 
-        officerOne.setName("John Doe");
-        officerOne.setAppointedOn(LocalDateTime.now().minusWeeks(1).toLocalDate());
+        officer.setName("John Doe");
+        officer.setOfficerRole(OfficerRole.DIRECTOR.getValue());
+        officer.setResignedOn(null);
 
-        final CompanyOfficerApi officerTwo = new CompanyOfficerApi();
-
-        officerTwo.setName("Fred Mercure");
-        officerTwo.setAppointedOn(LocalDateTime.now().minusWeeks(1).toLocalDate());
-
-        return Arrays.asList(officerOne, officerTwo);
+        return officer;
     }
 }

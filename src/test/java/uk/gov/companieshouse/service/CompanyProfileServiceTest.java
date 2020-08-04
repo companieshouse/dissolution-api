@@ -5,8 +5,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
+import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,7 +26,7 @@ public class CompanyProfileServiceTest {
 
     @Test
     public void isCompanyClosable_callsCompanyClosableMapper_returnsTrue() {
-        final CompanyProfileApi company = CompanyProfileFixtures.generateCompanyProfileApi();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
 
         when(companyClosableValidator.isCompanyClosable(company)).thenReturn(true);
 
@@ -39,7 +39,7 @@ public class CompanyProfileServiceTest {
 
     @Test
     public void isCompanyClosable_callsCompanyClosableMapper_returnsFalse() {
-        final CompanyProfileApi company = CompanyProfileFixtures.generateCompanyProfileApi();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
 
         when(companyClosableValidator.isCompanyClosable(company)).thenReturn(false);
 

@@ -5,9 +5,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
+import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
@@ -53,7 +53,7 @@ public class DissolutionServiceTest {
     public void create_createsADissolutionRequest_returnsCreateResponse() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
         final DissolutionCreateResponse response = DissolutionFixtures.generateDissolutionCreateResponse();
-        final CompanyProfileApi company = CompanyProfileFixtures.generateCompanyProfileApi();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
 
         when(creator.create(body, company, USER_ID, IP, EMAIL)).thenReturn(response);
 

@@ -1,12 +1,10 @@
 package uk.gov.companieshouse.service;
 
 import org.junit.jupiter.api.Test;
-import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
-import uk.gov.companieshouse.fixtures.DissolutionFixtures;
+import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.enums.CompanyStatus;
 import uk.gov.companieshouse.model.enums.CompanyType;
-import uk.gov.companieshouse.service.CompanyClosableValidator;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -17,7 +15,7 @@ public class CompanyClosableValidatorTest {
 
     @Test
     public void mapCompanyDetailsToClosable_companyHasTypeLtdAndIsActive_returnsTrue() {
-        final CompanyProfileApi company = CompanyProfileFixtures.generateCompanyProfileApi();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setType(CompanyType.LTD.getValue());
         company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
 
@@ -28,7 +26,7 @@ public class CompanyClosableValidatorTest {
 
     @Test
     public void mapCompanyDetailsToClosable_companyHasTypePlcAndIsActive_returnsTrue() {
-        final CompanyProfileApi company = CompanyProfileFixtures.generateCompanyProfileApi();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setType(CompanyType.PLC.getValue());
         company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
 
@@ -39,7 +37,7 @@ public class CompanyClosableValidatorTest {
 
     @Test
     public void mapCompanyDetailsToClosable_companyHasTypeLtdAndIsDissolved_returnsFalse() {
-        final CompanyProfileApi company = CompanyProfileFixtures.generateCompanyProfileApi();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setType(CompanyType.LTD.getValue());
         company.setCompanyStatus(CompanyStatus.DISSOLVED.getValue());
 
@@ -50,7 +48,7 @@ public class CompanyClosableValidatorTest {
 
     @Test
     public void mapCompanyDetailsToClosable_companyHasTypePlcAndIsDissolved_returnsFalse() {
-        final CompanyProfileApi company = CompanyProfileFixtures.generateCompanyProfileApi();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setType(CompanyType.PLC.getValue());
         company.setCompanyStatus(CompanyStatus.DISSOLVED.getValue());
 
@@ -61,7 +59,7 @@ public class CompanyClosableValidatorTest {
 
     @Test
     public void mapCompanyDetailsToClosable_companyHasNonClosableTypeAndIsActive_returnsFalse() {
-        final CompanyProfileApi company = CompanyProfileFixtures.generateCompanyProfileApi();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setType(CompanyType.EEIG.getValue());
         company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
 
@@ -72,7 +70,7 @@ public class CompanyClosableValidatorTest {
 
     @Test
     public void mapCompanyDetailsToClosable_companyHasNonClosableTypeAndIsDissolved_returnsFalse() {
-        final CompanyProfileApi company = CompanyProfileFixtures.generateCompanyProfileApi();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setType(CompanyType.EEIG.getValue());
         company.setCompanyStatus(CompanyStatus.DISSOLVED.getValue());
 

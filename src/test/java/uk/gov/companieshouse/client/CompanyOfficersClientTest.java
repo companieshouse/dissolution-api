@@ -2,8 +2,6 @@ package uk.gov.companieshouse.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -16,19 +14,19 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import uk.gov.companieshouse.api.model.officers.CompanyOfficerApi;
-import uk.gov.companieshouse.api.model.officers.OfficersApi;
-import uk.gov.companieshouse.config.ApiConfig;
 import uk.gov.companieshouse.config.CompanyOfficersConfig;
+import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
+import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficersResponse;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficerList;
-import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateOfficersApi;
+import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficersResponse;
+import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
 
 @ExtendWith(MockitoExtension.class)
 public class CompanyOfficersClientTest {
@@ -61,19 +59,19 @@ public class CompanyOfficersClientTest {
 
     @Test
     void getCompanyOfficers_callsCompanyOfficersApi_extractsOfficerItems() throws Exception {
-        final List<CompanyOfficerApi> officers = generateCompanyOfficerList();
-        final OfficersApi officersApi = generateOfficersApi();
+        final List<CompanyOfficer> officers = Collections.singletonList(generateCompanyOfficer());
+        final CompanyOfficersResponse response = generateCompanyOfficersResponse();
 
-        officersApi.setItems(officers);
+        response.setItems(officers);
 
         mockBackEnd.enqueue(
                 new MockResponse()
                         .setResponseCode(HttpStatus.OK.value())
                         .setHeader("Content-Type", "application/json")
-                        .setBody(asJsonString(officersApi))
+                        .setBody(asJsonString(response))
         );
 
-        final List<CompanyOfficerApi> result = client.getCompanyOfficers(COMPANY_NUMBER);
+        final List<CompanyOfficer> result = client.getCompanyOfficers(COMPANY_NUMBER);
 
         assertEquals(asJsonString(officers), asJsonString(result));
 
@@ -85,16 +83,16 @@ public class CompanyOfficersClientTest {
 
     @Test
     void getCompanyOfficers_callsCompanyOfficersApi_providesTheCorrectHeaders() throws Exception {
-        final List<CompanyOfficerApi> officers = generateCompanyOfficerList();
-        final OfficersApi officersApi = generateOfficersApi();
+        final List<CompanyOfficer> officers = Collections.singletonList(generateCompanyOfficer());
+        final CompanyOfficersResponse response = generateCompanyOfficersResponse();
 
-        officersApi.setItems(officers);
+        response.setItems(officers);
 
         mockBackEnd.enqueue(
                 new MockResponse()
                         .setResponseCode(HttpStatus.OK.value())
                         .setHeader("Content-Type", "application/json")
-                        .setBody(asJsonString(officersApi))
+                        .setBody(asJsonString(response))
         );
 
         client.getCompanyOfficers(COMPANY_NUMBER);
@@ -108,10 +106,10 @@ public class CompanyOfficersClientTest {
 
     @Test
     void getCompanyOfficers_returnsEmptyList_ifCompanyDoesNotExist() throws Exception {
-        final List<CompanyOfficerApi> officers = generateCompanyOfficerList();
-        final OfficersApi officersApi = generateOfficersApi();
+        final List<CompanyOfficer> officers = Collections.singletonList(generateCompanyOfficer());
+        final CompanyOfficersResponse response = generateCompanyOfficersResponse();
 
-        officersApi.setItems(officers);
+        response.setItems(officers);
 
         mockBackEnd.enqueue(
                 new MockResponse()
@@ -120,7 +118,7 @@ public class CompanyOfficersClientTest {
                         .setBody("{}")
         );
 
-        final List<CompanyOfficerApi> result = client.getCompanyOfficers(COMPANY_NUMBER);
+        final List<CompanyOfficer> result = client.getCompanyOfficers(COMPANY_NUMBER);
 
         assertTrue(result.isEmpty());
     }
@@ -131,9 +129,6 @@ public class CompanyOfficersClientTest {
     }
 
     private String asJsonString(Object obj) throws JsonProcessingException {
-        return new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            .writeValueAsString(obj);
+        return new ObjectMapper().writeValueAsString(obj);
     }
 }
