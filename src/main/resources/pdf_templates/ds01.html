@@ -82,7 +82,6 @@
             margin-top: 10px;
             width: 100%;
             height: 80px;
-            float: left;
         }
 
         .company-data table tr td:first-child {
@@ -123,28 +122,36 @@
             width: 100%;
         }
 
-        label {
+        .label {
             display: block;
-            float: left;
+        }
+
+        #bottom-line {
+            margin-top: 15px;
+        }
+
+        .info {
+            width: 100%;
+            height: 125px;
         }
     </style>
 </head>
 
 <body xml:lang="en">
 <header class="upper">
-    <div class="ch-logo">
-        <img src="https://document-render-assets-registry.s3-eu-west-1.amazonaws.com/dissolution/images/ch_logo.jpg"
-             alt="Companies House logo"/>
+    <div class="info">
+        <div class="ch-logo">
+            <img src="https://document-render-assets-registry.s3-eu-west-1.amazonaws.com/dissolution/images/ch_logo.jpg"
+                 alt="Companies House logo"/>
+        </div>
+        <div class="application-type">
+            <span class="application-type-big">DS01</span>
+            <span class="application-type-small">(ef)</span>
+        </div>
+        <div>
+            <h1>Application to strike off</h1>
+        </div>
     </div>
-
-    <div class="application-type">
-        <span class="application-type-big">DS01</span>
-        <span class="application-type-small">(ef)</span>
-    </div>
-
-    <h1>Application to strike off</h1>
-
-
     <div class="company-data">
         <table>
             <tr>
@@ -189,24 +196,28 @@
                 <tr>
                     <td>{{$director.name}}</td>
                     <td>
-                        {{if $director.onBehalfName}}
-                            <label>{{$director.onBehalfName}} pp {{$director.name}}</label>
-                        {{else}}
-                            <label>{{$director.name}}</label>
-                        {{end}}
+                        <div>
+                            {{if $director.onBehalfName}}
+                                <span class="label">{{$director.onBehalfName}} pp {{$director.name}}</span>
+                            {{else}}
+                                <span class="label">{{$director.name}}</span>
+                            {{end}}
+                        </div>
                         <div class="hr-div">
                             <hr class="hr-thin"/>
                         </div>
-                        {{if $director.onBehalfName}}
-                            <label class="power-of-attorney">*Power of Attorney signed on behalf of the director</label>
-                        {{end}}
-                        <label>Signature Date: {{$director.approvalDate}}</label>
+                        <div>
+                            {{if $director.onBehalfName}}
+                                <span class="power-of-attorney">*Power of Attorney signed on behalf of the director</span>
+                            {{end}}
+                            <span class="label">Signature Date: {{$director.approvalDate}}</span>
+                        </div>
                     </td>
                 </tr>
             {{end}}
         </table>
     </section>
-    <hr/>
+    <hr id="bottom-line"/>
 </div>
 </body>
 </html>
