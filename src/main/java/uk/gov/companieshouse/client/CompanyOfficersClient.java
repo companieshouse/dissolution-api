@@ -6,10 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriTemplate;
 import reactor.core.publisher.Mono;
-import uk.gov.companieshouse.api.model.officers.CompanyOfficerApi;
-import uk.gov.companieshouse.api.model.officers.OfficersApi;
-import uk.gov.companieshouse.config.ApiConfig;
 import uk.gov.companieshouse.config.CompanyOfficersConfig;
+import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
+import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficersResponse;
 
 import java.util.Collections;
 import java.util.List;
@@ -34,7 +33,7 @@ public class CompanyOfficersClient {
         this.config = config;
     }
 
-    public List<CompanyOfficerApi> getCompanyOfficers(String companyNumber) {
+    public List<CompanyOfficer> getCompanyOfficers(String companyNumber) {
         return Optional
                 .ofNullable(
                     WebClient
@@ -46,10 +45,10 @@ public class CompanyOfficersClient {
                         .header(HEADER_CONTENT_TYPE, HEADER_CONTENT_TYPE_VALUE)
                         .retrieve()
                         .onStatus(HttpStatus.NOT_FOUND::equals, clientResponse -> Mono.empty())
-                        .bodyToMono(OfficersApi.class)
+                        .bodyToMono(CompanyOfficersResponse.class)
                         .block()
                 )
-                .map(OfficersApi::getItems)
+                .map(CompanyOfficersResponse::getItems)
                 .orElse(Collections.emptyList());
     }
 }
