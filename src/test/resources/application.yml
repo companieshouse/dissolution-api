@@ -1,2 +1,9 @@
+api:
+  key: some-api-key
+  url: http://api
+
+barcodeGenerator:
+  host: http://barcode-generator
+
 server:
   port: 3001

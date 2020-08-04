@@ -1,3 +1,10 @@
+api:
+  key: ${CHS_API_KEY}
+  url: ${API_URL}
+
+barcodeGenerator:
+  host: ${BARCODE_SERVICE_URL}
+
 logging:
   level:
     ROOT: ${LOGLEVEL}

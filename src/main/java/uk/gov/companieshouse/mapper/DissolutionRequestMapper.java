@@ -15,30 +15,31 @@ import java.util.stream.Collectors;
 @Service
 public class DissolutionRequestMapper {
 
-    public Dissolution mapToDissolution(DissolutionCreateRequest body, String companyNumber, String userId, String email, String ip, String reference) {
+    public Dissolution mapToDissolution(DissolutionCreateRequest body, String companyNumber, String userId, String email, String ip, String reference, String barcode) {
         final Dissolution dissolution = new Dissolution();
 
         dissolution.setModifiedDateTime(LocalDateTime.now());
-        dissolution.setData(mapToDissolutionData(body, reference));
+        dissolution.setData(mapToDissolutionData(body, reference, barcode));
         dissolution.setCompany(mapToCompany(companyNumber));
         dissolution.setCreatedBy(mapToCreatedBy(userId, email, ip));
 
         return dissolution;
     }
 
-    private DissolutionData mapToDissolutionData(DissolutionCreateRequest body, String reference) {
+    private DissolutionData mapToDissolutionData(DissolutionCreateRequest body, String reference, String barcode) {
         final DissolutionData data = new DissolutionData();
 
         data.setETag(GenerateEtagUtil.generateEtag());
-        data.setApplication(mapToDissolutionApplication(reference));
+        data.setApplication(mapToDissolutionApplication(reference, barcode));
         data.setDirectors(mapToDissolutionDirectors(body.getDirectors()));
 
         return data;
     }
 
-    private DissolutionApplication mapToDissolutionApplication(String reference) {
+    private DissolutionApplication mapToDissolutionApplication(String reference, String barcode) {
         final DissolutionApplication application = new DissolutionApplication();
 
+        application.setBarcode(barcode);
         application.setReference(reference);
         application.setStatus(ApplicationStatus.PENDING_APPROVAL);
         application.setType(ApplicationType.DS01);

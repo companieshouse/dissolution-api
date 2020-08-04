@@ -20,6 +20,7 @@ public class DissolutionRequestMapperTest {
     private static final String EMAIL = "user@mail.com";
     private static final String IP_ADDRESS = "192.168.0.1";
     private static final String REFERENCE = "ABC123";
+    private static final String BARCODE = "B4RC0D3";
 
     private final DissolutionRequestMapper mapper = new DissolutionRequestMapper();
 
@@ -27,7 +28,7 @@ public class DissolutionRequestMapperTest {
     public void mapToDissolution_setsModifiedDateTime() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
 
-        final Dissolution dissolution = mapper.mapToDissolution(body, COMPANY_NUMBER, USER_ID, EMAIL, IP_ADDRESS, REFERENCE);
+        final Dissolution dissolution = mapper.mapToDissolution(body, COMPANY_NUMBER, USER_ID, EMAIL, IP_ADDRESS, REFERENCE, BARCODE);
 
         assertNotNull(dissolution.getModifiedDateTime());
     }
@@ -36,8 +37,9 @@ public class DissolutionRequestMapperTest {
     public void mapToDissolution_setsApplicationData_includingDefaultStatus() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
 
-        final Dissolution dissolution = mapper.mapToDissolution(body, COMPANY_NUMBER, USER_ID, EMAIL, IP_ADDRESS, REFERENCE);
+        final Dissolution dissolution = mapper.mapToDissolution(body, COMPANY_NUMBER, USER_ID, EMAIL, IP_ADDRESS, REFERENCE, BARCODE);
 
+        assertEquals(BARCODE, dissolution.getData().getApplication().getBarcode());
         assertEquals(REFERENCE, dissolution.getData().getApplication().getReference());
         assertEquals(ApplicationStatus.PENDING_APPROVAL, dissolution.getData().getApplication().getStatus());
         assertEquals(ApplicationType.DS01, dissolution.getData().getApplication().getType());
@@ -59,7 +61,7 @@ public class DissolutionRequestMapperTest {
 
         body.setDirectors(Arrays.asList(director1, director2));
 
-        final Dissolution dissolution = mapper.mapToDissolution(body, COMPANY_NUMBER, USER_ID, EMAIL, IP_ADDRESS, REFERENCE);
+        final Dissolution dissolution = mapper.mapToDissolution(body, COMPANY_NUMBER, USER_ID, EMAIL, IP_ADDRESS, REFERENCE, BARCODE);
 
         assertEquals(2, dissolution.getData().getDirectors().size());
 
@@ -78,7 +80,7 @@ public class DissolutionRequestMapperTest {
     public void mapToDissolution_setsCompanyInformation() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
 
-        final Dissolution dissolution = mapper.mapToDissolution(body, COMPANY_NUMBER, USER_ID, EMAIL, IP_ADDRESS, REFERENCE);
+        final Dissolution dissolution = mapper.mapToDissolution(body, COMPANY_NUMBER, USER_ID, EMAIL, IP_ADDRESS, REFERENCE, BARCODE);
 
         assertEquals(COMPANY_NUMBER, dissolution.getCompany().getNumber());
         assertEquals("PLACEHOLDER COMPANY NAME", dissolution.getCompany().getName());
@@ -88,7 +90,7 @@ public class DissolutionRequestMapperTest {
     public void mapToDissolution_setsCreatedByInformation() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
 
-        final Dissolution dissolution = mapper.mapToDissolution(body, COMPANY_NUMBER, USER_ID, EMAIL, IP_ADDRESS, REFERENCE);
+        final Dissolution dissolution = mapper.mapToDissolution(body, COMPANY_NUMBER, USER_ID, EMAIL, IP_ADDRESS, REFERENCE, BARCODE);
 
         assertEquals(USER_ID, dissolution.getCreatedBy().getUserId());
         assertEquals(EMAIL, dissolution.getCreatedBy().getEmail());
