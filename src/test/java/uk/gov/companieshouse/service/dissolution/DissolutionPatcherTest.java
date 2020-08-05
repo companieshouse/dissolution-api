@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.service;
+package uk.gov.companieshouse.service.dissolution;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +13,7 @@ import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.mapper.PaymentInformationMapper;
 import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
@@ -20,14 +21,15 @@ import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.PaymentMethod;
 import uk.gov.companieshouse.repository.DissolutionRepository;
+import uk.gov.companieshouse.service.dissolution.certificate.DissolutionCertificateGenerator;
 import uk.gov.companieshouse.service.dissolution.DissolutionPatcher;
 
+import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionCertificate;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentInformation;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 
@@ -49,6 +51,9 @@ public class DissolutionPatcherTest {
     @Mock
     private PaymentInformationMapper paymentInformationMapper;
 
+    @Mock
+    private DissolutionCertificateGenerator certificateGenerator;
+
     private static final String COMPANY_NUMBER = "12345678";
     private static final String USER_ID = "1234";
     private static final String EMAIL = "user@mail.com";
@@ -58,6 +63,7 @@ public class DissolutionPatcherTest {
     private Dissolution dissolution;
     private DissolutionPatchResponse response;
     private DirectorApproval approval;
+    private DissolutionCertificate certificate;
     private ArgumentCaptor<Dissolution> dissolutionCaptor;
 
     @BeforeEach
@@ -66,6 +72,7 @@ public class DissolutionPatcherTest {
         dissolution.getData().getDirectors().get(0).setEmail(EMAIL);
         response = DissolutionFixtures.generateDissolutionPatchResponse();
         approval = DissolutionFixtures.generateDirectorApproval();
+        certificate = generateDissolutionCertificate();
         dissolutionCaptor = ArgumentCaptor.forClass(Dissolution.class);
     }
 
@@ -101,6 +108,21 @@ public class DissolutionPatcherTest {
     }
 
     @Test
+    public void patch_generatesCertificateAndSavesInDatabase_ifAllDirectorHaveApproved() {
+        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
+        when(responseMapper.mapToDissolutionPatchResponse(COMPANY_NUMBER)).thenReturn(response);
+        when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
+        when(certificateGenerator.generateDissolutionCertificate(dissolution)).thenReturn(certificate);
+
+        final DissolutionPatchResponse result = patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP_ADDRESS, EMAIL);
+
+        verify(certificateGenerator).generateDissolutionCertificate(dissolution);
+        verify(repository).save(dissolutionCaptor.capture());
+
+        assertEquals(certificate, dissolutionCaptor.getValue().getCertificate());
+    }
+
+    @Test
     public void patch_doesNotUpdateStatus_ifNotAllDirectorHaveApproved() {
         final List<DissolutionDirector> directors = DissolutionFixtures.generateDissolutionDirectorList();
         directors.get(0).setEmail(EMAIL);
@@ -119,6 +141,30 @@ public class DissolutionPatcherTest {
                 ApplicationStatus.PENDING_APPROVAL,
                 dissolutionCaptor.getValue().getData().getApplication().getStatus()
         );
+    }
+
+    @Test
+    public void patch_doesNotGenerateCertificate_ifNotAllDirectorHaveApproved() {
+        final DissolutionDirector directorOne = DissolutionFixtures.generateDissolutionDirector();
+        directorOne.setEmail(EMAIL);
+        directorOne.setDirectorApproval(null);
+
+        final DissolutionDirector directorTwo = DissolutionFixtures.generateDissolutionDirector();
+        directorTwo.setEmail(EMAIL_TWO);
+        directorTwo.setDirectorApproval(null);
+
+        dissolution.getData().setDirectors(Arrays.asList(directorOne, directorTwo));
+
+        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
+        when(responseMapper.mapToDissolutionPatchResponse(COMPANY_NUMBER)).thenReturn(response);
+        when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
+
+        patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP_ADDRESS, EMAIL);
+
+        verify(certificateGenerator, never()).generateDissolutionCertificate(dissolution);
+        verify(repository).save(dissolutionCaptor.capture());
+
+        assertNull(dissolutionCaptor.getValue().getCertificate());
     }
 
     @Test

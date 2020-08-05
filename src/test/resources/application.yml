@@ -5,8 +5,20 @@ api:
 barcodeGenerator:
   host: http://barcode-generator
 
+cdn:
+  host: http://cdn
+
 companyProfile:
   host: http://company-profile-api
+
+dissolution:
+  pdfBucket: some-pdf-bucket
+
+documentRender:
+  host: http://document-render-service
+
+env:
+  name: local
 
 server:
   port: 3001

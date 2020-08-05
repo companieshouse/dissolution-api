@@ -74,7 +74,7 @@ public class DissolutionController {
             @Valid @RequestBody final DissolutionCreateRequest body,
             HttpServletRequest request) {
 
-        logger.debug("[POST] Submitting dissolution request for company number {}", companyNumber);
+        logger.info("[POST] Submitting dissolution request for company number {}", companyNumber);
 
         if (StringUtils.isBlank(userId)) {
             throw new UnauthorisedException();
@@ -106,7 +106,7 @@ public class DissolutionController {
             @RequestHeader("ERIC-identity") String userId,
             @PathVariable("company-number") final String companyNumber) {
 
-        logger.debug("[GET] Getting dissolution info for company number {}", companyNumber);
+        logger.info("[GET] Getting dissolution info for company number {}", companyNumber);
 
         if (StringUtils.isBlank(userId)) {
             throw new UnauthorisedException();
@@ -132,7 +132,7 @@ public class DissolutionController {
             @Valid @RequestBody final DissolutionPatchRequest body,
             HttpServletRequest request) {
 
-        logger.debug("[PATCH] Updating dissolution info for company number {}", companyNumber);
+        logger.info("[PATCH] Updating dissolution info for company number {}", companyNumber);
 
         if (StringUtils.isBlank(userId) || StringUtils.isBlank(authorisedUser)) {
             throw new UnauthorisedException();

@@ -9,7 +9,6 @@ import static org.junit.Assert.assertNotNull;
 public class DirectorApprovalMapperTest {
     private static final String USER_ID = "user123";
     private static final String IP_ADDRESS = "192.168.0.1";
-    private static final String EMAIL = "user@mail.com";
 
     private final DirectorApprovalMapper mapper = new DirectorApprovalMapper();
 

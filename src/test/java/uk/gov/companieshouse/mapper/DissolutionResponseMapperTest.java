@@ -3,6 +3,7 @@ package uk.gov.companieshouse.mapper;
 import org.junit.jupiter.api.Test;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 
 import static org.junit.Assert.*;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionCertificate;
 import static uk.gov.companieshouse.model.Constants.DISSOLUTION_KIND;
 
 public class DissolutionResponseMapperTest {
@@ -26,7 +28,6 @@ public class DissolutionResponseMapperTest {
     private static final ApplicationType TYPE = ApplicationType.DS01;
     private static final String REFERENCE = "reference123";
     private static final LocalDateTime CREATED_AT = LocalDateTime.now();
-    private static final String USER_ID = "user123";
     private static final String EMAIL = "user@email.com";
 
     private final DissolutionResponseMapper mapper = new DissolutionResponseMapper();
@@ -117,6 +118,33 @@ public class DissolutionResponseMapperTest {
         assertEquals(expectedTimestamp2, result.getDirectors().get(1).getApprovedAt());
 
         assertEquals(2, result.getDirectors().size());
+    }
+
+    @Test
+    public void mapToDissolutionGetResponse_setsCertificateFields_ifCertificateIsAvailable() {
+        final Dissolution dissolution = DissolutionFixtures.generateDissolution();
+
+        final DissolutionCertificate certificate = generateDissolutionCertificate();
+        certificate.setBucket("some-bucket");
+        certificate.setKey("some-key");
+
+        dissolution.setCertificate(certificate);
+
+        final DissolutionGetResponse result = mapper.mapToDissolutionGetResponse(dissolution);
+
+        assertEquals("some-bucket", result.getCertificateBucket());
+        assertEquals("some-key", result.getCertificateKey());
+    }
+
+    @Test
+    public void mapToDissolutionGetResponse_doesNotSetCertificateFields_ifCertificateIsNotAvailable() {
+        final Dissolution dissolution = DissolutionFixtures.generateDissolution();
+        dissolution.setCertificate(null);
+
+        final DissolutionGetResponse result = mapper.mapToDissolutionGetResponse(dissolution);
+
+        assertNull(result.getCertificateBucket());
+        assertNull(result.getCertificateKey());
     }
 
     @Test

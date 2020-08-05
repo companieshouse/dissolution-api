@@ -2,9 +2,12 @@ package uk.gov.companieshouse.fixtures;
 
 import uk.gov.companieshouse.model.db.dissolution.*;
 import uk.gov.companieshouse.model.dto.dissolution.*;
+import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateData;
+import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateDirector;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -132,5 +135,33 @@ public class DissolutionFixtures {
         approval.setDateTime(LocalDateTime.now());
 
         return approval;
+    }
+
+    public static DissolutionCertificate generateDissolutionCertificate() {
+        final DissolutionCertificate certificate = new DissolutionCertificate();
+
+        certificate.setBucket("some-bucket");
+        certificate.setKey("some-key");
+
+        return certificate;
+    }
+
+    public static DissolutionCertificateData generateDissolutionCertificateData() {
+        final DissolutionCertificateData data = new DissolutionCertificateData();
+
+        data.setCompanyName("Some company");
+        data.setCompanyNumber("1234");
+        data.setDirectors(Collections.singletonList(generateDissolutionCertificateDirector()));
+
+        return data;
+    }
+
+    public static DissolutionCertificateDirector generateDissolutionCertificateDirector() {
+        final DissolutionCertificateDirector director = new DissolutionCertificateDirector();
+
+        director.setName("Mr Director");
+        director.setApprovalDate("2020-01-01");
+
+        return director;
     }
 }
