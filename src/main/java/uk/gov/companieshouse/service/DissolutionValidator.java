@@ -22,7 +22,7 @@ public class DissolutionValidator {
 
     public Optional<String> checkBusinessRules(CompanyProfile companyProfile, List<DirectorRequest> selectedDirectors) {
         if (!companyProfileService.isCompanyClosable(companyProfile)) {
-            return Optional.of("Company must be of a closable type and have an active status");
+            return Optional.of("Company must be of a closable type, have an active status and must not be an overseas company");
         }
 
         if (!companyOfficerService.hasEnoughOfficersSelected(companyProfile.getCompanyNumber(), selectedDirectors)) {

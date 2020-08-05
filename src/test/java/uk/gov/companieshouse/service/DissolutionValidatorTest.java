@@ -9,12 +9,12 @@ import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.Mockito.when;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class DissolutionValidatorTest {
@@ -36,7 +36,7 @@ public class DissolutionValidatorTest {
         final DirectorRequest directorOne = new DirectorRequest();
         directorOne.setName(DIRECTOR_NAME);
         directorOne.setEmail(DIRECTOR_EMAIL);
-        final List<DirectorRequest> selectedDirectors = Arrays.asList(directorOne);
+        final List<DirectorRequest> selectedDirectors = Collections.singletonList(directorOne);
 
         when(companyProfileService.isCompanyClosable(companyProfile)).thenReturn(true);
         when(companyOfficerService.hasEnoughOfficersSelected(companyProfile.getCompanyNumber(), selectedDirectors))
@@ -48,18 +48,18 @@ public class DissolutionValidatorTest {
     }
 
     @Test
-    public void checkBusinessRules_comapnyNotClosable_returnsValidationMessage() {
+    public void checkBusinessRules_companyNotClosable_returnsValidationMessage() {
         final CompanyProfile companyProfile = CompanyProfileFixtures.generateCompanyProfile();
         final DirectorRequest directorOne = new DirectorRequest();
         directorOne.setName(DIRECTOR_NAME);
         directorOne.setEmail(DIRECTOR_EMAIL);
-        final List<DirectorRequest> selectedDirectors = Arrays.asList(directorOne);
+        final List<DirectorRequest> selectedDirectors = Collections.singletonList(directorOne);
 
         when(companyProfileService.isCompanyClosable(companyProfile)).thenReturn(false);
 
         final Optional<String> validationMessage = dissolutionValidator.checkBusinessRules(companyProfile, selectedDirectors);
 
-        assertEquals(Optional.of("Company must be of a closable type and have an active status"), validationMessage);
+        assertEquals(Optional.of("Company must be of a closable type, have an active status and must not be an overseas company"), validationMessage);
     }
 
     @Test
@@ -68,7 +68,7 @@ public class DissolutionValidatorTest {
         final DirectorRequest directorOne = new DirectorRequest();
         directorOne.setName(DIRECTOR_NAME);
         directorOne.setEmail(DIRECTOR_EMAIL);
-        final List<DirectorRequest> selectedDirectors = Arrays.asList(directorOne);
+        final List<DirectorRequest> selectedDirectors = Collections.singletonList(directorOne);
 
         when(companyProfileService.isCompanyClosable(companyProfile)).thenReturn(true);
         when(companyOfficerService.hasEnoughOfficersSelected(companyProfile.getCompanyNumber(), selectedDirectors))

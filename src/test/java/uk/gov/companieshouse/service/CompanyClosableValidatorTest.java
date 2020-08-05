@@ -36,6 +36,53 @@ public class CompanyClosableValidatorTest {
     }
 
     @Test
+    public void mapCompanyDetailsToClosable_companyHasTypeLlpAndIsActive_returnsTrue() {
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        company.setType(CompanyType.LLP.getValue());
+        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
+
+        final boolean isClosable = mapper.isCompanyClosable(company);
+
+        assertTrue(isClosable);
+    }
+
+    @Test
+    public void mapCompanyDetailsToClosable_companyHasTypeLtdAndIsActiveAndOverseas_returnsFalse() {
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        company.setType(CompanyType.LTD.getValue());
+        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
+        company.setCompanyNumber("FC123456");
+
+        final boolean isClosable = mapper.isCompanyClosable(company);
+
+        assertFalse(isClosable);
+    }
+
+    @Test
+    public void mapCompanyDetailsToClosable_companyHasTypePlcAndIsActiveAndOverseas_returnsFalse() {
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        company.setType(CompanyType.PLC.getValue());
+        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
+        company.setCompanyNumber("NF123456");
+
+        final boolean isClosable = mapper.isCompanyClosable(company);
+
+        assertFalse(isClosable);
+    }
+
+    @Test
+    public void mapCompanyDetailsToClosable_companyHasTypeLlpAndIsActiveAndOverseas_returnsFalse() {
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        company.setType(CompanyType.LLP.getValue());
+        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
+        company.setCompanyNumber("SF123456");
+
+        final boolean isClosable = mapper.isCompanyClosable(company);
+
+        assertFalse(isClosable);
+    }
+
+    @Test
     public void mapCompanyDetailsToClosable_companyHasTypeLtdAndIsDissolved_returnsFalse() {
         final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setType(CompanyType.LTD.getValue());
@@ -50,6 +97,17 @@ public class CompanyClosableValidatorTest {
     public void mapCompanyDetailsToClosable_companyHasTypePlcAndIsDissolved_returnsFalse() {
         final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setType(CompanyType.PLC.getValue());
+        company.setCompanyStatus(CompanyStatus.DISSOLVED.getValue());
+
+        final boolean isClosable = mapper.isCompanyClosable(company);
+
+        assertFalse(isClosable);
+    }
+
+    @Test
+    public void mapCompanyDetailsToClosable_companyHasTypeLlpAndIsDissolved_returnsFalse() {
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        company.setType(CompanyType.LLP.getValue());
         company.setCompanyStatus(CompanyStatus.DISSOLVED.getValue());
 
         final boolean isClosable = mapper.isCompanyClosable(company);
