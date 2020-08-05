@@ -1,0 +1,229 @@
+{{"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" | unescaped}}
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xml:lang="en">
+
+<head>
+    <meta content="application/xhtml+xml; charset=UTF-8" http-equiv="content-type"/>
+    <title>DS01 - Application to strike off {{.companyName}}</title>
+
+    <style type="text/css">
+        body {
+            padding: 20px 40px 0 40px;
+            font-size: 14px;
+            font-family: 'TransportNewLight-Regular', sans-serif;
+        }
+
+        img {
+            height: 100%;
+            width: 100%;
+        }
+
+        hr {
+            border: 0.7px solid black;
+        }
+
+        .ch-logo {
+            margin-top: 20px;
+            width: 280px;
+            height: 40px;
+            float: left;
+        }
+
+        .application-type {
+            float: right;
+            text-align: right;
+            margin-right: 10px;
+            font-weight: bold;
+            width: 300px;
+        }
+
+        .application-type-big {
+            font-size: 55px;
+        }
+
+        .application-type-small {
+            font-size: 18px;
+        }
+
+        header {
+            display: block;
+            height: 270px;
+        }
+
+        h1 {
+            width: 350px;
+            float: right;
+            border: 5px solid black;
+            padding: 10px 15px 5px 15px;
+            text-align: center;
+            font-size: 30px;
+            display: block;
+            font-weight: normal;
+            margin-top: 0px;
+            margin-bottom: 5px;
+        }
+
+        h2 {
+            text-align: center;
+            font-weight: bold;
+            font-size: 20px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        h3 {
+            font-weight: bold;
+            margin-bottom: 5px;
+            margin-top: 10px;
+        }
+
+        p {
+            margin-top: 15px;
+            margin-bottom: 20px;
+            line-height: 20px;
+        }
+
+        .company-data {
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .company-data-left {
+            width: 175px;
+        }
+
+        .company-data table tr {
+            height: 25px;
+        }
+
+        .director-data-left {
+            padding-left: 10px;
+            width: 210px;
+        }
+
+        .director-data-right {
+            width: 320px;
+            padding-top: 30px;
+        }
+
+        .hr-thin {
+            border: 0.2px solid black;
+            width: 80%;
+            float: left;
+        }
+
+        .hr-div {
+            width: 100%;
+            float: left;
+        }
+
+        .director-data-table tr {
+            height: 100px;
+            page-break-inside: avoid;
+        }
+
+        table {
+            width: 100%;
+        }
+
+        .label {
+            display: block;
+        }
+
+        #bottom-line {
+            margin-top: 15px;
+        }
+
+        .info {
+            width: 100%;
+            height: 125px;
+        }
+    </style>
+</head>
+
+<body xml:lang="en">
+<header role="banner">
+    <div class="info">
+        <div class="ch-logo">
+            <img src="http://{{.cdn}}/images/ch_digital_logo_non_transparent.jpg"
+                 alt="Companies House logo"/>
+        </div>
+
+        <div class="application-type">
+            <span class="application-type-big">DS01</span>
+            <span class="application-type-small">(ef)</span>
+        </div>
+
+        <h1>Application to strike off</h1>
+    </div>
+
+    <div class="company-data">
+        <table>
+            <tr>
+                <td class="company-data-left">Company Name:</td>
+                <td>{{.companyName}}</td>
+            </tr>
+            <tr>
+                <td class="company-data-left">Company Number:</td>
+                <td>{{.companyNumber}}</td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+<main role="main">
+    <hr/>
+
+    <section>
+        <h2>Important notice for all interested parties</h2>
+
+        <p>This company has applied to be struck off and dissolved. The registrar will proceed unless there is
+            reasonable cause not to, and on dissolution any assets remaining in the company will be passed to the Crown.
+            Guidance is available on grounds for objection. If in doubt seek professional advice.</p>
+    </section>
+
+    <hr/>
+
+    <section>
+        <h2>Declaration of director(s)</h2>
+
+        <p>I/We as the majority of directors apply for this company to be struck off the Register and declare that none
+            of the circumstances described in section 1004 and 1005 of the Companies Act 2006 (being circumstances in
+            which the directors would otherwise be prohibited under those sections from making an application) exists in
+            relation to the company.</p>
+    </section>
+
+    <section>
+        <h3>Authorising company Director(s):</h3>
+
+        <table class="director-data-table">
+            {{range $k, $director:= .directors }}
+                <tr>
+                    <td class="director-data-left">{{$director.name}}</td>
+                    <td class="director-data-right">
+                        <div>
+                            {{if $director.onBehalfName}}
+                                <span class="label">{{$director.onBehalfName}} pp {{$director.name}}</span>
+                            {{else}}
+                                <span class="label">{{$director.name}}</span>
+                            {{end}}
+                        </div>
+                        <div class="hr-div">
+                            <hr class="hr-thin"/>
+                        </div>
+                        <div>
+                            {{if $director.onBehalfName}}
+                                <span class="power-of-attorney">*Power of Attorney signed on behalf of the director</span>
+                            {{end}}
+                            <span class="label">Signature Date: {{$director.approvalDate}}</span>
+                        </div>
+                    </td>
+                </tr>
+            {{end}}
+        </table>
+    </section>
+    <hr id="bottom-line"/>
+</main>
+</body>
+</html>
