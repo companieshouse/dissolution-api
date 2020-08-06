@@ -2,13 +2,13 @@ package uk.gov.companieshouse.service;
 
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
+import uk.gov.companieshouse.model.enums.CompanyOverseasPrefix;
 import uk.gov.companieshouse.model.enums.CompanyStatus;
 import uk.gov.companieshouse.model.enums.CompanyType;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static uk.gov.companieshouse.model.enums.CompanyOverseasPrefix.*;
 
 @Service
 public class CompanyClosableValidator {
@@ -16,6 +16,12 @@ public class CompanyClosableValidator {
             CompanyType.LTD.getValue(),
             CompanyType.PLC.getValue(),
             CompanyType.LLP.getValue()
+    );
+
+    private static final List<String> OVERSEAS_PREFIXES = Arrays.asList(
+            CompanyOverseasPrefix.FC.getValue(),
+            CompanyOverseasPrefix.SF.getValue(),
+            CompanyOverseasPrefix.NF.getValue()
     );
 
     public boolean isCompanyClosable(CompanyProfile company) {
@@ -33,6 +39,6 @@ public class CompanyClosableValidator {
     }
 
     private boolean isCompanyOverseas(String companyNumber) {
-        return Arrays.asList(FC.toString(), NF.toString(), SF.toString()).contains(companyNumber.substring(0, 2));
+        return OVERSEAS_PREFIXES.contains(companyNumber.substring(0, 2));
     }
 }
