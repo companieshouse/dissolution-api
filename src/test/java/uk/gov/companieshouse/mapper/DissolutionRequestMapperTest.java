@@ -48,7 +48,6 @@ public class DissolutionRequestMapperTest {
         company.setCompanyName(COMPANY_NAME);
         company.setType(CompanyType.PLC.getValue());
 
-
         final Dissolution dissolution = mapper.mapToDissolution(body, company, USER_ID, EMAIL, IP_ADDRESS, REFERENCE, BARCODE);
 
         assertEquals(BARCODE, dissolution.getData().getApplication().getBarcode());
