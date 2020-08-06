@@ -10,6 +10,7 @@ import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;
+import uk.gov.companieshouse.model.enums.CompanyType;
 
 import java.util.Arrays;
 
@@ -45,7 +46,7 @@ public class DissolutionRequestMapperTest {
         final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setCompanyNumber(COMPANY_NUMBER);
         company.setCompanyName(COMPANY_NAME);
-        company.setType("ltd");
+        company.setType(CompanyType.PLC.getValue());
 
 
         final Dissolution dissolution = mapper.mapToDissolution(body, company, USER_ID, EMAIL, IP_ADDRESS, REFERENCE, BARCODE);
@@ -62,7 +63,7 @@ public class DissolutionRequestMapperTest {
         final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setCompanyNumber(COMPANY_NUMBER);
         company.setCompanyName(COMPANY_NAME);
-        company.setType("llp");
+        company.setType(CompanyType.LLP.getValue());
 
         final Dissolution dissolution = mapper.mapToDissolution(body, company, USER_ID, EMAIL, IP_ADDRESS, REFERENCE, BARCODE);
 

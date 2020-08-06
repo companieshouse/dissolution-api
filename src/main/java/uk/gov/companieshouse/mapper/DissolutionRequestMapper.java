@@ -13,6 +13,7 @@ import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;
+import uk.gov.companieshouse.model.enums.CompanyType;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -48,7 +49,7 @@ public class DissolutionRequestMapper {
         application.setBarcode(barcode);
         application.setReference(reference);
         application.setStatus(ApplicationStatus.PENDING_APPROVAL);
-        application.setType(companyType.equals("llp") ? ApplicationType.LLDS01 : ApplicationType.DS01);
+        application.setType(companyType.equals(CompanyType.LLP.getValue()) ? ApplicationType.LLDS01 : ApplicationType.DS01);
 
         return application;
     }
