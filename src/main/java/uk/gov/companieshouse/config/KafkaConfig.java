@@ -21,7 +21,7 @@ public class KafkaConfig {
     @Value("${kafka.config.acks}")
     private String acks;
 
-    @Value("${kafka.config.retries:10}")
+    @Value("${kafka.config.retries}")
     private int retries;
 
     @Value("${kafka.config.isRoundRobin}")
@@ -51,8 +51,8 @@ public class KafkaConfig {
     }
 
     @Bean
-    public Schema fetchSchema(KafkaClient restClient) {
-        String schema = restClient.getSchema(schemaRegistryUrl, emailSchemaUri);
+    public Schema fetchSchema(KafkaClient kafkaClient) {
+        String schema = kafkaClient.getSchema(schemaRegistryUrl, emailSchemaUri);
         String schemaJson = new JSONObject(schema).getString("schema");
 
         return new Schema.Parser().parse(schemaJson);

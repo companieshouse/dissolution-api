@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import uk.gov.companieshouse.exception.InternalServerErrorException;
+import uk.gov.companieshouse.exception.EmailSendException;
 import uk.gov.companieshouse.model.dto.email.EmailDocument;
 
 import java.io.ByteArrayOutputStream;
@@ -24,21 +24,23 @@ public class EmailSerialiser {
     private final EncoderFactory encoderFactory;
     private final ObjectMapper mapper;
     private final GenericRecordFactory genericRecordFactory;
+    private final Schema schema;
 
     private final Logger logger = LoggerFactory.getLogger(EmailSerialiser.class);
 
     @Autowired
     public EmailSerialiser(
         EncoderFactory encoderFactory, GenericDatumWriterFactory datumWriterFactory,
-        GenericRecordFactory genericRecordFactory, ObjectMapper mapper
+        GenericRecordFactory genericRecordFactory, ObjectMapper mapper, Schema schema
     ) {
         this.encoderFactory = encoderFactory;
         this.datumWriterFactory = datumWriterFactory;
         this.genericRecordFactory = genericRecordFactory;
         this.mapper = mapper;
+        this.schema = schema;
     }
 
-    public byte[] serialize(EmailDocument<?> document, Schema schema) {
+    public byte[] serialise(EmailDocument<?> document) {
         try {
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             BinaryEncoder encoder = encoderFactory.binaryEncoder(stream, null);
@@ -51,8 +53,8 @@ public class EmailSerialiser {
 
             return stream.toByteArray();
         } catch (IOException e) {
-            logger.error("Error serializing email", e);
-            throw new InternalServerErrorException("Error serializing email");
+            logger.error("Error serialising email", e);
+            throw new EmailSendException(e.getMessage());
         }
     }
 

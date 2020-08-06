@@ -19,6 +19,7 @@ documentRender:
 
 env:
   name: ${ENV_NAME}
+  chsUrl: ${CHS_URL}
 
 logging:
   level:
@@ -31,12 +32,6 @@ spring:
   data:
     mongodb:
       uri: ${DISSOLUTIONS_API_MONGODB_URL}
-email:
-  appId: ${EMAIL_APP_ID}
-  topic: ${EMAIL_TOPIC}
-  successfulPayment:
-    subject: ${SUCCESSFUL_PAYMENT_EMAIL_SUBJECT}
-    messageType: ${SUCCESSFUL_PAYMENT_MESSAGE_TYPE}
 kafka:
   config:
     acks: ${KAFKA_CONFIG_ACKS}

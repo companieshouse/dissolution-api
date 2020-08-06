@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.exception.BadRequestException;
+import uk.gov.companieshouse.exception.EmailSendException;
+import uk.gov.companieshouse.exception.InternalServerErrorException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentGetResponse;
@@ -30,6 +32,7 @@ import javax.validation.Valid;
 public class PaymentController {
     private final DissolutionService dissolutionService;
     private final PaymentService paymentService;
+
     private final Logger logger = LoggerFactory.getLogger(DissolutionController.class);
 
     public PaymentController(DissolutionService dissolutionService, PaymentService paymentService) {
@@ -80,7 +83,11 @@ public class PaymentController {
         }
 
         if (PaymentStatus.PAID.equals(body.getStatus())) {
-            dissolutionService.updatePaymentStatus(body, companyNumber);
+            try {
+                dissolutionService.updatePaymentStatus(body, companyNumber);
+            } catch (EmailSendException e) {
+                throw new InternalServerErrorException(e.getMessage());
+            }
         }
     }
 }

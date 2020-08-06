@@ -8,11 +8,11 @@ public class KafkaClient {
 
     public String getSchema(String schemaRegistryUrl, String emailSchemaUri) {
         return WebClient
-                .create(schemaRegistryUrl)
-                .get()
-                .uri(emailSchemaUri)
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
+            .create(schemaRegistryUrl)
+            .get()
+            .uri(emailSchemaUri)
+            .retrieve()
+            .bodyToMono(String.class)
+            .block();
     }
 }

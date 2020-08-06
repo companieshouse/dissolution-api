@@ -68,13 +68,7 @@ public class DissolutionPatcher {
 
         this.repository.save(dissolution);
 
-        final String dissolutionReferenceNumber = dissolution.getData().getApplication().getReference();
-        final String companyName = dissolution.getCompany().getName();
-        final String applicantEmailAddress = dissolution.getCreatedBy().getEmail();
-
-        dissolutionEmailService.sendSuccessfulPaymentEmail(
-            dissolutionReferenceNumber, companyNumber, companyName, applicantEmailAddress
-        );
+        dissolutionEmailService.sendSuccessfulPaymentEmail(dissolution);
     }
 
     private DissolutionDirector findDirector(String email, Dissolution dissolution) {

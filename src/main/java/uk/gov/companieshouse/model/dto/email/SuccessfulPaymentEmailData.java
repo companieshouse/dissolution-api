@@ -1,12 +1,12 @@
 package uk.gov.companieshouse.model.dto.email;
 
-public class SuccessfulPaymentEmailData {
+public class SuccessfulPaymentEmailData extends EmailData {
     private String to;
     private String subject;
     private String dissolutionReferenceNumber;
     private String companyNumber;
     private String companyName;
-    private String env;
+    private String chsUrl;
 
     public String getTo() {
         return to;
@@ -48,11 +48,11 @@ public class SuccessfulPaymentEmailData {
         this.companyName = companyName;
     }
 
-    public String getEnv() {
-        return env;
+    public String getChsUrl() {
+        return chsUrl;
     }
 
-    public void setEnv(String env) {
-        this.env = env;
+    public void setChsUrl(String chsUrl) {
+        this.chsUrl = chsUrl;
     }
 }
