@@ -3,13 +3,14 @@ package uk.gov.companieshouse.mapper;
 import org.junit.jupiter.api.Test;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
-import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
+import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;
+import uk.gov.companieshouse.model.enums.CompanyType;
 
 import java.util.Arrays;
 
@@ -40,11 +41,12 @@ public class DissolutionRequestMapperTest {
     }
 
     @Test
-    public void mapToDissolution_setsApplicationData_includingDefaultStatus() {
+    public void mapToDissolution_setsApplicationData_includingDefaultStatusForDS01() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
         final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setCompanyNumber(COMPANY_NUMBER);
         company.setCompanyName(COMPANY_NAME);
+        company.setType(CompanyType.PLC.getValue());
 
         final Dissolution dissolution = mapper.mapToDissolution(body, company, USER_ID, EMAIL, IP_ADDRESS, REFERENCE, BARCODE);
 
@@ -52,6 +54,22 @@ public class DissolutionRequestMapperTest {
         assertEquals(REFERENCE, dissolution.getData().getApplication().getReference());
         assertEquals(ApplicationStatus.PENDING_APPROVAL, dissolution.getData().getApplication().getStatus());
         assertEquals(ApplicationType.DS01, dissolution.getData().getApplication().getType());
+    }
+
+    @Test
+    public void mapToDissolution_setsApplicationData_includingDefaultStatusForLLDS01() {
+        final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        company.setCompanyNumber(COMPANY_NUMBER);
+        company.setCompanyName(COMPANY_NAME);
+        company.setType(CompanyType.LLP.getValue());
+
+        final Dissolution dissolution = mapper.mapToDissolution(body, company, USER_ID, EMAIL, IP_ADDRESS, REFERENCE, BARCODE);
+
+        assertEquals(BARCODE, dissolution.getData().getApplication().getBarcode());
+        assertEquals(REFERENCE, dissolution.getData().getApplication().getReference());
+        assertEquals(ApplicationStatus.PENDING_APPROVAL, dissolution.getData().getApplication().getStatus());
+        assertEquals(ApplicationType.LLDS01, dissolution.getData().getApplication().getType());
     }
 
     @Test

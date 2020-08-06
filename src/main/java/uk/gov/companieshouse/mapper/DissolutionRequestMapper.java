@@ -2,12 +2,18 @@ package uk.gov.companieshouse.mapper;
 
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.GenerateEtagUtil;
+import uk.gov.companieshouse.model.db.dissolution.Company;
+import uk.gov.companieshouse.model.db.dissolution.CreatedBy;
+import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionApplication;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionData;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
-import uk.gov.companieshouse.model.db.dissolution.*;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;
+import uk.gov.companieshouse.model.enums.CompanyType;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,30 +26,30 @@ public class DissolutionRequestMapper {
         final Dissolution dissolution = new Dissolution();
 
         dissolution.setModifiedDateTime(LocalDateTime.now());
-        dissolution.setData(mapToDissolutionData(body, reference, barcode));
+        dissolution.setData(mapToDissolutionData(body, company.getType(), reference, barcode));
         dissolution.setCompany(mapToCompany(company.getCompanyNumber(), company.getCompanyName()));
         dissolution.setCreatedBy(mapToCreatedBy(userId, email, ip));
 
         return dissolution;
     }
 
-    private DissolutionData mapToDissolutionData(DissolutionCreateRequest body, String reference, String barcode) {
+    private DissolutionData mapToDissolutionData(DissolutionCreateRequest body, String companyType, String reference, String barcode) {
         final DissolutionData data = new DissolutionData();
 
         data.setETag(GenerateEtagUtil.generateEtag());
-        data.setApplication(mapToDissolutionApplication(reference, barcode));
+        data.setApplication(mapToDissolutionApplication(companyType, reference, barcode));
         data.setDirectors(mapToDissolutionDirectors(body.getDirectors()));
 
         return data;
     }
 
-    private DissolutionApplication mapToDissolutionApplication(String reference, String barcode) {
+    private DissolutionApplication mapToDissolutionApplication(String companyType, String reference, String barcode) {
         final DissolutionApplication application = new DissolutionApplication();
 
         application.setBarcode(barcode);
         application.setReference(reference);
         application.setStatus(ApplicationStatus.PENDING_APPROVAL);
-        application.setType(ApplicationType.DS01);
+        application.setType(companyType.equals(CompanyType.LLP.getValue()) ? ApplicationType.LLDS01 : ApplicationType.DS01);
 
         return application;
     }
