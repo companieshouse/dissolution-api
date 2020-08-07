@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.mapper.mapper;
+package uk.gov.companieshouse.mapper.chips;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -6,8 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.companieshouse.mapper.chips.ChipsFormDataMapper;
-import uk.gov.companieshouse.mapper.chips.DissolutionChipsMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.chips.DissolutionChipsRequest;
 

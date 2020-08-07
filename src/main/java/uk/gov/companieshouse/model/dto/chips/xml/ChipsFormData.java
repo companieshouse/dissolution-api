@@ -1,16 +1,15 @@
 package uk.gov.companieshouse.model.dto.chips.xml;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
-
-import javax.xml.bind.annotation.XmlAttribute;
 
 @JacksonXmlRootElement(localName = "form")
 public class ChipsFormData {
 
-    @XmlAttribute
+    @JacksonXmlProperty(isAttribute = true)
     private ChipsFormType type;
 
-    @XmlAttribute
+    @JacksonXmlProperty(isAttribute = true)
     private int version;
 
     private ChipsFilingDetails filingDetails;

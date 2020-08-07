@@ -21,7 +21,7 @@ public class ChipsFormDataMapper {
     private static final int PACKAGE_COUNT = 1;
     private static final String FILING_DETAILS_METHOD = "enablement";
 
-    private static final String CHIPS_DATE_FORMAT = "dd-MM-yyyy";
+    private static final String CHIPS_DATE_FORMAT = "yyyy-MM-dd";
 
     private final XmlMapper xmlMapper;
 
@@ -47,8 +47,8 @@ public class ChipsFormDataMapper {
 
         filingDetails.setPresenterDocumentReference(reference);
         filingDetails.setPresenterDetails(mapToPresenterDetails(dissolution));
-        filingDetails.setReceiptDate(""); // TODO
-        filingDetails.setSignDate(""); // TODO
+        filingDetails.setReceiptDate(asDateString(dissolution.getPaymentInformation().getDateTime()));
+        filingDetails.setSignDate(asDateString(dissolution.getCreatedBy().getDateTime()));
         filingDetails.setSubmissionReference(reference);
         filingDetails.setPayment(mapToPayment(dissolution));
         filingDetails.setBarcode(dissolution.getData().getApplication().getBarcode());
@@ -109,10 +109,10 @@ public class ChipsFormDataMapper {
     private ChipsPersonName mapToPersonName(String name) {
         final ChipsPersonName personName = new ChipsPersonName();
 
-        final int nameSeperatorIndex = name.indexOf(",");
+        final int nameSeparatorIndex = name.indexOf(",");
 
-        personName.setForename(name.substring(0, nameSeperatorIndex));
-        personName.setSurname(name.substring(nameSeperatorIndex + 1));
+        personName.setForename(name.substring(nameSeparatorIndex + 1).trim());
+        personName.setSurname(name.substring(0, nameSeparatorIndex).trim());
 
         return personName;
     }

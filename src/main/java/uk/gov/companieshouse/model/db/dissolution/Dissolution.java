@@ -27,6 +27,8 @@ public class Dissolution {
 
     private DissolutionCertificate certificate;
 
+    private DissolutionSubmission submission;
+
     public String getId() {
         return id;
     }
@@ -81,5 +83,13 @@ public class Dissolution {
 
     public void setCertificate(DissolutionCertificate certificate) {
         this.certificate = certificate;
+    }
+
+    public DissolutionSubmission getSubmission() {
+        return submission;
+    }
+
+    public void setSubmission(DissolutionSubmission submission) {
+        this.submission = submission;
     }
 }

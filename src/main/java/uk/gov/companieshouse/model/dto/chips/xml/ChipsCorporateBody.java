@@ -1,5 +1,8 @@
 package uk.gov.companieshouse.model.dto.chips.xml;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+
 import java.util.List;
 
 public class ChipsCorporateBody {
@@ -7,6 +10,8 @@ public class ChipsCorporateBody {
     private String incorporationNumber;
     private String corporateBodyName;
 
+    @JacksonXmlElementWrapper(localName = "officers")
+    @JacksonXmlProperty(localName = "officer")
     private List<ChipsOfficer> officers;
 
     public String getIncorporationNumber() {

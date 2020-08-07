@@ -6,15 +6,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import uk.gov.companieshouse.config.ChipsConfig;
+import uk.gov.companieshouse.exception.ChipsNotAvailableException;
 import uk.gov.companieshouse.model.dto.chips.DissolutionChipsRequest;
 
 @Service
 public class ChipsClient {
 
-    private static class ChipsNotAvailableException extends RuntimeException {}
-
     private static final String HEALTHCHECK_URI = "/healthcheck/status";
     private static final String POST_FORM_URI = "/efilingEnablement/postForm";
+
+    private static final String HEADER_CONTENT_TYPE = "Content-Type";
+    private static final String HEADER_CONTENT_TYPE_VALUE = "application/json";
 
     private final ChipsConfig config;
 
@@ -45,8 +47,10 @@ public class ChipsClient {
                 .create(config.getChipsHost())
                 .post()
                 .uri(POST_FORM_URI)
+                .header(HEADER_CONTENT_TYPE, HEADER_CONTENT_TYPE_VALUE)
                 .body(Mono.just(dissolutionRequest), DissolutionChipsRequest.class)
                 .retrieve()
+                .onStatus(HttpStatus.NOT_FOUND::equals, clientResponse -> { throw new ChipsNotAvailableException(); })
                 .toBodilessEntity()
                 .block();
     }

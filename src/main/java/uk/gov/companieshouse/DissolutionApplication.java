@@ -1,6 +1,7 @@
 package uk.gov.companieshouse;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +15,8 @@ public class DissolutionApplication {
 
     @Bean
     public XmlMapper configureXmlMapper() {
-        return new XmlMapper();
+        final XmlMapper xmlMapper = new XmlMapper();
+        xmlMapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
+        return xmlMapper;
     }
 }
