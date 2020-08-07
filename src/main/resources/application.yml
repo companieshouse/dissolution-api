@@ -2,11 +2,19 @@ api:
   key: ${CHS_API_KEY}
   url: ${API_URL}
 
+aws:
+  accessKeyId: ${AWS_ACCESS_KEY_ID}
+  region: ${ENV_REGION_AWS}
+  secretAccessKey: ${AWS_SECRET_ACCESS_KEY}
+
 barcodeGenerator:
   host: ${BARCODE_SERVICE_URL}
 
 cdn:
   host: ${CDN_HOST}
+
+chips:
+  host: ${CHIPS_REST_SERVICE_URL}
 
 companyProfile:
   host: ${CHS_COMPANY_PROFILE_API_LOCAL_URL}

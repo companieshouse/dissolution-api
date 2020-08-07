@@ -55,6 +55,12 @@ public class GlobalExceptionHandler {
         LOGGER.info("[Not Found] - {}", request.getRequestURL().toString(), ex);
     }
 
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public void handleServiceUnavailable(RuntimeException ex, HttpServletRequest request) {
+        LOGGER.info("[Service unavailable] - {}", request.getRequestURL().toString(), ex);
+    }
+
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(BadRequestException.class)
     public void handleBadRequest(RuntimeException ex, HttpServletRequest request) {
