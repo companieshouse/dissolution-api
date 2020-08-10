@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ChipsFormAttachment {
 
-    @JsonProperty("mimeType")
+    @JsonProperty("mimetype")
     private String mimeType;
 
     private String category;
