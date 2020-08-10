@@ -29,7 +29,7 @@ public class ChipsFormDataMapper {
     @Qualifier("xmlMapper")
     private XmlMapper xmlMapper;
 
-    public String mapToChipsFormDataXml(Dissolution dissolution) throws JsonProcessingException {
+    public String mapToChipsFormDataXml(Dissolution dissolution) {
         final ChipsFormData form = new ChipsFormData();
 
         form.setType(ChipsFormType.findByApplicationType(dissolution.getData().getApplication().getType()));
@@ -37,7 +37,7 @@ public class ChipsFormDataMapper {
         form.setFilingDetails(mapToFilingDetails(dissolution));
         form.setCorporateBody(mapToCorporateBody(dissolution));
 
-        return xmlMapper.writeValueAsString(form);
+        return toXml(form);
     }
 
     private ChipsFilingDetails mapToFilingDetails(Dissolution dissolution) {
@@ -119,5 +119,13 @@ public class ChipsFormDataMapper {
 
     private String asDateString(LocalDateTime dateTime) {
         return dateTime.format(DateTimeFormatter.ofPattern(CHIPS_DATE_FORMAT));
+    }
+
+    private String toXml(ChipsFormData form) {
+        try {
+            return xmlMapper.writeValueAsString(form);
+        } catch (JsonProcessingException ex) {
+            throw new RuntimeException(String.format("Failed to map to CHIPS request for company %s", form.getCorporateBody().getIncorporationNumber()), ex);
+        }
     }
 }

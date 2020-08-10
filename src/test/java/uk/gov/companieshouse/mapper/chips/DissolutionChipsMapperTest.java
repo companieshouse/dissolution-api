@@ -33,14 +33,14 @@ public class DissolutionChipsMapperTest {
     private Dissolution dissolution;
 
     @BeforeEach
-    public void setup() throws Exception {
+    public void setup() {
         dissolution = generateDissolution();
 
         when(formDataMapper.mapToChipsFormDataXml(dissolution)).thenReturn("some xml");
     }
 
     @Test
-    public void mapToDissolutionChipsRequest_setsThePackageMetadataCorrectly() throws Exception {
+    public void mapToDissolutionChipsRequest_setsThePackageMetadataCorrectly() {
         dissolution.getData().getApplication().setReference(DISSOLUTION_REFERENCE);
 
         final DissolutionChipsRequest request = mapper.mapToDissolutionChipsRequest(dissolution, CERTIFICATE_CONTENTS);
@@ -50,7 +50,7 @@ public class DissolutionChipsMapperTest {
     }
 
     @Test
-    public void mapToDissolutionChipsRequest_generatesTheFormCorrectly() throws Exception {
+    public void mapToDissolutionChipsRequest_generatesTheFormCorrectly() {
         dissolution.getData().getApplication().setBarcode(DISSOLUTION_BARCODE);
 
         final DissolutionChipsRequest request = mapper.mapToDissolutionChipsRequest(dissolution, CERTIFICATE_CONTENTS);
@@ -63,7 +63,7 @@ public class DissolutionChipsMapperTest {
     }
 
     @Test
-    public void mapToDissolutionChipsRequest_generatesTheFormAttachmentsCorrectly() throws Exception {
+    public void mapToDissolutionChipsRequest_generatesTheFormAttachmentsCorrectly() {
         final DissolutionChipsRequest request = mapper.mapToDissolutionChipsRequest(dissolution, CERTIFICATE_CONTENTS);
 
         assertEquals(1, request.getForms().get(0).getAttachments().size());

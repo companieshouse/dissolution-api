@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.service.dissolution.chips;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -62,10 +61,10 @@ public class ChipsSubmitter {
             logger.info("Dissolution request successfully sent to CHIPS for company {}", companyNumber);
 
             return true;
-        } catch (JsonProcessingException ex) {
-            logger.error("Failed to map to CHIPS request for company {}", companyNumber, ex);
         } catch (ChipsNotAvailableException ex) {
             logger.info("CHIPS was not available when submitting for company {}", companyNumber);
+        } catch (RuntimeException ex) {
+            logger.error("Unexpected error thrown when submitting to CHIPS for company {}", companyNumber, ex);
         }
 
         return false;

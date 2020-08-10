@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.mapper.chips;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.chips.ChipsForm;
@@ -25,7 +24,7 @@ public class DissolutionChipsMapper {
         this.formDataMapper = formDataMapper;
     }
 
-    public DissolutionChipsRequest mapToDissolutionChipsRequest(Dissolution dissolution, String certificate) throws JsonProcessingException {
+    public DissolutionChipsRequest mapToDissolutionChipsRequest(Dissolution dissolution, String certificate) {
         final DissolutionChipsRequest request = new DissolutionChipsRequest();
 
         request.setPackageMetadata(mapToPackageMetadata(dissolution));
@@ -43,7 +42,7 @@ public class DissolutionChipsMapper {
         return metadata;
     }
 
-    private ChipsForm mapToChipsForm(Dissolution dissolution, String certificate) throws JsonProcessingException {
+    private ChipsForm mapToChipsForm(Dissolution dissolution, String certificate) {
         final ChipsForm form = new ChipsForm();
 
         form.setBarcode(dissolution.getData().getApplication().getBarcode());

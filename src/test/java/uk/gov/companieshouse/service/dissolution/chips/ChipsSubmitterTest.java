@@ -61,7 +61,7 @@ public class ChipsSubmitterTest {
     }
 
     @Test
-    public void submitDissolutionToChips_downloadsCertificate_mapsToRequest_sendsToChips() throws Exception {
+    public void submitDissolutionToChips_downloadsCertificate_mapsToRequest_sendsToChips() {
         final DissolutionChipsRequest request = generateDissolutionChipsRequest();
 
         when(certificateDownloader.downloadDissolutionCertificate(dissolution)).thenReturn("some certificate contents");
@@ -75,7 +75,7 @@ public class ChipsSubmitterTest {
     }
 
     @Test
-    public void submitDissolutionToChips_updatesDatabase_ifChipsSubmissionSucceeds() throws Exception {
+    public void submitDissolutionToChips_updatesDatabase_ifChipsSubmissionSucceeds() {
         final DissolutionChipsRequest request = generateDissolutionChipsRequest();
 
         when(certificateDownloader.downloadDissolutionCertificate(dissolution)).thenReturn("some certificate contents");
@@ -92,7 +92,7 @@ public class ChipsSubmitterTest {
     }
 
     @Test
-    public void submitDissolutionToChips_updatesDatabase_ifChipsSubmissionFails_andRetriesNotExceeded() throws Exception {
+    public void submitDissolutionToChips_updatesDatabase_ifChipsSubmissionFails_andRetriesNotExceeded() {
         dissolution.getSubmission().setRetryCounter(1);
 
         final DissolutionChipsRequest request = generateDissolutionChipsRequest();
@@ -114,7 +114,7 @@ public class ChipsSubmitterTest {
     }
 
     @Test
-    public void submitDissolutionToChips_updatesDatabase_ifChipsSubmissionFails_andRetriesExceeded() throws Exception {
+    public void submitDissolutionToChips_updatesDatabase_ifChipsSubmissionFails_andRetriesExceeded() {
         dissolution.getSubmission().setRetryCounter(9);
 
         final DissolutionChipsRequest request = generateDissolutionChipsRequest();
