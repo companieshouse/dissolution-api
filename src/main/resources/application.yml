@@ -21,6 +21,19 @@ env:
   name: ${ENV_NAME}
   chsUrl: ${CHS_URL}
 
+kafka:
+  broker:
+    addr: ${KAFKA_BROKER_ADDR}
+  config:
+    acks: ${KAFKA_CONFIG_ACKS}
+    retries: ${KAFKA_CONFIG_RETRIES}
+    isRoundRobin: ${KAFKA_CONFIG_IS_ROUND_ROBIN}
+  schema:
+    registry:
+      url: ${SCHEMA_REGISTRY_URL}
+    uri:
+      email-send: ${EMAIL_SCHEMA_URI}
+
 logging:
   level:
     root: ${LOGLEVEL}
@@ -32,13 +45,3 @@ spring:
   data:
     mongodb:
       uri: ${DISSOLUTIONS_API_MONGODB_URL}
-kafka:
-  config:
-    acks: ${KAFKA_CONFIG_ACKS}
-    retries: ${KAFKA_CONFIG_RETRIES}
-    isRoundRobin: ${KAFKA_CONFIG_IS_ROUND_ROBIN}
-  schema:
-    registry:
-      url: ${SCHEMA_REGISTRY_URL}
-    uri:
-      email-send: ${EMAIL_SCHEMA_URI}

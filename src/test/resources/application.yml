@@ -19,6 +19,20 @@ documentRender:
 
 env:
   name: local
+  chsUrl: http://ui
+
+kafka:
+  broker:
+    addr: kafka-broker1-rebel1.development.aws.internal:9092
+  config:
+    acks: WAIT_FOR_ALL
+    retries: 10
+    isRoundRobin: false
+  schema:
+    registry:
+      url: http://kafka-broker1-rebel1.development.aws.internal:8081
+    uri:
+      email-send: /subjects/email-send/versions/latest
 
 server:
   port: 3001

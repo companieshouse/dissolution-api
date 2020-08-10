@@ -10,13 +10,15 @@ import uk.gov.companieshouse.client.KafkaClient;
 import uk.gov.companieshouse.kafka.producer.Acks;
 import uk.gov.companieshouse.kafka.producer.CHKafkaProducer;
 import uk.gov.companieshouse.kafka.producer.ProducerConfig;
-import uk.gov.companieshouse.kafka.producer.ProducerConfigHelper;
 
 /**
  * Configuration class for the kafka queue used to send emails
  */
 @Configuration
 public class KafkaConfig {
+
+    @Value("${kafka.broker.addr}")
+    private String brokerAddr;
 
     @Value("${kafka.config.acks}")
     private String acks;
@@ -41,8 +43,7 @@ public class KafkaConfig {
     @Bean
     ProducerConfig producerConfig() {
         ProducerConfig config = new ProducerConfig();
-        ProducerConfigHelper.assignBrokerAddresses(config);
-
+        config.setBrokerAddresses(brokerAddr.split(","));
         config.setAcks(Acks.valueOf(acks));
         config.setRoundRobinPartitioner(isRoundRobin);
         config.setRetries(retries);
