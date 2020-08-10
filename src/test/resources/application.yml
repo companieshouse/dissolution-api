@@ -15,6 +15,7 @@ cdn:
 
 chips:
   host: http://chips
+  retryLimit: 2
 
 companyProfile:
   host: http://company-profile-api

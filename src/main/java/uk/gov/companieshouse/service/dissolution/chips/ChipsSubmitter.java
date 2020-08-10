@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.client.ChipsClient;
+import uk.gov.companieshouse.config.ChipsConfig;
 import uk.gov.companieshouse.exception.ChipsNotAvailableException;
 import uk.gov.companieshouse.mapper.chips.DissolutionChipsMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
@@ -24,16 +25,19 @@ public class ChipsSubmitter {
     private final DissolutionCertificateDownloader certificateDownloader;
     private final DissolutionChipsMapper mapper;
     private final ChipsClient client;
+    private final ChipsConfig config;
     private final DissolutionRepository repository;
 
     public ChipsSubmitter(
             DissolutionCertificateDownloader certificateDownloader,
             DissolutionChipsMapper mapper,
             ChipsClient client,
+            ChipsConfig config,
             DissolutionRepository repository) {
         this.certificateDownloader = certificateDownloader;
         this.mapper = mapper;
         this.client = client;
+        this.config = config;
         this.repository = repository;
     }
 
@@ -73,8 +77,18 @@ public class ChipsSubmitter {
 
         if (wasSuccessful) {
             submission.setStatus(SubmissionStatus.SENT);
+        } else {
+            handleFailedSubmission(submission);
         }
 
         repository.save(dissolution);
+    }
+
+    private void handleFailedSubmission(DissolutionSubmission submission) {
+        submission.setRetryCounter(submission.getRetryCounter() + 1);
+
+        if (submission.getRetryCounter() == config.getChipsRetryLimit()) {
+            submission.setStatus(SubmissionStatus.FAILED);
+        }
     }
 }

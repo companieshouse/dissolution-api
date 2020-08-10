@@ -9,6 +9,9 @@ public class DissolutionSubmission {
 
     private SubmissionStatus status;
 
+    @Field("retry_counter")
+    private int retryCounter;
+
     @Field("date_time")
     private LocalDateTime dateTime;
 
@@ -18,6 +21,14 @@ public class DissolutionSubmission {
 
     public void setStatus(SubmissionStatus status) {
         this.status = status;
+    }
+
+    public int getRetryCounter() {
+        return retryCounter;
+    }
+
+    public void setRetryCounter(int retryCounter) {
+        this.retryCounter = retryCounter;
     }
 
     public LocalDateTime getDateTime() {

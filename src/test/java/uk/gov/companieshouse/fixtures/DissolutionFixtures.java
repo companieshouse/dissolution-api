@@ -170,6 +170,7 @@ public class DissolutionFixtures {
         final DissolutionSubmission submission = new DissolutionSubmission();
 
         submission.setStatus(SubmissionStatus.PENDING);
+        submission.setRetryCounter(0);
 
         return submission;
     }

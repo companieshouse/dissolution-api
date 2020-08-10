@@ -15,6 +15,7 @@ cdn:
 
 chips:
   host: ${CHIPS_REST_SERVICE_URL}
+  retryLimit: ${DISSOLUTION_CHIPS_RETRY_LIMIT}
 
 companyProfile:
   host: ${CHS_COMPANY_PROFILE_API_LOCAL_URL}

@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.client.ChipsClient;
+import uk.gov.companieshouse.config.ChipsConfig;
 import uk.gov.companieshouse.exception.ChipsNotAvailableException;
 import uk.gov.companieshouse.mapper.chips.DissolutionChipsMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
@@ -38,6 +39,9 @@ public class ChipsSubmitterTest {
 
     @Mock
     private ChipsClient client;
+
+    @Mock
+    private ChipsConfig config;
 
     @Mock
     private DissolutionRepository repository;
@@ -89,11 +93,14 @@ public class ChipsSubmitterTest {
 
     @Test
     public void submitDissolutionToChips_updatesDatabase_ifChipsSubmissionFails_andRetriesNotExceeded() throws Exception {
+        dissolution.getSubmission().setRetryCounter(1);
+
         final DissolutionChipsRequest request = generateDissolutionChipsRequest();
 
         when(certificateDownloader.downloadDissolutionCertificate(dissolution)).thenReturn("some certificate contents");
         when(mapper.mapToDissolutionChipsRequest(dissolution, "some certificate contents")).thenReturn(request);
         doThrow(new ChipsNotAvailableException()).when(client).sendDissolutionToChips(request);
+        when(config.getChipsRetryLimit()).thenReturn(10);
 
         submitter.submitDissolutionToChips(dissolution);
 
@@ -103,16 +110,19 @@ public class ChipsSubmitterTest {
 
         assertNotNull(updatedDissolution.getSubmission().getDateTime());
         assertEquals(SubmissionStatus.PENDING, updatedDissolution.getSubmission().getStatus());
-        // TODO - increment retry counter
+        assertEquals(2, updatedDissolution.getSubmission().getRetryCounter());
     }
 
     @Test
     public void submitDissolutionToChips_updatesDatabase_ifChipsSubmissionFails_andRetriesExceeded() throws Exception {
+        dissolution.getSubmission().setRetryCounter(9);
+
         final DissolutionChipsRequest request = generateDissolutionChipsRequest();
 
         when(certificateDownloader.downloadDissolutionCertificate(dissolution)).thenReturn("some certificate contents");
         when(mapper.mapToDissolutionChipsRequest(dissolution, "some certificate contents")).thenReturn(request);
         doThrow(new ChipsNotAvailableException()).when(client).sendDissolutionToChips(request);
+        when(config.getChipsRetryLimit()).thenReturn(10);
 
         submitter.submitDissolutionToChips(dissolution);
 
@@ -121,7 +131,7 @@ public class ChipsSubmitterTest {
         final Dissolution updatedDissolution = dissolutionCaptor.getValue();
 
         assertNotNull(updatedDissolution.getSubmission().getDateTime());
-        // TODO - assert status is failed
-        // TODO - increment retry counter
+        assertEquals(SubmissionStatus.FAILED, updatedDissolution.getSubmission().getStatus());
+        assertEquals(10, updatedDissolution.getSubmission().getRetryCounter());
     }
 }
