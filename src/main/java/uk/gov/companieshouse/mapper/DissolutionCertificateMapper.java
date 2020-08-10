@@ -10,7 +10,6 @@ import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateDire
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.sql.Timestamp;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;

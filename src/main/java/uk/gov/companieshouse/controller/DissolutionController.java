@@ -28,8 +28,6 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.service.DissolutionValidator;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
-import uk.gov.companieshouse.service.CompanyOfficerService;
-import uk.gov.companieshouse.service.CompanyProfileService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -49,9 +47,8 @@ public class DissolutionController {
 
     public DissolutionController(
             DissolutionService dissolutionService,
-            CompanyProfileService companyProfileService,
-            CompanyOfficerService companyOfficerService,
-            DissolutionValidator dissolutionValidator, CompanyProfileClient companyProfileClient) {
+            DissolutionValidator dissolutionValidator,
+            CompanyProfileClient companyProfileClient) {
         super();
         this.dissolutionService = dissolutionService;
         this.dissolutionValidator = dissolutionValidator;

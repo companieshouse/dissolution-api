@@ -9,11 +9,33 @@ public class EnvironmentConfig {
     @Value("${env.name}")
     private String environmentName;
 
+    @Value("${env.chsUrl}")
+    private String chsUrl;
+
+    @Value("${cdn.host}")
+    private String cdnHost;
+
     public String getEnvironmentName() {
         return environmentName;
     }
 
     public void setEnvironmentName(String environmentName) {
         this.environmentName = environmentName;
+    }
+
+    public String getChsUrl() {
+        return chsUrl;
+    }
+
+    public void setChsUrl(String chsUrl) {
+        this.chsUrl = chsUrl;
+    }
+
+    public String getCdnHost() {
+        return cdnHost;
+    }
+
+    public void setCdnHost(String cdnHost) {
+        this.cdnHost = cdnHost;
     }
 }

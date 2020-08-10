@@ -22,7 +22,6 @@ import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.PaymentMethod;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.dissolution.certificate.DissolutionCertificateGenerator;
-import uk.gov.companieshouse.service.dissolution.DissolutionPatcher;
 
 import java.util.Arrays;
 import java.util.List;
@@ -53,6 +52,9 @@ public class DissolutionPatcherTest {
 
     @Mock
     private DissolutionCertificateGenerator certificateGenerator;
+
+    @Mock
+    private DissolutionEmailService dissolutionEmailService;
 
     private static final String COMPANY_NUMBER = "12345678";
     private static final String USER_ID = "1234";
@@ -114,7 +116,7 @@ public class DissolutionPatcherTest {
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
         when(certificateGenerator.generateDissolutionCertificate(dissolution)).thenReturn(certificate);
 
-        final DissolutionPatchResponse result = patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP_ADDRESS, EMAIL);
+        patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP_ADDRESS, EMAIL);
 
         verify(certificateGenerator).generateDissolutionCertificate(dissolution);
         verify(repository).save(dissolutionCaptor.capture());
@@ -138,8 +140,8 @@ public class DissolutionPatcherTest {
         verify(repository).save(dissolutionCaptor.capture());
 
         assertEquals(
-                ApplicationStatus.PENDING_APPROVAL,
-                dissolutionCaptor.getValue().getData().getApplication().getStatus()
+            ApplicationStatus.PENDING_APPROVAL,
+            dissolutionCaptor.getValue().getData().getApplication().getStatus()
         );
     }
 
@@ -179,6 +181,7 @@ public class DissolutionPatcherTest {
 
         patcher.updatePaymentInformation(data.getPaymentReference(), data.getPaidAt(), COMPANY_NUMBER);
         verify(repository).save(dissolutionCaptor.capture());
+        verify(dissolutionEmailService).sendSuccessfulPaymentEmail(dissolutionCaptor.capture());
 
         assertEquals(paymentInformation, dissolutionCaptor.getValue().getPaymentInformation());
     }

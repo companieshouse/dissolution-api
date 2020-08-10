@@ -25,19 +25,23 @@ public class DissolutionPatcher {
     private final DirectorApprovalMapper approvalMapper;
     private final PaymentInformationMapper paymentInformationMapper;
     private final DissolutionCertificateGenerator certificateGenerator;
+    private final DissolutionEmailService dissolutionEmailService;
 
     @Autowired
     public DissolutionPatcher(
-            DissolutionRepository repository,
-            DissolutionResponseMapper responseMapper,
-            DirectorApprovalMapper approvalMapper,
-            PaymentInformationMapper paymentInformationMapper,
-            DissolutionCertificateGenerator certificateGenerator) {
+        DissolutionRepository repository,
+        DissolutionResponseMapper responseMapper,
+        DirectorApprovalMapper approvalMapper,
+        PaymentInformationMapper paymentInformationMapper,
+        DissolutionCertificateGenerator certificateGenerator,
+        DissolutionEmailService dissolutionEmailService
+    ) {
         this.repository = repository;
         this.responseMapper = responseMapper;
         this.approvalMapper = approvalMapper;
         this.paymentInformationMapper = paymentInformationMapper;
         this.certificateGenerator = certificateGenerator;
+        this.dissolutionEmailService = dissolutionEmailService;
     }
 
     public DissolutionPatchResponse addDirectorApproval(String companyNumber, String userId, String ip, String email) {
@@ -63,6 +67,8 @@ public class DissolutionPatcher {
         setDissolutionStatus(dissolution, ApplicationStatus.PAID);
 
         this.repository.save(dissolution);
+
+        dissolutionEmailService.sendSuccessfulPaymentEmail(dissolution);
     }
 
     private DissolutionDirector findDirector(String email, Dissolution dissolution) {
