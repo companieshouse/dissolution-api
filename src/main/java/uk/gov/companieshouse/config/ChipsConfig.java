@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ChipsConfig {
 
-    @Value("chips.host")
+    @Value("${chips.host}")
     private String chipsHost;
 
     public String getChipsHost() {

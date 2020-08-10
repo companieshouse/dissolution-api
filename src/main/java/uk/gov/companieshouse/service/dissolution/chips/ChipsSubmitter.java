@@ -49,10 +49,11 @@ public class ChipsSubmitter {
 
         try {
             final DissolutionChipsRequest dissolutionRequest = mapper.mapToDissolutionChipsRequest(dissolution, certificateContents);
-            client.sendDissolutionToChips(dissolutionRequest);
 
             logger.info("Sending dissolution request to CHIPS for company {}", dissolution.getCompany().getNumber());
             logger.info("{}", asJsonString(dissolutionRequest));
+
+            client.sendDissolutionToChips(dissolutionRequest);
 
             return true;
         } catch (JsonProcessingException ex) {

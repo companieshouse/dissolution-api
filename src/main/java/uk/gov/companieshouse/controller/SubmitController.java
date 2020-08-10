@@ -28,10 +28,10 @@ public class SubmitController {
 
     @Operation(summary = "Submit Dissolution Requests to CHIPS", tags = "Dissolution")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "All Dissolutions sent to CHIPS"),
+            @ApiResponse(responseCode = "200", description = "Dissolutions sent to CHIPS"),
             @ApiResponse(responseCode = "503", description = "CHIPS is not available")
     })
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping
     @ResponseStatus(HttpStatus.OK)
     public void submitDissolutionsToChips() {
         logger.info("[POST] Submitting dissolutions to CHIPS");

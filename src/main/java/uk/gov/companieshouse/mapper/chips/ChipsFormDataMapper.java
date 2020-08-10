@@ -2,6 +2,8 @@ package uk.gov.companieshouse.mapper.chips;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.model.db.dissolution.Company;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
@@ -23,11 +25,9 @@ public class ChipsFormDataMapper {
 
     private static final String CHIPS_DATE_FORMAT = "yyyy-MM-dd";
 
-    private final XmlMapper xmlMapper;
-
-    public ChipsFormDataMapper(XmlMapper xmlMapper) {
-        this.xmlMapper = xmlMapper;
-    }
+    @Autowired
+    @Qualifier("xmlMapper")
+    private XmlMapper xmlMapper;
 
     public String mapToChipsFormDataXml(Dissolution dissolution) throws JsonProcessingException {
         final ChipsFormData form = new ChipsFormData();
