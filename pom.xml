@@ -22,6 +22,9 @@
         <version.springdoc.openapi>1.3.9</version.springdoc.openapi>
         <api-helper-java.version>1.4.2</api-helper-java.version>
         <commons-lang3.version>3.10</commons-lang3.version>
+        <avro.version>1.8.1</avro.version>
+        <ch-kafka.version>1.4.4</ch-kafka.version>
+        <kafka-models.version>1.0.12</kafka-models.version>
         <aws.java.sdk.version>2.13.69</aws.java.sdk.version>
     </properties>
 
@@ -45,6 +48,17 @@
     </repositories>
 
     <dependencies>
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+            <version>${avro.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20200518</version>
+        </dependency>
+
         <!-- Spring/SpringBoot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -138,6 +152,18 @@
             <artifactId>de.flapdoodle.embed.mongo</artifactId>
             <version>2.2.0</version>
             <scope>test</scope>
+        </dependency>
+
+        <!-- Kafka -->
+        <dependency>
+            <groupId>uk.gov.companieshouse</groupId>
+            <artifactId>ch-kafka</artifactId>
+            <version>${ch-kafka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.companieshouse</groupId>
+            <artifactId>kafka-models</artifactId>
+            <version>${kafka-models.version}</version>
         </dependency>
     </dependencies>
 

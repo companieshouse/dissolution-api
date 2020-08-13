@@ -28,6 +28,7 @@ documentRender:
 
 env:
   name: local
+  chsUrl: http://ui
 
 server:
   port: 3001

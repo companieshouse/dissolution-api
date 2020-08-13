@@ -19,7 +19,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.client.CompanyProfileClient;
-import uk.gov.companieshouse.exception.*;
+import uk.gov.companieshouse.exception.BadRequestException;
+import uk.gov.companieshouse.exception.ConflictException;
+import uk.gov.companieshouse.exception.NotFoundException;
+import uk.gov.companieshouse.exception.UnauthorisedException;
 import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
@@ -28,12 +31,9 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.service.DissolutionValidator;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
-import uk.gov.companieshouse.service.CompanyOfficerService;
-import uk.gov.companieshouse.service.CompanyProfileService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-
 import java.util.Optional;
 
 import static uk.gov.companieshouse.util.EricHelper.getEmail;
@@ -49,9 +49,8 @@ public class DissolutionController {
 
     public DissolutionController(
             DissolutionService dissolutionService,
-            CompanyProfileService companyProfileService,
-            CompanyOfficerService companyOfficerService,
-            DissolutionValidator dissolutionValidator, CompanyProfileClient companyProfileClient) {
+            DissolutionValidator dissolutionValidator,
+            CompanyProfileClient companyProfileClient) {
         super();
         this.dissolutionService = dissolutionService;
         this.dissolutionValidator = dissolutionValidator;

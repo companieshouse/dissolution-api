@@ -59,6 +59,9 @@ public class DissolutionPatcherTest {
     @Mock
     private DissolutionCertificateGenerator certificateGenerator;
 
+    @Mock
+    private DissolutionEmailService dissolutionEmailService;
+
     private static final String COMPANY_NUMBER = "12345678";
     private static final String USER_ID = "1234";
     private static final String EMAIL = "user@mail.com";
@@ -119,7 +122,7 @@ public class DissolutionPatcherTest {
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
         when(certificateGenerator.generateDissolutionCertificate(dissolution)).thenReturn(certificate);
 
-        final DissolutionPatchResponse result = patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP_ADDRESS, EMAIL);
+        patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP_ADDRESS, EMAIL);
 
         verify(certificateGenerator).generateDissolutionCertificate(dissolution);
         verify(repository).save(dissolutionCaptor.capture());
@@ -186,6 +189,7 @@ public class DissolutionPatcherTest {
 
         patcher.updatePaymentAndSubmissionInformation(data.getPaymentReference(), data.getPaidAt(), COMPANY_NUMBER);
         verify(repository).save(dissolutionCaptor.capture());
+        verify(dissolutionEmailService).sendSuccessfulPaymentEmail(dissolutionCaptor.capture());
 
         assertEquals(paymentInformation, dissolutionCaptor.getValue().getPaymentInformation());
         assertEquals(submission, dissolutionCaptor.getValue().getSubmission());
