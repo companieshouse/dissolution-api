@@ -1,14 +1,27 @@
 package uk.gov.companieshouse.fixtures;
 
-import uk.gov.companieshouse.model.db.dissolution.*;
-import uk.gov.companieshouse.model.dto.dissolution.*;
+import uk.gov.companieshouse.model.db.dissolution.Company;
+import uk.gov.companieshouse.model.db.dissolution.CreatedBy;
+import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
+import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionApplication;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionData;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionSubmission;
+import uk.gov.companieshouse.model.db.payment.PaymentInformation;
+import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateData;
 import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateDirector;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.SubmissionStatus;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,6 +74,8 @@ public class DissolutionFixtures {
         dissolution.setData(generateDissolutionData());
         dissolution.setCompany(generateCompany());
         dissolution.setCreatedBy(generateCreatedBy());
+        dissolution.setSubmission(new DissolutionSubmission());
+        dissolution.setPaymentInformation(new PaymentInformation());
 
         return dissolution;
     }

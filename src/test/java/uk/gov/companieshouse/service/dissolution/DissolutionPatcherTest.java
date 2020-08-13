@@ -10,11 +10,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
+import uk.gov.companieshouse.mapper.DissolutionSubmissionMapper;
 import uk.gov.companieshouse.mapper.PaymentInformationMapper;
 import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionSubmission;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
@@ -22,7 +24,6 @@ import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.PaymentMethod;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.dissolution.certificate.DissolutionCertificateGenerator;
-import uk.gov.companieshouse.service.dissolution.DissolutionPatcher;
 
 import java.util.Arrays;
 import java.util.List;
@@ -30,6 +31,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionCertificate;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionSubmission;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentInformation;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 
@@ -50,6 +52,9 @@ public class DissolutionPatcherTest {
 
     @Mock
     private PaymentInformationMapper paymentInformationMapper;
+
+    @Mock
+    private DissolutionSubmissionMapper dissolutionSubmissionMapper;
 
     @Mock
     private DissolutionCertificateGenerator certificateGenerator;
@@ -168,18 +173,21 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_updatesDissolutionWithPaymentInformation_savesInDatabase() {
+    public void patch_updatesDissolutionWithPaymentAndSubmissionInformation_savesInDatabase() {
         PaymentPatchRequest data = generatePaymentPatchRequest();
         PaymentInformation paymentInformation = generatePaymentInformation();
+        DissolutionSubmission submission = generateDissolutionSubmission();
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
         when(paymentInformationMapper
                 .mapToPaymentInformation(PaymentMethod.CREDIT_CARD, data.getPaymentReference(), data.getPaidAt()))
                 .thenReturn(paymentInformation);
+        when(dissolutionSubmissionMapper.generateSubmissionInformation()).thenReturn(submission);
 
-        patcher.updatePaymentInformation(data.getPaymentReference(), data.getPaidAt(), COMPANY_NUMBER);
+        patcher.updatePaymentAndSubmissionInformation(data.getPaymentReference(), data.getPaidAt(), COMPANY_NUMBER);
         verify(repository).save(dissolutionCaptor.capture());
 
         assertEquals(paymentInformation, dissolutionCaptor.getValue().getPaymentInformation());
+        assertEquals(submission, dissolutionCaptor.getValue().getSubmission());
     }
 }

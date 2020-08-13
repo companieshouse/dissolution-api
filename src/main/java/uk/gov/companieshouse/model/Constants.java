@@ -18,4 +18,10 @@ public final class Constants {
    public static final String PAYMENT_AMOUNT = "8";
    public static final String PAYMENT_AVAILABLE_PAYMENT_METHOD = "credit-card";
    public static final String PAYMENT_CLASS_OF_PAYMENT = "data-maintenance";
+
+   /* CHIPS */
+   public static final int CHIPS_RETRY_DELAY_MINUTES = 30;
+   public static final int CHIPS_SUBMISSION_LIMIT = 2;
+
+
 }

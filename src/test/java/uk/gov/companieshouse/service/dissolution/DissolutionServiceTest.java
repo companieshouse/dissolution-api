@@ -14,10 +14,6 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.repository.DissolutionRepository;
-import uk.gov.companieshouse.service.dissolution.DissolutionCreator;
-import uk.gov.companieshouse.service.dissolution.DissolutionGetter;
-import uk.gov.companieshouse.service.dissolution.DissolutionPatcher;
-import uk.gov.companieshouse.service.dissolution.DissolutionService;
 
 import java.util.Optional;
 
@@ -125,11 +121,11 @@ public class DissolutionServiceTest {
     }
 
     @Test
-    public void updatePaymentStatus_updatesPaymentStatus_returnNothing() {
+    public void updatePaymentAndSubmissionStatus_updatesPaymentAndSubmissionStatus_returnNothing() {
         PaymentPatchRequest data = generatePaymentPatchRequest();
 
-        service.updatePaymentStatus(data, COMPANY_NUMBER);
+        service.updatePaymentAndSubmissionStatus(data, COMPANY_NUMBER);
 
-        verify(patcher).updatePaymentInformation(data.getPaymentReference(), data.getPaidAt(), COMPANY_NUMBER);
+        verify(patcher).updatePaymentAndSubmissionInformation(data.getPaymentReference(), data.getPaidAt(), COMPANY_NUMBER);
     }
 }

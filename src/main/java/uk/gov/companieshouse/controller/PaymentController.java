@@ -79,7 +79,7 @@ public class PaymentController {
         }
 
         if (PaymentStatus.PAID.equals(body.getStatus())) {
-            dissolutionService.updatePaymentStatus(body, companyNumber);
+            dissolutionService.updatePaymentAndSubmissionStatus(body, companyNumber);
         }
     }
 }
