@@ -21,6 +21,7 @@
         <version.spring.boot>2.2.6.RELEASE</version.spring.boot>
         <version.springdoc.openapi>1.3.9</version.springdoc.openapi>
         <api-helper-java.version>1.4.2</api-helper-java.version>
+        <api-security-java.version>0.2.11</api-security-java.version>
         <commons-lang3.version>3.10</commons-lang3.version>
         <avro.version>1.8.1</avro.version>
         <ch-kafka.version>1.4.4</ch-kafka.version>
@@ -92,6 +93,11 @@
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>api-helper-java</artifactId>
             <version>${api-helper-java.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.companieshouse</groupId>
+            <artifactId>api-security-java</artifactId>
+            <version>${api-security-java.version}</version>
         </dependency>
 
         <!-- Utils -->

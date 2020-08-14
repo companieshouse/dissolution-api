@@ -10,6 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.client.CompanyProfileClient;
 import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
@@ -43,6 +44,7 @@ public class DissolutionControllerTest {
 
     private static final String IDENTITY_HEADER = "ERIC-identity";
     private static final String AUTHORISED_USER_HEADER = "ERIC-Authorised-User";
+    private static final String TOKEN_PERMISSIONS_HEADER = "ERIC-Authorised-Token-Permissions";
 
     private static final String COMPANY_NUMBER = "12345678";
     private static final String COMPANY_NAME = "ComComp";
@@ -65,23 +67,40 @@ public class DissolutionControllerTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    public void submitDissolutionRequest_returnsBadRequest_ifEricIdentityHeaderIsNotProvided() throws Exception {
+    public void submitDissolutionRequest_returnsUnauthorised_ifNoTokenPermissionsAreProvided() throws Exception {
         final HttpHeaders headers = new HttpHeaders();
+        headers.add(IDENTITY_HEADER, USER_ID);
         headers.add(AUTHORISED_USER_HEADER, EMAIL);
 
-        final DissolutionCreateRequest body = generateDissolutionCreateRequest();
-
-        assertHeadersValidation(headers, "Missing request header 'ERIC-identity' for method parameter of type String");
+        mockMvc
+                .perform(
+                        post(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(headers)
+                                .content(asJsonString(generateDissolutionCreateRequest()))
+                )
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void submitDissolutionRequest_returnsBadRequest_ifEricAuthorisedUserHeaderIsNotProvided() throws Exception {
+    public void submitDissolutionRequest_returnsUnauthorised_ifCompanyNumberTokenPermissionDoesNotMatchUri() throws Exception {
         final HttpHeaders headers = new HttpHeaders();
         headers.add(IDENTITY_HEADER, USER_ID);
+        headers.add(AUTHORISED_USER_HEADER, EMAIL);
+        headers.add(TOKEN_PERMISSIONS_HEADER, String.format(
+                "%s=%s %s=%s",
+                Permission.Key.COMPANY_NUMBER.toString(), "1234",
+                Permission.Key.COMPANY_TRANSACTIONS, Permission.Value.UPDATE
+        ));
 
-        final DissolutionCreateRequest body = generateDissolutionCreateRequest();
-
-        assertHeadersValidation(headers, "Missing request header 'ERIC-Authorised-User' for method parameter of type String");
+        mockMvc
+                .perform(
+                        post(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(headers)
+                                .content(asJsonString(generateDissolutionCreateRequest()))
+                )
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -150,24 +169,6 @@ public class DissolutionControllerTest {
         body.setDirectors(Collections.singletonList(director));
 
         assertBodyValidation(body, "{'directors[0].onBehalfName':'size must be between 1 and 250'}");
-    }
-
-    @Test
-    public void submitDissolutionRequest_returnsUnauthorised_ifEricIdentityHeaderIsBlank() throws Exception {
-        final HttpHeaders headers = new HttpHeaders();
-        headers.add(IDENTITY_HEADER, "");
-        headers.add(AUTHORISED_USER_HEADER, EMAIL);
-
-        final DissolutionCreateRequest body = generateDissolutionCreateRequest();
-
-        mockMvc
-                .perform(
-                        post(DISSOLUTION_URI, COMPANY_NUMBER)
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .headers(headers)
-                                .content(asJsonString(body))
-                )
-                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -279,17 +280,35 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void getDissolutionRequest_returnsUnauthorised_ifEricIdentityHeaderIsBlank() throws Exception {
+    public void getDissolutionRequest_returnsUnauthorised_ifNoTokenPermissionsAreProvided() throws Exception {
         final HttpHeaders headers = new HttpHeaders();
-        headers.add(IDENTITY_HEADER, "");
+        headers.add(IDENTITY_HEADER, USER_ID);
         headers.add(AUTHORISED_USER_HEADER, EMAIL);
 
         mockMvc
                 .perform(
                         get(DISSOLUTION_URI, COMPANY_NUMBER)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .headers(headers)
-                )
+                                .headers(headers))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void getDissolutionRequest_returnsUnauthorised_ifCompanyNumberTokenPermissionDoesNotMatchUri() throws Exception {
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add(IDENTITY_HEADER, USER_ID);
+        headers.add(AUTHORISED_USER_HEADER, EMAIL);
+        headers.add(TOKEN_PERMISSIONS_HEADER, String.format(
+                "%s=%s %s=%s",
+                Permission.Key.COMPANY_NUMBER.toString(), "1234",
+                Permission.Key.COMPANY_TRANSACTIONS, Permission.Value.UPDATE
+        ));
+
+        mockMvc
+                .perform(
+                        get(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(headers))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -321,11 +340,9 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void patchDissolutionRequest_returnsUnauthorised_ifEricIdentityHeaderIsBlank() throws Exception {
-        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
-
+    public void patchDissolutionRequest_returnsUnauthorised_ifNoTokenPermissionsAreProvided() throws Exception {
         final HttpHeaders headers = new HttpHeaders();
-        headers.add(IDENTITY_HEADER, "");
+        headers.add(IDENTITY_HEADER, USER_ID);
         headers.add(AUTHORISED_USER_HEADER, EMAIL);
 
         mockMvc
@@ -333,7 +350,28 @@ public class DissolutionControllerTest {
                         patch(DISSOLUTION_URI, COMPANY_NUMBER)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .headers(headers)
-                                .content(asJsonString(body))
+                                .content(asJsonString(generateDissolutionPatchRequest()))
+                )
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void patchDissolutionRequest_returnsUnauthorised_ifCompanyNumberTokenPermissionDoesNotMatchUri() throws Exception {
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add(IDENTITY_HEADER, USER_ID);
+        headers.add(AUTHORISED_USER_HEADER, EMAIL);
+        headers.add(TOKEN_PERMISSIONS_HEADER, String.format(
+                "%s=%s %s=%s",
+                Permission.Key.COMPANY_NUMBER.toString(), "1234",
+                Permission.Key.COMPANY_TRANSACTIONS, Permission.Value.UPDATE
+        ));
+
+        mockMvc
+                .perform(
+                        patch(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(headers)
+                                .content(asJsonString(generateDissolutionPatchRequest()))
                 )
                 .andExpect(status().isUnauthorized());
     }
@@ -391,18 +429,6 @@ public class DissolutionControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    private void assertHeadersValidation(HttpHeaders headers, String expectedReason) throws Exception {
-        mockMvc
-                .perform(
-                        post(DISSOLUTION_URI, COMPANY_NUMBER)
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .headers(headers)
-                                .content(asJsonString(generateDissolutionCreateRequest()))
-                )
-                .andExpect(status().isBadRequest())
-                .andExpect(status().reason(expectedReason));
-    }
-
     private void assertBodyValidation(DissolutionCreateRequest body, String expectedErrorJson) throws Exception {
         mockMvc
                 .perform(
@@ -427,6 +453,11 @@ public class DissolutionControllerTest {
         final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(IDENTITY_HEADER, USER_ID);
         httpHeaders.add(AUTHORISED_USER_HEADER, EMAIL);
+        httpHeaders.add(TOKEN_PERMISSIONS_HEADER, String.format(
+                "%s=%s %s=%s",
+                Permission.Key.COMPANY_NUMBER.toString(), COMPANY_NUMBER,
+                Permission.Key.COMPANY_STATUS, Permission.Value.UPDATE
+        ));
 
         return httpHeaders;
     }

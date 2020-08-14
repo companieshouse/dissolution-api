@@ -16,8 +16,8 @@ cdn:
 chips:
   host: http://chips
   retryLimit: 2
-  submissionLimit: ${DISSOLUTION_CHIPS_SUBMISSION_LIMIT}
-  retryDelayMinutes: ${DISSOLUTION_CHIPS_RETRY_DELAY}
+  submissionLimit: 2
+  retryDelayMinutes: 30
 
 companyProfile:
   host: http://company-profile-api
@@ -31,6 +31,19 @@ documentRender:
 env:
   name: local
   chsUrl: http://ui
+
+kafka:
+  broker:
+    addr: kafka
+  config:
+    acks: WAIT_FOR_ALL
+    retries: 10
+    isRoundRobin: false
+  schema:
+    registry:
+      url: http://schema-registry
+    uri:
+      email-send: /email/schema
 
 server:
   port: 3001
