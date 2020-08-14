@@ -14,17 +14,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static uk.gov.companieshouse.model.Constants.CONTENT_TYPE_JSON;
+import static uk.gov.companieshouse.model.Constants.HEADER_ACCEPT;
+import static uk.gov.companieshouse.model.Constants.HEADER_AUTHORIZATION;
+import static uk.gov.companieshouse.model.Constants.HEADER_CONTENT_TYPE;
+
 @Service
 public class CompanyOfficersClient {
 
     private static final UriTemplate GET_OFFICERS_URI = new UriTemplate("/company/{companyNumber}/officers");
-
-    private static final String HEADER_AUTHORIZATION = "Authorization";
-    private static final String HEADER_ACCEPT = "Accept";
-    private static final String HEADER_CONTENT_TYPE = "Content-Type";
-
-    private static final String HEADER_ACCEPT_VALUE = "application/json";
-    private static final String HEADER_CONTENT_TYPE_VALUE = "application/json";
 
     private final CompanyOfficersConfig config;
 
@@ -41,8 +39,8 @@ public class CompanyOfficersClient {
                         .get()
                         .uri(GET_OFFICERS_URI.expand(companyNumber).toString())
                         .header(HEADER_AUTHORIZATION, config.getApiKey())
-                        .header(HEADER_ACCEPT, HEADER_ACCEPT_VALUE)
-                        .header(HEADER_CONTENT_TYPE, HEADER_CONTENT_TYPE_VALUE)
+                        .header(HEADER_ACCEPT, CONTENT_TYPE_JSON)
+                        .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
                         .retrieve()
                         .onStatus(HttpStatus.NOT_FOUND::equals, clientResponse -> Mono.empty())
                         .bodyToMono(CompanyOfficersResponse.class)

@@ -8,7 +8,9 @@ import uk.gov.companieshouse.model.dto.email.EmailDocument;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static uk.gov.companieshouse.fixtures.EmailFixtures.*;
+import static uk.gov.companieshouse.fixtures.EmailFixtures.EMAIL_ADDRESS;
+import static uk.gov.companieshouse.fixtures.EmailFixtures.EMAIL_DATA;
+import static uk.gov.companieshouse.fixtures.EmailFixtures.MESSAGE_TYPE;
 
 public class EmailMapperTest {
 

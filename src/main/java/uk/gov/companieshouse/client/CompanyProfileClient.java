@@ -8,19 +8,17 @@ import org.springframework.web.util.UriTemplate;
 import uk.gov.companieshouse.config.CompanyProfileConfig;
 import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 
+import static uk.gov.companieshouse.model.Constants.CONTENT_TYPE_JSON;
+import static uk.gov.companieshouse.model.Constants.HEADER_ACCEPT;
+import static uk.gov.companieshouse.model.Constants.HEADER_AUTHORIZATION;
+import static uk.gov.companieshouse.model.Constants.HEADER_CONTENT_TYPE;
+
 @Service
 public class CompanyProfileClient {
 
     private static class CompanyNotFoundException extends RuntimeException {}
 
     private static final UriTemplate GET_COMPANY_URI = new UriTemplate("/company/{companyNumber}");
-
-    private static final String HEADER_AUTHORIZATION = "Authorization";
-    private static final String HEADER_ACCEPT = "Accept";
-    private static final String HEADER_CONTENT_TYPE = "Content-Type";
-
-    private static final String HEADER_ACCEPT_VALUE = "application/json";
-    private static final String HEADER_CONTENT_TYPE_VALUE = "application/json";
 
     private final CompanyProfileConfig companyProfileConfig;
 
@@ -36,8 +34,8 @@ public class CompanyProfileClient {
                     .get()
                     .uri(GET_COMPANY_URI.expand(companyNumber).toString())
                     .header(HEADER_AUTHORIZATION, companyProfileConfig.getApiKey())
-                    .header(HEADER_ACCEPT, HEADER_ACCEPT_VALUE)
-                    .header(HEADER_CONTENT_TYPE, HEADER_CONTENT_TYPE_VALUE)
+                    .header(HEADER_ACCEPT, CONTENT_TYPE_JSON)
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
                     .retrieve()
                     .onStatus(HttpStatus.NOT_FOUND::equals, clientResponse -> { throw new CompanyNotFoundException(); })
                     .bodyToMono(CompanyProfile.class)

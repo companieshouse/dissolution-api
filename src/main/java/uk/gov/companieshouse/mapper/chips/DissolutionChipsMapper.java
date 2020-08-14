@@ -10,13 +10,14 @@ import uk.gov.companieshouse.model.dto.chips.DissolutionChipsRequest;
 import java.util.Base64;
 import java.util.Collections;
 
+import static uk.gov.companieshouse.model.Constants.CONTENT_TYPE_PDF;
+
 @Service
 public class DissolutionChipsMapper {
 
     private static final int PACKAGE_METADATA_COUNT = 1;
 
     private static final String FORM_CATEGORY = "FORM IMAGE PDF";
-    private static final String FORM_MIME_TYPE = "application/pdf";
 
     private final ChipsFormDataMapper formDataMapper;
 
@@ -56,7 +57,7 @@ public class DissolutionChipsMapper {
         final ChipsFormAttachment attachment = new ChipsFormAttachment();
 
         attachment.setCategory(FORM_CATEGORY);
-        attachment.setMimeType(FORM_MIME_TYPE);
+        attachment.setMimeType(CONTENT_TYPE_PDF);
         attachment.setData(encode(certificate));
 
         return attachment;

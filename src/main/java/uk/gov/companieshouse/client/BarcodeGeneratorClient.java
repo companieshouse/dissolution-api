@@ -8,15 +8,14 @@ import uk.gov.companieshouse.config.BarcodeGeneratorConfig;
 import uk.gov.companieshouse.model.dto.barcode.BarcodeRequest;
 import uk.gov.companieshouse.model.dto.barcode.BarcodeResponse;
 
+import static uk.gov.companieshouse.model.Constants.HEADER_AUTHORIZATION;
+import static uk.gov.companieshouse.model.Constants.HEADER_CONTENT_TYPE;
+import static uk.gov.companieshouse.model.Constants.CONTENT_TYPE_JSON;
+
 @Service
 public class BarcodeGeneratorClient {
 
     private static final String GENERATE_BARCODE_URI = "/";
-
-    private static final String HEADER_AUTHORIZATION = "Authorization";
-    private static final String HEADER_CONTENT_TYPE = "Content-Type";
-
-    private static final String HEADER_CONTENT_TYPE_VALUE = "application/json";
 
     private final BarcodeGeneratorConfig config;
 
@@ -31,7 +30,7 @@ public class BarcodeGeneratorClient {
                 .post()
                 .uri(GENERATE_BARCODE_URI)
                 .header(HEADER_AUTHORIZATION, config.getApiKey())
-                .header(HEADER_CONTENT_TYPE, HEADER_CONTENT_TYPE_VALUE)
+                .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
                 .body(Mono.just(request), BarcodeRequest.class)
                 .retrieve()
                 .bodyToMono(BarcodeResponse.class)
