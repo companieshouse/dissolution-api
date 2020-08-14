@@ -128,7 +128,7 @@ public class PaymentControllerTest {
                 )
                 .andExpect(status().isOk());
 
-        verify(dissolutionService).updatePaymentStatus(isA(PaymentPatchRequest.class), eq(COMPANY_NUMBER));
+        verify(dissolutionService).handlePayment(isA(PaymentPatchRequest.class), eq(COMPANY_NUMBER));
     }
 
     @Test
@@ -149,7 +149,7 @@ public class PaymentControllerTest {
                 )
                 .andExpect(status().isOk());
 
-        verify(dissolutionService, never()).updatePaymentStatus(isA(PaymentPatchRequest.class), eq(COMPANY_NUMBER));
+        verify(dissolutionService, never()).handlePayment(isA(PaymentPatchRequest.class), eq(COMPANY_NUMBER));
     }
 
     @Test
@@ -170,7 +170,7 @@ public class PaymentControllerTest {
                 )
                 .andExpect(status().isOk());
 
-        verify(dissolutionService, never()).updatePaymentStatus(isA(PaymentPatchRequest.class), eq(COMPANY_NUMBER));
+        verify(dissolutionService, never()).handlePayment(isA(PaymentPatchRequest.class), eq(COMPANY_NUMBER));
     }
 
     private <T> String asJsonString(T body) {

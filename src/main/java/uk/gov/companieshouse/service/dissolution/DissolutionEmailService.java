@@ -20,8 +20,8 @@ public class DissolutionEmailService {
 
     @Autowired
     public DissolutionEmailService(
-        DissolutionEmailMapper dissolutionEmailMapper, EmailMapper<SuccessfulPaymentEmailData> emailMapper,
-        EmailService emailService
+            DissolutionEmailMapper dissolutionEmailMapper, EmailMapper<SuccessfulPaymentEmailData> emailMapper,
+            EmailService emailService
     ) {
         this.dissolutionEmailMapper = dissolutionEmailMapper;
         this.emailMapper = emailMapper;
@@ -30,10 +30,10 @@ public class DissolutionEmailService {
 
     public void sendSuccessfulPaymentEmail(Dissolution dissolution) {
         final SuccessfulPaymentEmailData successfulPaymentEmailData =
-            this.dissolutionEmailMapper.mapToSuccessfulPaymentEmailData(dissolution);
+                this.dissolutionEmailMapper.mapToSuccessfulPaymentEmailData(dissolution);
 
         final EmailDocument<SuccessfulPaymentEmailData> emailDocument = this.emailMapper.mapToEmailDocument(
-            successfulPaymentEmailData, successfulPaymentEmailData.getTo(), SUCCESSFUL_PAYMENT_MESSAGE_TYPE
+                successfulPaymentEmailData, successfulPaymentEmailData.getTo(), SUCCESSFUL_PAYMENT_MESSAGE_TYPE
         );
 
         emailService.sendMessage(emailDocument);

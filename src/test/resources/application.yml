@@ -2,11 +2,22 @@ api:
   key: some-api-key
   url: http://api
 
+aws:
+  accessKeyId: some-access-key
+  region: eu-west-2
+  secretAccessKey: some-secret-key
+
 barcodeGenerator:
   host: http://barcode-generator
 
 cdn:
   host: http://cdn
+
+chips:
+  host: http://chips
+  retryLimit: 2
+  submissionLimit: ${DISSOLUTION_CHIPS_SUBMISSION_LIMIT}
+  retryDelayMinutes: ${DISSOLUTION_CHIPS_RETRY_DELAY}
 
 companyProfile:
   host: http://company-profile-api

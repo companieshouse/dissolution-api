@@ -25,13 +25,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.companieshouse.fixtures.CompanyProfileFixtures.generateCompanyProfile;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.*;
-import static uk.gov.companieshouse.fixtures.CompanyProfileFixtures.*;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(DissolutionController.class)

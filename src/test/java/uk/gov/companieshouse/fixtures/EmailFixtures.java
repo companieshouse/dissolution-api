@@ -5,8 +5,8 @@ import uk.gov.companieshouse.model.dto.email.EmailDocument;
 import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
 
 import static uk.gov.companieshouse.model.Constants.EMAIL_APP_ID;
-import static uk.gov.companieshouse.model.Constants.SUCCESSFUL_PAYMENT_EMAIL_SUBJECT;
 import static uk.gov.companieshouse.model.Constants.EMAIL_TOPIC;
+import static uk.gov.companieshouse.model.Constants.SUCCESSFUL_PAYMENT_EMAIL_SUBJECT;
 
 public class EmailFixtures {
 

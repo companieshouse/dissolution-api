@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
+import uk.gov.companieshouse.mapper.DissolutionSubmissionMapper;
 import uk.gov.companieshouse.mapper.PaymentInformationMapper;
 import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
@@ -24,22 +25,25 @@ public class DissolutionPatcher {
     private final DissolutionResponseMapper responseMapper;
     private final DirectorApprovalMapper approvalMapper;
     private final PaymentInformationMapper paymentInformationMapper;
+    private final DissolutionSubmissionMapper dissolutionSubmissionMapper;
     private final DissolutionCertificateGenerator certificateGenerator;
     private final DissolutionEmailService dissolutionEmailService;
 
     @Autowired
     public DissolutionPatcher(
-        DissolutionRepository repository,
-        DissolutionResponseMapper responseMapper,
-        DirectorApprovalMapper approvalMapper,
-        PaymentInformationMapper paymentInformationMapper,
-        DissolutionCertificateGenerator certificateGenerator,
-        DissolutionEmailService dissolutionEmailService
+            DissolutionRepository repository,
+            DissolutionResponseMapper responseMapper,
+            DirectorApprovalMapper approvalMapper,
+            PaymentInformationMapper paymentInformationMapper,
+            DissolutionSubmissionMapper dissolutionSubmissionMapper,
+            DissolutionCertificateGenerator certificateGenerator,
+            DissolutionEmailService dissolutionEmailService
     ) {
         this.repository = repository;
         this.responseMapper = responseMapper;
         this.approvalMapper = approvalMapper;
         this.paymentInformationMapper = paymentInformationMapper;
+        this.dissolutionSubmissionMapper = dissolutionSubmissionMapper;
         this.certificateGenerator = certificateGenerator;
         this.dissolutionEmailService = dissolutionEmailService;
     }
@@ -59,12 +63,14 @@ public class DissolutionPatcher {
         return this.responseMapper.mapToDissolutionPatchResponse(companyNumber);
     }
 
-    public void updatePaymentInformation(String paymentReference, Timestamp paidAt, String companyNumber) {
+    public void handlePayment(String paymentReference, Timestamp paidAt, String companyNumber) {
         final Dissolution dissolution = this.repository.findByCompanyNumber(companyNumber).get();
 
         this.addPaymentInformation(paymentReference, paidAt, dissolution);
 
         setDissolutionStatus(dissolution, ApplicationStatus.PAID);
+
+        dissolution.setSubmission(this.dissolutionSubmissionMapper.generateSubmissionInformation());
 
         this.repository.save(dissolution);
 

@@ -8,21 +8,22 @@ import reactor.core.publisher.Mono;
 import uk.gov.companieshouse.config.DocumentRenderConfig;
 import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateData;
 
+import static uk.gov.companieshouse.model.Constants.CONTENT_TYPE_HTML;
+import static uk.gov.companieshouse.model.Constants.CONTENT_TYPE_PDF;
+import static uk.gov.companieshouse.model.Constants.HEADER_ACCEPT;
+import static uk.gov.companieshouse.model.Constants.HEADER_AUTHORIZATION;
+import static uk.gov.companieshouse.model.Constants.HEADER_CONTENT_TYPE;
+
 @Service
 public class DocumentRenderClient {
 
     private static final String DOCUMENT_RENDER_STORE_ENDPOINT = "/document-render/store";
 
-    private static final String HEADER_AUTHORIZATION = "Authorization";
     private static final String HEADER_ASSET_ID = "assetID";
     private static final String HEADER_TEMPLATE_NAME = "templateName";
-    private static final String HEADER_ACCEPT = "Accept";
-    private static final String HEADER_CONTENT_TYPE = "Content-Type";
     private static final String HEADER_LOCATION = "Location";
 
     private static final String HEADER_ASSET_ID_VALUE = "dissolution";
-    private static final String HEADER_ACCEPT_VALUE = "application/pdf";
-    private static final String HEADER_CONTENT_TYPE_VALUE = "text/html";
 
     private final DocumentRenderConfig config;
 
@@ -38,8 +39,8 @@ public class DocumentRenderClient {
                 .header(HEADER_AUTHORIZATION, config.getApiKey())
                 .header(HEADER_ASSET_ID, HEADER_ASSET_ID_VALUE)
                 .header(HEADER_TEMPLATE_NAME, templateName)
-                .header(HEADER_ACCEPT, HEADER_ACCEPT_VALUE)
-                .header(HEADER_CONTENT_TYPE, HEADER_CONTENT_TYPE_VALUE)
+                .header(HEADER_ACCEPT, CONTENT_TYPE_PDF)
+                .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_HTML)
                 .header(HEADER_LOCATION, location)
                 .body(Mono.just(asJsonString(data)), String.class)
                 .exchange()

@@ -25,7 +25,20 @@
         <avro.version>1.8.1</avro.version>
         <ch-kafka.version>1.4.4</ch-kafka.version>
         <kafka-models.version>1.0.12</kafka-models.version>
+        <aws.java.sdk.version>2.13.69</aws.java.sdk.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${aws.java.sdk.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <repositories>
         <repository>
@@ -68,6 +81,12 @@
             <version>${version.spring.boot}</version>
         </dependency>
 
+        <!-- AWS -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+        </dependency>
+
         <!-- CH Helpers -->
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
@@ -80,6 +99,11 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${commons-lang3.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+            <version>2.9.9</version>
         </dependency>
 
         <!-- Swagger documentation -->
@@ -121,6 +145,12 @@
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>mockwebserver</artifactId>
             <version>4.7.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.flapdoodle.embed</groupId>
+            <artifactId>de.flapdoodle.embed.mongo</artifactId>
+            <version>2.2.0</version>
             <scope>test</scope>
         </dependency>
 

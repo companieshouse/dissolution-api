@@ -30,8 +30,8 @@ public class EmailSerialiser {
 
     @Autowired
     public EmailSerialiser(
-        EncoderFactory encoderFactory, GenericDatumWriterFactory datumWriterFactory,
-        GenericRecordFactory genericRecordFactory, ObjectMapper mapper, Schema schema
+            EncoderFactory encoderFactory, GenericDatumWriterFactory datumWriterFactory,
+            GenericRecordFactory genericRecordFactory, ObjectMapper mapper, Schema schema
     ) {
         this.encoderFactory = encoderFactory;
         this.datumWriterFactory = datumWriterFactory;
@@ -59,7 +59,7 @@ public class EmailSerialiser {
     }
 
     private GenericRecord buildAvroGenericRecord(
-        EmailDocument<?> document, Schema schema
+            EmailDocument<?> document, Schema schema
     ) throws JsonProcessingException {
         GenericRecord documentData = genericRecordFactory.getGenericRecord(schema);
 

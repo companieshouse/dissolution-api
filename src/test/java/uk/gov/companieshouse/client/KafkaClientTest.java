@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertEquals;
 

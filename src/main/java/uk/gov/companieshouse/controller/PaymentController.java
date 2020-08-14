@@ -68,8 +68,8 @@ public class PaymentController {
     @PatchMapping()
     @ResponseStatus(HttpStatus.OK)
     public void patchPaymentData(
-        @PathVariable("company-number") final String companyNumber,
-        @Valid @RequestBody final PaymentPatchRequest body
+            @PathVariable("company-number") final String companyNumber,
+            @Valid @RequestBody final PaymentPatchRequest body
     ) {
 
         logger.info("[PATCH] Updating payment information for company number {} with payment status {}", companyNumber, body.getStatus());
@@ -84,7 +84,7 @@ public class PaymentController {
 
         if (PaymentStatus.PAID.equals(body.getStatus())) {
             try {
-                dissolutionService.updatePaymentStatus(body, companyNumber);
+                dissolutionService.handlePayment(body, companyNumber);
             } catch (EmailSendException e) {
                 throw new InternalServerErrorException(e.getMessage());
             }

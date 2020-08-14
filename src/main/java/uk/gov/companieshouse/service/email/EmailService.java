@@ -1,17 +1,16 @@
 package uk.gov.companieshouse.service.email;
 
-import java.util.concurrent.ExecutionException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import uk.gov.companieshouse.exception.EmailSendException;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.producer.CHKafkaProducer;
 import uk.gov.companieshouse.mapper.email.EmailMapper;
 import uk.gov.companieshouse.model.dto.email.EmailDocument;
+
+import java.util.concurrent.ExecutionException;
 
 @Service
 public class EmailService {
@@ -23,7 +22,7 @@ public class EmailService {
 
     @Autowired
     public EmailService(
-        EmailSerialiser emailSerialiser, EmailMapper<?> emailMapper, CHKafkaProducer kafkaProducer
+            EmailSerialiser emailSerialiser, EmailMapper<?> emailMapper, CHKafkaProducer kafkaProducer
     ) {
         this.emailSerialiser = emailSerialiser;
         this.emailMapper = emailMapper;

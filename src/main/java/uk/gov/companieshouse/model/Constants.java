@@ -2,7 +2,8 @@ package uk.gov.companieshouse.model;
 
 public final class Constants {
 
-   private Constants() {}
+   private Constants() {
+   }
 
    /* Dissolution */
    public static final String DISSOLUTION_KIND = "dissolution-request#dissolution-request";
@@ -23,4 +24,13 @@ public final class Constants {
    public static final String EMAIL_TOPIC = "email-send";
    public static final String SUCCESSFUL_PAYMENT_EMAIL_SUBJECT = "Your application has been submitted";
    public static final String SUCCESSFUL_PAYMENT_MESSAGE_TYPE = "dissolution-payment-confirmation";
+
+   /* Headers */
+   public static final String HEADER_AUTHORIZATION = "Authorization";
+   public static final String HEADER_ACCEPT = "Accept";
+   public static final String HEADER_CONTENT_TYPE = "Content-Type";
+
+   public static final String CONTENT_TYPE_HTML = "text/html";
+   public static final String CONTENT_TYPE_JSON = "application/json";
+   public static final String CONTENT_TYPE_PDF = "application/pdf";
 }
