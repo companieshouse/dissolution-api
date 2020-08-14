@@ -36,8 +36,8 @@ public class DissolutionService {
         return patcher.addDirectorApproval(companyNumber, userId, ip, email);
     }
 
-    public void updatePaymentAndSubmissionStatus(PaymentPatchRequest data, String companyNumber) {
-        patcher.updatePaymentAndSubmissionInformation(data.getPaymentReference(), data.getPaidAt(), companyNumber);
+    public void handlePayment(PaymentPatchRequest data, String companyNumber) {
+        patcher.handlePayment(data.getPaymentReference(), data.getPaidAt(), companyNumber);
     }
 
     public boolean doesDissolutionRequestExistForCompany(String companyNumber) {

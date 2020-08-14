@@ -187,7 +187,7 @@ public class DissolutionPatcherTest {
                 .thenReturn(paymentInformation);
         when(dissolutionSubmissionMapper.generateSubmissionInformation()).thenReturn(submission);
 
-        patcher.updatePaymentAndSubmissionInformation(data.getPaymentReference(), data.getPaidAt(), COMPANY_NUMBER);
+        patcher.handlePayment(data.getPaymentReference(), data.getPaidAt(), COMPANY_NUMBER);
         verify(repository).save(dissolutionCaptor.capture());
         verify(dissolutionEmailService).sendSuccessfulPaymentEmail(dissolutionCaptor.capture());
 

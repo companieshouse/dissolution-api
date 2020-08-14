@@ -4,14 +4,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.client.ChipsClient;
+import uk.gov.companieshouse.config.ChipsConfig;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
-import static uk.gov.companieshouse.model.Constants.CHIPS_RETRY_DELAY_MINUTES;
-import static uk.gov.companieshouse.model.Constants.CHIPS_SUBMISSION_LIMIT;
 
 @Service
 public class DissolutionChipsService {
@@ -20,11 +18,16 @@ public class DissolutionChipsService {
 
     private final ChipsClient client;
     private final ChipsSubmitter submitter;
+    private final ChipsConfig config;
 
-    public DissolutionChipsService(ChipsClient client, ChipsSubmitter submitter, DissolutionRepository repository) {
+    private final int PAGE_NUMBER_INDEX = 0; // first page
+
+    public DissolutionChipsService(ChipsClient client, ChipsSubmitter submitter,
+                                   DissolutionRepository repository, ChipsConfig config) {
         this.client = client;
         this.submitter = submitter;
         this.repository = repository;
+        this.config = config;
     }
 
     public boolean isAvailable() {
@@ -33,12 +36,12 @@ public class DissolutionChipsService {
 
     public void submitDissolutionsToChips() {
         List<Dissolution> dissolutionsToSubmit = getPendingDissolutions();
-        dissolutionsToSubmit.forEach(submitter::submitDissolutionToChips);
+        dissolutionsToSubmit.parallelStream().forEach(submitter::submitDissolutionToChips);
     }
 
     private List<Dissolution> getPendingDissolutions() {
         return repository.findPendingDissolutions(
-                LocalDateTime.now().minusMinutes(CHIPS_RETRY_DELAY_MINUTES),
-                PageRequest.of(0, CHIPS_SUBMISSION_LIMIT, Sort.Direction.ASC, "payment.date_time"));
+                LocalDateTime.now().minusMinutes(config.getChipsRetryDelayMinutes()),
+                PageRequest.of(PAGE_NUMBER_INDEX, config.getChipsSubmissionLimit(), Sort.Direction.ASC, "payment.date_time"));
     }
 }

@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.service.dissolution.repository;
+package uk.gov.companieshouse.repository.dissolution;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

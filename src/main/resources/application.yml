@@ -16,6 +16,8 @@ cdn:
 chips:
   host: ${CHIPS_REST_SERVICE_URL}
   retryLimit: ${DISSOLUTION_CHIPS_RETRY_LIMIT}
+  submissionLimit: ${DISSOLUTION_CHIPS_SUBMISSION_LIMIT}
+  retryDelayMinutes: ${DISSOLUTION_CHIPS_RETRY_DELAY}
 
 companyProfile:
   host: ${CHS_COMPANY_PROFILE_API_LOCAL_URL}

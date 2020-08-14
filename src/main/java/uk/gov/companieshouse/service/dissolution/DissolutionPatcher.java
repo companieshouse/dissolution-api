@@ -9,7 +9,6 @@ import uk.gov.companieshouse.mapper.PaymentInformationMapper;
 import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
-import uk.gov.companieshouse.model.db.dissolution.DissolutionSubmission;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
@@ -64,14 +63,14 @@ public class DissolutionPatcher {
         return this.responseMapper.mapToDissolutionPatchResponse(companyNumber);
     }
 
-    public void updatePaymentAndSubmissionInformation(String paymentReference, Timestamp paidAt, String companyNumber) {
+    public void handlePayment(String paymentReference, Timestamp paidAt, String companyNumber) {
         final Dissolution dissolution = this.repository.findByCompanyNumber(companyNumber).get();
 
         this.addPaymentInformation(paymentReference, paidAt, dissolution);
 
         setDissolutionStatus(dissolution, ApplicationStatus.PAID);
 
-        this.addSubmissionInformation(dissolution);
+        dissolution.setSubmission(this.dissolutionSubmissionMapper.generateSubmissionInformation());
 
         this.repository.save(dissolution);
 
@@ -86,12 +85,6 @@ public class DissolutionPatcher {
                 .filter(director -> director.getEmail().equals(email))
                 .findFirst()
                 .get();
-    }
-
-    private void addSubmissionInformation(Dissolution dissolution) {
-        final DissolutionSubmission submission = this.dissolutionSubmissionMapper.generateSubmissionInformation();
-
-        dissolution.setSubmission(submission);
     }
 
     private void addPaymentInformation(String paymentReference, Timestamp paidAt, Dissolution dissolution) {

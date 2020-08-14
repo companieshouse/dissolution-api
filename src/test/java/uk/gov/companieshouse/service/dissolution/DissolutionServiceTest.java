@@ -124,8 +124,8 @@ public class DissolutionServiceTest {
     public void updatePaymentAndSubmissionStatus_updatesPaymentAndSubmissionStatus_returnNothing() {
         PaymentPatchRequest data = generatePaymentPatchRequest();
 
-        service.updatePaymentAndSubmissionStatus(data, COMPANY_NUMBER);
+        service.handlePayment(data, COMPANY_NUMBER);
 
-        verify(patcher).updatePaymentAndSubmissionInformation(data.getPaymentReference(), data.getPaidAt(), COMPANY_NUMBER);
+        verify(patcher).handlePayment(data.getPaymentReference(), data.getPaidAt(), COMPANY_NUMBER);
     }
 }

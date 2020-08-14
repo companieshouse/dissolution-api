@@ -84,7 +84,7 @@ public class PaymentController {
 
         if (PaymentStatus.PAID.equals(body.getStatus())) {
             try {
-                dissolutionService.updatePaymentAndSubmissionStatus(body, companyNumber);
+                dissolutionService.handlePayment(body, companyNumber);
             } catch (EmailSendException e) {
                 throw new InternalServerErrorException(e.getMessage());
             }

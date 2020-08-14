@@ -12,6 +12,12 @@ public class ChipsConfig {
     @Value("${chips.retryLimit}")
     private int chipsRetryLimit;
 
+    @Value("${chips.retryDelayMinutes}")
+    private int chipsRetryDelayMinutes;
+
+    @Value("${chips.submissionLimit}")
+    private int chipsSubmissionLimit;
+
     public String getChipsHost() {
         return chipsHost;
     }
@@ -26,5 +32,13 @@ public class ChipsConfig {
 
     public void setChipsRetryLimit(int chipsRetryLimit) {
         this.chipsRetryLimit = chipsRetryLimit;
+    }
+
+    public int getChipsRetryDelayMinutes() {
+        return chipsRetryDelayMinutes;
+    }
+
+    public int getChipsSubmissionLimit() {
+        return chipsSubmissionLimit;
     }
 }
