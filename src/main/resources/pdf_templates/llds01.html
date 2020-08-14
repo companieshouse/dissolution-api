@@ -156,7 +156,7 @@
         </div>
 
         <div class="application-type">
-            <span class="application-type-big">DS01</span>
+            <span class="application-type-big">LLDS01</span>
             <span class="application-type-small">(ef)</span>
         </div>
 
@@ -166,11 +166,11 @@
     <div class="company-data">
         <table>
             <tr>
-                <td class="company-data-left">Company Name:</td>
+                <td class="company-data-left">LLP Name:</td>
                 <td>{{.companyName}}</td>
             </tr>
             <tr>
-                <td class="company-data-left">Company Number:</td>
+                <td class="company-data-left">LLP Number:</td>
                 <td>{{.companyNumber}}</td>
             </tr>
         </table>
@@ -183,24 +183,24 @@
     <section>
         <h2>Important notice for all interested parties</h2>
 
-        <p>This company has applied to be struck off and dissolved. The registrar will proceed unless there is
-            reasonable cause not to, and on dissolution any assets remaining in the company will be passed to the Crown.
+        <p>This LLP has applied to be struck off and dissolved. The registrar will proceed unless there is
+            reasonable cause not to, and on dissolution any assets remaining in the LLP will be passed to the Crown.
             Guidance is available on grounds for objection. If in doubt seek professional advice.</p>
     </section>
 
     <hr/>
 
     <section>
-        <h2>Declaration of director(s)</h2>
+        <h2>Declaration of member(s)</h2>
 
-        <p>I/We as the majority of directors apply for this company to be struck off the Register and declare that none
-            of the circumstances described in section 1004 and 1005 of the Companies Act 2006 (being circumstances in
-            which the directors would otherwise be prohibited under those sections from making an application) exists in
-            relation to the company.</p>
+        <p>I/We as the majority of members apply for this LLP to be struck off the Register and declare that none
+            of the circumstances described in section 1004 and 1005 of the Companies Act 2006 as applied to LLPs
+            (being circumstances in which the members would otherwise be prohibited under those sections from making an
+            application) exists in relation to the LLP.</p>
     </section>
 
     <section>
-        <h3>Authorising company Director(s):</h3>
+        <h3>Authorising LLP Member(s):</h3>
 
         <table class="director-data-table">
             {{range $k, $director:= .directors }}
@@ -219,7 +219,7 @@
                         </div>
                         <div>
                             {{if $director.onBehalfName}}
-                                <span class="power-of-attorney">*Power of Attorney signed on behalf of the director</span>
+                                <span class="power-of-attorney">*Power of Attorney signed on behalf of the corporate member</span>
                             {{end}}
                             <span class="label">Signature Date: {{$director.approvalDate}}</span>
                         </div>
