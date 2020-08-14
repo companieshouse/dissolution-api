@@ -52,7 +52,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(NotFoundException.class)
     public void handleNotFound(RuntimeException ex, HttpServletRequest request) {
-        LOGGER.info("[Not Found] - {}", request.getRequestURL().toString(), ex);
+        LOGGER.info("[Not Found] - {}", request.getRequestURL().toString());
     }
 
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)

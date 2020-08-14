@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -75,10 +74,6 @@ public class DissolutionController {
 
         logger.info("[POST] Submitting dissolution request for company number {}", companyNumber);
 
-        if (StringUtils.isBlank(userId)) {
-            throw new UnauthorisedException();
-        }
-
         final CompanyProfile companyProfile = Optional
                 .ofNullable(companyProfileClient.getCompanyProfile(companyNumber))
                 .orElseThrow(NotFoundException::new);
@@ -101,15 +96,9 @@ public class DissolutionController {
     })
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public DissolutionGetResponse getDissolutionApplication(
-            @RequestHeader("ERIC-identity") String userId,
-            @PathVariable("company-number") final String companyNumber) {
+    public DissolutionGetResponse getDissolutionApplication(@PathVariable("company-number") final String companyNumber) {
 
         logger.info("[GET] Getting dissolution info for company number {}", companyNumber);
-
-        if (StringUtils.isBlank(userId)) {
-            throw new UnauthorisedException();
-        }
 
         return dissolutionService
                 .get(companyNumber)
@@ -126,16 +115,11 @@ public class DissolutionController {
     @ResponseStatus(HttpStatus.OK)
     public DissolutionPatchResponse patchDissolutionApplication(
             @RequestHeader("ERIC-identity") String userId,
-            @RequestHeader("ERIC-Authorised-User") String authorisedUser,
             @PathVariable("company-number") final String companyNumber,
             @Valid @RequestBody final DissolutionPatchRequest body,
             HttpServletRequest request) {
 
         logger.info("[PATCH] Updating dissolution info for company number {}", companyNumber);
-
-        if (StringUtils.isBlank(userId) || StringUtils.isBlank(authorisedUser)) {
-            throw new UnauthorisedException();
-        }
 
         if (!dissolutionService.doesDissolutionRequestExistForCompany(companyNumber)) {
             throw new NotFoundException();
