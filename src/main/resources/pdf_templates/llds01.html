@@ -204,27 +204,27 @@
 
         <table class="director-data-table">
             {{range $k, $director:= .directors }}
-            <tr>
-                <td class="director-data-left">{{$director.name}}</td>
-                <td class="director-data-right">
-                    <div>
-                        {{if $director.onBehalfName}}
-                        <span class="label">{{$director.onBehalfName}} pp {{$director.name}}</span>
-                        {{else}}
-                        <span class="label">{{$director.name}}</span>
-                        {{end}}
-                    </div>
-                    <div class="hr-div">
-                        <hr class="hr-thin"/>
-                    </div>
-                    <div>
-                        {{if $director.onBehalfName}}
-                        <span class="power-of-attorney">*Power of Attorney signed on behalf of the corporate member</span>
-                        {{end}}
-                        <span class="label">Signature Date: {{$director.approvalDate}}</span>
-                    </div>
-                </td>
-            </tr>
+                <tr>
+                    <td class="director-data-left">{{$director.name}}</td>
+                    <td class="director-data-right">
+                        <div>
+                            {{if $director.onBehalfName}}
+                                <span class="label">{{$director.onBehalfName}} pp {{$director.name}}</span>
+                            {{else}}
+                                <span class="label">{{$director.name}}</span>
+                            {{end}}
+                        </div>
+                        <div class="hr-div">
+                            <hr class="hr-thin"/>
+                        </div>
+                        <div>
+                            {{if $director.onBehalfName}}
+                                <span class="power-of-attorney">*Power of Attorney signed on behalf of the corporate member</span>
+                            {{end}}
+                            <span class="label">Signature Date: {{$director.approvalDate}}</span>
+                        </div>
+                    </td>
+                </tr>
             {{end}}
         </table>
     </section>
