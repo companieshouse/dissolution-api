@@ -6,9 +6,12 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.companieshouse.api.util.security.EricConstants;
+import uk.gov.companieshouse.api.util.security.SecurityConstants;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
@@ -21,7 +24,9 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -37,6 +42,8 @@ public class PaymentControllerTest {
     private static final String PAYMENT_URI = "/dissolution-request/{company-number}/payment";
     private static final String COMPANY_NUMBER = "12345678";
 
+    private static final String IDENTITY_HEADER_VALUE = "identity";
+
     @MockBean
     private DissolutionService dissolutionService;
 
@@ -47,6 +54,61 @@ public class PaymentControllerTest {
     private MockMvc mockMvc;
 
     private final ObjectMapper mapper = new ObjectMapper();
+
+    @Test
+    public void getPaymentUIDataRequest_returnsUnauthorised_ifEricIdentityIsNotProvided() throws Exception {
+        HttpHeaders headers = createHttpHeaders();
+        headers.remove(EricConstants.ERIC_IDENTITY);
+
+        mockMvc
+                .perform(
+                        get(PAYMENT_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(headers)
+                )
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void getPaymentUIDataRequest_returnsForbidden_ifEricIdentityTypeIsNotCorrect() throws Exception {
+        HttpHeaders headers = createHttpHeaders();
+        headers.set(EricConstants.ERIC_IDENTITY_TYPE, "some-incorrect-identity-type");
+
+        mockMvc
+                .perform(
+                        get(PAYMENT_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(headers)
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void getPaymentUIDataRequest_returnsForbidden_ifEricAuthorisedKeyRolesIsNotCorrect() throws Exception {
+        HttpHeaders headers = createHttpHeaders();
+        headers.set(EricConstants.ERIC_AUTHORISED_KEY_ROLES, "some-incorrect-authorised-key-roles-value");
+
+        mockMvc
+                .perform(
+                        get(PAYMENT_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(headers)
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void getPaymentUIDataRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
+        when(dissolutionService.get(COMPANY_NUMBER)).thenReturn(Optional.empty());
+
+        mockMvc
+                .perform(
+                        get(PAYMENT_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(createHttpHeaders())
+                )
+                .andExpect(status().isNotFound());
+    }
 
     @Test
     public void getPaymentUIDataRequest_returnsPaymentUIData_ifRequestIsValid() throws Exception {
@@ -60,21 +122,52 @@ public class PaymentControllerTest {
                 .perform(
                         get(PAYMENT_URI, COMPANY_NUMBER)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(createHttpHeaders())
                 )
                 .andExpect(status().isOk())
                 .andExpect(content().json(asJsonString(paymentGetResponse)));
     }
 
     @Test
-    public void getPaymentUIDataRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
-        when(dissolutionService.get(COMPANY_NUMBER)).thenReturn(Optional.empty());
+    public void patchPaymentDataRequest_returnsUnauthorised_ifEricIdentityIsNotProvided() throws Exception {
+        HttpHeaders headers = createHttpHeaders();
+        headers.remove(EricConstants.ERIC_IDENTITY);
 
         mockMvc
                 .perform(
-                        get(PAYMENT_URI, COMPANY_NUMBER)
+                        patch(PAYMENT_URI, COMPANY_NUMBER)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(headers)
                 )
-                .andExpect(status().isNotFound());
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void patchPaymentDataRequest_returnsForbidden_ifEricIdentityTypeIsNotCorrect() throws Exception {
+        HttpHeaders headers = createHttpHeaders();
+        headers.set(EricConstants.ERIC_IDENTITY_TYPE, "some-incorrect-identity-type");
+
+        mockMvc
+                .perform(
+                        patch(PAYMENT_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(headers)
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void patchPaymentDataRequest_returnsForbidden_ifEricAuthorisedKeyRolesIsNotCorrect() throws Exception {
+        HttpHeaders headers = createHttpHeaders();
+        headers.set(EricConstants.ERIC_AUTHORISED_KEY_ROLES, "some-incorrect-authorised-key-roles-value");
+
+        mockMvc
+                .perform(
+                        patch(PAYMENT_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(headers)
+                )
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -88,6 +181,7 @@ public class PaymentControllerTest {
                         patch(PAYMENT_URI, COMPANY_NUMBER)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(asJsonString(body))
+                                .headers(createHttpHeaders())
                 )
                 .andExpect(status().isNotFound());
     }
@@ -106,6 +200,7 @@ public class PaymentControllerTest {
                         patch(PAYMENT_URI, COMPANY_NUMBER)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(asJsonString(body))
+                                .headers(createHttpHeaders())
                 )
                 .andExpect(status().isBadRequest());
     }
@@ -125,6 +220,7 @@ public class PaymentControllerTest {
                         patch(PAYMENT_URI, COMPANY_NUMBER)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(asJsonString(body))
+                                .headers(createHttpHeaders())
                 )
                 .andExpect(status().isOk());
 
@@ -146,6 +242,7 @@ public class PaymentControllerTest {
                         patch(PAYMENT_URI, COMPANY_NUMBER)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(asJsonString(body))
+                                .headers(createHttpHeaders())
                 )
                 .andExpect(status().isOk());
 
@@ -167,10 +264,21 @@ public class PaymentControllerTest {
                         patch(PAYMENT_URI, COMPANY_NUMBER)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(asJsonString(body))
+                                .headers(createHttpHeaders())
                 )
                 .andExpect(status().isOk());
 
         verify(dissolutionService, never()).handlePayment(isA(PaymentPatchRequest.class), eq(COMPANY_NUMBER));
+    }
+
+    private HttpHeaders createHttpHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+
+        headers.add(EricConstants.ERIC_IDENTITY, IDENTITY_HEADER_VALUE);
+        headers.add(EricConstants.ERIC_IDENTITY_TYPE, SecurityConstants.API_KEY_IDENTITY_TYPE);
+        headers.add(EricConstants.ERIC_AUTHORISED_KEY_ROLES, SecurityConstants.INTERNAL_USER_ROLE);
+
+        return headers;
     }
 
     private <T> String asJsonString(T body) {
