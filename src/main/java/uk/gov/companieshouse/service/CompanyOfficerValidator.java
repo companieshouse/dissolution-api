@@ -32,7 +32,8 @@ public class CompanyOfficerValidator {
         return officers
                 .stream()
                 .filter(officer -> officer.getResignedOn() == null)
-                .filter(activeOfficer -> activeOfficer.getOfficerRole().equals(OfficerRole.DIRECTOR.getValue()))
+                .filter(activeOfficer -> activeOfficer.getOfficerRole().equals(OfficerRole.DIRECTOR.getValue()) || 
+                activeOfficer.getOfficerRole().equals(OfficerRole.LLP_MEMBER.getValue()))
                 .map(CompanyOfficer::getName)
                 .collect(Collectors.toList());
     }
