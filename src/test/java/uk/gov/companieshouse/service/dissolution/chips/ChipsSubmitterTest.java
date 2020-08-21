@@ -28,6 +28,8 @@ import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolu
 @ExtendWith(MockitoExtension.class)
 public class ChipsSubmitterTest {
 
+    private static final byte[] CERTIFICATE_CONTENTS = "some certificate contents".getBytes();
+
     @InjectMocks
     private ChipsSubmitter submitter;
 
@@ -64,13 +66,13 @@ public class ChipsSubmitterTest {
     public void submitDissolutionToChips_downloadsCertificate_mapsToRequest_sendsToChips() {
         final DissolutionChipsRequest request = generateDissolutionChipsRequest();
 
-        when(certificateDownloader.downloadDissolutionCertificate(dissolution)).thenReturn("some certificate contents");
-        when(mapper.mapToDissolutionChipsRequest(dissolution, "some certificate contents")).thenReturn(request);
+        when(certificateDownloader.downloadDissolutionCertificate(dissolution)).thenReturn(CERTIFICATE_CONTENTS);
+        when(mapper.mapToDissolutionChipsRequest(dissolution, CERTIFICATE_CONTENTS)).thenReturn(request);
 
         submitter.submitDissolutionToChips(dissolution);
 
         verify(certificateDownloader).downloadDissolutionCertificate(dissolution);
-        verify(mapper).mapToDissolutionChipsRequest(dissolution, "some certificate contents");
+        verify(mapper).mapToDissolutionChipsRequest(dissolution, CERTIFICATE_CONTENTS);
         verify(client).sendDissolutionToChips(request);
     }
 
@@ -78,8 +80,8 @@ public class ChipsSubmitterTest {
     public void submitDissolutionToChips_updatesDatabase_ifChipsSubmissionSucceeds() {
         final DissolutionChipsRequest request = generateDissolutionChipsRequest();
 
-        when(certificateDownloader.downloadDissolutionCertificate(dissolution)).thenReturn("some certificate contents");
-        when(mapper.mapToDissolutionChipsRequest(dissolution, "some certificate contents")).thenReturn(request);
+        when(certificateDownloader.downloadDissolutionCertificate(dissolution)).thenReturn(CERTIFICATE_CONTENTS);
+        when(mapper.mapToDissolutionChipsRequest(dissolution, CERTIFICATE_CONTENTS)).thenReturn(request);
 
         submitter.submitDissolutionToChips(dissolution);
 
@@ -97,8 +99,8 @@ public class ChipsSubmitterTest {
 
         final DissolutionChipsRequest request = generateDissolutionChipsRequest();
 
-        when(certificateDownloader.downloadDissolutionCertificate(dissolution)).thenReturn("some certificate contents");
-        when(mapper.mapToDissolutionChipsRequest(dissolution, "some certificate contents")).thenReturn(request);
+        when(certificateDownloader.downloadDissolutionCertificate(dissolution)).thenReturn(CERTIFICATE_CONTENTS);
+        when(mapper.mapToDissolutionChipsRequest(dissolution, CERTIFICATE_CONTENTS)).thenReturn(request);
         doThrow(new ChipsNotAvailableException()).when(client).sendDissolutionToChips(request);
         when(config.getChipsRetryLimit()).thenReturn(10);
 
@@ -119,8 +121,8 @@ public class ChipsSubmitterTest {
 
         final DissolutionChipsRequest request = generateDissolutionChipsRequest();
 
-        when(certificateDownloader.downloadDissolutionCertificate(dissolution)).thenReturn("some certificate contents");
-        when(mapper.mapToDissolutionChipsRequest(dissolution, "some certificate contents")).thenReturn(request);
+        when(certificateDownloader.downloadDissolutionCertificate(dissolution)).thenReturn(CERTIFICATE_CONTENTS);
+        when(mapper.mapToDissolutionChipsRequest(dissolution, CERTIFICATE_CONTENTS)).thenReturn(request);
         doThrow(new ChipsNotAvailableException()).when(client).sendDissolutionToChips(request);
         when(config.getChipsRetryLimit()).thenReturn(10);
 

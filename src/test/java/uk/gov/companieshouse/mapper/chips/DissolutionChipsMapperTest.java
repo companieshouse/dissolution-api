@@ -22,7 +22,7 @@ public class DissolutionChipsMapperTest {
     private static final String DISSOLUTION_REFERENCE = "someRef";
     private static final String DISSOLUTION_BARCODE = "B4RC0D3";
 
-    private static final String CERTIFICATE_CONTENTS = "some certificate contents";
+    private static final byte[] CERTIFICATE_CONTENTS = "some certificate contents".getBytes();
 
     @InjectMocks
     private DissolutionChipsMapper mapper;
@@ -69,7 +69,7 @@ public class DissolutionChipsMapperTest {
         assertEquals(1, request.getForms().get(0).getAttachments().size());
         assertEquals("application/pdf", request.getForms().get(0).getAttachments().get(0).getMimeType());
         assertEquals("FORM IMAGE PDF", request.getForms().get(0).getAttachments().get(0).getCategory());
-        assertEquals(CERTIFICATE_CONTENTS, decode(request.getForms().get(0).getAttachments().get(0).getData()));
+        assertEquals(new String(CERTIFICATE_CONTENTS), decode(request.getForms().get(0).getAttachments().get(0).getData()));
     }
 
     private String decode(String encoded) {

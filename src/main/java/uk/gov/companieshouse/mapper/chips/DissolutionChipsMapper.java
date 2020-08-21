@@ -25,7 +25,7 @@ public class DissolutionChipsMapper {
         this.formDataMapper = formDataMapper;
     }
 
-    public DissolutionChipsRequest mapToDissolutionChipsRequest(Dissolution dissolution, String certificate) {
+    public DissolutionChipsRequest mapToDissolutionChipsRequest(Dissolution dissolution, byte[] certificate) {
         final DissolutionChipsRequest request = new DissolutionChipsRequest();
 
         request.setPackageMetadata(mapToPackageMetadata(dissolution));
@@ -43,17 +43,17 @@ public class DissolutionChipsMapper {
         return metadata;
     }
 
-    private ChipsForm mapToChipsForm(Dissolution dissolution, String certificate) {
+    private ChipsForm mapToChipsForm(Dissolution dissolution, byte[] certificate) {
         final ChipsForm form = new ChipsForm();
 
         form.setBarcode(dissolution.getData().getApplication().getBarcode());
-        form.setXml(encode(formDataMapper.mapToChipsFormDataXml(dissolution)));
+        form.setXml(encode(formDataMapper.mapToChipsFormDataXml(dissolution).getBytes()));
         form.setAttachments(Collections.singletonList(mapToChipsFormAttachment(certificate)));
 
         return form;
     }
 
-    private ChipsFormAttachment mapToChipsFormAttachment(String certificate) {
+    private ChipsFormAttachment mapToChipsFormAttachment(byte[] certificate) {
         final ChipsFormAttachment attachment = new ChipsFormAttachment();
 
         attachment.setCategory(FORM_CATEGORY);
@@ -63,7 +63,7 @@ public class DissolutionChipsMapper {
         return attachment;
     }
 
-    private String encode(String input) {
-        return Base64.getEncoder().encodeToString(input.getBytes());
+    private String encode(byte[] input) {
+        return Base64.getEncoder().encodeToString(input);
     }
 }
