@@ -9,15 +9,7 @@ import uk.gov.companieshouse.model.db.dissolution.Company;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
-import uk.gov.companieshouse.model.dto.chips.xml.ChipsCorporateBody;
-import uk.gov.companieshouse.model.dto.chips.xml.ChipsFilingDetails;
-import uk.gov.companieshouse.model.dto.chips.xml.ChipsFormData;
-import uk.gov.companieshouse.model.dto.chips.xml.ChipsFormType;
-import uk.gov.companieshouse.model.dto.chips.xml.ChipsOfficer;
-import uk.gov.companieshouse.model.dto.chips.xml.ChipsPayment;
-import uk.gov.companieshouse.model.dto.chips.xml.ChipsPaymentMethod;
-import uk.gov.companieshouse.model.dto.chips.xml.ChipsPersonName;
-import uk.gov.companieshouse.model.dto.chips.xml.ChipsPresenterDetails;
+import uk.gov.companieshouse.model.dto.chips.xml.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -110,12 +102,6 @@ public class ChipsFormDataMapper {
 
         officer.setPersonName(mapToPersonName(director.getName()));
         officer.setSignDate(asDateString(director.getDirectorApproval().getDateTime()));
-        officer.setEmail(director.getEmail());
-        officer.setIpAddress(director.getDirectorApproval().getIpAddress());
-
-        if (director.getOnBehalfName() != null) {
-            officer.setOnBehalfName(director.getOnBehalfName());
-        }
 
         return officer;
     }

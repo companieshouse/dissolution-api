@@ -175,23 +175,17 @@ public class ChipsFormDataMapperTest {
     public void mapToChipsFormDataXml_setsTheCorporateBody_officersCorrectly() throws Exception {
         DirectorApproval approvalOne = generateDirectorApproval();
         approvalOne.setDateTime(LocalDateTime.of(2020, 1, 1, 12, 30));
-        approvalOne.setIpAddress("192.168.0.2");
 
         DissolutionDirector directorOne = generateDissolutionDirector();
         directorOne.setName("DOE, John James");
         directorOne.setDirectorApproval(approvalOne);
-        directorOne.setEmail("mail1");
 
         DirectorApproval approvalTwo = generateDirectorApproval();
-        approvalTwo.setIpAddress("192.168.0.3");
-
         approvalTwo.setDateTime(LocalDateTime.of(2020, 2, 2, 16, 15));
 
         DissolutionDirector directorTwo = generateDissolutionDirector();
         directorTwo.setName("SMITH, Jane Janet, Mrs");
         directorTwo.setDirectorApproval(approvalTwo);
-        directorTwo.setEmail("mail2");
-        directorTwo.setOnBehalfName("Mr. Accountant");
 
         dissolution.getData().setDirectors(Arrays.asList(directorOne, directorTwo));
 
@@ -206,14 +200,9 @@ public class ChipsFormDataMapperTest {
         assertEquals("John James", request.getCorporateBody().getOfficers().get(0).getPersonName().getForename());
         assertEquals("DOE", request.getCorporateBody().getOfficers().get(0).getPersonName().getSurname());
         assertEquals("2020-01-01", request.getCorporateBody().getOfficers().get(0).getSignDate());
-        assertEquals("mail1", request.getCorporateBody().getOfficers().get(0).getEmail());
-        assertEquals("192.168.0.2", request.getCorporateBody().getOfficers().get(0).getIpAddress());
 
         assertEquals("Jane Janet, Mrs", request.getCorporateBody().getOfficers().get(1).getPersonName().getForename());
         assertEquals("SMITH", request.getCorporateBody().getOfficers().get(1).getPersonName().getSurname());
         assertEquals("2020-02-02", request.getCorporateBody().getOfficers().get(1).getSignDate());
-        assertEquals("mail2", request.getCorporateBody().getOfficers().get(1).getEmail());
-        assertEquals("Mr. Accountant", request.getCorporateBody().getOfficers().get(1).getOnBehalfName());
-        assertEquals("192.168.0.3", request.getCorporateBody().getOfficers().get(1).getIpAddress());
     }
 }
