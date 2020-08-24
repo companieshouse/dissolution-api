@@ -5,11 +5,17 @@ import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 import uk.gov.companieshouse.model.enums.OfficerRole;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class CompanyOfficerValidator {
+
+    private static final List<String> OFFICER_ROLE = Arrays.asList(
+        OfficerRole.DIRECTOR.getValue(),
+        OfficerRole.LLP_MEMBER.getValue()
+    );
 
     public boolean areMajorityOfCompanyOfficersSelected(List<CompanyOfficer> officers, List<DirectorRequest> selectedDirectors) {
         final List<String> activeOfficers = this.mapCompanyOfficersToActiveList(officers);
@@ -32,7 +38,7 @@ public class CompanyOfficerValidator {
         return officers
                 .stream()
                 .filter(officer -> officer.getResignedOn() == null)
-                .filter(activeOfficer -> activeOfficer.getOfficerRole().equals(OfficerRole.DIRECTOR.getValue()))
+                .filter(activeOfficer -> OFFICER_ROLE.contains(activeOfficer.getOfficerRole()))
                 .map(CompanyOfficer::getName)
                 .collect(Collectors.toList());
     }

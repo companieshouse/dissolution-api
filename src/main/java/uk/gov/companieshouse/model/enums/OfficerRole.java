@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum OfficerRole {
     DIRECTOR("director"),
-    SECRETARY("secretary");
+    SECRETARY("secretary"),
+    LLP_MEMBER("llp-member");
 
     private final String value;
 

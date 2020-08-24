@@ -1,8 +1,12 @@
 package uk.gov.companieshouse.service;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
+import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
+import uk.gov.companieshouse.model.enums.CompanyStatus;
+import uk.gov.companieshouse.model.enums.CompanyType;
 import uk.gov.companieshouse.model.enums.OfficerRole;
 
 import java.util.Arrays;
@@ -22,7 +26,7 @@ public class CompanyOfficerValidatorTest {
     private final CompanyOfficerValidator validator = new CompanyOfficerValidator();
 
     @Test
-    public void areMajorityOfCompanyOfficersSelected_halfDirectorsSelected_returnsTrue() {
+    public void areMajorityOfCompanyOfficersSelected_overHalfDirectorsSelected_returnsTrue() {
         final DirectorRequest directorOne = new DirectorRequest();
         directorOne.setName(DIRECTOR_NAME);
         directorOne.setEmail(DIRECTOR_EMAIL);
@@ -105,6 +109,39 @@ public class CompanyOfficerValidatorTest {
     }
 
     @Test
+    public void areMajorityOfCompanyOfficersSelected_allSecretariesSelected_returnsFalse() {
+        final DirectorRequest directorOne = new DirectorRequest();
+        directorOne.setName(DIRECTOR_NAME);
+        directorOne.setEmail(DIRECTOR_EMAIL);
+
+        final DirectorRequest directorTwo = new DirectorRequest();
+        directorTwo.setName(DIRECTOR_NAME_TWO);
+        directorTwo.setEmail(DIRECTOR_EMAIL_TWO);
+
+        final List<DirectorRequest> selectedDirectors = Arrays.asList(directorOne, directorTwo);
+
+        final CompanyOfficer officerOne = new CompanyOfficer();
+        officerOne.setName(DIRECTOR_NAME);
+        officerOne.setOfficerRole(OfficerRole.SECRETARY.getValue());
+        officerOne.setResignedOn(null);
+
+        final CompanyOfficer officerTwo = new CompanyOfficer();
+        officerTwo.setName(DIRECTOR_NAME_TWO);
+        officerTwo.setOfficerRole(OfficerRole.SECRETARY.getValue());
+        officerTwo.setResignedOn(null);
+
+        final List<CompanyOfficer> companyOfficers = Arrays.asList(
+                officerOne,
+                officerTwo
+        );
+
+        final boolean hasOverHalfDirectorsSelected =
+                validator.areMajorityOfCompanyOfficersSelected(companyOfficers, selectedDirectors);
+
+        assertFalse(hasOverHalfDirectorsSelected);
+    }
+
+    @Test
     public void areMajorityOfCompanyOfficersSelected_wrongDirectorsSelected_returnsFalse() {
         final DirectorRequest directorOne = new DirectorRequest();
         directorOne.setName(DIRECTOR_NAME);
@@ -169,5 +206,77 @@ public class CompanyOfficerValidatorTest {
                 validator.areMajorityOfCompanyOfficersSelected(companyOfficers, selectedDirectors);
 
         assertFalse(hasOverHalfDirectorsSelected);
+    }
+
+    @Test
+    public void areMajorityOfLLPCompanyOfficersSelected_halfLLPMembersSelected_returnsTrue() {
+        final DirectorRequest directorOne = new DirectorRequest();
+        directorOne.setName(DIRECTOR_NAME);
+        directorOne.setEmail(DIRECTOR_EMAIL);
+
+        final DirectorRequest directorTwo = new DirectorRequest();
+        directorTwo.setName(DIRECTOR_NAME_TWO);
+        directorTwo.setEmail(DIRECTOR_EMAIL_TWO);
+
+        final List<DirectorRequest> selectedDirectors = Arrays.asList(directorOne, directorTwo);
+
+        final CompanyOfficer officerOne = new CompanyOfficer();
+        officerOne.setName(DIRECTOR_NAME);
+        officerOne.setOfficerRole(OfficerRole.LLP_MEMBER.getValue());
+        officerOne.setResignedOn(null);
+
+        final CompanyOfficer officerTwo = new CompanyOfficer();
+        officerTwo.setName(DIRECTOR_NAME_TWO);
+        officerTwo.setOfficerRole(OfficerRole.LLP_MEMBER.getValue());
+        officerTwo.setResignedOn(null);
+
+        final CompanyOfficer officerThree = new CompanyOfficer();
+        officerThree.setName(DIRECTOR_NAME_THREE);
+        officerThree.setOfficerRole(OfficerRole.LLP_MEMBER.getValue());
+        officerThree.setResignedOn(null);
+
+        final List<CompanyOfficer> companyOfficers = Arrays.asList(
+                officerOne,
+                officerTwo,
+                officerThree
+        );
+
+        final boolean hasOverHalfDirectorsSelected =
+                validator.areMajorityOfCompanyOfficersSelected(companyOfficers, selectedDirectors);
+
+        assertTrue(hasOverHalfDirectorsSelected);
+    }
+
+    @Test
+    public void areMajorityOfLLPCompanyOfficersSelected_allLLPMembersSelected_returnsTrue() {
+        final DirectorRequest directorOne = new DirectorRequest();
+        directorOne.setName(DIRECTOR_NAME);
+        directorOne.setEmail(DIRECTOR_EMAIL);
+
+        final DirectorRequest directorTwo = new DirectorRequest();
+        directorTwo.setName(DIRECTOR_NAME_TWO);
+        directorTwo.setEmail(DIRECTOR_EMAIL_TWO);
+
+        final List<DirectorRequest> selectedDirectors = Arrays.asList(directorOne, directorTwo);
+
+        final CompanyOfficer officerOne = new CompanyOfficer();
+        officerOne.setName(DIRECTOR_NAME);
+        officerOne.setOfficerRole(OfficerRole.LLP_MEMBER.getValue());
+        officerOne.setResignedOn(null);
+
+        final CompanyOfficer officerTwo = new CompanyOfficer();
+        officerTwo.setName(DIRECTOR_NAME_TWO);
+        officerTwo.setOfficerRole(OfficerRole.LLP_MEMBER.getValue());
+        officerTwo.setResignedOn(null);
+
+        final List<CompanyOfficer> companyOfficers = Arrays.asList(
+                officerOne,
+                officerTwo
+        );
+
+        final boolean hasOverHalfDirectorsSelected =
+                validator.areMajorityOfCompanyOfficersSelected(companyOfficers, selectedDirectors);
+
+        assertTrue(hasOverHalfDirectorsSelected);
     }
 }
