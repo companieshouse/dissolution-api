@@ -1,8 +1,12 @@
 package uk.gov.companieshouse.service;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
+import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
+import uk.gov.companieshouse.model.enums.CompanyStatus;
+import uk.gov.companieshouse.model.enums.CompanyType;
 import uk.gov.companieshouse.model.enums.OfficerRole;
 
 import java.util.Arrays;
@@ -170,4 +174,12 @@ public class CompanyOfficerValidatorTest {
 
         assertFalse(hasOverHalfDirectorsSelected);
     }
+
+//    //TODO
+//    @Test
+//    public void mapCompanyDetailsToLLP_returnsFalse() {
+//        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+//        company.setType(OfficerRole.LLP_MEMBER.getValue());
+//        company.setCompanyNumber("NF123456");
+//    }
 }
