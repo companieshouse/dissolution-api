@@ -51,7 +51,7 @@ public class ChipsSubmitter {
 
         logger.info("Sending dissolution request to CHIPS for company {}", companyNumber);
 
-        final String certificateContents = certificateDownloader.downloadDissolutionCertificate(dissolution);
+        final byte[] certificateContents = certificateDownloader.downloadDissolutionCertificate(dissolution);
 
         try {
             final DissolutionChipsRequest dissolutionRequest = mapper.mapToDissolutionChipsRequest(dissolution, certificateContents);
