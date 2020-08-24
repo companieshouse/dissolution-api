@@ -209,7 +209,7 @@ public class CompanyOfficerValidatorTest {
     }
 
     @Test
-    public void areMajorityOfLLPCompanyOfficersSelected_halfLLPMembersSelected_returnsTrue() {
+    public void areMajorityOfLLPCompanyOfficersSelected_overHalfLLPMembersSelected_returnsTrue() {
         final DirectorRequest directorOne = new DirectorRequest();
         directorOne.setName(DIRECTOR_NAME);
         directorOne.setEmail(DIRECTOR_EMAIL);

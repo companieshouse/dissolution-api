@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 @Service
 public class CompanyOfficerValidator {
 
-    private static final List<String> OFFICER_ROLE = Arrays.asList(
+    private static final List<String> OFFICER_ROLES = Arrays.asList(
         OfficerRole.DIRECTOR.getValue(),
         OfficerRole.LLP_MEMBER.getValue()
     );
@@ -38,7 +38,7 @@ public class CompanyOfficerValidator {
         return officers
                 .stream()
                 .filter(officer -> officer.getResignedOn() == null)
-                .filter(activeOfficer -> OFFICER_ROLE.contains(activeOfficer.getOfficerRole()))
+                .filter(activeOfficer -> OFFICER_ROLES.contains(activeOfficer.getOfficerRole()))
                 .map(CompanyOfficer::getName)
                 .collect(Collectors.toList());
     }
