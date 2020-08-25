@@ -379,7 +379,7 @@ public class DissolutionControllerTest {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setHasApproved(false);
 
-        assertPatchBodyValidation(body, "{'hasApproved':'At least 1 director must be provided'}");
+        assertPatchBodyValidation(body, "{'hasApproved':'must be true'}");
     }
 
     @Test
