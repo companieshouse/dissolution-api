@@ -48,10 +48,10 @@ public class DissolutionPatcher {
         this.dissolutionEmailService = dissolutionEmailService;
     }
 
-    public DissolutionPatchResponse addDirectorApproval(String companyNumber, String userId, String ip, String email) {
+    public DissolutionPatchResponse addDirectorApproval(String companyNumber, String userId, String ip, String officerId) {
         final Dissolution dissolution = this.repository.findByCompanyNumber(companyNumber).get();
 
-        this.addDirectorApproval(userId, ip, email, dissolution);
+        this.addDirectorApproval(userId, ip, officerId, dissolution);
 
         if (!this.hasDirectorsLeftToApprove(dissolution)) {
             setDissolutionStatus(dissolution, ApplicationStatus.PENDING_PAYMENT);
@@ -77,12 +77,12 @@ public class DissolutionPatcher {
         dissolutionEmailService.sendSuccessfulPaymentEmail(dissolution);
     }
 
-    private DissolutionDirector findDirector(String email, Dissolution dissolution) {
+    private DissolutionDirector findDirector(String officerId, Dissolution dissolution) {
         return dissolution
                 .getData()
                 .getDirectors()
                 .stream()
-                .filter(director -> director.getEmail().equals(email))
+                .filter(director -> director.getOfficerId().equals(officerId))
                 .findFirst()
                 .get();
     }
@@ -93,9 +93,9 @@ public class DissolutionPatcher {
         dissolution.setPaymentInformation(information);
     }
 
-    private void addDirectorApproval(String userId, String ip, String email, Dissolution dissolution) {
+    private void addDirectorApproval(String userId, String ip, String officerId, Dissolution dissolution) {
         final DirectorApproval approval = approvalMapper.mapToDirectorApproval(userId, ip);
-        DissolutionDirector director = this.findDirector(email, dissolution);
+        DissolutionDirector director = this.findDirector(officerId, dissolution);
         director.setDirectorApproval(approval);
     }
 

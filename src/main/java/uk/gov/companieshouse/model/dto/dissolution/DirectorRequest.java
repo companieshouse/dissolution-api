@@ -9,8 +9,8 @@ import javax.validation.constraints.Size;
 public class DirectorRequest {
 
     @NotBlank
-    @Size(min = 1, max = 250)
-    private String name;
+    @JsonProperty("officer_id")
+    private String officerId;
 
     @NotBlank
     @Email
@@ -20,12 +20,12 @@ public class DirectorRequest {
     @Size(min = 1, max = 250)
     private String onBehalfName;
 
-    public String getName() {
-        return name;
+    public String getOfficerId() {
+        return officerId;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setOfficerId(String officerId) {
+        this.officerId = officerId;
     }
 
     public String getEmail() {

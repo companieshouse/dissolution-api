@@ -2,18 +2,25 @@ package uk.gov.companieshouse.model.dto.dissolution;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class DissolutionPatchRequest {
-    private String email;
+import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.NotBlank;
 
+public class DissolutionPatchRequest {
+
+    @NotBlank
+    @JsonProperty("officer_id")
+    private String officerId;
+
+    @AssertTrue
     @JsonProperty("has_approved")
     private boolean hasApproved;
 
-    public String getEmail() {
-        return email;
+    public String getOfficerId() {
+        return officerId;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setOfficerId(String officerId) {
+        this.officerId = officerId;
     }
 
     public boolean getHasApproved() {

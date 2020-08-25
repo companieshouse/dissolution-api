@@ -21,18 +21,20 @@ import uk.gov.companieshouse.client.CompanyProfileClient;
 import uk.gov.companieshouse.exception.BadRequestException;
 import uk.gov.companieshouse.exception.ConflictException;
 import uk.gov.companieshouse.exception.NotFoundException;
-import uk.gov.companieshouse.exception.UnauthorisedException;
+import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
-import uk.gov.companieshouse.service.DissolutionValidator;
+import uk.gov.companieshouse.service.CompanyOfficerService;
+import uk.gov.companieshouse.service.dissolution.validator.DissolutionValidator;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.Map;
 import java.util.Optional;
 
 import static uk.gov.companieshouse.util.EricHelper.getEmail;
@@ -41,19 +43,23 @@ import static uk.gov.companieshouse.util.EricHelper.getEmail;
 @RequestMapping("/dissolution-request/{company-number}")
 public class DissolutionController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DissolutionController.class);
+
     private final DissolutionService dissolutionService;
     private final DissolutionValidator dissolutionValidator;
     private final CompanyProfileClient companyProfileClient;
-    private final Logger logger = LoggerFactory.getLogger(DissolutionController.class);
+    private final CompanyOfficerService companyOfficerService;
 
     public DissolutionController(
             DissolutionService dissolutionService,
             DissolutionValidator dissolutionValidator,
-            CompanyProfileClient companyProfileClient) {
+            CompanyProfileClient companyProfileClient,
+            CompanyOfficerService companyOfficerService) {
         super();
         this.dissolutionService = dissolutionService;
         this.dissolutionValidator = dissolutionValidator;
         this.companyProfileClient = companyProfileClient;
+        this.companyOfficerService = companyOfficerService;
     }
 
     @Operation(summary = "Create Dissolution Request", tags = "Dissolution")
@@ -72,9 +78,9 @@ public class DissolutionController {
             @Valid @RequestBody final DissolutionCreateRequest body,
             HttpServletRequest request) {
 
-        logger.info("[POST] Submitting dissolution request for company number {}", companyNumber);
+        LOGGER.info("[POST] Submitting dissolution request for company number {}", companyNumber);
 
-        final CompanyProfile companyProfile = Optional
+        final CompanyProfile company = Optional
                 .ofNullable(companyProfileClient.getCompanyProfile(companyNumber))
                 .orElseThrow(NotFoundException::new);
 
@@ -82,11 +88,13 @@ public class DissolutionController {
             throw new ConflictException("Dissolution already exists");
         }
 
+        final Map<String, CompanyOfficer> directors = companyOfficerService.getActiveDirectorsForCompany(companyNumber);
+
         dissolutionValidator
-                .checkBusinessRules(companyProfile, body.getDirectors())
+                .checkBusinessRules(company, directors, body.getDirectors())
                 .ifPresent(error -> { throw new BadRequestException(error); });
 
-        return dissolutionService.create(body, companyProfile, userId, request.getRemoteAddr(), getEmail(authorisedUser));
+        return dissolutionService.create(body, company, directors, userId, request.getRemoteAddr(), getEmail(authorisedUser));
     }
 
     @Operation(summary = "Get Dissolution Application", tags = "Dissolution")
@@ -98,7 +106,7 @@ public class DissolutionController {
     @ResponseStatus(HttpStatus.OK)
     public DissolutionGetResponse getDissolutionApplication(@PathVariable("company-number") final String companyNumber) {
 
-        logger.info("[GET] Getting dissolution info for company number {}", companyNumber);
+        LOGGER.info("[GET] Getting dissolution info for company number {}", companyNumber);
 
         return dissolutionService
                 .get(companyNumber)
@@ -119,16 +127,16 @@ public class DissolutionController {
             @Valid @RequestBody final DissolutionPatchRequest body,
             HttpServletRequest request) {
 
-        logger.info("[PATCH] Updating dissolution info for company number {}", companyNumber);
+        LOGGER.info("[PATCH] Updating dissolution info for company number {}", companyNumber);
 
         if (!dissolutionService.doesDissolutionRequestExistForCompany(companyNumber)) {
             throw new NotFoundException();
         }
 
-        if (!dissolutionService.isDirectorPendingApproval(companyNumber, body.getEmail())) {
+        if (!dissolutionService.isDirectorPendingApproval(companyNumber, body.getOfficerId())) {
             throw new BadRequestException("Director is not pending approval");
         }
 
-        return dissolutionService.addDirectorApproval(companyNumber, userId, request.getRemoteAddr(), body.getEmail());
+        return dissolutionService.addDirectorApproval(companyNumber, userId, request.getRemoteAddr(), body.getOfficerId());
     }
 }

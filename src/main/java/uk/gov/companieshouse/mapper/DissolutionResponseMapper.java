@@ -70,6 +70,7 @@ public class DissolutionResponseMapper {
     private DissolutionGetDirector mapToDissolutionGetDirector(DissolutionDirector director) {
         DissolutionGetDirector getDirector = new DissolutionGetDirector();
 
+        getDirector.setOfficerId(director.getOfficerId());
         getDirector.setName(director.getName());
         getDirector.setEmail(director.getEmail());
         getDirector.setOnBehalfName(director.getOnBehalfName());

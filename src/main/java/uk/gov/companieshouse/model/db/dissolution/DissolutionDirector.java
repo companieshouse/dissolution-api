@@ -4,6 +4,9 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 public class DissolutionDirector {
 
+    @Field("officer_id")
+    private String officerId;
+
     private String name;
 
     private String email;
@@ -12,6 +15,14 @@ public class DissolutionDirector {
     private String onBehalfName;
 
     private DirectorApproval approval;
+
+    public String getOfficerId() {
+        return officerId;
+    }
+
+    public void setOfficerId(String officerId) {
+        this.officerId = officerId;
+    }
 
     public String getName() {
         return name;

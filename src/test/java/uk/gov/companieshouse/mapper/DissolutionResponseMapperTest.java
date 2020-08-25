@@ -88,6 +88,7 @@ public class DissolutionResponseMapperTest {
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
 
         final DissolutionDirector director1 = DissolutionFixtures.generateDissolutionDirector();
+        director1.setOfficerId("abc123");
         director1.setName("Director who will sign themselves");
         director1.setEmail("director@mail.com");
         director1.setOnBehalfName(null);
@@ -95,6 +96,7 @@ public class DissolutionResponseMapperTest {
         final Timestamp expectedTimestamp1 = Timestamp.valueOf(director1.getDirectorApproval().getDateTime());
 
         final DissolutionDirector director2 = DissolutionFixtures.generateDissolutionDirector();
+        director2.setOfficerId("def456");
         director2.setName("Director who will let someone sign on behalf of them");
         director2.setEmail("accountant@mail.com");
         director2.setOnBehalfName("Mr Accountant");
@@ -105,12 +107,14 @@ public class DissolutionResponseMapperTest {
 
         final DissolutionGetResponse result = mapper.mapToDissolutionGetResponse(dissolution);
 
+        assertEquals("abc123", result.getDirectors().get(0).getOfficerId());
         assertEquals("Director who will sign themselves", result.getDirectors().get(0).getName());
         assertEquals("director@mail.com", result.getDirectors().get(0).getEmail());
         assertNull(result.getDirectors().get(0).getOnBehalfName());
         assertNotNull(result.getDirectors().get(0).getApprovedAt());
         assertEquals(expectedTimestamp1, result.getDirectors().get(0).getApprovedAt());
 
+        assertEquals("def456", result.getDirectors().get(1).getOfficerId());
         assertEquals("Director who will let someone sign on behalf of them", result.getDirectors().get(1).getName());
         assertEquals("accountant@mail.com", result.getDirectors().get(1).getEmail());
         assertEquals("Mr Accountant", result.getDirectors().get(1).getOnBehalfName());

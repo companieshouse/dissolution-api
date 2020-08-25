@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.service;
+package uk.gov.companieshouse.service.dissolution.validator;
 
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;

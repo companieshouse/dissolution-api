@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
+import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
@@ -15,11 +16,13 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,23 +42,25 @@ public class DissolutionServiceTest {
 
     @Mock
     private DissolutionRepository repository;
+
     public static final String COMPANY_NUMBER = "12345678";
-    public static final String COMPANY_NAME = "ComComp";
     public static final String USER_ID = "123";
     public static final String IP = "192.168.0.1";
     public static final String EMAIL = "user@mail.com";
+    public static final String OFFICER_ID = "abc123";
 
     @Test
     public void create_createsADissolutionRequest_returnsCreateResponse() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
         final DissolutionCreateResponse response = DissolutionFixtures.generateDissolutionCreateResponse();
         final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        final Map<String, CompanyOfficer> companyDirectors = Map.of(OFFICER_ID, generateCompanyOfficer());
 
-        when(creator.create(body, company, USER_ID, IP, EMAIL)).thenReturn(response);
+        when(creator.create(body, company, companyDirectors, USER_ID, IP, EMAIL)).thenReturn(response);
 
-        final DissolutionCreateResponse result = service.create(body, company, USER_ID, IP, EMAIL);
+        final DissolutionCreateResponse result = service.create(body, company, companyDirectors, USER_ID, IP, EMAIL);
 
-        verify(creator).create(body, company, USER_ID, IP, EMAIL);
+        verify(creator).create(body, company, companyDirectors, USER_ID, IP, EMAIL);
 
         assertEquals(response, result);
     }
@@ -79,7 +84,7 @@ public class DissolutionServiceTest {
     }
 
     @Test
-    public void get_getsADissolution_returnsGetResponse() throws Exception {
+    public void get_getsADissolution_returnsGetResponse() {
         final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse();
 
         when(getter.get(COMPANY_NUMBER)).thenReturn(Optional.of(response));
@@ -93,21 +98,21 @@ public class DissolutionServiceTest {
     }
 
     @Test
-    public void addDirectorApproval_addsDirectorApproval_returnsPatchResponse() throws Exception {
+    public void addDirectorApproval_addsDirectorApproval_returnsPatchResponse() {
         final DissolutionPatchResponse response = DissolutionFixtures.generateDissolutionPatchResponse();
 
-        when(patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP, EMAIL)).thenReturn(response);
+        when(patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP, OFFICER_ID)).thenReturn(response);
 
-        final DissolutionPatchResponse result = service.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP, EMAIL);
+        final DissolutionPatchResponse result = service.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP, OFFICER_ID);
 
-        verify(patcher).addDirectorApproval(COMPANY_NUMBER, USER_ID, IP, EMAIL);
+        verify(patcher).addDirectorApproval(COMPANY_NUMBER, USER_ID, IP, OFFICER_ID);
 
         assertNotNull(result);
         assertEquals(response, result);
     }
 
     @Test
-    public void hasDirectorAlreadyApproved_callsDissolutionGetter_isDirectorPendingApproval() throws Exception {
+    public void hasDirectorAlreadyApproved_callsDissolutionGetter_isDirectorPendingApproval() {
         final String companyNumber = "12345678";
         final String email = "user@mail.com";
 

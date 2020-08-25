@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.client.CompanyProfileClient;
+import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
@@ -20,11 +21,13 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
-import uk.gov.companieshouse.service.DissolutionValidator;
+import uk.gov.companieshouse.service.CompanyOfficerService;
+import uk.gov.companieshouse.service.dissolution.validator.DissolutionValidator;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.eq;
@@ -36,6 +39,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
 import static uk.gov.companieshouse.fixtures.CompanyProfileFixtures.generateCompanyProfile;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDirectorRequest;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionCreateRequest;
@@ -53,8 +57,8 @@ public class DissolutionControllerTest {
     private static final String AUTHORISED_USER_HEADER = "ERIC-Authorised-User";
 
     private static final String COMPANY_NUMBER = "12345678";
-    private static final String COMPANY_NAME = "ComComp";
     private static final String USER_ID = "1234";
+    private static final String OFFICER_ID = "abc123";
     private static final String EMAIL = "user@mail.com";
     private static final String IP_ADDRESS = "127.0.0.1";
 
@@ -62,10 +66,13 @@ public class DissolutionControllerTest {
     private DissolutionService service;
 
     @MockBean
+    private DissolutionValidator dissolutionValidator;
+
+    @MockBean
     private CompanyProfileClient companyProfileClient;
 
     @MockBean
-    private DissolutionValidator dissolutionValidator;
+    private CompanyOfficerService companyOfficerService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -114,19 +121,19 @@ public class DissolutionControllerTest {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
         body.setDirectors(Collections.emptyList());
 
-        assertBodyValidation(body, "{'directors':'At least 1 director must be provided'}");
+        assertPostBodyValidation(body, "{'directors':'At least 1 director must be provided'}");
     }
 
     @Test
-    public void submitDissolutionRequest_returnsUnprocessableEntity_ifANameIsNotProvided() throws Exception {
+    public void submitDissolutionRequest_returnsUnprocessableEntity_ifAnOfficerIdIsNotProvided() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
 
         final DirectorRequest director = generateDirectorRequest();
-        director.setName(null);
+        director.setOfficerId(null);
 
         body.setDirectors(Collections.singletonList(director));
 
-        assertBodyValidation(body, "{'directors[0].name':'must not be blank'}");
+        assertPostBodyValidation(body, "{'directors[0].officerId':'must not be blank'}");
     }
 
     @Test
@@ -138,7 +145,7 @@ public class DissolutionControllerTest {
 
         body.setDirectors(Collections.singletonList(director));
 
-        assertBodyValidation(body, "{'directors[0].email':'must not be blank'}");
+        assertPostBodyValidation(body, "{'directors[0].email':'must not be blank'}");
     }
 
     @Test
@@ -150,19 +157,7 @@ public class DissolutionControllerTest {
 
         body.setDirectors(Collections.singletonList(director));
 
-        assertBodyValidation(body, "{'directors[0].email':'must be a well-formed email address'}");
-    }
-
-    @Test
-    public void submitDissolutionRequest_returnsUnprocessableEntity_ifAnInvalidNameIsProvided() throws Exception {
-        final DissolutionCreateRequest body = generateDissolutionCreateRequest();
-
-        final DirectorRequest director = generateDirectorRequest();
-        director.setName("x".repeat(251));
-
-        body.setDirectors(Collections.singletonList(director));
-
-        assertBodyValidation(body, "{'directors[0].name':'size must be between 1 and 250'}");
+        assertPostBodyValidation(body, "{'directors[0].email':'must be a well-formed email address'}");
     }
 
     @Test
@@ -174,17 +169,46 @@ public class DissolutionControllerTest {
 
         body.setDirectors(Collections.singletonList(director));
 
-        assertBodyValidation(body, "{'directors[0].onBehalfName':'size must be between 1 and 250'}");
+        assertPostBodyValidation(body, "{'directors[0].onBehalfName':'size must be between 1 and 250'}");
+    }
+
+    @Test
+    public void submitDissolutionRequest_returnsNotFound_ifCompanyNotFound() throws Exception {
+        when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER)).thenReturn(null);
+
+        mockMvc
+                .perform(
+                        post(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(createHttpHeaders())
+                                .content(asJsonString(generateDissolutionCreateRequest())))
+                .andExpect(status().isNotFound());
     }
 
     @Test
     public void submitDissolutionRequest_returnsConflict_ifDissolutionAlreadyExistsForCompany() throws Exception {
+        when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER)).thenReturn(generateCompanyProfile());
+        when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(true);
+
+        mockMvc
+                .perform(
+                        post(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(createHttpHeaders())
+                                .content(asJsonString(generateDissolutionCreateRequest())))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    public void submitDissolutionRequest_returnsBadRequest_ifValidationFails() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
         final CompanyProfile company = generateCompanyProfile();
-        company.setCompanyName(COMPANY_NAME);
+        final Map<String, CompanyOfficer> companyDirectors = Map.of(OFFICER_ID, generateCompanyOfficer());
 
-        when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(true);
         when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER)).thenReturn(company);
+        when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(false);
+        when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(companyDirectors);
+        when(dissolutionValidator.checkBusinessRules(eq(company), eq(companyDirectors), isA(List.class))).thenReturn(Optional.of("Some dissolution error"));
 
         mockMvc
                 .perform(
@@ -192,7 +216,32 @@ public class DissolutionControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .headers(createHttpHeaders())
                                 .content(asJsonString(body)))
-                .andExpect(status().isConflict());
+                .andExpect(status().isBadRequest());
+
+        verify(dissolutionValidator).checkBusinessRules(eq(company), eq(companyDirectors), isA(List.class));
+    }
+
+    @Test
+    public void submitDissolutionRequest_returnsInternalServerError_ifExceptionOccursWhenCreatingDissolution() throws Exception {
+        final DissolutionCreateRequest body = generateDissolutionCreateRequest();
+        final CompanyProfile company = generateCompanyProfile();
+        final Map<String, CompanyOfficer> companyDirectors = Map.of(OFFICER_ID, generateCompanyOfficer());
+
+        when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER)).thenReturn(company);
+        when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(false);
+        when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(companyDirectors);
+        when(dissolutionValidator.checkBusinessRules(eq(company), eq(companyDirectors), isA(List.class))).thenReturn(Optional.empty());
+        when(service.create(isA(DissolutionCreateRequest.class), eq(company), eq(companyDirectors), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenThrow(new RuntimeException());
+
+        mockMvc
+                .perform(
+                        post(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(createHttpHeaders())
+                                .content(asJsonString(body)))
+                .andExpect(status().isInternalServerError());
+
+        verify(service).create(isA(DissolutionCreateRequest.class), eq(company), eq(companyDirectors), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL));
     }
 
     @Test
@@ -200,11 +249,13 @@ public class DissolutionControllerTest {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
         final DissolutionCreateResponse response = generateDissolutionCreateResponse();
         final CompanyProfile company = generateCompanyProfile();
-        company.setCompanyName(COMPANY_NAME);
+        final Map<String, CompanyOfficer> companyDirectors = Map.of(OFFICER_ID, generateCompanyOfficer());
 
-        when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(false);
-        when(service.create(isA(DissolutionCreateRequest.class), eq(company), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenReturn(response);
         when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER)).thenReturn(company);
+        when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(false);
+        when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(companyDirectors);
+        when(dissolutionValidator.checkBusinessRules(eq(company), eq(companyDirectors), isA(List.class))).thenReturn(Optional.empty());
+        when(service.create(isA(DissolutionCreateRequest.class), eq(company), eq(companyDirectors), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenReturn(response);
 
         mockMvc
                 .perform(
@@ -215,74 +266,7 @@ public class DissolutionControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(content().json(asJsonString(response)));
 
-        verify(service).create(isA(DissolutionCreateRequest.class), eq(company), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL));
-    }
-
-    @Test
-    public void submitDissolutionRequest_returnsInternalServerError_ifExceptionOccursWhenCreatingDissolution() throws Exception {
-        final DissolutionCreateRequest body = generateDissolutionCreateRequest();
-        final CompanyProfile company = generateCompanyProfile();
-        company.setCompanyName(COMPANY_NAME);
-
-        when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(false);
-        when(service.create(isA(DissolutionCreateRequest.class), eq(company), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenThrow(new RuntimeException());
-        when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER)).thenReturn(company);
-        when(dissolutionValidator.checkBusinessRules(company, body.getDirectors())).thenReturn(Optional.empty());
-
-        mockMvc
-                .perform(
-                        post(DISSOLUTION_URI, COMPANY_NUMBER)
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .headers(createHttpHeaders())
-                                .content(asJsonString(body)))
-                .andExpect(status().isInternalServerError());
-
-        verify(service).create(isA(DissolutionCreateRequest.class), eq(company), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL));
-    }
-
-    @Test
-    public void submitDissolutionRequest_returnsNotFound_ifCompanyNotFound() throws Exception {
-        final DissolutionCreateRequest body = generateDissolutionCreateRequest();
-        final DissolutionCreateResponse response = generateDissolutionCreateResponse();
-        final CompanyProfile company = generateCompanyProfile();
-        company.setCompanyName(COMPANY_NAME);
-
-        when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(false);
-        when(service.isDirectorPendingApproval(eq(COMPANY_NUMBER), eq(EMAIL))).thenReturn(true);
-        when(service.create(eq(body), eq(company), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenReturn(response);
-        when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER)).thenReturn(null);
-
-        mockMvc
-                .perform(
-                        post(DISSOLUTION_URI, COMPANY_NUMBER)
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .headers(createHttpHeaders())
-                                .content(asJsonString(body)))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    public void submitDissolutionRequest_returnsBadRequest_ifValidationFails() throws Exception {
-        final DissolutionCreateRequest body = generateDissolutionCreateRequest();
-        final DissolutionCreateResponse response = generateDissolutionCreateResponse();
-        final CompanyProfile company = generateCompanyProfile();
-        company.setCompanyName(COMPANY_NAME);
-
-        when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(false);
-        when(service.isDirectorPendingApproval(eq(COMPANY_NUMBER), eq(EMAIL))).thenReturn(true);
-        when(service.create(eq(body), eq(company), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenReturn(response);
-        when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER)).thenReturn(company);
-        when(dissolutionValidator.checkBusinessRules(eq(company), isA(List.class))).thenReturn(Optional.of("Bad Request"));
-
-        mockMvc
-                .perform(
-                        post(DISSOLUTION_URI, COMPANY_NUMBER)
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .headers(createHttpHeaders())
-                                .content(asJsonString(body)))
-                .andExpect(status().isBadRequest());
-
-        verify(dissolutionValidator).checkBusinessRules(eq(company), isA(List.class));
+        verify(service).create(isA(DissolutionCreateRequest.class), eq(company), eq(companyDirectors), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL));
     }
 
     @Test
@@ -383,6 +367,22 @@ public class DissolutionControllerTest {
     }
 
     @Test
+    public void patchDissolutionRequest_returnsUnprocessableEntity_ifNoOfficerIdProvided() throws Exception {
+        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+        body.setOfficerId(null);
+
+        assertPatchBodyValidation(body, "{'officerId':'must not be blank'}");
+    }
+
+    @Test
+    public void patchDissolutionRequest_returnsUnprocessableEntity_ifHasApprovedIsNotTrue() throws Exception {
+        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+        body.setHasApproved(false);
+
+        assertPatchBodyValidation(body, "{'hasApproved':'At least 1 director must be provided'}");
+    }
+
+    @Test
     public void patchDissolutionRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
 
@@ -399,32 +399,12 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void patchDissolutionRequest_returnsOK_andPatchResponse_ifDissolutionIsPatchedSuccessfully() throws Exception {
-        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
-        final DissolutionPatchResponse response = generateDissolutionPatchResponse();
-
-        when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(true);
-        when(service.isDirectorPendingApproval(eq(COMPANY_NUMBER), eq(EMAIL))).thenReturn(true);
-        when(service.addDirectorApproval(eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenReturn(response);
-
-        mockMvc
-                .perform(
-                        patch(DISSOLUTION_URI, COMPANY_NUMBER)
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .headers(createHttpHeaders())
-                                .content(asJsonString(body)))
-                .andExpect(status().isOk())
-                .andExpect(content().json(asJsonString(response)));
-
-        verify(service).addDirectorApproval(eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL));
-    }
-
-    @Test
     public void patchDissolutionRequest_returnsBadRequest_ifDirectorNotPendingApproval() throws Exception {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+        body.setOfficerId(OFFICER_ID);
 
         when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(true);
-        when(service.isDirectorPendingApproval(eq(COMPANY_NUMBER), eq(EMAIL))).thenReturn(false);
+        when(service.isDirectorPendingApproval(eq(COMPANY_NUMBER), eq(OFFICER_ID))).thenReturn(false);
 
         mockMvc
                 .perform(
@@ -435,10 +415,44 @@ public class DissolutionControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    private void assertBodyValidation(DissolutionCreateRequest body, String expectedErrorJson) throws Exception {
+    @Test
+    public void patchDissolutionRequest_returnsOK_andPatchResponse_ifDissolutionIsPatchedSuccessfully() throws Exception {
+        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+        body.setOfficerId(OFFICER_ID);
+        final DissolutionPatchResponse response = generateDissolutionPatchResponse();
+
+        when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(true);
+        when(service.isDirectorPendingApproval(eq(COMPANY_NUMBER), eq(OFFICER_ID))).thenReturn(true);
+        when(service.addDirectorApproval(eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(OFFICER_ID))).thenReturn(response);
+
+        mockMvc
+                .perform(
+                        patch(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(createHttpHeaders())
+                                .content(asJsonString(body)))
+                .andExpect(status().isOk())
+                .andExpect(content().json(asJsonString(response)));
+
+        verify(service).addDirectorApproval(eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(OFFICER_ID));
+    }
+
+    private void assertPostBodyValidation(DissolutionCreateRequest body, String expectedErrorJson) throws Exception {
         mockMvc
                 .perform(
                         post(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(createHttpHeaders())
+                                .content(asJsonString(body))
+                )
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(content().json(expectedErrorJson));
+    }
+
+    private void assertPatchBodyValidation(DissolutionPatchRequest body, String expectedErrorJson) throws Exception {
+        mockMvc
+                .perform(
+                        patch(DISSOLUTION_URI, COMPANY_NUMBER)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .headers(createHttpHeaders())
                                 .content(asJsonString(body))

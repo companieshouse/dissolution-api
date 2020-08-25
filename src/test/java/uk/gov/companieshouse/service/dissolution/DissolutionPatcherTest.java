@@ -64,9 +64,9 @@ public class DissolutionPatcherTest {
 
     private static final String COMPANY_NUMBER = "12345678";
     private static final String USER_ID = "1234";
-    private static final String EMAIL = "user@mail.com";
+    private static final String OFFICER_ID = "abc123";
     private static final String IP_ADDRESS = "127.0.0.1";
-    private static final String EMAIL_TWO = "two@mail.com";
+    private static final String OFFICER_ID_TWO = "def456";
 
     private Dissolution dissolution;
     private DissolutionPatchResponse response;
@@ -77,7 +77,7 @@ public class DissolutionPatcherTest {
     @BeforeEach
     void init() {
         dissolution = DissolutionFixtures.generateDissolution();
-        dissolution.getData().getDirectors().get(0).setEmail(EMAIL);
+        dissolution.getData().getDirectors().get(0).setOfficerId(OFFICER_ID);
         response = DissolutionFixtures.generateDissolutionPatchResponse();
         approval = DissolutionFixtures.generateDirectorApproval();
         certificate = generateDissolutionCertificate();
@@ -90,7 +90,7 @@ public class DissolutionPatcherTest {
         when(responseMapper.mapToDissolutionPatchResponse(COMPANY_NUMBER)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
-        patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP_ADDRESS, EMAIL);
+        patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP_ADDRESS, OFFICER_ID);
 
         verify(repository).save(dissolutionCaptor.capture());
 
@@ -103,7 +103,7 @@ public class DissolutionPatcherTest {
         when(responseMapper.mapToDissolutionPatchResponse(COMPANY_NUMBER)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
-        final DissolutionPatchResponse result = patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP_ADDRESS, EMAIL);
+        final DissolutionPatchResponse result = patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP_ADDRESS, OFFICER_ID);
 
         verify(responseMapper).mapToDissolutionPatchResponse(COMPANY_NUMBER);
         verify(repository).save(dissolutionCaptor.capture());
@@ -122,7 +122,7 @@ public class DissolutionPatcherTest {
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
         when(certificateGenerator.generateDissolutionCertificate(dissolution)).thenReturn(certificate);
 
-        patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP_ADDRESS, EMAIL);
+        patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP_ADDRESS, OFFICER_ID);
 
         verify(certificateGenerator).generateDissolutionCertificate(dissolution);
         verify(repository).save(dissolutionCaptor.capture());
@@ -133,15 +133,15 @@ public class DissolutionPatcherTest {
     @Test
     public void patch_doesNotUpdateStatus_ifNotAllDirectorHaveApproved() {
         final List<DissolutionDirector> directors = DissolutionFixtures.generateDissolutionDirectorList();
-        directors.get(0).setEmail(EMAIL);
-        directors.get(1).setEmail(EMAIL_TWO);
+        directors.get(0).setOfficerId(OFFICER_ID);
+        directors.get(1).setOfficerId(OFFICER_ID_TWO);
         dissolution.getData().setDirectors(directors);
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
         when(responseMapper.mapToDissolutionPatchResponse(COMPANY_NUMBER)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
-        patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP_ADDRESS, EMAIL);
+        patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP_ADDRESS, OFFICER_ID);
 
         verify(repository).save(dissolutionCaptor.capture());
 
@@ -154,11 +154,11 @@ public class DissolutionPatcherTest {
     @Test
     public void patch_doesNotGenerateCertificate_ifNotAllDirectorHaveApproved() {
         final DissolutionDirector directorOne = DissolutionFixtures.generateDissolutionDirector();
-        directorOne.setEmail(EMAIL);
+        directorOne.setOfficerId(OFFICER_ID);
         directorOne.setDirectorApproval(null);
 
         final DissolutionDirector directorTwo = DissolutionFixtures.generateDissolutionDirector();
-        directorTwo.setEmail(EMAIL_TWO);
+        directorTwo.setOfficerId(OFFICER_ID_TWO);
         directorTwo.setDirectorApproval(null);
 
         dissolution.getData().setDirectors(Arrays.asList(directorOne, directorTwo));
@@ -167,7 +167,7 @@ public class DissolutionPatcherTest {
         when(responseMapper.mapToDissolutionPatchResponse(COMPANY_NUMBER)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
-        patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP_ADDRESS, EMAIL);
+        patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP_ADDRESS, OFFICER_ID);
 
         verify(certificateGenerator, never()).generateDissolutionCertificate(dissolution);
         verify(repository).save(dissolutionCaptor.capture());
