@@ -87,11 +87,11 @@ public class DissolutionServiceTest {
     public void get_getsADissolution_returnsGetResponse() {
         final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse();
 
-        when(getter.get(COMPANY_NUMBER)).thenReturn(Optional.of(response));
+        when(getter.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(response));
 
-        final Optional<DissolutionGetResponse> result = service.get(COMPANY_NUMBER);
+        final Optional<DissolutionGetResponse> result = service.getByCompanyNumber(COMPANY_NUMBER);
 
-        verify(getter).get(COMPANY_NUMBER);
+        verify(getter).getByCompanyNumber(COMPANY_NUMBER);
 
         assertTrue(result.isPresent());
         assertEquals(response, result.get());

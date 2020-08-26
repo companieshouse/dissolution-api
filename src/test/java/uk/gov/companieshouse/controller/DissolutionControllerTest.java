@@ -304,7 +304,7 @@ public class DissolutionControllerTest {
 
     @Test
     public void getDissolutionRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
-        when(service.get(COMPANY_NUMBER)).thenReturn(Optional.empty());
+        when(service.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
 
         mockMvc
                 .perform(
@@ -318,7 +318,7 @@ public class DissolutionControllerTest {
     public void getDissolutionRequest_returnsDissolutionInfo_ifDissolutionExists() throws Exception {
         final DissolutionGetResponse response = generateDissolutionGetResponse();
 
-        when(service.get(COMPANY_NUMBER)).thenReturn(Optional.of(response));
+        when(service.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(response));
 
         mockMvc
                 .perform(

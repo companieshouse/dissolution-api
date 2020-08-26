@@ -109,7 +109,7 @@ public class DissolutionController {
         LOGGER.info("[GET] Getting dissolution info for company number {}", companyNumber);
 
         return dissolutionService
-                .get(companyNumber)
+                .getByCompanyNumber(companyNumber)
                 .orElseThrow(NotFoundException::new);
     }
 

@@ -2,6 +2,7 @@ package uk.gov.companieshouse.service.dissolution;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
@@ -46,8 +47,12 @@ public class DissolutionService {
         return repository.findByCompanyNumber(companyNumber).isPresent();
     }
 
-    public Optional<DissolutionGetResponse> get(String companyNumber) {
-        return getter.get(companyNumber);
+    public Optional<DissolutionGetResponse> getByCompanyNumber(String companyNumber) {
+        return getter.getByCompanyNumber(companyNumber);
+    }
+
+    public Optional<Dissolution> getByApplicationReference(String applicationReference) {
+        return repository.findByDataApplicationReference(applicationReference);
     }
 
     public boolean isDirectorPendingApproval(String companyNumber, String officerId) {
