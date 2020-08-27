@@ -39,15 +39,15 @@ public class DissolutionRepositoryTest {
     public void findPendingDissolutions_findsDissolutionsThatArePendingAndWithCorrectSubmissionDateTime() {
         final int SUBMISSION_LIMIT = 2;
 
-        Dissolution dissolution1 = this.generateDissolution("1", LocalDateTime.now().minusMinutes(20),
+        Dissolution dissolution1 = this.generateDissolution("1", LocalDateTime.now().minusMinutes(50),
                 SubmissionStatus.FAILED, LocalDateTime.now().minusMinutes(240));
         Dissolution dissolution2 = this.generateDissolution("2", null,
                 SubmissionStatus.PENDING, LocalDateTime.now().minusMinutes(180));
-        Dissolution dissolution3 = this.generateDissolution("3", LocalDateTime.now().minusMinutes(25),
+        Dissolution dissolution3 = this.generateDissolution("3", LocalDateTime.now().minusMinutes(45),
                 SubmissionStatus.PENDING, LocalDateTime.now().minusMinutes(200));
-        Dissolution dissolution4 = this.generateDissolution("4", LocalDateTime.now().minusMinutes(50),
+        Dissolution dissolution4 = this.generateDissolution("4", LocalDateTime.now().minusMinutes(20),
                 SubmissionStatus.PENDING, LocalDateTime.now().minusMinutes(180));
-        Dissolution dissolution5 = this.generateDissolution("5", LocalDateTime.now().minusMinutes(20),
+        Dissolution dissolution5 = this.generateDissolution("5", LocalDateTime.now().minusMinutes(55),
                 SubmissionStatus.PENDING, LocalDateTime.now().minusMinutes(160));
 
         repository.insert(dissolution1); // Not eligible - wrong status
