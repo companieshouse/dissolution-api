@@ -24,5 +24,4 @@ public class CompanyOfficerLinks {
     public void setOfficer(OfficerLinks officer) {
         this.officer = officer;
     }
-
 }
