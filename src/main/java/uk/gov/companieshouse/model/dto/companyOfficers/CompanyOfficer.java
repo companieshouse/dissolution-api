@@ -14,6 +14,8 @@ public class CompanyOfficer {
     @JsonProperty("resigned_on")
     private String resignedOn;
 
+    private CompanyOfficerLinks links;
+
     public String getName() {
         return name;
     }
@@ -38,4 +40,11 @@ public class CompanyOfficer {
         this.resignedOn = resignedOn;
     }
 
+    public CompanyOfficerLinks getLinks() {
+        return links;
+    }
+
+    public void setLinks(CompanyOfficerLinks links) {
+        this.links = links;
+    }
 }

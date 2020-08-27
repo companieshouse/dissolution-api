@@ -32,7 +32,7 @@ public class DissolutionFixtures {
     public static DissolutionPatchRequest generateDissolutionPatchRequest() {
         final DissolutionPatchRequest request = new DissolutionPatchRequest();
 
-        request.setEmail("user@mail.com");
+        request.setOfficerId("abc123");
         request.setHasApproved(true);
 
         return request;
@@ -49,7 +49,7 @@ public class DissolutionFixtures {
     public static DirectorRequest generateDirectorRequest() {
         final DirectorRequest director = new DirectorRequest();
 
-        director.setName("John Doe");
+        director.setOfficerId("abc123");
         director.setEmail("user@mail.com");
 
         return director;
@@ -103,6 +103,7 @@ public class DissolutionFixtures {
     public static DissolutionDirector generateDissolutionDirector() {
         final DissolutionDirector director = new DissolutionDirector();
 
+        director.setOfficerId("abc123");
         director.setName("DOE, John James");
         director.setEmail("john@doe.com");
 
@@ -112,11 +113,13 @@ public class DissolutionFixtures {
     public static List<DissolutionDirector> generateDissolutionDirectorList() {
         final DissolutionDirector director = new DissolutionDirector();
 
+        director.setOfficerId("abc123");
         director.setName("DOE, John James");
         director.setEmail("john@doe.com");
 
         final DissolutionDirector directorTwo = new DissolutionDirector();
 
+        directorTwo.setOfficerId("def456");
         directorTwo.setName("MERCURE, Fred");
         directorTwo.setEmail("fred@mercure.com");
 

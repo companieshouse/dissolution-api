@@ -8,6 +8,9 @@ import java.sql.Timestamp;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class DissolutionGetDirector {
 
+    @JsonProperty("officer_id")
+    private String officerId;
+
     private String name;
 
     private String email;
@@ -17,6 +20,14 @@ public class DissolutionGetDirector {
 
     @JsonProperty("on_behalf_name")
     private String onBehalfName;
+
+    public String getOfficerId() {
+        return officerId;
+    }
+
+    public void setOfficerId(String officerId) {
+        this.officerId = officerId;
+    }
 
     public String getName() {
         return name;

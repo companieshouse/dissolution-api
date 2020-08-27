@@ -8,6 +8,7 @@ import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionApplication;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionData;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
+import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
@@ -17,28 +18,29 @@ import uk.gov.companieshouse.model.enums.CompanyType;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 public class DissolutionRequestMapper {
 
-    public Dissolution mapToDissolution(DissolutionCreateRequest body, CompanyProfile company, String userId, String email, String ip, String reference, String barcode) {
+    public Dissolution mapToDissolution(DissolutionCreateRequest body, CompanyProfile company, Map<String, CompanyOfficer> directors, String userId, String email, String ip, String reference, String barcode) {
         final Dissolution dissolution = new Dissolution();
 
         dissolution.setModifiedDateTime(LocalDateTime.now());
-        dissolution.setData(mapToDissolutionData(body, company.getType(), reference, barcode));
+        dissolution.setData(mapToDissolutionData(body, company.getType(), directors, reference, barcode));
         dissolution.setCompany(mapToCompany(company.getCompanyNumber(), company.getCompanyName()));
         dissolution.setCreatedBy(mapToCreatedBy(userId, email, ip));
 
         return dissolution;
     }
 
-    private DissolutionData mapToDissolutionData(DissolutionCreateRequest body, String companyType, String reference, String barcode) {
+    private DissolutionData mapToDissolutionData(DissolutionCreateRequest body, String companyType, Map<String, CompanyOfficer> directors, String reference, String barcode) {
         final DissolutionData data = new DissolutionData();
 
         data.setETag(GenerateEtagUtil.generateEtag());
         data.setApplication(mapToDissolutionApplication(companyType, reference, barcode));
-        data.setDirectors(mapToDissolutionDirectors(body.getDirectors()));
+        data.setDirectors(mapToDissolutionDirectors(body.getDirectors(), directors));
 
         return data;
     }
@@ -54,18 +56,23 @@ public class DissolutionRequestMapper {
         return application;
     }
 
-    private List<DissolutionDirector> mapToDissolutionDirectors(List<DirectorRequest> directors) {
-        return directors.stream().map(this::mapToDissolutionDirector).collect(Collectors.toList());
+    private List<DissolutionDirector> mapToDissolutionDirectors(List<DirectorRequest> selectedDirectors, Map<String, CompanyOfficer> companyDirectors) {
+        return selectedDirectors.stream().map(selectedDirector -> mapToDissolutionDirector(selectedDirector, companyDirectors)).collect(Collectors.toList());
     }
 
-    private DissolutionDirector mapToDissolutionDirector(DirectorRequest body) {
+    private DissolutionDirector mapToDissolutionDirector(DirectorRequest selectedDirector, Map<String, CompanyOfficer> companyDirectors) {
         final DissolutionDirector director = new DissolutionDirector();
 
-        director.setName(body.getName());
-        director.setEmail(body.getEmail());
-        director.setOnBehalfName(body.getOnBehalfName());
+        director.setOfficerId(selectedDirector.getOfficerId());
+        director.setEmail(selectedDirector.getEmail());
+        director.setOnBehalfName(selectedDirector.getOnBehalfName());
+        director.setName(getSelectedDirectorName(selectedDirector, companyDirectors));
 
         return director;
+    }
+
+    private String getSelectedDirectorName(DirectorRequest selectedDirector, Map<String, CompanyOfficer> companyDirectors) {
+        return companyDirectors.get(selectedDirector.getOfficerId()).getName();
     }
 
     private Company mapToCompany(String companyNumber, String companyName) {

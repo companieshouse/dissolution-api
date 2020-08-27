@@ -7,14 +7,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
-import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.repository.DissolutionRepository;
-import uk.gov.companieshouse.service.dissolution.DissolutionGetter;
 
-import java.util.List;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.Assert.assertFalse;
@@ -22,6 +20,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDirectorApproval;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionDirector;
 
 @ExtendWith(MockitoExtension.class)
 public class DissolutionGetterTest {
@@ -36,7 +36,8 @@ public class DissolutionGetterTest {
     private DissolutionResponseMapper responseMapper;
 
     public static final String COMPANY_NUMBER = "12345678";
-    public static final String EMAIL = "user@mail.com";
+    public static final String OFFICER_ID_ONE = "abc123";
+    public static final String OFFICER_ID_TWO = "def456";
 
     @Test
     public void get_findsDissolution_mapsToDissolutionResponse_returnsGetResponse() {
@@ -67,43 +68,52 @@ public class DissolutionGetterTest {
     }
 
     @Test
-    public void mapToDirectorPendingApproval_mapDirectorToBoolean_returnFalse_whenEmailNotFound() {
+    public void isDirectorPendingApproval_returnsFalse_whenOfficerIdNotFound() {
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
+
+        final DissolutionDirector director = generateDissolutionDirector();
+        director.setOfficerId(OFFICER_ID_ONE);
+
+        dissolution.getData().setDirectors(Collections.singletonList(director));
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
 
-        final boolean approved = getter.isDirectorPendingApproval(COMPANY_NUMBER, EMAIL);
+        final boolean result = getter.isDirectorPendingApproval(COMPANY_NUMBER, OFFICER_ID_TWO);
 
-        assertFalse(approved);
+        assertFalse(result);
     }
 
     @Test
-    public void mapToDirectorPendingApproval_mapDirectorToBoolean_returnTrue_whenNotApproved() {
+    public void isDirectorPendingApproval_returnsFalse_whenAlreadyApproved() {
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
-        final List<DissolutionDirector> dissolutionDirectorList = dissolution.getData().getDirectors();
-        final DissolutionDirector director = dissolutionDirectorList.get(0);
-        director.setEmail(EMAIL);
+
+        final DissolutionDirector director = generateDissolutionDirector();
+        director.setOfficerId(OFFICER_ID_ONE);
+        director.setDirectorApproval(generateDirectorApproval());
+
+        dissolution.getData().setDirectors(Collections.singletonList(director));
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
 
-        final boolean approved = getter.isDirectorPendingApproval(COMPANY_NUMBER, EMAIL);
+        final boolean result = getter.isDirectorPendingApproval(COMPANY_NUMBER, OFFICER_ID_ONE);
 
-        assertTrue(approved);
+        assertFalse(result);
     }
 
     @Test
-    public void mapToDirectorPendingApproval_mapDirectorToBoolean_returnFalse_whenApproved() {
+    public void isDirectorPendingApproval_returnsTrue_whenNotApproved() {
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
-        final List<DissolutionDirector> dissolutionDirectorList = dissolution.getData().getDirectors();
-        final DirectorApproval approval = DissolutionFixtures.generateDirectorApproval();
-        final DissolutionDirector director = dissolutionDirectorList.get(0);
-        director.setDirectorApproval(approval);
-        director.setEmail(EMAIL);
+
+        final DissolutionDirector director = generateDissolutionDirector();
+        director.setOfficerId(OFFICER_ID_ONE);
+        director.setDirectorApproval(null);
+
+        dissolution.getData().setDirectors(Collections.singletonList(director));
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
 
-        final boolean approved = getter.isDirectorPendingApproval(COMPANY_NUMBER, EMAIL);
+        final boolean result = getter.isDirectorPendingApproval(COMPANY_NUMBER, OFFICER_ID_ONE);
 
-        assertFalse(approved);
+        assertTrue(result);
     }
 }

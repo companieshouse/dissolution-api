@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
+import uk.gov.companieshouse.service.dissolution.validator.CompanyClosableValidator;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
