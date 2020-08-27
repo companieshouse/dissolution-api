@@ -107,6 +107,7 @@ public class DissolutionPatcherTest {
 
         verify(responseMapper).mapToDissolutionPatchResponse(COMPANY_NUMBER);
         verify(repository).save(dissolutionCaptor.capture());
+        verify(dissolutionEmailService).sendPendingPaymentEmail(dissolutionCaptor.capture());
 
         assertEquals(response, result);
         assertEquals(

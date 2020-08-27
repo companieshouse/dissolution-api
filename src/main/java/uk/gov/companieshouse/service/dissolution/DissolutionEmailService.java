@@ -14,6 +14,7 @@ import uk.gov.companieshouse.model.dto.email.EmailDocument;
 import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
 import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
 import uk.gov.companieshouse.model.enums.VerdictResult;
+import uk.gov.companieshouse.model.dto.email.PendingPaymentEmailData;
 import uk.gov.companieshouse.service.email.EmailService;
 
 import java.util.List;
@@ -25,6 +26,7 @@ import java.time.LocalDateTime;
 
 import static uk.gov.companieshouse.model.Constants.SIGNATORY_TO_SIGN_MESSAGE_TYPE;
 import static uk.gov.companieshouse.model.Constants.SUCCESSFUL_PAYMENT_MESSAGE_TYPE;
+import static uk.gov.companieshouse.model.Constants.PENDING_PAYMENT_MESSAGE_TYPE;
 
 @Service
 public class DissolutionEmailService {
@@ -59,6 +61,17 @@ public class DissolutionEmailService {
         EmailDocument<?> emailDocument = dissolutionVerdict.getResult() == VerdictResult.ACCEPTED ?
                 this.getApplicationAcceptedEmailDocument(dissolution) :
                 this.getApplicationRejectedEmailDocument(dissolution, dissolutionVerdict);
+
+        sendEmail(emailDocument);
+    }
+
+    public void sendPendingPaymentEmail(Dissolution dissolution) {
+        final PendingPaymentEmailData pendingPaymentEmailData =
+                this.dissolutionEmailMapper.mapToPendingPaymentEmailData(dissolution);
+
+        final EmailDocument<PendingPaymentEmailData> emailDocument = this.emailMapper.mapToEmailDocument(
+                pendingPaymentEmailData, pendingPaymentEmailData.getTo(), PENDING_PAYMENT_MESSAGE_TYPE
+        );
 
         sendEmail(emailDocument);
     }

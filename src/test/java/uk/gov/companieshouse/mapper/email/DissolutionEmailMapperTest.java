@@ -12,6 +12,7 @@ import uk.gov.companieshouse.model.db.dissolution.Company;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.email.ApplicationAcceptedEmailData;
 import uk.gov.companieshouse.model.dto.email.ApplicationRejectedEmailData;
+import uk.gov.companieshouse.model.dto.email.PendingPaymentEmailData;
 import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
 import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
 
@@ -21,6 +22,7 @@ import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateCompany
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolution;
 import static uk.gov.companieshouse.fixtures.EmailFixtures.CDN_HOST;
 import static uk.gov.companieshouse.fixtures.EmailFixtures.CHS_URL;
+import static uk.gov.companieshouse.model.Constants.PENDING_PAYMENT_EMAIL_SUBJECT;
 import static uk.gov.companieshouse.model.Constants.SIGNATORY_TO_SIGN_EMAIL_SUBJECT;
 
 @ExtendWith(MockitoExtension.class)
@@ -87,6 +89,38 @@ public class DissolutionEmailMapperTest {
         assertEquals(applicationRejectedEmailData.getCompanyNumber(), result.getCompanyNumber());
         assertEquals(applicationRejectedEmailData.getCompanyName(), result.getCompanyName());
         assertEquals(applicationRejectedEmailData.getRejectReasons(), result.getRejectReasons());
+    }
+
+    @Test
+    public void mapToPendingPaymentEmailData_mapsDissolutionInfo() {
+        final Company company = generateCompany();
+        company.setName("Some Company Name");
+        company.setNumber("12345");
+
+        final Dissolution dissolution = generateDissolution();
+        dissolution.setCompany(company);
+        dissolution.getData().getApplication().setReference("abc123");
+        dissolution.getCreatedBy().setEmail("test@test.com");
+
+        when(environmentConfig.getChsUrl()).thenReturn(CHS_URL);
+
+        final PendingPaymentEmailData result = dissolutionEmailMapper.mapToPendingPaymentEmailData(dissolution);
+
+        assertEquals("test@test.com", result.getTo());
+        assertEquals(PENDING_PAYMENT_EMAIL_SUBJECT, result.getSubject());
+        assertEquals(dissolution.getData().getApplication().getReference(), result.getDissolutionReferenceNumber());
+        assertEquals("12345", result.getCompanyNumber());
+        assertEquals("Some Company Name", result.getCompanyName());
+    }
+
+    @Test
+    public void mapToPendingPaymentEmailData_mapsEnvironmentInfo() {
+        when(environmentConfig.getChsUrl()).thenReturn(CHS_URL);
+
+        final PendingPaymentEmailData result = dissolutionEmailMapper.mapToPendingPaymentEmailData(generateDissolution());
+
+        assertEquals(CHS_URL, result.getChsUrl());
+        assertEquals(CDN_HOST, result.getCdnHost());
     }
 
     @Test
