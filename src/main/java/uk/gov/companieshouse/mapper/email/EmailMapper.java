@@ -13,9 +13,9 @@ import static uk.gov.companieshouse.model.Constants.EMAIL_APP_ID;
 import static uk.gov.companieshouse.model.Constants.EMAIL_TOPIC;
 
 @Service
-public class EmailMapper<T> {
+public class EmailMapper {
 
-    public EmailDocument<T> mapToEmailDocument(T emailData, String emailAddress, String messageType) {
+    public <T> EmailDocument<T> mapToEmailDocument(T emailData, String emailAddress, String messageType) {
         EmailDocument<T> emailDocument = new EmailDocument<>();
 
         emailDocument.setAppId(EMAIL_APP_ID);
