@@ -16,7 +16,7 @@ public class EmailMapperTest {
 
     private static EmailDocument<?> emailDocument;
 
-    private final EmailMapper<Object> emailMapper = new EmailMapper<>();
+    private final EmailMapper emailMapper = new EmailMapper();
 
     @BeforeAll
     public static void setUp() {

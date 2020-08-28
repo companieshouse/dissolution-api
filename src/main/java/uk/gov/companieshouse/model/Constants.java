@@ -24,6 +24,8 @@ public final class Constants {
    public static final String EMAIL_TOPIC = "email-send";
    public static final String SUCCESSFUL_PAYMENT_EMAIL_SUBJECT = "Your application has been submitted";
    public static final String SUCCESSFUL_PAYMENT_MESSAGE_TYPE = "dissolution-payment-confirmation";
+   public static final String SIGNATORY_TO_SIGN_EMAIL_SUBJECT = "You need to sign the application to strike off and dissolve a company";
+   public static final String SIGNATORY_TO_SIGN_MESSAGE_TYPE = "dissolution-signatory-to-sign";
 
    /* Headers */
    public static final String HEADER_AUTHORIZATION = "Authorization";

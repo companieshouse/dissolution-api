@@ -15,14 +15,14 @@ import java.util.concurrent.ExecutionException;
 @Service
 public class EmailService {
     private final EmailSerialiser emailSerialiser;
-    private final EmailMapper<?> emailMapper;
+    private final EmailMapper emailMapper;
     private final CHKafkaProducer kafkaProducer;
 
     private final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
     @Autowired
     public EmailService(
-            EmailSerialiser emailSerialiser, EmailMapper<?> emailMapper, CHKafkaProducer kafkaProducer
+            EmailSerialiser emailSerialiser, EmailMapper emailMapper, CHKafkaProducer kafkaProducer
     ) {
         this.emailSerialiser = emailSerialiser;
         this.emailMapper = emailMapper;

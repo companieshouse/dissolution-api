@@ -2,10 +2,12 @@ package uk.gov.companieshouse.fixtures;
 
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.model.dto.email.EmailDocument;
+import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
 import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
 
 import static uk.gov.companieshouse.model.Constants.EMAIL_APP_ID;
 import static uk.gov.companieshouse.model.Constants.EMAIL_TOPIC;
+import static uk.gov.companieshouse.model.Constants.SIGNATORY_TO_SIGN_EMAIL_SUBJECT;
 import static uk.gov.companieshouse.model.Constants.SUCCESSFUL_PAYMENT_EMAIL_SUBJECT;
 
 public class EmailFixtures {
@@ -14,7 +16,7 @@ public class EmailFixtures {
     public static final String EMAIL_ADDRESS = "user@email.com";
     public static final String MESSAGE_TYPE = "some-message-type";
 
-    public static final String CDN_URL = "http://chs-url";
+    public static final String CHS_URL = "http://chs-url";
     public static final String CDN_HOST = "http://some-cdn-host";
 
     public static SuccessfulPaymentEmailData generateSuccessfulPaymentEmailData() {
@@ -25,10 +27,25 @@ public class EmailFixtures {
         successfulPaymentEmailData.setDissolutionReferenceNumber("ABC123");
         successfulPaymentEmailData.setCompanyNumber("12345678");
         successfulPaymentEmailData.setCompanyName("Companies House");
-        successfulPaymentEmailData.setChsUrl(CDN_URL);
+        successfulPaymentEmailData.setChsUrl(CHS_URL);
         successfulPaymentEmailData.setCdnHost(CDN_HOST);
 
         return successfulPaymentEmailData;
+    }
+
+    public static SignatoryToSignEmailData generateSignatoryToSignEmailData() {
+        final SignatoryToSignEmailData emailData = new SignatoryToSignEmailData();
+
+        emailData.setTo("user@mail.com");
+        emailData.setSubject(SIGNATORY_TO_SIGN_EMAIL_SUBJECT);
+        emailData.setDissolutionReferenceNumber("ABC123");
+        emailData.setCompanyNumber("12345678");
+        emailData.setCompanyName("Companies House");
+        emailData.setDissolutionDeadlineDate("17 September 2020");
+        emailData.setChsUrl(CHS_URL);
+        emailData.setCdnHost(CDN_HOST);
+
+        return emailData;
     }
 
     public static <T> EmailDocument<T> generateEmailDocument(T data) {

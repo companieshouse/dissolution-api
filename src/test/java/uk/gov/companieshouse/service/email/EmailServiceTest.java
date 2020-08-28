@@ -28,7 +28,7 @@ public class EmailServiceTest {
     private EmailSerialiser emailSerialiser;
 
     @Mock
-    private EmailMapper<?> emailMapper;
+    private EmailMapper emailMapper;
 
     @Mock
     private CHKafkaProducer kafkaProducer;
