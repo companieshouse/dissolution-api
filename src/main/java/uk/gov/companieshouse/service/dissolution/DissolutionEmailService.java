@@ -63,15 +63,6 @@ public class DissolutionEmailService {
         sendEmail(emailDocument);
     }
 
-    public void notifySignatoriesToSign(Dissolution dissolution) {
-        final String deadlineDate = deadlineDateCalculator.calculateSignatoryDeadlineDate(LocalDateTime.now());
-
-        getUniqueSignatories(dissolution)
-                .stream()
-                .map(signatoryEmail -> mapToSignatoryToSignEmail(dissolution, signatoryEmail, deadlineDate))
-                .forEach(emailService::sendMessage);
-    }
-
     private EmailDocument<ApplicationAcceptedEmailData> getApplicationAcceptedEmailDocument(Dissolution dissolution) {
         final ApplicationAcceptedEmailData applicationAcceptedEmailData =
                 this.dissolutionEmailMapper.mapToApplicationAcceptedEmailData(dissolution);
@@ -92,8 +83,13 @@ public class DissolutionEmailService {
         );
     }
 
-    private <T> void sendEmail(EmailDocument<T> emailDocument) {
-        emailService.sendMessage(emailDocument);
+    public void notifySignatoriesToSign(Dissolution dissolution) {
+        final String deadlineDate = deadlineDateCalculator.calculateSignatoryDeadlineDate(LocalDateTime.now());
+
+        getUniqueSignatories(dissolution)
+                .stream()
+                .map(signatoryEmail -> mapToSignatoryToSignEmail(dissolution, signatoryEmail, deadlineDate))
+                .forEach(this::sendEmail);
     }
 
     private List<String> getUniqueSignatories(Dissolution dissolution) {
@@ -109,5 +105,9 @@ public class DissolutionEmailService {
     private EmailDocument<SignatoryToSignEmailData> mapToSignatoryToSignEmail(Dissolution dissolution, String signatoryEmail, String deadlineDate) {
         final SignatoryToSignEmailData emailData = dissolutionEmailMapper.mapToSignatoryToSignEmailData(dissolution, signatoryEmail, deadlineDate);
         return this.emailMapper.mapToEmailDocument(emailData, signatoryEmail, SIGNATORY_TO_SIGN_MESSAGE_TYPE);
+    }
+
+    private <T> void sendEmail(EmailDocument<T> emailDocument) {
+        emailService.sendMessage(emailDocument);
     }
 }

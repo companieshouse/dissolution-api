@@ -188,7 +188,7 @@ public class DissolutionControllerTest {
     @Test
     public void submitDissolutionRequest_returnsConflict_ifDissolutionAlreadyExistsForCompany() throws Exception {
         when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER)).thenReturn(generateCompanyProfile());
-        when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(true);
+        when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(true);
 
         mockMvc
                 .perform(
@@ -206,7 +206,7 @@ public class DissolutionControllerTest {
         final Map<String, CompanyOfficer> companyDirectors = Map.of(OFFICER_ID, generateCompanyOfficer());
 
         when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER)).thenReturn(company);
-        when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(false);
+        when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(false);
         when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(companyDirectors);
         when(dissolutionValidator.checkBusinessRules(eq(company), eq(companyDirectors), isA(List.class))).thenReturn(Optional.of("Some dissolution error"));
 
@@ -228,7 +228,7 @@ public class DissolutionControllerTest {
         final Map<String, CompanyOfficer> companyDirectors = Map.of(OFFICER_ID, generateCompanyOfficer());
 
         when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER)).thenReturn(company);
-        when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(false);
+        when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(false);
         when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(companyDirectors);
         when(dissolutionValidator.checkBusinessRules(eq(company), eq(companyDirectors), isA(List.class))).thenReturn(Optional.empty());
         when(service.create(isA(DissolutionCreateRequest.class), eq(company), eq(companyDirectors), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenThrow(new RuntimeException());
@@ -252,7 +252,7 @@ public class DissolutionControllerTest {
         final Map<String, CompanyOfficer> companyDirectors = Map.of(OFFICER_ID, generateCompanyOfficer());
 
         when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER)).thenReturn(company);
-        when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(false);
+        when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(false);
         when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(companyDirectors);
         when(dissolutionValidator.checkBusinessRules(eq(company), eq(companyDirectors), isA(List.class))).thenReturn(Optional.empty());
         when(service.create(isA(DissolutionCreateRequest.class), eq(company), eq(companyDirectors), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenReturn(response);
@@ -386,7 +386,7 @@ public class DissolutionControllerTest {
     public void patchDissolutionRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
 
-        when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(false);
+        when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(false);
 
         mockMvc
                 .perform(
@@ -403,7 +403,7 @@ public class DissolutionControllerTest {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setOfficerId(OFFICER_ID);
 
-        when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(true);
+        when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(true);
         when(service.isDirectorPendingApproval(eq(COMPANY_NUMBER), eq(OFFICER_ID))).thenReturn(false);
 
         mockMvc
@@ -421,7 +421,7 @@ public class DissolutionControllerTest {
         body.setOfficerId(OFFICER_ID);
         final DissolutionPatchResponse response = generateDissolutionPatchResponse();
 
-        when(service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER)).thenReturn(true);
+        when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(true);
         when(service.isDirectorPendingApproval(eq(COMPANY_NUMBER), eq(OFFICER_ID))).thenReturn(true);
         when(service.addDirectorApproval(eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(OFFICER_ID))).thenReturn(response);
 

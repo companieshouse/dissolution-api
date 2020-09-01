@@ -16,11 +16,14 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionCertificate;
 import static uk.gov.companieshouse.model.Constants.DISSOLUTION_KIND;
 
 public class DissolutionResponseMapperTest {
+
     private static final String COMPANY_NUMBER = "12345678";
     private static final String COMPANY_NAME = "Example Name";
     private static final String ETAG = "ETag123";

@@ -31,6 +31,7 @@ public final class Constants {
 
    public static final String APPLICATION_REJECTED_EMAIL_SUBJECT = "Your application to strike off and dissolve a company has been rejected";
    public static final String APPLICATION_REJECTED_MESSAGE_TYPE = "dissolution_submission_rejected";
+
    public static final String SIGNATORY_TO_SIGN_EMAIL_SUBJECT = "You need to sign the application to strike off and dissolve a company";
    public static final String SIGNATORY_TO_SIGN_MESSAGE_TYPE = "dissolution_signatory_to_sign";
 

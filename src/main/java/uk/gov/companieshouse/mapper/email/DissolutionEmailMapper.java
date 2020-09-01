@@ -29,11 +29,11 @@ public class DissolutionEmailMapper {
 
         successfulPaymentEmailData.setTo(dissolution.getCreatedBy().getEmail());
         successfulPaymentEmailData.setSubject(SUCCESSFUL_PAYMENT_EMAIL_SUBJECT);
+        successfulPaymentEmailData.setCdnHost(environmentConfig.getCdnHost());
         successfulPaymentEmailData.setDissolutionReferenceNumber(dissolution.getData().getApplication().getReference());
         successfulPaymentEmailData.setCompanyNumber(dissolution.getCompany().getNumber());
         successfulPaymentEmailData.setCompanyName(dissolution.getCompany().getName());
         successfulPaymentEmailData.setChsUrl(environmentConfig.getChsUrl());
-        successfulPaymentEmailData.setCdnHost(environmentConfig.getCdnHost());
 
         return successfulPaymentEmailData;
     }
@@ -43,6 +43,7 @@ public class DissolutionEmailMapper {
 
         applicationAcceptedEmailData.setTo(dissolution.getCreatedBy().getEmail());
         applicationAcceptedEmailData.setSubject(APPLICATION_ACCEPTED_EMAIL_SUBJECT);
+        applicationAcceptedEmailData.setCdnHost(environmentConfig.getCdnHost());
         applicationAcceptedEmailData.setDissolutionReferenceNumber(dissolution.getData().getApplication().getReference());
         applicationAcceptedEmailData.setCompanyNumber(dissolution.getCompany().getNumber());
         applicationAcceptedEmailData.setCompanyName(dissolution.getCompany().getName());
@@ -57,6 +58,7 @@ public class DissolutionEmailMapper {
 
         applicationRejectedEmailData.setTo(dissolution.getCreatedBy().getEmail());
         applicationRejectedEmailData.setSubject(APPLICATION_REJECTED_EMAIL_SUBJECT);
+        applicationRejectedEmailData.setCdnHost(environmentConfig.getCdnHost());
         applicationRejectedEmailData.setDissolutionReferenceNumber(dissolution.getData().getApplication().getReference());
         applicationRejectedEmailData.setCompanyNumber(dissolution.getCompany().getNumber());
         applicationRejectedEmailData.setCompanyName(dissolution.getCompany().getName());
@@ -66,17 +68,17 @@ public class DissolutionEmailMapper {
     }
 
     public SignatoryToSignEmailData mapToSignatoryToSignEmailData(Dissolution dissolution, String signatoryEmail, String deadline) {
-        SignatoryToSignEmailData emailData = new SignatoryToSignEmailData();
+        SignatoryToSignEmailData signatoryToSignEmailData = new SignatoryToSignEmailData();
 
-        emailData.setTo(signatoryEmail);
-        emailData.setSubject(SIGNATORY_TO_SIGN_EMAIL_SUBJECT);
-        emailData.setDissolutionReferenceNumber(dissolution.getData().getApplication().getReference());
-        emailData.setCompanyNumber(dissolution.getCompany().getNumber());
-        emailData.setCompanyName(dissolution.getCompany().getName());
-        emailData.setDissolutionDeadlineDate(deadline);
-        emailData.setChsUrl(environmentConfig.getChsUrl());
-        emailData.setCdnHost(environmentConfig.getCdnHost());
+        signatoryToSignEmailData.setTo(signatoryEmail);
+        signatoryToSignEmailData.setSubject(SIGNATORY_TO_SIGN_EMAIL_SUBJECT);
+        signatoryToSignEmailData.setCdnHost(environmentConfig.getCdnHost());
+        signatoryToSignEmailData.setDissolutionReferenceNumber(dissolution.getData().getApplication().getReference());
+        signatoryToSignEmailData.setCompanyNumber(dissolution.getCompany().getNumber());
+        signatoryToSignEmailData.setCompanyName(dissolution.getCompany().getName());
+        signatoryToSignEmailData.setDissolutionDeadlineDate(deadline);
+        signatoryToSignEmailData.setChsUrl(environmentConfig.getChsUrl());
 
-        return emailData;
+        return signatoryToSignEmailData;
     }
 }

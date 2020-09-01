@@ -27,11 +27,11 @@ public class ChipsResponseService {
         this.dissolutionEmailService = dissolutionEmailService;
     }
 
-    public void saveAndNotifyDissolutionApplicationOutcome(ChipsResponseCreateRequest body, Dissolution dissolution) {
+    public void saveAndNotifyDissolutionApplicationOutcome(ChipsResponseCreateRequest body) {
         DissolutionVerdict dissolutionVerdict = this.dissolutionVerdictMapper.mapToDissolutionVerdict(body);
 
+        Dissolution dissolution = this.repository.findByDataApplicationReference(body.getSubmissionReference()).get();
         dissolution.setVerdict(dissolutionVerdict);
-
         this.repository.save(dissolution);
 
         dissolutionEmailService.sendApplicationOutcomeEmail(dissolution, dissolutionVerdict);
