@@ -49,7 +49,7 @@ public class PaymentController {
     @ResponseStatus(HttpStatus.OK)
     public PaymentGetResponse getPaymentUIData(@PathVariable("company-number") final String companyNumber) {
         DissolutionGetResponse dissolutionInfo = dissolutionService
-                .get(companyNumber)
+                .getByCompanyNumber(companyNumber)
                 .orElseThrow(NotFoundException::new);
 
         return paymentService.get(dissolutionInfo.getETag(), companyNumber);
@@ -68,7 +68,7 @@ public class PaymentController {
             @Valid @RequestBody final PaymentPatchRequest body
     ) {
         DissolutionGetResponse dissolutionInfo = dissolutionService
-                .get(companyNumber)
+                .getByCompanyNumber(companyNumber)
                 .orElseThrow(NotFoundException::new);
 
         if (dissolutionInfo.getApplicationStatus() != ApplicationStatus.PENDING_PAYMENT) {

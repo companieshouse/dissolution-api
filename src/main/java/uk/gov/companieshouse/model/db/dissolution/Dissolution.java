@@ -29,6 +29,8 @@ public class Dissolution {
 
     private DissolutionSubmission submission;
 
+    private DissolutionVerdict verdict;
+
     public String getId() {
         return id;
     }
@@ -91,5 +93,13 @@ public class Dissolution {
 
     public void setSubmission(DissolutionSubmission submission) {
         this.submission = submission;
+    }
+
+    public DissolutionVerdict getVerdict() {
+        return verdict;
+    }
+
+    public void setVerdict(DissolutionVerdict verdict) {
+        this.verdict = verdict;
     }
 }

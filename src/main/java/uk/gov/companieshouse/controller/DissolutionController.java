@@ -78,7 +78,7 @@ public class DissolutionController {
                 .ofNullable(companyProfileClient.getCompanyProfile(companyNumber))
                 .orElseThrow(NotFoundException::new);
 
-        if (dissolutionService.doesDissolutionRequestExistForCompany(companyNumber)) {
+        if (dissolutionService.doesDissolutionRequestExistForCompanyByCompanyNumber(companyNumber)) {
             throw new ConflictException("Dissolution already exists");
         }
 
@@ -100,7 +100,7 @@ public class DissolutionController {
     @ResponseStatus(HttpStatus.OK)
     public DissolutionGetResponse getDissolutionApplication(@PathVariable("company-number") final String companyNumber) {
         return dissolutionService
-                .get(companyNumber)
+                .getByCompanyNumber(companyNumber)
                 .orElseThrow(NotFoundException::new);
     }
 
@@ -118,7 +118,7 @@ public class DissolutionController {
             @Valid @RequestBody final DissolutionPatchRequest body,
             HttpServletRequest request) {
 
-        if (!dissolutionService.doesDissolutionRequestExistForCompany(companyNumber)) {
+        if (!dissolutionService.doesDissolutionRequestExistForCompanyByCompanyNumber(companyNumber)) {
             throw new NotFoundException();
         }
 

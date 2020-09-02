@@ -19,7 +19,10 @@ import uk.gov.companieshouse.repository.DissolutionRepository;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
@@ -44,6 +47,7 @@ public class DissolutionServiceTest {
     private DissolutionRepository repository;
 
     public static final String COMPANY_NUMBER = "12345678";
+    public static final String APPLICATION_REFERENCE = "XYZ456";
     public static final String USER_ID = "123";
     public static final String IP = "192.168.0.1";
     public static final String EMAIL = "user@mail.com";
@@ -66,32 +70,50 @@ public class DissolutionServiceTest {
     }
 
     @Test
-    public void doesDissolutionRequestExistForCompany_returnsTrue_ifDissolutionForCompanyExists() {
+    public void doesDissolutionRequestExistForCompanyByCompanyNumber_returnsTrue_ifDissolutionForCompanyExists() {
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(DissolutionFixtures.generateDissolution()));
 
-        final boolean result = service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER);
+        final boolean result = service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER);
 
         assertTrue(result);
     }
 
     @Test
-    public void doesDissolutionRequestExistForCompany_returnsFalse_ifDissolutionForCompanyDoesNotExist() {
+    public void doesDissolutionRequestExistForCompanyByCompanyNumber_returnsFalse_ifDissolutionForCompanyDoesNotExist() {
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
 
-        final boolean result = service.doesDissolutionRequestExistForCompany(COMPANY_NUMBER);
+        final boolean result = service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER);
 
         assertFalse(result);
     }
 
     @Test
-    public void get_getsADissolution_returnsGetResponse() {
+    public void doesDissolutionRequestExistForCompanyByApplicationReference_returnsTrue_ifDissolutionForCompanyExists() {
+        when(repository.findByDataApplicationReference(APPLICATION_REFERENCE)).thenReturn(Optional.of(DissolutionFixtures.generateDissolution()));
+
+        final boolean result = service.doesDissolutionRequestExistForCompanyByApplicationReference(APPLICATION_REFERENCE);
+
+        assertTrue(result);
+    }
+
+    @Test
+    public void doesDissolutionRequestExistForCompanyByApplicationReference_returnsFalse_ifDissolutionForCompanyDoesNotExist() {
+        when(repository.findByDataApplicationReference(APPLICATION_REFERENCE)).thenReturn(Optional.empty());
+
+        final boolean result = service.doesDissolutionRequestExistForCompanyByApplicationReference(APPLICATION_REFERENCE);
+
+        assertFalse(result);
+    }
+
+    @Test
+    public void getByCompanyNumber_returnsDissolutionGetResponse() {
         final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse();
 
-        when(getter.get(COMPANY_NUMBER)).thenReturn(Optional.of(response));
+        when(getter.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(response));
 
-        final Optional<DissolutionGetResponse> result = service.get(COMPANY_NUMBER);
+        final Optional<DissolutionGetResponse> result = service.getByCompanyNumber(COMPANY_NUMBER);
 
-        verify(getter).get(COMPANY_NUMBER);
+        verify(getter).getByCompanyNumber(COMPANY_NUMBER);
 
         assertTrue(result.isPresent());
         assertEquals(response, result.get());

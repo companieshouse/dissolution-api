@@ -5,17 +5,23 @@ import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.mapper.email.DissolutionEmailMapper;
 import uk.gov.companieshouse.mapper.email.EmailMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionRejectReason;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionVerdict;
+import uk.gov.companieshouse.model.dto.email.ApplicationAcceptedEmailData;
+import uk.gov.companieshouse.model.dto.email.ApplicationRejectedEmailData;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.dto.email.EmailDocument;
 import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
 import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
+import uk.gov.companieshouse.model.enums.VerdictResult;
 import uk.gov.companieshouse.service.email.EmailService;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static uk.gov.companieshouse.model.Constants.APPLICATION_ACCEPTED_MESSAGE_TYPE;
+import static uk.gov.companieshouse.model.Constants.APPLICATION_REJECTED_MESSAGE_TYPE;
+import java.time.LocalDateTime;
 
 import static uk.gov.companieshouse.model.Constants.SIGNATORY_TO_SIGN_MESSAGE_TYPE;
 import static uk.gov.companieshouse.model.Constants.SUCCESSFUL_PAYMENT_MESSAGE_TYPE;
@@ -29,10 +35,7 @@ public class DissolutionEmailService {
     private final DissolutionDeadlineDateCalculator deadlineDateCalculator;
 
     @Autowired
-    public DissolutionEmailService(
-            DissolutionEmailMapper dissolutionEmailMapper,
-            EmailMapper emailMapper,
-            EmailService emailService,
+    public DissolutionEmailService(DissolutionEmailMapper dissolutionEmailMapper, EmailMapper emailMapper, EmailService emailService,
             DissolutionDeadlineDateCalculator deadlineDateCalculator
     ) {
         this.dissolutionEmailMapper = dissolutionEmailMapper;
@@ -49,7 +52,35 @@ public class DissolutionEmailService {
                 successfulPaymentEmailData, successfulPaymentEmailData.getTo(), SUCCESSFUL_PAYMENT_MESSAGE_TYPE
         );
 
-        emailService.sendMessage(emailDocument);
+        sendEmail(emailDocument);
+    }
+
+    public void sendApplicationOutcomeEmail(Dissolution dissolution, DissolutionVerdict dissolutionVerdict) {
+        EmailDocument<?> emailDocument = dissolutionVerdict.getResult() == VerdictResult.ACCEPTED ?
+                this.getApplicationAcceptedEmailDocument(dissolution) :
+                this.getApplicationRejectedEmailDocument(dissolution, dissolutionVerdict);
+
+        sendEmail(emailDocument);
+    }
+
+    private EmailDocument<ApplicationAcceptedEmailData> getApplicationAcceptedEmailDocument(Dissolution dissolution) {
+        final ApplicationAcceptedEmailData applicationAcceptedEmailData =
+                this.dissolutionEmailMapper.mapToApplicationAcceptedEmailData(dissolution);
+
+        return this.emailMapper.mapToEmailDocument(
+                applicationAcceptedEmailData, applicationAcceptedEmailData.getTo(), APPLICATION_ACCEPTED_MESSAGE_TYPE
+        );
+    }
+
+    private EmailDocument<ApplicationRejectedEmailData> getApplicationRejectedEmailDocument(Dissolution dissolution, DissolutionVerdict dissolutionVerdict) {
+        List<String> rejectReasonsAsStrings = dissolutionVerdict.getRejectReasons().stream().map(DissolutionRejectReason::getTextEnglish).collect(Collectors.toList());
+
+        final ApplicationRejectedEmailData applicationRejectedEmailData =
+                this.dissolutionEmailMapper.mapToApplicationRejectedEmailData(dissolution, rejectReasonsAsStrings);
+
+        return this.emailMapper.mapToEmailDocument(
+                applicationRejectedEmailData, applicationRejectedEmailData.getTo(), APPLICATION_REJECTED_MESSAGE_TYPE
+        );
     }
 
     public void notifySignatoriesToSign(Dissolution dissolution) {
@@ -58,7 +89,7 @@ public class DissolutionEmailService {
         getUniqueSignatories(dissolution)
                 .stream()
                 .map(signatoryEmail -> mapToSignatoryToSignEmail(dissolution, signatoryEmail, deadlineDate))
-                .forEach(emailService::sendMessage);
+                .forEach(this::sendEmail);
     }
 
     private List<String> getUniqueSignatories(Dissolution dissolution) {
@@ -74,5 +105,9 @@ public class DissolutionEmailService {
     private EmailDocument<SignatoryToSignEmailData> mapToSignatoryToSignEmail(Dissolution dissolution, String signatoryEmail, String deadlineDate) {
         final SignatoryToSignEmailData emailData = dissolutionEmailMapper.mapToSignatoryToSignEmailData(dissolution, signatoryEmail, deadlineDate);
         return this.emailMapper.mapToEmailDocument(emailData, signatoryEmail, SIGNATORY_TO_SIGN_MESSAGE_TYPE);
+    }
+
+    private <T> void sendEmail(EmailDocument<T> emailDocument) {
+        emailService.sendMessage(emailDocument);
     }
 }

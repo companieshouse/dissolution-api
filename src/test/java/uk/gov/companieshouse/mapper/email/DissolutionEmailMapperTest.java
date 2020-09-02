@@ -10,6 +10,8 @@ import uk.gov.companieshouse.config.EnvironmentConfig;
 import uk.gov.companieshouse.fixtures.EmailFixtures;
 import uk.gov.companieshouse.model.db.dissolution.Company;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.dto.email.ApplicationAcceptedEmailData;
+import uk.gov.companieshouse.model.dto.email.ApplicationRejectedEmailData;
 import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
 import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
 
@@ -35,24 +37,56 @@ public class DissolutionEmailMapperTest {
 
     @BeforeEach
     public void setup() {
-        when(environmentConfig.getChsUrl()).thenReturn(CHS_URL);
         when(environmentConfig.getCdnHost()).thenReturn(CDN_HOST);
     }
 
     @Test
-    public void mapToSuccessfulPaymentEmailData() {
+    public void mapToSuccessfulPaymentEmailData_mapsSuccessfulPaymentEmailData() {
         final Dissolution dissolution = generateDissolution();
         final SuccessfulPaymentEmailData successfulPaymentEmailData = EmailFixtures.generateSuccessfulPaymentEmailData();
+
+        when(environmentConfig.getChsUrl()).thenReturn(CHS_URL);
 
         final SuccessfulPaymentEmailData result = dissolutionEmailMapper.mapToSuccessfulPaymentEmailData(dissolution);
 
         assertEquals(successfulPaymentEmailData.getTo(), result.getTo());
         assertEquals(successfulPaymentEmailData.getSubject(), result.getSubject());
+        assertEquals(successfulPaymentEmailData.getCdnHost(), result.getCdnHost());
         assertEquals(successfulPaymentEmailData.getDissolutionReferenceNumber(), result.getDissolutionReferenceNumber());
         assertEquals(successfulPaymentEmailData.getCompanyNumber(), result.getCompanyNumber());
         assertEquals(successfulPaymentEmailData.getCompanyName(), result.getCompanyName());
         assertEquals(successfulPaymentEmailData.getChsUrl(), result.getChsUrl());
-        assertEquals(successfulPaymentEmailData.getCdnHost(), result.getCdnHost());
+    }
+
+    @Test
+    public void mapToApplicationAcceptedEmailData_mapsApplicationAcceptedEmailData() {
+        final Dissolution dissolution = generateDissolution();
+        final ApplicationAcceptedEmailData applicationAcceptedEmailData = EmailFixtures.generateApplicationAcceptedEmailData();
+
+        final ApplicationAcceptedEmailData result = dissolutionEmailMapper.mapToApplicationAcceptedEmailData(dissolution);
+
+        assertEquals(applicationAcceptedEmailData.getTo(), result.getTo());
+        assertEquals(applicationAcceptedEmailData.getSubject(), result.getSubject());
+        assertEquals(applicationAcceptedEmailData.getCdnHost(), result.getCdnHost());
+        assertEquals(applicationAcceptedEmailData.getDissolutionReferenceNumber(), result.getDissolutionReferenceNumber());
+        assertEquals(applicationAcceptedEmailData.getCompanyNumber(), result.getCompanyNumber());
+        assertEquals(applicationAcceptedEmailData.getCompanyName(), result.getCompanyName());
+    }
+
+    @Test
+    public void mapToApplicationRejectedEmailData_mapsApplicationRejectedEmailData() {
+        final Dissolution dissolution = generateDissolution();
+        final ApplicationRejectedEmailData applicationRejectedEmailData = EmailFixtures.generateApplicationRejectedEmailData();
+
+        final ApplicationRejectedEmailData result = dissolutionEmailMapper.mapToApplicationRejectedEmailData(dissolution, applicationRejectedEmailData.getRejectReasons());
+
+        assertEquals(applicationRejectedEmailData.getTo(), result.getTo());
+        assertEquals(applicationRejectedEmailData.getSubject(), result.getSubject());
+        assertEquals(applicationRejectedEmailData.getCdnHost(), result.getCdnHost());
+        assertEquals(applicationRejectedEmailData.getDissolutionReferenceNumber(), result.getDissolutionReferenceNumber());
+        assertEquals(applicationRejectedEmailData.getCompanyNumber(), result.getCompanyNumber());
+        assertEquals(applicationRejectedEmailData.getCompanyName(), result.getCompanyName());
+        assertEquals(applicationRejectedEmailData.getRejectReasons(), result.getRejectReasons());
     }
 
     @Test
@@ -65,6 +99,8 @@ public class DissolutionEmailMapperTest {
         dissolution.setCompany(company);
         dissolution.getData().getApplication().setReference("abc123");
 
+        when(environmentConfig.getChsUrl()).thenReturn(CHS_URL);
+
         final SignatoryToSignEmailData result = dissolutionEmailMapper.mapToSignatoryToSignEmailData(dissolution, SIGNATORY_TO_SIGN_EMAIL, SIGNATORY_TO_SIGN_DEADLINE);
 
         assertEquals("Some Company Name", result.getCompanyName());
@@ -74,6 +110,8 @@ public class DissolutionEmailMapperTest {
 
     @Test
     public void mapToSignatoryToSignEmailData_mapsSignatoryInfo_andDeadline_andSubject() {
+        when(environmentConfig.getChsUrl()).thenReturn(CHS_URL);
+
         final SignatoryToSignEmailData result = dissolutionEmailMapper.mapToSignatoryToSignEmailData(generateDissolution(), SIGNATORY_TO_SIGN_EMAIL, SIGNATORY_TO_SIGN_DEADLINE);
 
         assertEquals(SIGNATORY_TO_SIGN_EMAIL, result.getTo());
@@ -83,6 +121,8 @@ public class DissolutionEmailMapperTest {
 
     @Test
     public void mapToSignatoryToSignEmailData_mapsEnvironmentInfo() {
+        when(environmentConfig.getChsUrl()).thenReturn(CHS_URL);
+
         final SignatoryToSignEmailData result = dissolutionEmailMapper.mapToSignatoryToSignEmailData(generateDissolution(), SIGNATORY_TO_SIGN_EMAIL, SIGNATORY_TO_SIGN_DEADLINE);
 
         assertEquals(CHS_URL, result.getChsUrl());

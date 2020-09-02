@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @DataMongoTest
 @ExtendWith(SpringExtension.class)
 public class DissolutionRepositoryTest {
+
     @Autowired
     public DissolutionRepository repository;
 
@@ -33,6 +34,18 @@ public class DissolutionRepositoryTest {
         repository.insert(dissolution);
 
         assertEquals(COMPANY_NUMBER, repository.findByCompanyNumber(COMPANY_NUMBER).get().getCompany().getNumber());
+    }
+
+    @Test
+    public void findByDataApplicationReference_findsCorrectDissolution() {
+        final String APPLICATION_REFERENCE = "XYZ456";
+
+        Dissolution dissolution = DissolutionFixtures.generateDissolution();
+        dissolution.getData().getApplication().setReference(APPLICATION_REFERENCE);
+
+        repository.insert(dissolution);
+
+        assertEquals(APPLICATION_REFERENCE, repository.findByDataApplicationReference(APPLICATION_REFERENCE).get().getData().getApplication().getReference());
     }
 
     @Test

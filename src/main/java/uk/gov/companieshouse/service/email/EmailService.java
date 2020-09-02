@@ -32,7 +32,7 @@ public class EmailService {
         this.logger = logger;
     }
 
-    public void sendMessage(EmailDocument<?> emailDocument) {
+    public <T> void sendMessage(EmailDocument<T> emailDocument) {
         try {
             byte[] serialisedEmailDocument = emailSerialiser.serialise(emailDocument);
 
