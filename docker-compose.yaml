@@ -1,9 +1,0 @@
-version: "3.8"
-
-services:
-  dissolution-api:
-    image: 169942020521.dkr.ecr.eu-west-1.amazonaws.com/local/dissolution-api:latest
-    expose:
-      - 3001
-    environment:
-      - HUMAN_LOG=1
