@@ -3,8 +3,6 @@ package uk.gov.companieshouse.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -30,12 +28,13 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping("/dissolution-request/{company-number}/payment")
 public class PaymentController {
+
     private final DissolutionService dissolutionService;
     private final PaymentService paymentService;
 
-    private final Logger logger = LoggerFactory.getLogger(DissolutionController.class);
-
-    public PaymentController(DissolutionService dissolutionService, PaymentService paymentService) {
+    public PaymentController(
+            DissolutionService dissolutionService,
+            PaymentService paymentService) {
         super();
         this.dissolutionService = dissolutionService;
         this.paymentService = paymentService;
@@ -49,9 +48,6 @@ public class PaymentController {
     @GetMapping()
     @ResponseStatus(HttpStatus.OK)
     public PaymentGetResponse getPaymentUIData(@PathVariable("company-number") final String companyNumber) {
-
-        logger.info("[GET] Getting payment UI data for company number {}", companyNumber);
-
         DissolutionGetResponse dissolutionInfo = dissolutionService
                 .get(companyNumber)
                 .orElseThrow(NotFoundException::new);
@@ -71,9 +67,6 @@ public class PaymentController {
             @PathVariable("company-number") final String companyNumber,
             @Valid @RequestBody final PaymentPatchRequest body
     ) {
-
-        logger.info("[PATCH] Updating payment information for company number {} with payment status {}", companyNumber, body.getStatus());
-
         DissolutionGetResponse dissolutionInfo = dissolutionService
                 .get(companyNumber)
                 .orElseThrow(NotFoundException::new);
