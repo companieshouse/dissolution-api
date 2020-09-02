@@ -53,7 +53,7 @@ public class PaymentController {
         logger.info("[GET] Getting payment UI data for company number {}", companyNumber);
 
         DissolutionGetResponse dissolutionInfo = dissolutionService
-                .get(companyNumber)
+                .getByCompanyNumber(companyNumber)
                 .orElseThrow(NotFoundException::new);
 
         return paymentService.get(dissolutionInfo.getETag(), companyNumber);
@@ -75,7 +75,7 @@ public class PaymentController {
         logger.info("[PATCH] Updating payment information for company number {} with payment status {}", companyNumber, body.getStatus());
 
         DissolutionGetResponse dissolutionInfo = dissolutionService
-                .get(companyNumber)
+                .getByCompanyNumber(companyNumber)
                 .orElseThrow(NotFoundException::new);
 
         if (dissolutionInfo.getApplicationStatus() != ApplicationStatus.PENDING_PAYMENT) {

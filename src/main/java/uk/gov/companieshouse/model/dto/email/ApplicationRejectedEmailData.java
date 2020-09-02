@@ -1,6 +1,8 @@
 package uk.gov.companieshouse.model.dto.email;
 
-public class SuccessfulPaymentEmailData extends EmailData {
+import java.util.List;
+
+public class ApplicationRejectedEmailData extends EmailData {
 
     private String dissolutionReferenceNumber;
 
@@ -8,7 +10,7 @@ public class SuccessfulPaymentEmailData extends EmailData {
 
     private String companyName;
 
-    private String chsUrl;
+    private List<String> rejectReasons;
 
     public String getDissolutionReferenceNumber() {
         return dissolutionReferenceNumber;
@@ -34,11 +36,11 @@ public class SuccessfulPaymentEmailData extends EmailData {
         this.companyName = companyName;
     }
 
-    public String getChsUrl() {
-        return chsUrl;
+    public List<String> getRejectReasons() {
+        return rejectReasons;
     }
 
-    public void setChsUrl(String chsUrl) {
-        this.chsUrl = chsUrl;
+    public void setRejectReasons(List<String> rejectReasons) {
+        this.rejectReasons = rejectReasons;
     }
 }

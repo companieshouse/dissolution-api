@@ -22,8 +22,16 @@ public final class Constants {
    /* Email */
    public static final String EMAIL_APP_ID = "dissolution-api";
    public static final String EMAIL_TOPIC = "email-send";
-   public static final String SUCCESSFUL_PAYMENT_EMAIL_SUBJECT = "Your application has been submitted";
-   public static final String SUCCESSFUL_PAYMENT_MESSAGE_TYPE = "dissolution-payment-confirmation";
+
+   public static final String SUCCESSFUL_PAYMENT_EMAIL_SUBJECT = "Your application to strike off and dissolve a company has been submitted";
+   public static final String SUCCESSFUL_PAYMENT_MESSAGE_TYPE = "dissolution_payment_confirmation";
+
+   public static final String APPLICATION_ACCEPTED_EMAIL_SUBJECT = "Your application to strike off and dissolve a company has been accepted";
+   public static final String APPLICATION_ACCEPTED_MESSAGE_TYPE = "dissolution_submission_accepted";
+
+   public static final String APPLICATION_REJECTED_EMAIL_SUBJECT = "Your application to strike off and dissolve a company has been rejected";
+   public static final String APPLICATION_REJECTED_MESSAGE_TYPE = "dissolution_submission_rejected";
+
    public static final String SIGNATORY_TO_SIGN_EMAIL_SUBJECT = "You need to sign the application to strike off and dissolve a company";
    public static final String SIGNATORY_TO_SIGN_MESSAGE_TYPE = "dissolution_signatory_to_sign";
 

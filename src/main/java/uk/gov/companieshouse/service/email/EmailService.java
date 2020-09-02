@@ -29,7 +29,7 @@ public class EmailService {
         this.kafkaProducer = kafkaProducer;
     }
 
-    public void sendMessage(EmailDocument<?> emailDocument) {
+    public <T> void sendMessage(EmailDocument<T> emailDocument) {
         try {
             byte[] serialisedEmailDocument = emailSerialiser.serialise(emailDocument);
 

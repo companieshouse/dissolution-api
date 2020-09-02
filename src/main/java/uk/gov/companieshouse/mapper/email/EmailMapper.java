@@ -29,7 +29,7 @@ public class EmailMapper {
         return emailDocument;
     }
 
-    public Message mapToKafkaMessage(EmailDocument<?> emailDocument, byte[] serialisedEmailDocument) {
+    public <T> Message mapToKafkaMessage(EmailDocument<T> emailDocument, byte[] serialisedEmailDocument) {
         Message message = new Message();
 
         message.setTopic(emailDocument.getTopic());

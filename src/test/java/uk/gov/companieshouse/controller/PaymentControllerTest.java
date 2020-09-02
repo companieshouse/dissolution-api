@@ -99,7 +99,7 @@ public class PaymentControllerTest {
 
     @Test
     public void getPaymentUIDataRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
-        when(dissolutionService.get(COMPANY_NUMBER)).thenReturn(Optional.empty());
+        when(dissolutionService.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
 
         mockMvc
                 .perform(
@@ -115,7 +115,7 @@ public class PaymentControllerTest {
         final DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
         final PaymentGetResponse paymentGetResponse = generatePaymentGetResponse(dissolutionGetResponse.getETag(), COMPANY_NUMBER);
 
-        when(dissolutionService.get(COMPANY_NUMBER)).thenReturn(Optional.of(dissolutionGetResponse));
+        when(dissolutionService.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolutionGetResponse));
         when(paymentService.get(dissolutionGetResponse.getETag(), COMPANY_NUMBER)).thenReturn(paymentGetResponse);
 
         mockMvc
@@ -174,7 +174,7 @@ public class PaymentControllerTest {
     public void patchPaymentDataRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
         final PaymentPatchRequest body = generatePaymentPatchRequest();
 
-        when(dissolutionService.get(COMPANY_NUMBER)).thenReturn(Optional.empty());
+        when(dissolutionService.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
 
         mockMvc
                 .perform(
@@ -193,7 +193,7 @@ public class PaymentControllerTest {
 
         final PaymentPatchRequest body = generatePaymentPatchRequest();
 
-        when(dissolutionService.get(COMPANY_NUMBER)).thenReturn(Optional.of(dissolutionGetResponse));
+        when(dissolutionService.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolutionGetResponse));
 
         mockMvc
                 .perform(
@@ -213,7 +213,7 @@ public class PaymentControllerTest {
         final PaymentPatchRequest body = generatePaymentPatchRequest();
         body.setStatus(PaymentStatus.PAID);
 
-        when(dissolutionService.get(COMPANY_NUMBER)).thenReturn(Optional.of(dissolutionGetResponse));
+        when(dissolutionService.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolutionGetResponse));
 
         mockMvc
                 .perform(
@@ -235,7 +235,7 @@ public class PaymentControllerTest {
         final PaymentPatchRequest body = generatePaymentPatchRequest();
         body.setStatus(PaymentStatus.FAILED);
 
-        when(dissolutionService.get(COMPANY_NUMBER)).thenReturn(Optional.of(dissolutionGetResponse));
+        when(dissolutionService.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolutionGetResponse));
 
         mockMvc
                 .perform(
@@ -257,7 +257,7 @@ public class PaymentControllerTest {
         final PaymentPatchRequest body = generatePaymentPatchRequest();
         body.setStatus(PaymentStatus.CANCELLED);
 
-        when(dissolutionService.get(COMPANY_NUMBER)).thenReturn(Optional.of(dissolutionGetResponse));
+        when(dissolutionService.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolutionGetResponse));
 
         mockMvc
                 .perform(

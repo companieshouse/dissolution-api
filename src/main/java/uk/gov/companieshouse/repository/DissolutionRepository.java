@@ -17,6 +17,8 @@ public interface DissolutionRepository extends MongoRepository<Dissolution, Stri
 
     Optional<Dissolution> findByCompanyNumber(String companyNumber);
 
+    Optional<Dissolution> findByDataApplicationReference(String applicationReferenceNumber);
+
     @Query("{'submission.status': 'PENDING', $or : [{'submission.date_time': {'$lte' : ?0}}, {'submission.date_time': null}]}")
     List<Dissolution> findPendingDissolutions(LocalDateTime dateTime, Pageable limit);
 }

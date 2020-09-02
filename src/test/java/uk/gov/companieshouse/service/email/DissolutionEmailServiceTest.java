@@ -11,13 +11,21 @@ import uk.gov.companieshouse.mapper.email.DissolutionEmailMapper;
 import uk.gov.companieshouse.mapper.email.EmailMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionRejectReason;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionVerdict;
+import uk.gov.companieshouse.model.dto.email.ApplicationAcceptedEmailData;
+import uk.gov.companieshouse.model.dto.email.ApplicationRejectedEmailData;
 import uk.gov.companieshouse.model.dto.email.EmailDocument;
 import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
 import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
+import uk.gov.companieshouse.model.enums.VerdictResult;
 import uk.gov.companieshouse.service.dissolution.DissolutionDeadlineDateCalculator;
 import uk.gov.companieshouse.service.dissolution.DissolutionEmailService;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -26,6 +34,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolution;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionDirector;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionRejectReason;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionVerdict;
 import static uk.gov.companieshouse.fixtures.EmailFixtures.generateEmailDocument;
 import static uk.gov.companieshouse.fixtures.EmailFixtures.generateSignatoryToSignEmailData;
 import static uk.gov.companieshouse.model.Constants.SIGNATORY_TO_SIGN_MESSAGE_TYPE;
@@ -53,7 +63,7 @@ public class DissolutionEmailServiceTest {
     private DissolutionDeadlineDateCalculator deadlineDateCalculator;
 
     @Test
-    public void sendSuccessfulPaymentEmail() {
+    public void sendSuccessfulPaymentEmail_shouldGenerateAndSendASuccessfulPaymentEmail() {
         final Dissolution dissolution = generateDissolution();
         final SuccessfulPaymentEmailData successfulPaymentEmailData = EmailFixtures.generateSuccessfulPaymentEmailData();
         final EmailDocument<SuccessfulPaymentEmailData> emailDocument = generateEmailDocument(successfulPaymentEmailData);
@@ -62,6 +72,41 @@ public class DissolutionEmailServiceTest {
         when(emailMapper.mapToEmailDocument(eq(successfulPaymentEmailData), eq(successfulPaymentEmailData.getTo()), any())).thenReturn(emailDocument);
 
         dissolutionEmailService.sendSuccessfulPaymentEmail(dissolution);
+
+        verify(emailService).sendMessage(emailDocument);
+    }
+
+    @Test
+    public void sendApplicationOutcomeEmail_shouldGenerateAndSendAnApplicationAcceptedEmail() {
+        final Dissolution dissolution = generateDissolution();
+        final DissolutionVerdict dissolutionVerdict = generateDissolutionVerdict();
+
+        final ApplicationAcceptedEmailData applicationAcceptedEmailData = EmailFixtures.generateApplicationAcceptedEmailData();
+        final EmailDocument<ApplicationAcceptedEmailData> emailDocument = generateEmailDocument(applicationAcceptedEmailData);
+
+        when(dissolutionEmailMapper.mapToApplicationAcceptedEmailData(dissolution)).thenReturn(applicationAcceptedEmailData);
+        when(emailMapper.mapToEmailDocument(eq(applicationAcceptedEmailData), eq(applicationAcceptedEmailData.getTo()), any())).thenReturn(emailDocument);
+
+        dissolutionEmailService.sendApplicationOutcomeEmail(dissolution, dissolutionVerdict);
+
+        verify(emailService).sendMessage(emailDocument);
+    }
+
+    @Test
+    public void sendApplicationOutcomeEmail_shouldGenerateAndSendAnApplicationRejectedEmail() {
+        final Dissolution dissolution = generateDissolution();
+        final DissolutionVerdict dissolutionVerdict = generateDissolutionVerdict();
+        dissolutionVerdict.setResult(VerdictResult.REJECTED);
+        dissolutionVerdict.setRejectReasons(Collections.singletonList(generateDissolutionRejectReason()));
+
+        final ApplicationRejectedEmailData applicationRejectedEmailData = EmailFixtures.generateApplicationRejectedEmailData();
+        final EmailDocument<ApplicationRejectedEmailData> emailDocument = generateEmailDocument(applicationRejectedEmailData);
+
+        List<String> rejectReasonsAsStrings = dissolutionVerdict.getRejectReasons().stream().map(DissolutionRejectReason::getTextEnglish).collect(Collectors.toList());
+        when(dissolutionEmailMapper.mapToApplicationRejectedEmailData(dissolution, rejectReasonsAsStrings)).thenReturn(applicationRejectedEmailData);
+        when(emailMapper.mapToEmailDocument(eq(applicationRejectedEmailData), eq(applicationRejectedEmailData.getTo()), any())).thenReturn(emailDocument);
+
+        dissolutionEmailService.sendApplicationOutcomeEmail(dissolution, dissolutionVerdict);
 
         verify(emailService).sendMessage(emailDocument);
     }
