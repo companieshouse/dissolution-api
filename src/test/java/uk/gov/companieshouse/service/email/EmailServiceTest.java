@@ -10,6 +10,7 @@ import uk.gov.companieshouse.exception.EmailSendException;
 import uk.gov.companieshouse.fixtures.EmailFixtures;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.producer.CHKafkaProducer;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.email.EmailMapper;
 import uk.gov.companieshouse.model.dto.email.EmailDocument;
 
@@ -32,6 +33,9 @@ public class EmailServiceTest {
 
     @Mock
     private CHKafkaProducer kafkaProducer;
+
+    @Mock
+    private Logger logger;
 
     @Test
     public void sendMessage() throws ExecutionException, InterruptedException {
