@@ -7,11 +7,10 @@ import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.EncoderFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.exception.EmailSendException;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.model.dto.email.EmailDocument;
 
 import java.io.ByteArrayOutputStream;
@@ -25,19 +24,23 @@ public class EmailSerialiser {
     private final ObjectMapper mapper;
     private final GenericRecordFactory genericRecordFactory;
     private final Schema schema;
-
-    private final Logger logger = LoggerFactory.getLogger(EmailSerialiser.class);
+    private final Logger logger;
 
     @Autowired
     public EmailSerialiser(
-            EncoderFactory encoderFactory, GenericDatumWriterFactory datumWriterFactory,
-            GenericRecordFactory genericRecordFactory, ObjectMapper mapper, Schema schema
+            EncoderFactory encoderFactory,
+            GenericDatumWriterFactory datumWriterFactory,
+            GenericRecordFactory genericRecordFactory,
+            ObjectMapper mapper,
+            Schema schema,
+            Logger logger
     ) {
         this.encoderFactory = encoderFactory;
         this.datumWriterFactory = datumWriterFactory;
         this.genericRecordFactory = genericRecordFactory;
         this.mapper = mapper;
         this.schema = schema;
+        this.logger = logger;
     }
 
     public byte[] serialise(EmailDocument<?> document) {

@@ -3,8 +3,6 @@ package uk.gov.companieshouse.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,8 +24,6 @@ public class ResponseController {
 
     private final ChipsResponseService chipsResponseService;
 
-    private final Logger LOGGER = LoggerFactory.getLogger(ResponseController.class);
-
     public ResponseController(DissolutionService dissolutionService, ChipsResponseService chipsResponseService) {
         this.dissolutionService = dissolutionService;
         this.chipsResponseService = chipsResponseService;
@@ -41,9 +37,6 @@ public class ResponseController {
     @PostMapping()
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void postDissolutionApplicationOutcome(@Valid @RequestBody final ChipsResponseCreateRequest body) {
-
-        LOGGER.info("[POST] Saving and notifying the applicant the outcome of the Dissolution application");
-
         if (!dissolutionService.doesDissolutionRequestExistForCompanyByApplicationReference(body.getSubmissionReference())) {
             throw new NotFoundException();
         }
