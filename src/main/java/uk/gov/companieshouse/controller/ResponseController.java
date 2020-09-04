@@ -31,11 +31,11 @@ public class ResponseController {
 
     @Operation(summary = "Save and notify the applicant the outcome of the dissolution application", tags = "Dissolution")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "202", description = "Dissolution application outcome saved and notified"),
-            @ApiResponse(responseCode = "404", description = "Dissolution Application not found")
+            @ApiResponse(responseCode = "200", description = "Dissolution application outcome saved and notified"),
+            @ApiResponse(responseCode = "404", description = "Dissolution application not found")
     })
     @PostMapping()
-    @ResponseStatus(HttpStatus.ACCEPTED)
+    @ResponseStatus(HttpStatus.OK)
     public void postDissolutionApplicationOutcome(@Valid @RequestBody final ChipsResponseCreateRequest body) {
         if (!dissolutionService.doesDissolutionRequestExistForCompanyByApplicationReference(body.getSubmissionReference())) {
             throw new NotFoundException();
