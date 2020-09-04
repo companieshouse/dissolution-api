@@ -96,7 +96,7 @@ public class ResponseControllerTest {
     }
 
     @Test
-    public void postDissolutionApplicationOutcome_returnsAccepted_ifDissolutionVerdictCreated() throws Exception {
+    public void postDissolutionApplicationOutcome_returnsOK_ifDissolutionVerdictCreated() throws Exception {
         final ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
 
         when(dissolutionService.doesDissolutionRequestExistForCompanyByApplicationReference(chipsResponseCreateRequest.getSubmissionReference())).thenReturn(true);
@@ -108,7 +108,7 @@ public class ResponseControllerTest {
                                 .headers(createHttpHeaders())
                                 .content(asJsonString(chipsResponseCreateRequest))
                 )
-                .andExpect(status().isAccepted());
+                .andExpect(status().isOk());
     }
 
     private <T> String asJsonString(T body) {
