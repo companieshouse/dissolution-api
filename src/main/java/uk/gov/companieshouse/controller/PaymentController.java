@@ -52,7 +52,7 @@ public class PaymentController {
                 .getByCompanyNumber(companyNumber)
                 .orElseThrow(NotFoundException::new);
 
-        return paymentService.get(dissolutionInfo.getETag(), companyNumber);
+        return paymentService.get(dissolutionInfo.getETag(), dissolutionInfo.getApplicationType(), companyNumber);
     }
 
     @Operation(summary = "Patch Payment Status", tags = "Dissolution")

@@ -24,9 +24,7 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -116,7 +114,7 @@ public class PaymentControllerTest {
         final PaymentGetResponse paymentGetResponse = generatePaymentGetResponse(dissolutionGetResponse.getETag(), COMPANY_NUMBER);
 
         when(dissolutionService.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolutionGetResponse));
-        when(paymentService.get(dissolutionGetResponse.getETag(), COMPANY_NUMBER)).thenReturn(paymentGetResponse);
+        when(paymentService.get(dissolutionGetResponse.getETag(), dissolutionGetResponse.getApplicationType(), COMPANY_NUMBER)).thenReturn(paymentGetResponse);
 
         mockMvc
                 .perform(

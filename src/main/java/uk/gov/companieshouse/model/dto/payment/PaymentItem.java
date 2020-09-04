@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.model.dto.payment;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import uk.gov.companieshouse.model.enums.ApplicationType;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ public class PaymentItem {
     private PaymentDescriptionValues descriptionValues;
 
     @JsonProperty("product_type")
-    private String productType;
+    private ApplicationType productType;
 
     private String amount;
 
@@ -53,11 +54,11 @@ public class PaymentItem {
         this.descriptionValues = descriptionValues;
     }
 
-    public String getProductType() {
+    public ApplicationType getProductType() {
         return productType;
     }
 
-    public void setProductType(String productType) {
+    public void setProductType(ApplicationType productType) {
         this.productType = productType;
     }
 
