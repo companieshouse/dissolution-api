@@ -13,11 +13,7 @@ import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionRejectReason;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionVerdict;
-import uk.gov.companieshouse.model.dto.email.ApplicationAcceptedEmailData;
-import uk.gov.companieshouse.model.dto.email.ApplicationRejectedEmailData;
-import uk.gov.companieshouse.model.dto.email.EmailDocument;
-import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
-import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
+import uk.gov.companieshouse.model.dto.email.*;
 import uk.gov.companieshouse.model.enums.VerdictResult;
 import uk.gov.companieshouse.service.dissolution.DissolutionDeadlineDateCalculator;
 import uk.gov.companieshouse.service.dissolution.DissolutionEmailService;
@@ -72,6 +68,20 @@ public class DissolutionEmailServiceTest {
         when(emailMapper.mapToEmailDocument(eq(successfulPaymentEmailData), eq(successfulPaymentEmailData.getTo()), any())).thenReturn(emailDocument);
 
         dissolutionEmailService.sendSuccessfulPaymentEmail(dissolution);
+
+        verify(emailService).sendMessage(emailDocument);
+    }
+
+    @Test
+    public void sendPendingPaymentEmail_shouldGenerateAndSendAPendingPaymentEmail() {
+        final Dissolution dissolution = generateDissolution();
+        final PendingPaymentEmailData pendingPaymentEmailData = EmailFixtures.generatePendingPaymentEmailData();
+        final EmailDocument<PendingPaymentEmailData> emailDocument = generateEmailDocument(pendingPaymentEmailData);
+
+        when(dissolutionEmailMapper.mapToPendingPaymentEmailData(dissolution)).thenReturn(pendingPaymentEmailData);
+        when(emailMapper.mapToEmailDocument(eq(pendingPaymentEmailData), eq(pendingPaymentEmailData.getTo()), any())).thenReturn(emailDocument);
+
+        dissolutionEmailService.sendPendingPaymentEmail(dissolution);
 
         verify(emailService).sendMessage(emailDocument);
     }

@@ -33,6 +33,8 @@ public final class Constants {
 
    public static final String SIGNATORY_TO_SIGN_EMAIL_SUBJECT = "You need to sign the application to strike off and dissolve a company";
    public static final String SIGNATORY_TO_SIGN_MESSAGE_TYPE = "dissolution_signatory_to_sign";
+   public static final String PENDING_PAYMENT_EMAIL_SUBJECT = "Pay for your application to strike off and dissolve a company";
+   public static final String PENDING_PAYMENT_MESSAGE_TYPE = "dissolution_payment_pending";
 
    /* Headers */
    public static final String HEADER_AUTHORIZATION = "Authorization";

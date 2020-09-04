@@ -4,6 +4,7 @@ import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.model.dto.email.ApplicationAcceptedEmailData;
 import uk.gov.companieshouse.model.dto.email.ApplicationRejectedEmailData;
 import uk.gov.companieshouse.model.dto.email.EmailDocument;
+import uk.gov.companieshouse.model.dto.email.PendingPaymentEmailData;
 import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
 import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
 
@@ -15,6 +16,7 @@ import static uk.gov.companieshouse.model.Constants.EMAIL_APP_ID;
 import static uk.gov.companieshouse.model.Constants.EMAIL_TOPIC;
 import static uk.gov.companieshouse.model.Constants.SIGNATORY_TO_SIGN_EMAIL_SUBJECT;
 import static uk.gov.companieshouse.model.Constants.SUCCESSFUL_PAYMENT_EMAIL_SUBJECT;
+import static uk.gov.companieshouse.model.Constants.PENDING_PAYMENT_EMAIL_SUBJECT;
 
 public class EmailFixtures {
 
@@ -68,6 +70,20 @@ public class EmailFixtures {
         ));
 
         return applicationRejectedEmailData;
+    }
+
+    public static PendingPaymentEmailData generatePendingPaymentEmailData() {
+        final PendingPaymentEmailData pendingPaymentEmailData = new PendingPaymentEmailData();
+
+        pendingPaymentEmailData.setTo("user@mail.com");
+        pendingPaymentEmailData.setSubject(PENDING_PAYMENT_EMAIL_SUBJECT);
+        pendingPaymentEmailData.setDissolutionReferenceNumber("ABC123");
+        pendingPaymentEmailData.setCompanyNumber("12345678");
+        pendingPaymentEmailData.setCompanyName("Companies House");
+        pendingPaymentEmailData.setChsUrl(CHS_URL);
+        pendingPaymentEmailData.setCdnHost(CDN_HOST);
+
+        return pendingPaymentEmailData;
     }
 
     public static SignatoryToSignEmailData generateSignatoryToSignEmailData() {

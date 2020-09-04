@@ -6,6 +6,7 @@ import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.email.ApplicationAcceptedEmailData;
 import uk.gov.companieshouse.model.dto.email.ApplicationRejectedEmailData;
 import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
+import uk.gov.companieshouse.model.dto.email.PendingPaymentEmailData;
 import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
 
 import java.util.List;
@@ -14,6 +15,7 @@ import static uk.gov.companieshouse.model.Constants.APPLICATION_ACCEPTED_EMAIL_S
 import static uk.gov.companieshouse.model.Constants.APPLICATION_REJECTED_EMAIL_SUBJECT;
 import static uk.gov.companieshouse.model.Constants.SIGNATORY_TO_SIGN_EMAIL_SUBJECT;
 import static uk.gov.companieshouse.model.Constants.SUCCESSFUL_PAYMENT_EMAIL_SUBJECT;
+import static uk.gov.companieshouse.model.Constants.PENDING_PAYMENT_EMAIL_SUBJECT;
 
 @Service
 public class DissolutionEmailMapper {
@@ -80,5 +82,19 @@ public class DissolutionEmailMapper {
         signatoryToSignEmailData.setChsUrl(environmentConfig.getChsUrl());
 
         return signatoryToSignEmailData;
+    }
+
+    public PendingPaymentEmailData mapToPendingPaymentEmailData(Dissolution dissolution) {
+        PendingPaymentEmailData pendingPaymentEmailData = new PendingPaymentEmailData();
+
+        pendingPaymentEmailData.setTo(dissolution.getCreatedBy().getEmail());
+        pendingPaymentEmailData.setSubject(PENDING_PAYMENT_EMAIL_SUBJECT);
+        pendingPaymentEmailData.setDissolutionReferenceNumber(dissolution.getData().getApplication().getReference());
+        pendingPaymentEmailData.setCompanyNumber(dissolution.getCompany().getNumber());
+        pendingPaymentEmailData.setCompanyName(dissolution.getCompany().getName());
+        pendingPaymentEmailData.setChsUrl(environmentConfig.getChsUrl());
+        pendingPaymentEmailData.setCdnHost(environmentConfig.getCdnHost());
+
+        return pendingPaymentEmailData;
     }
 }
