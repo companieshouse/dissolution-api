@@ -14,7 +14,8 @@ public final class Constants {
    public static final String PAYMENT_RESOURCE_KIND = "dissolution-request#dissolution-request";
    public static final String PAYMENT_DESCRIPTION = "Dissolution application";
    public static final String PAYMENT_DESCRIPTION_IDENTIFIER = "Dissolution application";
-   public static final String PAYMENT_PRODUCT_TYPE = "Dissolution application";
+   public static final String PAYMENT_PRODUCT_TYPE_DS01 = "16032";
+   public static final String PAYMENT_PRODUCT_TYPE_LLDS01 = "16511";
    public static final String PAYMENT_AMOUNT = "8";
    public static final String PAYMENT_AVAILABLE_PAYMENT_METHOD = "credit-card";
    public static final String PAYMENT_CLASS_OF_PAYMENT = "data-maintenance";
