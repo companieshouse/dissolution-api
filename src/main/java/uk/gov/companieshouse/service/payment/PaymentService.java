@@ -36,7 +36,7 @@ public class PaymentService {
         item.setDescription(PAYMENT_DESCRIPTION);
         item.setDescriptionIdentifier(PAYMENT_DESCRIPTION_IDENTIFIER);
         item.setDescriptionValues(new PaymentDescriptionValues());
-        item.setProductType(getProductTypeCode(applicationType));
+        item.setProductType(applicationType);
         item.setAmount(PAYMENT_AMOUNT);
         item.setAvailablePaymentMethods(List.of(PAYMENT_AVAILABLE_PAYMENT_METHOD));
         item.setClassOfPayment(List.of(PAYMENT_CLASS_OF_PAYMENT));
@@ -44,9 +44,5 @@ public class PaymentService {
         item.setResourceKind(PAYMENT_RESOURCE_KIND);
 
         return item;
-    }
-
-    private String getProductTypeCode(ApplicationType applicationType) {
-        return applicationType == ApplicationType.DS01 ? PAYMENT_PRODUCT_TYPE_DS01 : PAYMENT_PRODUCT_TYPE_LLDS01;
     }
 }

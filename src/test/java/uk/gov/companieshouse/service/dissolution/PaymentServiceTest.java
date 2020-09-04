@@ -48,7 +48,7 @@ public class PaymentServiceTest {
 
         final PaymentGetResponse result = service.get(eTag, applicationType, companyNumber);
 
-        assertEquals(PAYMENT_PRODUCT_TYPE_DS01, result.getItems().get(0).getProductType());
+        assertEquals(ApplicationType.DS01, result.getItems().get(0).getProductType());
     }
 
     @Test
@@ -59,6 +59,7 @@ public class PaymentServiceTest {
 
         final PaymentGetResponse result = service.get(eTag, applicationType, companyNumber);
 
-        assertEquals(PAYMENT_PRODUCT_TYPE_LLDS01, result.getItems().get(0).getProductType());
+        System.out.println(result.getItems().get(0).getProductType());
+        assertEquals(ApplicationType.LLDS01, result.getItems().get(0).getProductType());
     }
 }
