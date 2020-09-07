@@ -28,6 +28,7 @@ public class PaymentServiceTest {
 
         assertEquals(eTag, result.getETag());
         assertEquals(PAYMENT_KIND, result.getKind());
+        assertEquals(companyNumber, result.getCompanyNumber());
         assertEquals("/dissolution-request/" + companyNumber + "/payment", result.getLinks().getSelf());
         assertEquals("/dissolution-request/" + companyNumber, result.getLinks().getDissolutionRequest());
         assertEquals(PAYMENT_DESCRIPTION, result.getItems().get(0).getDescription());

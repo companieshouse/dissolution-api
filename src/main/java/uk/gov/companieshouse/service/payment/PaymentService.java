@@ -25,6 +25,7 @@ public class PaymentService {
         response.setETag(eTag);
         response.setKind(PAYMENT_KIND);
         response.setLinks(paymentLinks);
+        response.setCompanyNumber(companyNumber);
         response.setItems(List.of(item));
 
         return response;

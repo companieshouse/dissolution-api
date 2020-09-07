@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.fixtures.ChipsFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.DissolutionVerdictMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionVerdict;
@@ -33,6 +34,9 @@ public class ChipsResponseServiceTest {
 
     @Mock
     private DissolutionEmailService dissolutionEmailService;
+
+    @Mock
+    private Logger logger;
 
     @Test
     public void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail() {
