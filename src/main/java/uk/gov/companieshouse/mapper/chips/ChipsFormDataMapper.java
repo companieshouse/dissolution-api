@@ -22,6 +22,7 @@ import uk.gov.companieshouse.model.dto.chips.xml.ChipsPresenterDetails;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -113,16 +114,13 @@ public class ChipsFormDataMapper {
         officer.setEmail(director.getEmail());
         officer.setIpAddress(director.getDirectorApproval().getIpAddress());
 
-        if (director.getOnBehalfName() != null) {
-            officer.setOnBehalfName(director.getOnBehalfName());
-        }
+        Optional.ofNullable(director.getOnBehalfName()).ifPresent(officer::setOnBehalfName);
 
         return officer;
     }
 
     private ChipsPersonName mapToPersonName(String name) {
         final ChipsPersonName personName = new ChipsPersonName();
-
         final int nameSeparatorIndex = name.indexOf(",");
 
         personName.setForename(name.substring(nameSeparatorIndex + 1).trim());
