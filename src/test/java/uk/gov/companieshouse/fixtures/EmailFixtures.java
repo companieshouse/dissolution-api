@@ -3,6 +3,7 @@ package uk.gov.companieshouse.fixtures;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.model.dto.email.ApplicationAcceptedEmailData;
 import uk.gov.companieshouse.model.dto.email.ApplicationRejectedEmailData;
+import uk.gov.companieshouse.model.dto.email.MessageType;
 import uk.gov.companieshouse.model.dto.email.EmailDocument;
 import uk.gov.companieshouse.model.dto.email.PendingPaymentEmailData;
 import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
@@ -22,7 +23,6 @@ public class EmailFixtures {
 
     public static final Object EMAIL_DATA = "some-email-data";
     public static final String EMAIL_ADDRESS = "user@email.com";
-    public static final String MESSAGE_TYPE = "some-message-type";
 
     public static final String CHS_URL = "http://chs-url";
     public static final String CDN_HOST = "http://some-cdn-host";
@@ -106,7 +106,7 @@ public class EmailFixtures {
 
         emailDocument.setAppId(EMAIL_APP_ID);
         emailDocument.setMessageId("some-uuid");
-        emailDocument.setMessageType(MESSAGE_TYPE);
+        emailDocument.setMessageType(MessageType.APPLICATION_ACCEPTED.getValue());
         emailDocument.setData(data);
         emailDocument.setEmailAddress(EMAIL_ADDRESS);
         emailDocument.setCreatedAt("2020-06-15T08:30:00.000");
