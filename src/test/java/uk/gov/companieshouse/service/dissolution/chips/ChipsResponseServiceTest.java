@@ -17,6 +17,7 @@ import uk.gov.companieshouse.service.dissolution.DissolutionEmailService;
 
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -48,6 +49,8 @@ public class ChipsResponseServiceTest {
         when(repository.findByDataApplicationReference(chipsResponseCreateRequest.getSubmissionReference())).thenReturn(Optional.of(dissolution));
 
         chipsResponseService.saveAndNotifyDissolutionApplicationOutcome(chipsResponseCreateRequest);
+        
+        assertFalse(dissolution.getActive());
 
         verify(dissolutionEmailService).sendApplicationOutcomeEmail(dissolution, dissolutionVerdict);
     }

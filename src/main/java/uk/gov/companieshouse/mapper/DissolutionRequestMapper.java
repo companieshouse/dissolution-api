@@ -31,6 +31,7 @@ public class DissolutionRequestMapper {
         dissolution.setData(mapToDissolutionData(body, company.getType(), directors, reference, barcode));
         dissolution.setCompany(mapToCompany(company.getCompanyNumber(), company.getCompanyName()));
         dissolution.setCreatedBy(mapToCreatedBy(userId, email, ip));
+        dissolution.setActive(true);
 
         return dissolution;
     }

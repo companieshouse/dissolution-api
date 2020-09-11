@@ -35,6 +35,7 @@ public class ChipsResponseService {
         Dissolution dissolution = this.repository.findByDataApplicationReference(body.getSubmissionReference()).get();
 
         dissolution.setVerdict(dissolutionVerdict);
+        dissolution.setActive(false);
 
         logger.info(String.format("Received CHIPS verdict for company %s - %s", dissolution.getCompany().getNumber(), dissolutionVerdict.getResult().toString()));
 

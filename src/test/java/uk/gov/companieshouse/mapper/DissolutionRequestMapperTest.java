@@ -59,6 +59,7 @@ public class DissolutionRequestMapperTest {
 
         assertEquals(BARCODE, dissolution.getData().getApplication().getBarcode());
         assertEquals(REFERENCE, dissolution.getData().getApplication().getReference());
+        assertTrue(dissolution.getActive());
         assertEquals(ApplicationStatus.PENDING_APPROVAL, dissolution.getData().getApplication().getStatus());
         assertEquals(ApplicationType.DS01, dissolution.getData().getApplication().getType());
     }
@@ -76,6 +77,7 @@ public class DissolutionRequestMapperTest {
 
         assertEquals(BARCODE, dissolution.getData().getApplication().getBarcode());
         assertEquals(REFERENCE, dissolution.getData().getApplication().getReference());
+        assertTrue(dissolution.getActive());
         assertEquals(ApplicationStatus.PENDING_APPROVAL, dissolution.getData().getApplication().getStatus());
         assertEquals(ApplicationType.LLDS01, dissolution.getData().getApplication().getType());
     }

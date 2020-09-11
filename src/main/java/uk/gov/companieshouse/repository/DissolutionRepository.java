@@ -15,6 +15,7 @@ public interface DissolutionRepository extends MongoRepository<Dissolution, Stri
 
     Dissolution insert(Dissolution dissolution);
 
+    @Query("{'company.number': ?0, 'active' : true}")
     Optional<Dissolution> findByCompanyNumber(String companyNumber);
 
     Optional<Dissolution> findByDataApplicationReference(String applicationReferenceNumber);

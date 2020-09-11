@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataMongoTest
 @ExtendWith(SpringExtension.class)
@@ -25,15 +26,29 @@ public class DissolutionRepositoryTest {
     public DissolutionRepository repository;
 
     @Test
-    public void findByCompanyNumber_findsCorrectDissolution() {
+    public void findByCompanyNumber_findsActiveDissolution() {
         final String COMPANY_NUMBER = "123";
 
         Dissolution dissolution = DissolutionFixtures.generateDissolution();
         dissolution.getCompany().setNumber(COMPANY_NUMBER);
+        dissolution.setActive(true);
 
         repository.insert(dissolution);
 
         assertEquals(COMPANY_NUMBER, repository.findByCompanyNumber(COMPANY_NUMBER).get().getCompany().getNumber());
+    }
+
+    @Test
+    public void findByCompanyNumber_DoesNotFindInactiveDissolution() {
+        final String COMPANY_NUMBER = "123";
+
+        Dissolution dissolution = DissolutionFixtures.generateDissolution();
+        dissolution.getCompany().setNumber(COMPANY_NUMBER);
+        dissolution.setActive(false);
+
+        repository.insert(dissolution);
+
+        assertTrue(repository.findByCompanyNumber(COMPANY_NUMBER).isEmpty());
     }
 
     @Test

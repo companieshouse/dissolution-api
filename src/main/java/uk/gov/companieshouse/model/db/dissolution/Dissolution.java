@@ -31,6 +31,16 @@ public class Dissolution {
 
     private DissolutionVerdict verdict;
 
+    boolean active;
+    
+    public boolean getActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+    
     public String getId() {
         return id;
     }
