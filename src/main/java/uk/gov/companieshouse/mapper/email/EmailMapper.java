@@ -2,6 +2,7 @@ package uk.gov.companieshouse.mapper.email;
 
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.kafka.message.Message;
+import uk.gov.companieshouse.model.dto.email.MessageType;
 import uk.gov.companieshouse.model.dto.email.EmailDocument;
 import uk.gov.companieshouse.util.DateTimeGenerator;
 import uk.gov.companieshouse.util.UUIDGenerator;
@@ -15,12 +16,12 @@ import static uk.gov.companieshouse.model.Constants.EMAIL_TOPIC;
 @Service
 public class EmailMapper {
 
-    public <T> EmailDocument<T> mapToEmailDocument(T emailData, String emailAddress, String messageType) {
+    public <T> EmailDocument<T> mapToEmailDocument(T emailData, String emailAddress, MessageType messageType) {
         EmailDocument<T> emailDocument = new EmailDocument<>();
 
         emailDocument.setAppId(EMAIL_APP_ID);
         emailDocument.setMessageId(UUIDGenerator.generateUUID());
-        emailDocument.setMessageType(messageType);
+        emailDocument.setMessageType(messageType.getValue());
         emailDocument.setData(emailData);
         emailDocument.setEmailAddress(emailAddress);
         emailDocument.setCreatedAt(DateTimeGenerator.generateCurrentDateTime().toString());
