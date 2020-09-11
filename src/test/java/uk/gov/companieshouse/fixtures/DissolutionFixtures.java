@@ -80,6 +80,7 @@ public class DissolutionFixtures {
         dissolution.setSubmission(new DissolutionSubmission());
         dissolution.setPaymentInformation(new PaymentInformation());
         dissolution.setVerdict(new DissolutionVerdict());
+        dissolution.setActive(true);
 
         return dissolution;
     }
