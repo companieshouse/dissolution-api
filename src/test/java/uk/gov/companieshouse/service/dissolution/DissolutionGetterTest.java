@@ -47,7 +47,7 @@ public class DissolutionGetterTest {
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
         when(responseMapper.mapToDissolutionGetResponse(dissolution)).thenReturn(response);
 
-        final Optional<DissolutionGetResponse> result = getter.get(COMPANY_NUMBER);
+        final Optional<DissolutionGetResponse> result = getter.getByCompanyNumber(COMPANY_NUMBER);
 
         verify(repository).findByCompanyNumber(COMPANY_NUMBER);
         verify(responseMapper).mapToDissolutionGetResponse(dissolution);
@@ -60,7 +60,7 @@ public class DissolutionGetterTest {
     public void get_doesNotFindDissolution_returnsOptionalEmpty() {
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
 
-        final Optional<DissolutionGetResponse> result = getter.get(COMPANY_NUMBER);
+        final Optional<DissolutionGetResponse> result = getter.getByCompanyNumber(COMPANY_NUMBER);
 
         verify(repository).findByCompanyNumber(COMPANY_NUMBER);
 

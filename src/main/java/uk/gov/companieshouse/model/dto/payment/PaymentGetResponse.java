@@ -7,8 +7,14 @@ import java.util.List;
 public class PaymentGetResponse {
     @JsonProperty("ETag")
     private String ETag;
+
     private String kind;
+
     private PaymentLinks links;
+
+    @JsonProperty("company_number")
+    private String companyNumber;
+
     private List<PaymentItem> items;
 
     @JsonProperty("ETag")
@@ -34,6 +40,14 @@ public class PaymentGetResponse {
 
     public void setLinks(PaymentLinks links) {
         this.links = links;
+    }
+
+    public String getCompanyNumber() {
+        return companyNumber;
+    }
+
+    public void setCompanyNumber(String companyNumber) {
+        this.companyNumber = companyNumber;
     }
 
     public List<PaymentItem> getItems() {

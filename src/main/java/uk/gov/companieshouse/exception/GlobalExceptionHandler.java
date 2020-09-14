@@ -1,12 +1,12 @@
 package uk.gov.companieshouse.exception;
 
-import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import uk.gov.companieshouse.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -15,7 +15,11 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private final Logger logger;
+
+    public GlobalExceptionHandler(Logger logger) {
+        this.logger = logger;
+    }
 
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -26,7 +30,7 @@ public class GlobalExceptionHandler {
                 .stream()
                 .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
 
-        LOGGER.info("[Unprocessable entity] - {} - {}", request.getRequestURL().toString(), validationErrors);
+        logger.info(String.format("[Unprocessable entity] - %s - %s", request.getRequestURL().toString(), validationErrors));
 
         return validationErrors;
     }
@@ -34,36 +38,36 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     @ExceptionHandler(UnauthorisedException.class)
     public void handleUnauthorised(UnauthorisedException ex, HttpServletRequest request) {
-        LOGGER.info("[Unauthorised] - {}", request.getRequestURL().toString(), ex);
+        logger.info(String.format("[Unauthorised] - %s - %s", request.getRequestURL().toString(), ex.getMessage()));
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(ConflictException.class)
     public void handleConflict(ConflictException ex, HttpServletRequest request) {
-        LOGGER.info("[Conflict] - {}", request.getRequestURL().toString(), ex);
+        logger.info(String.format("[Conflict] - %s", request.getRequestURL().toString()));
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(RuntimeException.class)
     public void handleRuntime(RuntimeException ex, HttpServletRequest request) {
-        LOGGER.error("[Internal Server Error] - {}", request.getRequestURL().toString(), ex);
+        logger.error(String.format("[Internal Server Error] - %s", request.getRequestURL().toString()), ex);
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(NotFoundException.class)
     public void handleNotFound(RuntimeException ex, HttpServletRequest request) {
-        LOGGER.info("[Not Found] - {}", request.getRequestURL().toString());
+        logger.info(String.format("[Not Found] - %s", request.getRequestURL().toString()));
     }
 
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     @ExceptionHandler(ServiceUnavailableException.class)
     public void handleServiceUnavailable(RuntimeException ex, HttpServletRequest request) {
-        LOGGER.info("[Service unavailable] - {}", request.getRequestURL().toString(), ex);
+        logger.info(String.format("[Service unavailable] - %s", request.getRequestURL().toString()));
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(BadRequestException.class)
     public void handleBadRequest(RuntimeException ex, HttpServletRequest request) {
-        LOGGER.info("[Bad Request] - {}", request.getRequestURL().toString(), ex);
+        logger.info(String.format("[Bad Request] - %s - %s", request.getRequestURL().toString(), ex.getMessage()));
     }
 }

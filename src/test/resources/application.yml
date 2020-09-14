@@ -45,5 +45,8 @@ kafka:
     uri:
       email-send: /email/schema
 
+logging:
+  namespace: dissolution-api
+
 server:
   port: 3001

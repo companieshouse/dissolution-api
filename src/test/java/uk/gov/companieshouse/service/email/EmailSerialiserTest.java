@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.exception.EmailSendException;
 import uk.gov.companieshouse.fixtures.EmailFixtures;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.model.dto.email.EmailDocument;
 
 import java.io.IOException;
@@ -57,6 +58,9 @@ public class EmailSerialiserTest {
 
     @Mock
     private GenericRecord genericRecord;
+
+    @Mock
+    private Logger logger;
 
     @BeforeAll
     public static void setUp() {

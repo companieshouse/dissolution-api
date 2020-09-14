@@ -42,12 +42,16 @@ public class DissolutionService {
         patcher.handlePayment(data.getPaymentReference(), data.getPaidAt(), companyNumber);
     }
 
-    public boolean doesDissolutionRequestExistForCompany(String companyNumber) {
+    public boolean doesDissolutionRequestExistForCompanyByCompanyNumber(String companyNumber) {
         return repository.findByCompanyNumber(companyNumber).isPresent();
     }
 
-    public Optional<DissolutionGetResponse> get(String companyNumber) {
-        return getter.get(companyNumber);
+    public boolean doesDissolutionRequestExistForCompanyByApplicationReference(String applicationReference) {
+        return repository.findByDataApplicationReference(applicationReference).isPresent();
+    }
+
+    public Optional<DissolutionGetResponse> getByCompanyNumber(String companyNumber) {
+        return getter.getByCompanyNumber(companyNumber);
     }
 
     public boolean isDirectorPendingApproval(String companyNumber, String officerId) {

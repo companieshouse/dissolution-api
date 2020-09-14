@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.model.dto.dissolution;
 
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;

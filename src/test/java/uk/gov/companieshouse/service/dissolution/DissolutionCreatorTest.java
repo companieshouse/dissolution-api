@@ -47,6 +47,9 @@ public class DissolutionCreatorTest {
     @Mock
     private DissolutionResponseMapper responseMapper;
 
+    @Mock
+    private DissolutionEmailService emailService;
+
     public static final String COMPANY_NUMBER = "12345678";
     public static final String USER_ID = "123";
     public static final String IP = "192.168.0.1";
@@ -55,7 +58,7 @@ public class DissolutionCreatorTest {
     public static final String BARCODE = "BARC0D3";
 
     @Test
-    public void create_generatesAReferenceNumber_mapsToDissolution_savesInDatabase_returnsCreateResponse() {
+    public void create_generatesAReferenceNumber_mapsToDissolution_savesInDatabase_notifiesSignatories_returnsCreateResponse() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
 
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
@@ -74,8 +77,9 @@ public class DissolutionCreatorTest {
         verify(referenceGenerator).generateApplicationReference();
         verify(barcodeGenerator).generateBarcode();
         verify(requestMapper).mapToDissolution(body, company, directors, USER_ID, EMAIL, IP, REFERENCE, BARCODE);
-        verify(responseMapper).mapToDissolutionCreateResponse(dissolution);
         verify(repository).insert(dissolution);
+        verify(emailService).notifySignatoriesToSign(dissolution);
+        verify(responseMapper).mapToDissolutionCreateResponse(dissolution);
 
         assertEquals(response, result);
     }

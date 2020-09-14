@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.client.ChipsClient;
 import uk.gov.companieshouse.config.ChipsConfig;
 import uk.gov.companieshouse.exception.ChipsNotAvailableException;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.chips.DissolutionChipsMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionSubmission;
@@ -47,6 +48,9 @@ public class ChipsSubmitterTest {
 
     @Mock
     private DissolutionRepository repository;
+
+    @Mock
+    private Logger logger;
 
     private Dissolution dissolution;
     private ArgumentCaptor<Dissolution> dissolutionCaptor;

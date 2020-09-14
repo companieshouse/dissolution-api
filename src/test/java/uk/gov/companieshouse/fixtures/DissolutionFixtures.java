@@ -8,7 +8,9 @@ import uk.gov.companieshouse.model.db.dissolution.DissolutionApplication;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionData;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionRejectReason;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionSubmission;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionVerdict;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
@@ -21,6 +23,7 @@ import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateDire
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.SubmissionStatus;
+import uk.gov.companieshouse.model.enums.VerdictResult;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -76,6 +79,8 @@ public class DissolutionFixtures {
         dissolution.setCreatedBy(generateCreatedBy());
         dissolution.setSubmission(new DissolutionSubmission());
         dissolution.setPaymentInformation(new PaymentInformation());
+        dissolution.setVerdict(new DissolutionVerdict());
+        dissolution.setActive(true);
 
         return dissolution;
     }
@@ -191,5 +196,24 @@ public class DissolutionFixtures {
         submission.setRetryCounter(0);
 
         return submission;
+    }
+
+    public static DissolutionVerdict generateDissolutionVerdict() {
+        final DissolutionVerdict dissolutionVerdict = new DissolutionVerdict();
+
+        dissolutionVerdict.setResult(VerdictResult.ACCEPTED);
+        dissolutionVerdict.setDateTime(LocalDateTime.now());
+
+        return dissolutionVerdict;
+    }
+
+    public static DissolutionRejectReason generateDissolutionRejectReason() {
+        final DissolutionRejectReason dissolutionRejectReason = new DissolutionRejectReason();
+
+        dissolutionRejectReason.setId("1");
+        dissolutionRejectReason.setDescription("some description");
+        dissolutionRejectReason.setTextEnglish("some reject reason");
+
+        return dissolutionRejectReason;
     }
 }

@@ -54,13 +54,18 @@ public class DissolutionPatcher {
         this.addDirectorApproval(userId, ip, officerId, dissolution);
 
         if (!this.hasDirectorsLeftToApprove(dissolution)) {
-            setDissolutionStatus(dissolution, ApplicationStatus.PENDING_PAYMENT);
-            dissolution.setCertificate(this.certificateGenerator.generateDissolutionCertificate(dissolution));
+            handleFinalApproval(dissolution);
         }
 
         this.repository.save(dissolution);
 
         return this.responseMapper.mapToDissolutionPatchResponse(companyNumber);
+    }
+
+    private void handleFinalApproval(Dissolution dissolution) {
+        setDissolutionStatus(dissolution, ApplicationStatus.PENDING_PAYMENT);
+        dissolution.setCertificate(this.certificateGenerator.generateDissolutionCertificate(dissolution));
+        dissolutionEmailService.sendPendingPaymentEmail(dissolution);
     }
 
     public void handlePayment(String paymentReference, Timestamp paidAt, String companyNumber) {

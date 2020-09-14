@@ -4,19 +4,19 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import uk.gov.companieshouse.fixtures.EmailFixtures;
 import uk.gov.companieshouse.kafka.message.Message;
+import uk.gov.companieshouse.model.dto.email.MessageType;
 import uk.gov.companieshouse.model.dto.email.EmailDocument;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static uk.gov.companieshouse.fixtures.EmailFixtures.EMAIL_ADDRESS;
 import static uk.gov.companieshouse.fixtures.EmailFixtures.EMAIL_DATA;
-import static uk.gov.companieshouse.fixtures.EmailFixtures.MESSAGE_TYPE;
 
 public class EmailMapperTest {
 
     private static EmailDocument<?> emailDocument;
 
-    private final EmailMapper<Object> emailMapper = new EmailMapper<>();
+    private final EmailMapper emailMapper = new EmailMapper();
 
     @BeforeAll
     public static void setUp() {
@@ -25,7 +25,7 @@ public class EmailMapperTest {
 
     @Test
     public void mapToEmailDocument() {
-        final EmailDocument<?> result = emailMapper.mapToEmailDocument(EMAIL_DATA, EMAIL_ADDRESS, MESSAGE_TYPE);
+        final EmailDocument<?> result = emailMapper.mapToEmailDocument(EMAIL_DATA, EMAIL_ADDRESS, MessageType.APPLICATION_ACCEPTED);
 
         assertEquals(emailDocument.getAppId(), result.getAppId());
         assertNotNull(result.getMessageId());

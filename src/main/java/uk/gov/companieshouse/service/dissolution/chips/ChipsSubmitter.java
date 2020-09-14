@@ -1,11 +1,10 @@
 package uk.gov.companieshouse.service.dissolution.chips;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.client.ChipsClient;
 import uk.gov.companieshouse.config.ChipsConfig;
 import uk.gov.companieshouse.exception.ChipsNotAvailableException;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.chips.DissolutionChipsMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionSubmission;
@@ -19,25 +18,26 @@ import java.time.LocalDateTime;
 @Service
 public class ChipsSubmitter {
 
-    private final Logger logger = LoggerFactory.getLogger(ChipsSubmitter.class);
-
     private final DissolutionCertificateDownloader certificateDownloader;
     private final DissolutionChipsMapper mapper;
     private final ChipsClient client;
     private final ChipsConfig config;
     private final DissolutionRepository repository;
+    private final Logger logger;
 
     public ChipsSubmitter(
             DissolutionCertificateDownloader certificateDownloader,
             DissolutionChipsMapper mapper,
             ChipsClient client,
             ChipsConfig config,
-            DissolutionRepository repository) {
+            DissolutionRepository repository,
+            Logger logger) {
         this.certificateDownloader = certificateDownloader;
         this.mapper = mapper;
         this.client = client;
         this.config = config;
         this.repository = repository;
+        this.logger = logger;
     }
 
     public void submitDissolutionToChips(Dissolution dissolution) {
@@ -49,7 +49,7 @@ public class ChipsSubmitter {
     private boolean sendToChips(Dissolution dissolution) {
         final String companyNumber = dissolution.getCompany().getNumber();
 
-        logger.info("Sending dissolution request to CHIPS for company {}", companyNumber);
+        logger.info(String.format("Sending dissolution request to CHIPS for company %s", companyNumber));
 
         final byte[] certificateContents = certificateDownloader.downloadDissolutionCertificate(dissolution);
 
@@ -58,13 +58,13 @@ public class ChipsSubmitter {
 
             client.sendDissolutionToChips(dissolutionRequest);
 
-            logger.info("Dissolution request successfully sent to CHIPS for company {}", companyNumber);
+            logger.info(String.format("Dissolution request successfully sent to CHIPS for company %s", companyNumber));
 
             return true;
         } catch (ChipsNotAvailableException ex) {
-            logger.info("CHIPS was not available when submitting for company {}", companyNumber);
+            logger.info(String.format("CHIPS was not available when submitting for company %s", companyNumber));
         } catch (RuntimeException ex) {
-            logger.error("Unexpected error thrown when submitting to CHIPS for company {}", companyNumber, ex);
+            logger.error(String.format("Unexpected error thrown when submitting to CHIPS for company %s", companyNumber), ex);
         }
 
         return false;
@@ -77,16 +77,17 @@ public class ChipsSubmitter {
         if (wasSuccessful) {
             submission.setStatus(SubmissionStatus.SENT);
         } else {
-            handleFailedSubmission(submission);
+            handleFailedSubmission(submission, dissolution);
         }
 
         repository.save(dissolution);
     }
 
-    private void handleFailedSubmission(DissolutionSubmission submission) {
+    private void handleFailedSubmission(DissolutionSubmission submission, Dissolution dissolution) {
         submission.setRetryCounter(submission.getRetryCounter() + 1);
 
         if (submission.getRetryCounter() == config.getChipsRetryLimit()) {
+            logger.error(String.format("Marking dissolution as failed for company %s", dissolution.getCompany().getNumber()));
             submission.setStatus(SubmissionStatus.FAILED);
         }
     }

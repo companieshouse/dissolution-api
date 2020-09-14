@@ -29,6 +29,18 @@ public class Dissolution {
 
     private DissolutionSubmission submission;
 
+    private DissolutionVerdict verdict;
+
+    boolean active;
+    
+    public boolean getActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+    
     public String getId() {
         return id;
     }
@@ -91,5 +103,13 @@ public class Dissolution {
 
     public void setSubmission(DissolutionSubmission submission) {
         this.submission = submission;
+    }
+
+    public DissolutionVerdict getVerdict() {
+        return verdict;
+    }
+
+    public void setVerdict(DissolutionVerdict verdict) {
+        this.verdict = verdict;
     }
 }

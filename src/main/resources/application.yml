@@ -48,6 +48,7 @@ kafka:
 logging:
   level:
     root: ${LOGLEVEL}
+  namespace: dissolution-api
 
 server:
   port: 3001

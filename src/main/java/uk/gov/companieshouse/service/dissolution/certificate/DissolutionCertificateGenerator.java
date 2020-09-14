@@ -1,9 +1,8 @@
 package uk.gov.companieshouse.service.dissolution.certificate;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.DissolutionCertificateMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
@@ -13,20 +12,21 @@ import uk.gov.companieshouse.client.DocumentRenderClient;
 @Service
 public class DissolutionCertificateGenerator {
 
-    private final Logger logger = LoggerFactory.getLogger(DissolutionCertificateGenerator.class);
-
     private final DissolutionCertificateMapper mapper;
     private final DissolutionCertificateLocationGenerator locationGenerator;
     private final DocumentRenderClient client;
+    private final Logger logger;
 
     @Autowired
     public DissolutionCertificateGenerator(
             DissolutionCertificateMapper mapper,
             DissolutionCertificateLocationGenerator locationGenerator,
-            DocumentRenderClient client) {
+            DocumentRenderClient client,
+            Logger logger) {
         this.mapper = mapper;
         this.locationGenerator = locationGenerator;
         this.client = client;
+        this.logger = logger;
     }
 
     public DissolutionCertificate generateDissolutionCertificate(Dissolution dissolution) {
@@ -36,7 +36,7 @@ public class DissolutionCertificateGenerator {
 
         final String savedLocation = client.generateAndStoreDocument(data, getTemplateName(dissolution), location);
 
-        logger.info("Generated dissolution certificate is available at {}", savedLocation);
+        logger.info(String.format("Generated dissolution certificate is available at %s", savedLocation));
 
         return mapper.mapToDissolutionCertificate(savedLocation);
     }

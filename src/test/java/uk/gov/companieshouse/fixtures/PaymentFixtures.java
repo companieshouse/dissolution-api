@@ -6,6 +6,7 @@ import uk.gov.companieshouse.model.dto.payment.PaymentGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentItem;
 import uk.gov.companieshouse.model.dto.payment.PaymentLinks;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
+import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.PaymentMethod;
 import uk.gov.companieshouse.model.enums.PaymentStatus;
 
@@ -25,7 +26,7 @@ public class PaymentFixtures {
         item.setDescription("Dissolution application");
         item.setDescriptionIdentifier("Dissolution application");
         item.setDescriptionValues(new PaymentDescriptionValues());
-        item.setProductType("Dissolution application");
+        item.setProductType(ApplicationType.DS01);
         item.setAmount("8");
         item.setAvailablePaymentMethods(List.of("credit-card"));
         item.setClassOfPayment(List.of("data-maintenance"));

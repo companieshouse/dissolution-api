@@ -4,8 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,8 +41,6 @@ import static uk.gov.companieshouse.util.EricHelper.getEmail;
 @RequestMapping("/dissolution-request/{company-number}")
 public class DissolutionController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DissolutionController.class);
-
     private final DissolutionService dissolutionService;
     private final DissolutionValidator dissolutionValidator;
     private final CompanyProfileClient companyProfileClient;
@@ -78,13 +74,11 @@ public class DissolutionController {
             @Valid @RequestBody final DissolutionCreateRequest body,
             HttpServletRequest request) {
 
-        LOGGER.info("[POST] Submitting dissolution request for company number {}", companyNumber);
-
         final CompanyProfile company = Optional
                 .ofNullable(companyProfileClient.getCompanyProfile(companyNumber))
                 .orElseThrow(NotFoundException::new);
 
-        if (dissolutionService.doesDissolutionRequestExistForCompany(companyNumber)) {
+        if (dissolutionService.doesDissolutionRequestExistForCompanyByCompanyNumber(companyNumber)) {
             throw new ConflictException("Dissolution already exists");
         }
 
@@ -105,11 +99,8 @@ public class DissolutionController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public DissolutionGetResponse getDissolutionApplication(@PathVariable("company-number") final String companyNumber) {
-
-        LOGGER.info("[GET] Getting dissolution info for company number {}", companyNumber);
-
         return dissolutionService
-                .get(companyNumber)
+                .getByCompanyNumber(companyNumber)
                 .orElseThrow(NotFoundException::new);
     }
 
@@ -127,9 +118,7 @@ public class DissolutionController {
             @Valid @RequestBody final DissolutionPatchRequest body,
             HttpServletRequest request) {
 
-        LOGGER.info("[PATCH] Updating dissolution info for company number {}", companyNumber);
-
-        if (!dissolutionService.doesDissolutionRequestExistForCompany(companyNumber)) {
+        if (!dissolutionService.doesDissolutionRequestExistForCompanyByCompanyNumber(companyNumber)) {
             throw new NotFoundException();
         }
 

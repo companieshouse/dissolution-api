@@ -22,6 +22,7 @@ public class DissolutionCreator {
     private final DissolutionRequestMapper requestMapper;
     private final DissolutionRepository repository;
     private final DissolutionResponseMapper responseMapper;
+    private final DissolutionEmailService emailService;
 
     @Autowired
     public DissolutionCreator(
@@ -29,12 +30,14 @@ public class DissolutionCreator {
         BarcodeGenerator barcodeGenerator,
         DissolutionRequestMapper requestMapper,
         DissolutionRepository repository,
-        DissolutionResponseMapper responseMapper) {
+        DissolutionResponseMapper responseMapper,
+        DissolutionEmailService emailService) {
         this.referenceGenerator = referenceGenerator;
         this.barcodeGenerator = barcodeGenerator;
         this.requestMapper = requestMapper;
         this.repository = repository;
         this.responseMapper = responseMapper;
+        this.emailService = emailService;
     }
 
     public DissolutionCreateResponse create(DissolutionCreateRequest body, CompanyProfile companyProfile, Map<String, CompanyOfficer> directors, String userId, String ip, String email) {
@@ -44,6 +47,8 @@ public class DissolutionCreator {
         final Dissolution dissolution = requestMapper.mapToDissolution(body, companyProfile, directors, userId, email, ip, reference, barcode);
 
         repository.insert(dissolution);
+
+        emailService.notifySignatoriesToSign(dissolution);
 
         return responseMapper.mapToDissolutionCreateResponse(dissolution);
     }

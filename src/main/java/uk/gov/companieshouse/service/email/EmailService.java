@@ -1,12 +1,11 @@
 package uk.gov.companieshouse.service.email;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.exception.EmailSendException;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.producer.CHKafkaProducer;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.email.EmailMapper;
 import uk.gov.companieshouse.model.dto.email.EmailDocument;
 
@@ -14,22 +13,26 @@ import java.util.concurrent.ExecutionException;
 
 @Service
 public class EmailService {
-    private final EmailSerialiser emailSerialiser;
-    private final EmailMapper<?> emailMapper;
-    private final CHKafkaProducer kafkaProducer;
 
-    private final Logger logger = LoggerFactory.getLogger(EmailService.class);
+    private final EmailSerialiser emailSerialiser;
+    private final EmailMapper emailMapper;
+    private final CHKafkaProducer kafkaProducer;
+    private final Logger logger;
 
     @Autowired
     public EmailService(
-            EmailSerialiser emailSerialiser, EmailMapper<?> emailMapper, CHKafkaProducer kafkaProducer
+            EmailSerialiser emailSerialiser,
+            EmailMapper emailMapper,
+            CHKafkaProducer kafkaProducer,
+            Logger logger
     ) {
         this.emailSerialiser = emailSerialiser;
         this.emailMapper = emailMapper;
         this.kafkaProducer = kafkaProducer;
+        this.logger = logger;
     }
 
-    public void sendMessage(EmailDocument<?> emailDocument) {
+    public <T> void sendMessage(EmailDocument<T> emailDocument) {
         try {
             byte[] serialisedEmailDocument = emailSerialiser.serialise(emailDocument);
 

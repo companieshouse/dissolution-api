@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.DissolutionCertificateMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
@@ -36,6 +37,9 @@ public class DissolutionCertificateGeneratorTest {
 
     @Mock
     private DocumentRenderClient client;
+
+    @Mock
+    private Logger logger;
 
     @Test
     public void generateDissolutionCertificate_generatesDataAndLocationForCertificate() {
