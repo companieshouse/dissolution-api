@@ -31,7 +31,8 @@ public class DissolutionRequestMapperTest {
     private static final String REFERENCE = "ABC123";
     private static final String BARCODE = "B4RC0D3";
 
-    private final DissolutionRequestMapper mapper = new DissolutionRequestMapper();
+    private final DissolutionRequestMapper requestMapper = new DissolutionRequestMapper();
+    private final DissolutionUserDataMapper userDataMapper = new DissolutionUserDataMapper();
 
     @Test
     public void mapToDissolution_setsModifiedDateTime() {
@@ -41,7 +42,7 @@ public class DissolutionRequestMapperTest {
         company.setCompanyNumber(COMPANY_NUMBER);
         company.setCompanyName(COMPANY_NAME);
 
-        final Dissolution dissolution = mapper.mapToDissolution(body, company, new HashMap<>(), USER_ID, EMAIL, IP_ADDRESS, REFERENCE, BARCODE);
+        final Dissolution dissolution = requestMapper.mapToDissolution(body, company, new HashMap<>(), userDataMapper.mapToUserData(USER_ID, EMAIL, IP_ADDRESS), REFERENCE, BARCODE);
 
         assertNotNull(dissolution.getModifiedDateTime());
     }
@@ -55,7 +56,7 @@ public class DissolutionRequestMapperTest {
         company.setCompanyName(COMPANY_NAME);
         company.setType(CompanyType.PLC.getValue());
 
-        final Dissolution dissolution = mapper.mapToDissolution(body, company, new HashMap<>(), USER_ID, EMAIL, IP_ADDRESS, REFERENCE, BARCODE);
+        final Dissolution dissolution = requestMapper.mapToDissolution(body, company, new HashMap<>(), userDataMapper.mapToUserData(USER_ID, EMAIL, IP_ADDRESS), REFERENCE, BARCODE);
 
         assertEquals(BARCODE, dissolution.getData().getApplication().getBarcode());
         assertEquals(REFERENCE, dissolution.getData().getApplication().getReference());
@@ -73,7 +74,7 @@ public class DissolutionRequestMapperTest {
         company.setCompanyName(COMPANY_NAME);
         company.setType(CompanyType.LLP.getValue());
 
-        final Dissolution dissolution = mapper.mapToDissolution(body, company, new HashMap<>(), USER_ID, EMAIL, IP_ADDRESS, REFERENCE, BARCODE);
+        final Dissolution dissolution = requestMapper.mapToDissolution(body, company, new HashMap<>(), userDataMapper.mapToUserData(USER_ID, EMAIL, IP_ADDRESS), REFERENCE, BARCODE);
 
         assertEquals(BARCODE, dissolution.getData().getApplication().getBarcode());
         assertEquals(REFERENCE, dissolution.getData().getApplication().getReference());
@@ -116,7 +117,7 @@ public class DissolutionRequestMapperTest {
 
         body.setDirectors(Arrays.asList(selectedDirector1, selectedDirector2));
 
-        final Dissolution dissolution = mapper.mapToDissolution(body, company, companyDirectors, USER_ID, EMAIL, IP_ADDRESS, REFERENCE, BARCODE);
+        final Dissolution dissolution = requestMapper.mapToDissolution(body, company, companyDirectors, userDataMapper.mapToUserData(USER_ID, EMAIL, IP_ADDRESS), REFERENCE, BARCODE);
 
         assertEquals(2, dissolution.getData().getDirectors().size());
 
@@ -141,7 +142,7 @@ public class DissolutionRequestMapperTest {
         company.setCompanyNumber(COMPANY_NUMBER);
         company.setCompanyName(COMPANY_NAME);
 
-        final Dissolution dissolution = mapper.mapToDissolution(body, company, new HashMap<>(), USER_ID, EMAIL, IP_ADDRESS, REFERENCE, BARCODE);
+        final Dissolution dissolution = requestMapper.mapToDissolution(body, company, new HashMap<>(), userDataMapper.mapToUserData(USER_ID, EMAIL, IP_ADDRESS), REFERENCE, BARCODE);
 
         assertEquals(COMPANY_NUMBER, dissolution.getCompany().getNumber());
         assertEquals(COMPANY_NAME, dissolution.getCompany().getName());
@@ -155,7 +156,7 @@ public class DissolutionRequestMapperTest {
         company.setCompanyNumber(COMPANY_NUMBER);
         company.setCompanyName(COMPANY_NAME);
 
-        final Dissolution dissolution = mapper.mapToDissolution(body, company, new HashMap<>(), USER_ID, EMAIL, IP_ADDRESS, REFERENCE, BARCODE);
+        final Dissolution dissolution = requestMapper.mapToDissolution(body, company, new HashMap<>(), userDataMapper.mapToUserData(USER_ID, IP_ADDRESS, EMAIL), REFERENCE, BARCODE);
 
         assertEquals(USER_ID, dissolution.getCreatedBy().getUserId());
         assertEquals(EMAIL, dissolution.getCreatedBy().getEmail());

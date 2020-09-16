@@ -20,7 +20,7 @@ public class DissolutionChipsService {
     private final ChipsSubmitter submitter;
     private final ChipsConfig config;
 
-    private final int PAGE_NUMBER_INDEX = 0;
+    private static final int PAGE_NUMBER_INDEX = 0;
 
     public DissolutionChipsService(ChipsClient client, ChipsSubmitter submitter,
                                    DissolutionRepository repository, ChipsConfig config) {

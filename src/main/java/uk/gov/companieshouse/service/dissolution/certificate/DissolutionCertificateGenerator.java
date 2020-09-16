@@ -2,12 +2,12 @@ package uk.gov.companieshouse.service.dissolution.certificate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.client.DocumentRenderClient;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.DissolutionCertificateMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
-import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateData;
-import uk.gov.companieshouse.client.DocumentRenderClient;
+import uk.gov.companieshouse.model.dto.documentrender.DissolutionCertificateData;
 
 @Service
 public class DissolutionCertificateGenerator {

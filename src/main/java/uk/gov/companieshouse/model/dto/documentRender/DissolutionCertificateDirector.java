@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.model.dto.documentRender;
+package uk.gov.companieshouse.model.dto.documentrender;
 
 public class DissolutionCertificateDirector {
 

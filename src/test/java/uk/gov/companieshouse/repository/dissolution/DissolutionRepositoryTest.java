@@ -92,8 +92,8 @@ public class DissolutionRepositoryTest {
         assertEquals(SUBMISSION_LIMIT, dissolutions.size());
 
         // Order is important - older first
-        assertEquals(dissolutions.get(0).getCompany().getNumber(), "3");
-        assertEquals(dissolutions.get(1).getCompany().getNumber(), "2");
+        assertEquals("3", dissolutions.get(0).getCompany().getNumber());
+        assertEquals("2", dissolutions.get(1).getCompany().getNumber());
     }
 
     private Dissolution generateDissolution(String companyNumber, LocalDateTime submissionDateTime, SubmissionStatus submissionStatus, LocalDateTime paymentDateTime) {

@@ -5,13 +5,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.client.DocumentRenderClient;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.DissolutionCertificateMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
-import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateData;
+import uk.gov.companieshouse.model.dto.documentrender.DissolutionCertificateData;
 import uk.gov.companieshouse.model.enums.ApplicationType;
-import uk.gov.companieshouse.client.DocumentRenderClient;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
