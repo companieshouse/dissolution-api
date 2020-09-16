@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.service.dissolution.chips;
 
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.DissolutionVerdictMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
@@ -32,7 +33,7 @@ public class ChipsResponseService {
     public void saveAndNotifyDissolutionApplicationOutcome(ChipsResponseCreateRequest body) {
         DissolutionVerdict dissolutionVerdict = this.dissolutionVerdictMapper.mapToDissolutionVerdict(body);
 
-        Dissolution dissolution = this.repository.findByDataApplicationReference(body.getSubmissionReference()).get();
+        Dissolution dissolution = this.repository.findByDataApplicationReference(body.getSubmissionReference()).orElseThrow(NotFoundException::new);
 
         dissolution.setVerdict(dissolutionVerdict);
         dissolution.setActive(false);
