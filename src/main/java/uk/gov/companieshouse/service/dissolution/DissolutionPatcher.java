@@ -2,6 +2,7 @@ package uk.gov.companieshouse.service.dissolution;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
@@ -50,7 +51,7 @@ public class DissolutionPatcher {
     }
 
     public DissolutionPatchResponse addDirectorApproval(String companyNumber, String userId, String ip, String officerId) {
-        final Dissolution dissolution = this.repository.findByCompanyNumber(companyNumber).orElseThrow(NotFoundException::new);
+        final Dissolution dissolution = this.repository.findByCompanyNumber(companyNumber).orElseThrow(DissolutionNotFoundException::new);
 
         this.addDirectorApproval(userId, ip, officerId, dissolution);
 
@@ -70,7 +71,7 @@ public class DissolutionPatcher {
     }
 
     public void handlePayment(String paymentReference, Timestamp paidAt, String companyNumber) {
-        final Dissolution dissolution = this.repository.findByCompanyNumber(companyNumber).orElseThrow(NotFoundException::new);
+        final Dissolution dissolution = this.repository.findByCompanyNumber(companyNumber).orElseThrow(DissolutionNotFoundException::new);
 
         this.addPaymentInformation(paymentReference, paidAt, dissolution);
 

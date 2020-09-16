@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.mapper;
 
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.model.db.dissolution.DissolutionUserData;
 
 @Service
 public class DissolutionUserDataMapper {

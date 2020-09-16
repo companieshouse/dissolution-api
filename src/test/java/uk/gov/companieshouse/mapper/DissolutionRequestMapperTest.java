@@ -5,6 +5,7 @@ import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
+import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
@@ -32,17 +33,20 @@ public class DissolutionRequestMapperTest {
     private static final String BARCODE = "B4RC0D3";
 
     private final DissolutionRequestMapper requestMapper = new DissolutionRequestMapper();
-    private final DissolutionUserDataMapper userDataMapper = new DissolutionUserDataMapper();
 
     @Test
     public void mapToDissolution_setsModifiedDateTime() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
+        final DissolutionUserData userData = DissolutionFixtures.generateDissolutionUserData();
+        userData.setEmail(EMAIL);
+        userData.setIpAddress(IP_ADDRESS);
+        userData.setUserId(USER_ID);
         body.setDirectors(Collections.emptyList());
         final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setCompanyNumber(COMPANY_NUMBER);
         company.setCompanyName(COMPANY_NAME);
 
-        final Dissolution dissolution = requestMapper.mapToDissolution(body, company, new HashMap<>(), userDataMapper.mapToUserData(USER_ID, EMAIL, IP_ADDRESS), REFERENCE, BARCODE);
+        final Dissolution dissolution = requestMapper.mapToDissolution(body, company, new HashMap<>(), userData, REFERENCE, BARCODE);
 
         assertNotNull(dissolution.getModifiedDateTime());
     }
@@ -50,13 +54,17 @@ public class DissolutionRequestMapperTest {
     @Test
     public void mapToDissolution_setsApplicationData_includingDefaultStatusForDS01() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
+        final DissolutionUserData userData = DissolutionFixtures.generateDissolutionUserData();
+        userData.setEmail(EMAIL);
+        userData.setIpAddress(IP_ADDRESS);
+        userData.setUserId(USER_ID);
         body.setDirectors(Collections.emptyList());
         final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setCompanyNumber(COMPANY_NUMBER);
         company.setCompanyName(COMPANY_NAME);
         company.setType(CompanyType.PLC.getValue());
 
-        final Dissolution dissolution = requestMapper.mapToDissolution(body, company, new HashMap<>(), userDataMapper.mapToUserData(USER_ID, EMAIL, IP_ADDRESS), REFERENCE, BARCODE);
+        final Dissolution dissolution = requestMapper.mapToDissolution(body, company, new HashMap<>(), userData, REFERENCE, BARCODE);
 
         assertEquals(BARCODE, dissolution.getData().getApplication().getBarcode());
         assertEquals(REFERENCE, dissolution.getData().getApplication().getReference());
@@ -68,13 +76,17 @@ public class DissolutionRequestMapperTest {
     @Test
     public void mapToDissolution_setsApplicationData_includingDefaultStatusForLLDS01() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
+        final DissolutionUserData userData = DissolutionFixtures.generateDissolutionUserData();
+        userData.setEmail(EMAIL);
+        userData.setIpAddress(IP_ADDRESS);
+        userData.setUserId(USER_ID);
         body.setDirectors(Collections.emptyList());
         final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setCompanyNumber(COMPANY_NUMBER);
         company.setCompanyName(COMPANY_NAME);
         company.setType(CompanyType.LLP.getValue());
 
-        final Dissolution dissolution = requestMapper.mapToDissolution(body, company, new HashMap<>(), userDataMapper.mapToUserData(USER_ID, EMAIL, IP_ADDRESS), REFERENCE, BARCODE);
+        final Dissolution dissolution = requestMapper.mapToDissolution(body, company, new HashMap<>(), userData, REFERENCE, BARCODE);
 
         assertEquals(BARCODE, dissolution.getData().getApplication().getBarcode());
         assertEquals(REFERENCE, dissolution.getData().getApplication().getReference());
@@ -87,6 +99,11 @@ public class DissolutionRequestMapperTest {
     public void mapToDissolution_setsDirectorsToSignFromRequestBody() {
         final String officerId1 = "abc123";
         final String officerId2 = "def456";
+
+        final DissolutionUserData userData = DissolutionFixtures.generateDissolutionUserData();
+        userData.setEmail(EMAIL);
+        userData.setIpAddress(IP_ADDRESS);
+        userData.setUserId(USER_ID);
 
         final CompanyOfficer companyDirector1 = generateCompanyOfficer();
         companyDirector1.setName("Director who will sign themselves");
@@ -117,7 +134,7 @@ public class DissolutionRequestMapperTest {
 
         body.setDirectors(Arrays.asList(selectedDirector1, selectedDirector2));
 
-        final Dissolution dissolution = requestMapper.mapToDissolution(body, company, companyDirectors, userDataMapper.mapToUserData(USER_ID, EMAIL, IP_ADDRESS), REFERENCE, BARCODE);
+        final Dissolution dissolution = requestMapper.mapToDissolution(body, company, companyDirectors, userData, REFERENCE, BARCODE);
 
         assertEquals(2, dissolution.getData().getDirectors().size());
 
@@ -137,12 +154,16 @@ public class DissolutionRequestMapperTest {
     @Test
     public void mapToDissolution_setsCompanyInformation() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
+        final DissolutionUserData userData = DissolutionFixtures.generateDissolutionUserData();
+        userData.setEmail(EMAIL);
+        userData.setIpAddress(IP_ADDRESS);
+        userData.setUserId(USER_ID);
         body.setDirectors(Collections.emptyList());
         final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setCompanyNumber(COMPANY_NUMBER);
         company.setCompanyName(COMPANY_NAME);
 
-        final Dissolution dissolution = requestMapper.mapToDissolution(body, company, new HashMap<>(), userDataMapper.mapToUserData(USER_ID, EMAIL, IP_ADDRESS), REFERENCE, BARCODE);
+        final Dissolution dissolution = requestMapper.mapToDissolution(body, company, new HashMap<>(), userData, REFERENCE, BARCODE);
 
         assertEquals(COMPANY_NUMBER, dissolution.getCompany().getNumber());
         assertEquals(COMPANY_NAME, dissolution.getCompany().getName());
@@ -151,12 +172,16 @@ public class DissolutionRequestMapperTest {
     @Test
     public void mapToDissolution_setsCreatedByInformation() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
+        final DissolutionUserData userData = DissolutionFixtures.generateDissolutionUserData();
+        userData.setEmail(EMAIL);
+        userData.setIpAddress(IP_ADDRESS);
+        userData.setUserId(USER_ID);
         body.setDirectors(Collections.emptyList());
         final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setCompanyNumber(COMPANY_NUMBER);
         company.setCompanyName(COMPANY_NAME);
 
-        final Dissolution dissolution = requestMapper.mapToDissolution(body, company, new HashMap<>(), userDataMapper.mapToUserData(USER_ID, IP_ADDRESS, EMAIL), REFERENCE, BARCODE);
+        final Dissolution dissolution = requestMapper.mapToDissolution(body, company, new HashMap<>(), userData, REFERENCE, BARCODE);
 
         assertEquals(USER_ID, dissolution.getCreatedBy().getUserId());
         assertEquals(EMAIL, dissolution.getCreatedBy().getEmail());

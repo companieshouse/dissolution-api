@@ -11,7 +11,7 @@ import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.mapper.DissolutionUserDataMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
-import uk.gov.companieshouse.model.db.dissolution.DissolutionUserData;
+import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
@@ -33,16 +33,16 @@ public class DissolutionCreatorTest {
     private DissolutionCreator creator;
 
     @Mock
-    ReferenceGenerator referenceGenerator;
+    private ReferenceGenerator referenceGenerator;
 
     @Mock
-    BarcodeGenerator barcodeGenerator;
+    private BarcodeGenerator barcodeGenerator;
 
     @Mock
-    DissolutionRequestMapper requestMapper;
+    private DissolutionRequestMapper requestMapper;
 
     @Mock
-    DissolutionUserDataMapper userDataMapper;
+    private DissolutionUserDataMapper userDataMapper;
 
     @Mock
     private DissolutionRepository repository;

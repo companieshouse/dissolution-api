@@ -6,7 +6,7 @@ import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.mapper.DissolutionUserDataMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
-import uk.gov.companieshouse.model.db.dissolution.DissolutionUserData;
+import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
@@ -29,13 +29,13 @@ public class DissolutionCreator {
 
     @Autowired
     public DissolutionCreator(
-        ReferenceGenerator referenceGenerator,
-        BarcodeGenerator barcodeGenerator,
-        DissolutionRequestMapper requestMapper,
-        DissolutionRepository repository,
-        DissolutionResponseMapper responseMapper,
-        DissolutionEmailService emailService,
-        DissolutionUserDataMapper userDataMapper) {
+            ReferenceGenerator referenceGenerator,
+            BarcodeGenerator barcodeGenerator,
+            DissolutionRequestMapper requestMapper,
+            DissolutionRepository repository,
+            DissolutionResponseMapper responseMapper,
+            DissolutionEmailService emailService,
+            DissolutionUserDataMapper userDataMapper) {
         this.referenceGenerator = referenceGenerator;
         this.barcodeGenerator = barcodeGenerator;
         this.requestMapper = requestMapper;

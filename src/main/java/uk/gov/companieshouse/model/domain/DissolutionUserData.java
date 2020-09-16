@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.model.db.dissolution;
+package uk.gov.companieshouse.model.domain;
 
 public class DissolutionUserData {
     private String userId;

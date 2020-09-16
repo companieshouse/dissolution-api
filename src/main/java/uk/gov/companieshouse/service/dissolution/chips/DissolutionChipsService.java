@@ -16,12 +16,11 @@ public class DissolutionChipsService {
 
     private final DissolutionRepository repository;
 
+    private static final int PAGE_NUMBER_INDEX = 0;
     private final ChipsClient client;
     private final ChipsSubmitter submitter;
     private final ChipsConfig config;
-
-    private static final int PAGE_NUMBER_INDEX = 0;
-
+    
     public DissolutionChipsService(ChipsClient client, ChipsSubmitter submitter,
                                    DissolutionRepository repository, ChipsConfig config) {
         this.client = client;

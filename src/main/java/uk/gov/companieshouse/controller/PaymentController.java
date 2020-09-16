@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.exception.BadRequestException;
+import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.EmailSendException;
 import uk.gov.companieshouse.exception.InternalServerErrorException;
 import uk.gov.companieshouse.exception.NotFoundException;
@@ -80,6 +81,8 @@ public class PaymentController {
                 dissolutionService.handlePayment(body, companyNumber);
             } catch (EmailSendException e) {
                 throw new InternalServerErrorException(e.getMessage());
+            } catch (DissolutionNotFoundException e) {
+                throw new NotFoundException();
             }
         }
     }
