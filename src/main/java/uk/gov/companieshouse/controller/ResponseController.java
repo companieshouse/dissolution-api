@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.model.dto.chips.ChipsResponseCreateRequest;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
@@ -41,6 +42,11 @@ public class ResponseController {
             throw new NotFoundException();
         }
 
-        chipsResponseService.saveAndNotifyDissolutionApplicationOutcome(body);
+        try {
+            chipsResponseService.saveAndNotifyDissolutionApplicationOutcome(body);
+        } catch (DissolutionNotFoundException e) {
+            throw new NotFoundException();
+        }
+
     }
 }

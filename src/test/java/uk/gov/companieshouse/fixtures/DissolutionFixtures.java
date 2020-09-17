@@ -12,14 +12,15 @@ import uk.gov.companieshouse.model.db.dissolution.DissolutionRejectReason;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionSubmission;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionVerdict;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
+import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
-import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateData;
-import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateDirector;
+import uk.gov.companieshouse.model.dto.documentrender.DissolutionCertificateData;
+import uk.gov.companieshouse.model.dto.documentrender.DissolutionCertificateDirector;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.SubmissionStatus;
@@ -128,7 +129,7 @@ public class DissolutionFixtures {
         directorTwo.setName("MERCURE, Fred");
         directorTwo.setEmail("fred@mercure.com");
 
-        return Arrays.asList(director,directorTwo);
+        return Arrays.asList(director, directorTwo);
     }
 
     public static Company generateCompany() {
@@ -215,5 +216,15 @@ public class DissolutionFixtures {
         dissolutionRejectReason.setTextEnglish("some reject reason");
 
         return dissolutionRejectReason;
+    }
+
+    public static DissolutionUserData generateDissolutionUserData() {
+        final DissolutionUserData userData = new DissolutionUserData();
+
+        userData.setEmail("some@email.com");
+        userData.setIpAddress("some ipAddress");
+        userData.setUserId("some user id");
+
+        return userData;
     }
 }

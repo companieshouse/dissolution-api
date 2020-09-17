@@ -1,12 +1,9 @@
 package uk.gov.companieshouse.model.dto.chips.xml;
 
 import com.fasterxml.jackson.annotation.JsonValue;
-import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.PaymentMethod;
 
-import java.util.Arrays;
 import java.util.Map;
-import java.util.Optional;
 
 public enum ChipsPaymentMethod {
 

@@ -2,6 +2,7 @@ package uk.gov.companieshouse.service.dissolution;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
@@ -34,11 +35,11 @@ public class DissolutionService {
         return creator.create(body, companyProfile, directors, userId, ip, email);
     }
 
-    public DissolutionPatchResponse addDirectorApproval(String companyNumber, String userId, String ip, String officerId) {
+    public DissolutionPatchResponse addDirectorApproval(String companyNumber, String userId, String ip, String officerId) throws DissolutionNotFoundException {
         return patcher.addDirectorApproval(companyNumber, userId, ip, officerId);
     }
 
-    public void handlePayment(PaymentPatchRequest data, String companyNumber) {
+    public void handlePayment(PaymentPatchRequest data, String companyNumber) throws DissolutionNotFoundException {
         patcher.handlePayment(data.getPaymentReference(), data.getPaidAt(), companyNumber);
     }
 

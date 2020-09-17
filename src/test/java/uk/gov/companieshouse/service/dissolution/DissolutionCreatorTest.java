@@ -9,15 +9,15 @@ import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
+import uk.gov.companieshouse.mapper.DissolutionUserDataMapper;
+import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
-import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.barcode.BarcodeGenerator;
-import uk.gov.companieshouse.service.dissolution.DissolutionCreator;
-import uk.gov.companieshouse.service.dissolution.ReferenceGenerator;
 
 import java.util.Map;
 
@@ -33,13 +33,16 @@ public class DissolutionCreatorTest {
     private DissolutionCreator creator;
 
     @Mock
-    ReferenceGenerator referenceGenerator;
+    private ReferenceGenerator referenceGenerator;
 
     @Mock
-    BarcodeGenerator barcodeGenerator;
+    private BarcodeGenerator barcodeGenerator;
 
     @Mock
-    DissolutionRequestMapper requestMapper;
+    private DissolutionRequestMapper requestMapper;
+
+    @Mock
+    private DissolutionUserDataMapper userDataMapper;
 
     @Mock
     private DissolutionRepository repository;
@@ -61,6 +64,7 @@ public class DissolutionCreatorTest {
     public void create_generatesAReferenceNumber_mapsToDissolution_savesInDatabase_notifiesSignatories_returnsCreateResponse() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
 
+        final DissolutionUserData userData = DissolutionFixtures.generateDissolutionUserData();
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
         final DissolutionCreateResponse response = DissolutionFixtures.generateDissolutionCreateResponse();
         final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
@@ -69,14 +73,15 @@ public class DissolutionCreatorTest {
 
         when(referenceGenerator.generateApplicationReference()).thenReturn(REFERENCE);
         when(barcodeGenerator.generateBarcode()).thenReturn(BARCODE);
-        when(requestMapper.mapToDissolution(body, company, directors, USER_ID, EMAIL, IP, REFERENCE, BARCODE)).thenReturn(dissolution);
+        when(requestMapper.mapToDissolution(body, company, directors, userData, REFERENCE, BARCODE)).thenReturn(dissolution);
         when(responseMapper.mapToDissolutionCreateResponse(dissolution)).thenReturn(response);
+        when(userDataMapper.mapToUserData(USER_ID, IP, EMAIL)).thenReturn(userData);
 
         final DissolutionCreateResponse result = creator.create(body, company, directors, USER_ID, IP, EMAIL);
 
         verify(referenceGenerator).generateApplicationReference();
         verify(barcodeGenerator).generateBarcode();
-        verify(requestMapper).mapToDissolution(body, company, directors, USER_ID, EMAIL, IP, REFERENCE, BARCODE);
+        verify(requestMapper).mapToDissolution(body, company, directors, userData, REFERENCE, BARCODE);
         verify(repository).insert(dissolution);
         verify(emailService).notifySignatoriesToSign(dissolution);
         verify(responseMapper).mapToDissolutionCreateResponse(dissolution);

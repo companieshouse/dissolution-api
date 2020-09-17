@@ -10,14 +10,15 @@ import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
-import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateData;
-import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateDirector;
+import uk.gov.companieshouse.model.dto.documentrender.DissolutionCertificateData;
+import uk.gov.companieshouse.model.dto.documentrender.DissolutionCertificateDirector;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.*;
 

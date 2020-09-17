@@ -2,11 +2,12 @@ package uk.gov.companieshouse.mapper;
 
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.config.DocumentRenderConfig;
+import uk.gov.companieshouse.exception.CertificateMapperException;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
-import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateData;
-import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateDirector;
+import uk.gov.companieshouse.model.dto.documentrender.DissolutionCertificateData;
+import uk.gov.companieshouse.model.dto.documentrender.DissolutionCertificateDirector;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -70,7 +71,7 @@ public class DissolutionCertificateMapper {
         try {
             return new URI(location);
         } catch (URISyntaxException e) {
-            throw new RuntimeException(e.getMessage());
+            throw new CertificateMapperException(e.getMessage());
         }
     }
 }

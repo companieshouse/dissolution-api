@@ -13,9 +13,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import uk.gov.companieshouse.client.DocumentRenderClient;
 import uk.gov.companieshouse.config.DocumentRenderConfig;
-import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateData;
+import uk.gov.companieshouse.model.dto.documentrender.DissolutionCertificateData;
 
 import java.io.IOException;
 

@@ -6,13 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import uk.gov.companieshouse.config.DocumentRenderConfig;
-import uk.gov.companieshouse.model.dto.documentRender.DissolutionCertificateData;
+import uk.gov.companieshouse.exception.DocumentRenderException;
+import uk.gov.companieshouse.model.dto.documentrender.DissolutionCertificateData;
 
-import static uk.gov.companieshouse.model.Constants.CONTENT_TYPE_HTML;
-import static uk.gov.companieshouse.model.Constants.CONTENT_TYPE_PDF;
-import static uk.gov.companieshouse.model.Constants.HEADER_ACCEPT;
-import static uk.gov.companieshouse.model.Constants.HEADER_AUTHORIZATION;
-import static uk.gov.companieshouse.model.Constants.HEADER_CONTENT_TYPE;
+import static uk.gov.companieshouse.model.Constants.*;
 
 @Service
 public class DocumentRenderClient {
@@ -56,7 +53,7 @@ public class DocumentRenderClient {
         try {
             return new ObjectMapper().writeValueAsString(data);
         } catch (JsonProcessingException ex) {
-            throw new RuntimeException("Failed to write dissolution certificate data to JSON string");
+            throw new DocumentRenderException("Failed to write dissolution certificate data to JSON string");
         }
     }
 }

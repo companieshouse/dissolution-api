@@ -5,22 +5,18 @@ import uk.gov.companieshouse.config.EnvironmentConfig;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.email.ApplicationAcceptedEmailData;
 import uk.gov.companieshouse.model.dto.email.ApplicationRejectedEmailData;
-import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
 import uk.gov.companieshouse.model.dto.email.PendingPaymentEmailData;
+import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
 import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
 
 import java.util.List;
 
-import static uk.gov.companieshouse.model.Constants.APPLICATION_ACCEPTED_EMAIL_SUBJECT;
-import static uk.gov.companieshouse.model.Constants.APPLICATION_REJECTED_EMAIL_SUBJECT;
-import static uk.gov.companieshouse.model.Constants.SIGNATORY_TO_SIGN_EMAIL_SUBJECT;
-import static uk.gov.companieshouse.model.Constants.SUCCESSFUL_PAYMENT_EMAIL_SUBJECT;
-import static uk.gov.companieshouse.model.Constants.PENDING_PAYMENT_EMAIL_SUBJECT;
+import static uk.gov.companieshouse.model.Constants.*;
 
 @Service
 public class DissolutionEmailMapper {
 
-    final private EnvironmentConfig environmentConfig;
+    private final EnvironmentConfig environmentConfig;
 
     public DissolutionEmailMapper(EnvironmentConfig environmentConfig) {
         this.environmentConfig = environmentConfig;

@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.service.dissolution;
 
 import org.junit.jupiter.api.Test;
-import uk.gov.companieshouse.service.dissolution.ReferenceGenerator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -14,7 +13,7 @@ public class ReferenceGeneratorTest {
     public void generateApplicationReference_generatesASixAlphanumericCharacterUppercaseString() throws Exception {
         final String result = generator.generateApplicationReference();
 
-        assertEquals(result.length(), 6);
+        assertEquals(6, result.length());
         assertTrue(result.matches("^[A-Z0-9]*$"));
     }
 }

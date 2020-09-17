@@ -8,6 +8,7 @@ import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionApplication;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionData;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
+import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
@@ -24,13 +25,13 @@ import java.util.stream.Collectors;
 @Service
 public class DissolutionRequestMapper {
 
-    public Dissolution mapToDissolution(DissolutionCreateRequest body, CompanyProfile company, Map<String, CompanyOfficer> directors, String userId, String email, String ip, String reference, String barcode) {
+    public Dissolution mapToDissolution(DissolutionCreateRequest body, CompanyProfile company, Map<String, CompanyOfficer> directors, DissolutionUserData userData, String reference, String barcode) {
         final Dissolution dissolution = new Dissolution();
 
         dissolution.setModifiedDateTime(LocalDateTime.now());
         dissolution.setData(mapToDissolutionData(body, company.getType(), directors, reference, barcode));
         dissolution.setCompany(mapToCompany(company.getCompanyNumber(), company.getCompanyName()));
-        dissolution.setCreatedBy(mapToCreatedBy(userId, email, ip));
+        dissolution.setCreatedBy(mapToCreatedBy(userData.getUserId(), userData.getEmail(), userData.getIpAddress()));
         dissolution.setActive(true);
 
         return dissolution;

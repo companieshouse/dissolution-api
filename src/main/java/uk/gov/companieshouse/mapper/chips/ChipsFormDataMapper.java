@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.exception.ChipsMapperException;
 import uk.gov.companieshouse.model.db.dissolution.Company;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
@@ -121,7 +122,7 @@ public class ChipsFormDataMapper {
 
     private ChipsPersonName mapToPersonName(String name) {
         final ChipsPersonName personName = new ChipsPersonName();
-        final int nameSeparatorIndex = name.indexOf(",");
+        final int nameSeparatorIndex = name.indexOf(',');
 
         personName.setForename(name.substring(nameSeparatorIndex + 1).trim());
         personName.setSurname(name.substring(0, nameSeparatorIndex).trim());
@@ -137,7 +138,7 @@ public class ChipsFormDataMapper {
         try {
             return xmlMapper.writeValueAsString(form);
         } catch (JsonProcessingException ex) {
-            throw new RuntimeException(String.format("Failed to map to CHIPS request for company %s", form.getCorporateBody().getIncorporationNumber()), ex);
+            throw new ChipsMapperException(String.format("Failed to map to CHIPS request for company %s", form.getCorporateBody().getIncorporationNumber()), ex);
         }
     }
 }

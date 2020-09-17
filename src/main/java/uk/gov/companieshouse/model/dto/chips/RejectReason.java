@@ -10,7 +10,7 @@ public class RejectReason {
 
     private String textWelsh;
 
-    public int order;
+    private int order;
 
     public String getId() {
         return id;

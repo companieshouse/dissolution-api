@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
@@ -19,10 +20,7 @@ import uk.gov.companieshouse.repository.DissolutionRepository;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
@@ -120,7 +118,7 @@ public class DissolutionServiceTest {
     }
 
     @Test
-    public void addDirectorApproval_addsDirectorApproval_returnsPatchResponse() {
+    public void addDirectorApproval_addsDirectorApproval_returnsPatchResponse() throws DissolutionNotFoundException {
         final DissolutionPatchResponse response = DissolutionFixtures.generateDissolutionPatchResponse();
 
         when(patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP, OFFICER_ID)).thenReturn(response);
@@ -148,7 +146,7 @@ public class DissolutionServiceTest {
     }
 
     @Test
-    public void updatePaymentAndSubmissionStatus_updatesPaymentAndSubmissionStatus_returnNothing() {
+    public void updatePaymentAndSubmissionStatus_updatesPaymentAndSubmissionStatus_returnNothing() throws DissolutionNotFoundException {
         PaymentPatchRequest data = generatePaymentPatchRequest();
 
         service.handlePayment(data, COMPANY_NUMBER);

@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.client.CompanyProfileClient;
+import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
@@ -22,8 +23,8 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.service.CompanyOfficerService;
-import uk.gov.companieshouse.service.dissolution.validator.DissolutionValidator;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
+import uk.gov.companieshouse.service.dissolution.validator.DissolutionValidator;
 
 import java.util.Collections;
 import java.util.List;
@@ -34,19 +35,12 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
 import static uk.gov.companieshouse.fixtures.CompanyProfileFixtures.generateCompanyProfile;
-import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDirectorRequest;
-import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionCreateRequest;
-import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionCreateResponse;
-import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionGetResponse;
-import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionPatchRequest;
-import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionPatchResponse;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.*;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(DissolutionController.class)
@@ -416,7 +410,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void patchDissolutionRequest_returnsOK_andPatchResponse_ifDissolutionIsPatchedSuccessfully() throws Exception {
+    public void patchDissolutionRequest_returnsOK_andPatchResponse_ifDissolutionIsPatchedSuccessfully() throws Exception, DissolutionNotFoundException {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setOfficerId(OFFICER_ID);
         final DissolutionPatchResponse response = generateDissolutionPatchResponse();

@@ -2,6 +2,7 @@ package uk.gov.companieshouse.service.dissolution;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.mapper.DissolutionSubmissionMapper;
@@ -48,8 +49,8 @@ public class DissolutionPatcher {
         this.dissolutionEmailService = dissolutionEmailService;
     }
 
-    public DissolutionPatchResponse addDirectorApproval(String companyNumber, String userId, String ip, String officerId) {
-        final Dissolution dissolution = this.repository.findByCompanyNumber(companyNumber).get();
+    public DissolutionPatchResponse addDirectorApproval(String companyNumber, String userId, String ip, String officerId) throws DissolutionNotFoundException {
+        final Dissolution dissolution = this.repository.findByCompanyNumber(companyNumber).orElseThrow(DissolutionNotFoundException::new);
 
         this.addDirectorApproval(userId, ip, officerId, dissolution);
 
@@ -68,8 +69,8 @@ public class DissolutionPatcher {
         dissolutionEmailService.sendPendingPaymentEmail(dissolution);
     }
 
-    public void handlePayment(String paymentReference, Timestamp paidAt, String companyNumber) {
-        final Dissolution dissolution = this.repository.findByCompanyNumber(companyNumber).get();
+    public void handlePayment(String paymentReference, Timestamp paidAt, String companyNumber) throws DissolutionNotFoundException {
+        final Dissolution dissolution = this.repository.findByCompanyNumber(companyNumber).orElseThrow(DissolutionNotFoundException::new);
 
         this.addPaymentInformation(paymentReference, paidAt, dissolution);
 
@@ -82,14 +83,14 @@ public class DissolutionPatcher {
         dissolutionEmailService.sendSuccessfulPaymentEmail(dissolution);
     }
 
-    private DissolutionDirector findDirector(String officerId, Dissolution dissolution) {
+    private DissolutionDirector findDirector(String officerId, Dissolution dissolution) throws DissolutionNotFoundException {
         return dissolution
                 .getData()
                 .getDirectors()
                 .stream()
                 .filter(director -> director.getOfficerId().equals(officerId))
                 .findFirst()
-                .get();
+                .orElseThrow(DissolutionNotFoundException::new);
     }
 
     private void addPaymentInformation(String paymentReference, Timestamp paidAt, Dissolution dissolution) {
@@ -98,7 +99,7 @@ public class DissolutionPatcher {
         dissolution.setPaymentInformation(information);
     }
 
-    private void addDirectorApproval(String userId, String ip, String officerId, Dissolution dissolution) {
+    private void addDirectorApproval(String userId, String ip, String officerId, Dissolution dissolution) throws DissolutionNotFoundException {
         final DirectorApproval approval = approvalMapper.mapToDirectorApproval(userId, ip);
         DissolutionDirector director = this.findDirector(officerId, dissolution);
         director.setDirectorApproval(approval);

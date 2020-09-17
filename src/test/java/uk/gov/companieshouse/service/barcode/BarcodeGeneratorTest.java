@@ -44,6 +44,6 @@ public class BarcodeGeneratorTest {
 
         verify(client).generateBarcode(request);
 
-        assertEquals(result, BARCODE);
+        assertEquals(BARCODE, result);
     }
 }

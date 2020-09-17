@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.client.CompanyProfileClient;
 import uk.gov.companieshouse.exception.BadRequestException;
 import uk.gov.companieshouse.exception.ConflictException;
+import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
@@ -27,8 +28,8 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.service.CompanyOfficerService;
-import uk.gov.companieshouse.service.dissolution.validator.DissolutionValidator;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
+import uk.gov.companieshouse.service.dissolution.validator.DissolutionValidator;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -86,7 +87,9 @@ public class DissolutionController {
 
         dissolutionValidator
                 .checkBusinessRules(company, directors, body.getDirectors())
-                .ifPresent(error -> { throw new BadRequestException(error); });
+                .ifPresent(error -> {
+                    throw new BadRequestException(error);
+                });
 
         return dissolutionService.create(body, company, directors, userId, request.getRemoteAddr(), getEmail(authorisedUser));
     }
@@ -126,6 +129,10 @@ public class DissolutionController {
             throw new BadRequestException("Director is not pending approval");
         }
 
-        return dissolutionService.addDirectorApproval(companyNumber, userId, request.getRemoteAddr(), body.getOfficerId());
+        try {
+            return dissolutionService.addDirectorApproval(companyNumber, userId, request.getRemoteAddr(), body.getOfficerId());
+        } catch (DissolutionNotFoundException e) {
+            throw new NotFoundException();
+        }
     }
 }
