@@ -30,7 +30,7 @@ public class ChipsResponseService {
         this.logger = logger;
     }
 
-    public void saveAndNotifyDissolutionApplicationOutcome(ChipsResponseCreateRequest body) {
+    public void saveAndNotifyDissolutionApplicationOutcome(ChipsResponseCreateRequest body) throws DissolutionNotFoundException {
         DissolutionVerdict dissolutionVerdict = this.dissolutionVerdictMapper.mapToDissolutionVerdict(body);
 
         Dissolution dissolution = this.repository.findByDataApplicationReference(body.getSubmissionReference()).orElseThrow(DissolutionNotFoundException::new);

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.fixtures.ChipsFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.logging.Logger;
@@ -40,7 +41,7 @@ public class ChipsResponseServiceTest {
     private Logger logger;
 
     @Test
-    public void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail() {
+    public void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail() throws DissolutionNotFoundException {
         ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
         DissolutionVerdict dissolutionVerdict = DissolutionFixtures.generateDissolutionVerdict();
         Dissolution dissolution = DissolutionFixtures.generateDissolution();

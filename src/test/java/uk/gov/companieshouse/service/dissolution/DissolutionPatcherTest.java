@@ -7,6 +7,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
@@ -85,7 +86,7 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_addsApprovalToSingleDirector_savesInDatabase() {
+    public void patch_addsApprovalToSingleDirector_savesInDatabase() throws DissolutionNotFoundException {
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
         when(responseMapper.mapToDissolutionPatchResponse(COMPANY_NUMBER)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
@@ -98,7 +99,7 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApproved() {
+    public void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApproved() throws DissolutionNotFoundException {
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
         when(responseMapper.mapToDissolutionPatchResponse(COMPANY_NUMBER)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
@@ -117,7 +118,7 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_generatesCertificateAndSavesInDatabase_ifAllDirectorHaveApproved() {
+    public void patch_generatesCertificateAndSavesInDatabase_ifAllDirectorHaveApproved() throws DissolutionNotFoundException {
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
         when(responseMapper.mapToDissolutionPatchResponse(COMPANY_NUMBER)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
@@ -132,7 +133,7 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_doesNotUpdateStatus_ifNotAllDirectorHaveApproved() {
+    public void patch_doesNotUpdateStatus_ifNotAllDirectorHaveApproved() throws DissolutionNotFoundException {
         final List<DissolutionDirector> directors = DissolutionFixtures.generateDissolutionDirectorList();
         directors.get(0).setOfficerId(OFFICER_ID);
         directors.get(1).setOfficerId(OFFICER_ID_TWO);
@@ -153,7 +154,7 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_doesNotGenerateCertificate_ifNotAllDirectorHaveApproved() {
+    public void patch_doesNotGenerateCertificate_ifNotAllDirectorHaveApproved() throws DissolutionNotFoundException {
         final DissolutionDirector directorOne = DissolutionFixtures.generateDissolutionDirector();
         directorOne.setOfficerId(OFFICER_ID);
         directorOne.setDirectorApproval(null);
@@ -177,7 +178,7 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_updatesDissolutionWithPaymentAndSubmissionInformation_savesInDatabase() {
+    public void patch_updatesDissolutionWithPaymentAndSubmissionInformation_savesInDatabase() throws DissolutionNotFoundException {
         PaymentPatchRequest data = generatePaymentPatchRequest();
         PaymentInformation paymentInformation = generatePaymentInformation();
         DissolutionSubmission submission = generateDissolutionSubmission();

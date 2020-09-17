@@ -1,6 +1,6 @@
 package uk.gov.companieshouse.exception;
 
-public class DissolutionNotFoundException extends RuntimeException {
+public class DissolutionNotFoundException extends Throwable {
     public DissolutionNotFoundException() {
         super();
     }

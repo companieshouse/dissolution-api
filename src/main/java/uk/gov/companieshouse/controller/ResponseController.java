@@ -47,5 +47,6 @@ public class ResponseController {
         } catch (DissolutionNotFoundException e) {
             throw new NotFoundException();
         }
+
     }
 }

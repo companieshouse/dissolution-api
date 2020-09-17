@@ -12,6 +12,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.SecurityConstants;
+import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
@@ -204,7 +205,7 @@ public class PaymentControllerTest {
     }
 
     @Test
-    public void patchPaymentDataRequest_returnsOK_updatesPaymentInfo_PaidPaymentIsProvided() throws Exception {
+    public void patchPaymentDataRequest_returnsOK_updatesPaymentInfo_PaidPaymentIsProvided() throws Exception, DissolutionNotFoundException {
         final DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
         dissolutionGetResponse.setApplicationStatus(ApplicationStatus.PENDING_PAYMENT);
 
@@ -226,7 +227,7 @@ public class PaymentControllerTest {
     }
 
     @Test
-    public void patchPaymentDataRequest_returnsOK_doesNotUpdatePaymentInfo_ifFailedPaymentIsProvided() throws Exception {
+    public void patchPaymentDataRequest_returnsOK_doesNotUpdatePaymentInfo_ifFailedPaymentIsProvided() throws Exception, DissolutionNotFoundException {
         final DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
         dissolutionGetResponse.setApplicationStatus(ApplicationStatus.PENDING_PAYMENT);
 
@@ -248,7 +249,7 @@ public class PaymentControllerTest {
     }
 
     @Test
-    public void patchPaymentDataRequest_returnsOK_doesNotUpdatePaymentInfo_ifCancelledPaymentIsProvided() throws Exception {
+    public void patchPaymentDataRequest_returnsOK_doesNotUpdatePaymentInfo_ifCancelledPaymentIsProvided() throws Exception, DissolutionNotFoundException {
         final DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
         dissolutionGetResponse.setApplicationStatus(ApplicationStatus.PENDING_PAYMENT);
 
