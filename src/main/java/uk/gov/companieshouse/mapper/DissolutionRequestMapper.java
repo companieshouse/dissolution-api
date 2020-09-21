@@ -66,7 +66,7 @@ public class DissolutionRequestMapper {
         final DissolutionDirector director = new DissolutionDirector();
 
         director.setOfficerId(selectedDirector.getOfficerId());
-        director.setEmail(selectedDirector.getEmail());
+        director.setEmail(selectedDirector.getEmail().toLowerCase());
         director.setOnBehalfName(selectedDirector.getOnBehalfName());
         director.setName(getSelectedDirectorName(selectedDirector, companyDirectors));
 
