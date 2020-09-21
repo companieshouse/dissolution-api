@@ -124,12 +124,12 @@ public class DissolutionRequestMapperTest {
 
         final DirectorRequest selectedDirector1 = DissolutionFixtures.generateDirectorRequest();
         selectedDirector1.setOfficerId(officerId1);
-        selectedDirector1.setEmail("director@mail.com");
+        selectedDirector1.setEmail("DIRECTOR@mail.com");
         selectedDirector1.setOnBehalfName(null);
 
         final DirectorRequest selectedDirector2 = DissolutionFixtures.generateDirectorRequest();
         selectedDirector2.setOfficerId(officerId2);
-        selectedDirector2.setEmail("accountant@mail.com");
+        selectedDirector2.setEmail("ACCOUNTANT@mail.com");
         selectedDirector2.setOnBehalfName("Mr Accountant");
 
         body.setDirectors(Arrays.asList(selectedDirector1, selectedDirector2));
