@@ -2,6 +2,7 @@ package uk.gov.companieshouse.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.api.model.officers.OfficerApi;
 import uk.gov.companieshouse.client.CompanyOfficersClient;
 import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
@@ -20,7 +21,13 @@ public class CompanyOfficerService {
 
     private static final List<String> OFFICER_ROLES = Arrays.asList(
             OfficerRole.DIRECTOR.getValue(),
-            OfficerRole.LLP_MEMBER.getValue()
+            OfficerRole.CORPORATE_DIRECTOR.getValue(),
+            OfficerRole.CORPORATE_NOMINEE_DIRECTOR.getValue(),
+            OfficerRole.JUDICIAL_FACTOR.getValue(),
+            OfficerRole.LLP_MEMBER.getValue(),
+            OfficerRole.LLP_DESIGNATED_MEMBER.getValue(),
+            OfficerRole.CORPORATE_LLP_MEMBER.getValue(),
+            OfficerRole.CORPORATE_LLP_DESIGNATED_MEMBER.getValue()
     );
 
     private final CompanyOfficersClient client;
