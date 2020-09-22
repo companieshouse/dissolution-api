@@ -9,7 +9,7 @@ import java.util.List;
 
 public class DissolutionGetResponse {
     @JsonProperty("ETag")
-    private String ETag;
+    private String eTag;
 
     private String kind;
 
@@ -46,11 +46,11 @@ public class DissolutionGetResponse {
 
     @JsonProperty("ETag")
     public String getETag() {
-        return ETag;
+        return eTag;
     }
 
-    public void setETag(String ETag) {
-        this.ETag = ETag;
+    public void setETag(String eTag) {
+        this.eTag = eTag;
     }
 
     public String getKind() {
