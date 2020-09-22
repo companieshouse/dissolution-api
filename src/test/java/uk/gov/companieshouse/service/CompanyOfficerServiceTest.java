@@ -98,6 +98,21 @@ public class CompanyOfficerServiceTest {
         activeDirector.setOfficerRole(OfficerRole.DIRECTOR.getValue());
         activeDirector.setLinks(generateCompanyOfficerLinks("123abc"));
 
+        CompanyOfficer activeCorporateDirector = generateCompanyOfficer();
+        activeCorporateDirector.setResignedOn(null);
+        activeCorporateDirector.setOfficerRole(OfficerRole.CORPORATE_DIRECTOR.getValue());
+        activeCorporateDirector.setLinks(generateCompanyOfficerLinks("321abc"));
+
+        CompanyOfficer activeCorporateNomineeDirector = generateCompanyOfficer();
+        activeCorporateNomineeDirector.setResignedOn(null);
+        activeCorporateNomineeDirector.setOfficerRole(OfficerRole.CORPORATE_NOMINEE_DIRECTOR.getValue());
+        activeCorporateNomineeDirector.setLinks(generateCompanyOfficerLinks("321cba"));
+
+        CompanyOfficer activeJudicialFactor = generateCompanyOfficer();
+        activeJudicialFactor.setResignedOn(null);
+        activeJudicialFactor.setOfficerRole(OfficerRole.JUDICIAL_FACTOR.getValue());
+        activeJudicialFactor.setLinks(generateCompanyOfficerLinks("abc123"));
+
         CompanyOfficer activeSecretary = generateCompanyOfficer();
         activeSecretary.setResignedOn(null);
         activeSecretary.setOfficerRole(OfficerRole.SECRETARY.getValue());
@@ -108,14 +123,45 @@ public class CompanyOfficerServiceTest {
         activeMember.setOfficerRole(OfficerRole.LLP_MEMBER.getValue());
         activeMember.setLinks(generateCompanyOfficerLinks("789ghi"));
 
-        when(client.getCompanyOfficers(COMPANY_NUMBER)).thenReturn(Arrays.asList(activeDirector, activeSecretary, activeMember));
+        CompanyOfficer activeDesignatedMember = generateCompanyOfficer();
+        activeDesignatedMember.setResignedOn(null);
+        activeDesignatedMember.setOfficerRole(OfficerRole.LLP_DESIGNATED_MEMBER.getValue());
+        activeDesignatedMember.setLinks(generateCompanyOfficerLinks("987ghi"));
+
+        CompanyOfficer activeCorporateMember = generateCompanyOfficer();
+        activeCorporateMember.setResignedOn(null);
+        activeCorporateMember.setOfficerRole(OfficerRole.CORPORATE_LLP_MEMBER.getValue());
+        activeCorporateMember.setLinks(generateCompanyOfficerLinks("987ihg"));
+
+        CompanyOfficer activeCorporateDesignatedMember = generateCompanyOfficer();
+        activeCorporateDesignatedMember.setResignedOn(null);
+        activeCorporateDesignatedMember.setOfficerRole(OfficerRole.CORPORATE_LLP_DESIGNATED_MEMBER.getValue());
+        activeCorporateDesignatedMember.setLinks(generateCompanyOfficerLinks("ghi789"));
+
+        when(client.getCompanyOfficers(COMPANY_NUMBER)).thenReturn(Arrays.asList(
+                activeDirector,
+                activeCorporateDirector,
+                activeCorporateNomineeDirector,
+                activeJudicialFactor,
+                activeSecretary,
+                activeMember,
+                activeDesignatedMember,
+                activeCorporateMember,
+                activeCorporateDesignatedMember
+        ));
 
         final Map<String, CompanyOfficer> result = service.getActiveDirectorsForCompany(COMPANY_NUMBER);
 
-        assertEquals(2, result.size());
+        assertEquals(8, result.size());
         assertEquals(activeDirector, result.get("123abc"));
+        assertEquals(activeCorporateDirector, result.get("321abc"));
+        assertEquals(activeCorporateNomineeDirector, result.get("321cba"));
+        assertEquals(activeJudicialFactor, result.get("abc123"));
         assertNull(result.get("456def"));
         assertEquals(activeMember, result.get("789ghi"));
+        assertEquals(activeDesignatedMember, result.get("987ghi"));
+        assertEquals(activeCorporateMember, result.get("987ihg"));
+        assertEquals(activeCorporateDesignatedMember, result.get("ghi789"));
     }
 
     @Test
