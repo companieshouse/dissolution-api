@@ -14,7 +14,7 @@ import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.client.CompanyProfileClient;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
-import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
+import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;

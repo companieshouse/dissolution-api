@@ -1,8 +1,8 @@
 package uk.gov.companieshouse.fixtures;
 
-import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
-import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficerLinks;
-import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficersResponse;
+import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
+import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficerLinks;
+import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficersResponse;
 import uk.gov.companieshouse.model.enums.OfficerRole;
 
 import java.util.Collections;

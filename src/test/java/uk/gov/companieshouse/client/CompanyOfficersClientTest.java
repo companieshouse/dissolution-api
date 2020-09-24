@@ -15,8 +15,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import uk.gov.companieshouse.config.CompanyOfficersConfig;
-import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
-import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficersResponse;
+import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
+import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficersResponse;
 
 import java.io.IOException;
 import java.util.Collections;

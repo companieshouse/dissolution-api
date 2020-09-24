@@ -3,7 +3,7 @@ package uk.gov.companieshouse.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.client.CompanyOfficersClient;
-import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
+import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 import uk.gov.companieshouse.model.enums.OfficerRole;
 import uk.gov.companieshouse.service.dissolution.validator.CompanyOfficerValidator;
