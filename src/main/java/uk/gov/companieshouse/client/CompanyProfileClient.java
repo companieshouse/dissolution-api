@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriTemplate;
 import uk.gov.companieshouse.config.CompanyProfileConfig;
-import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
+import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 
 import static uk.gov.companieshouse.model.Constants.CONTENT_TYPE_JSON;
 import static uk.gov.companieshouse.model.Constants.HEADER_ACCEPT;

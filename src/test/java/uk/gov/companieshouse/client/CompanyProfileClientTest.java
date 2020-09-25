@@ -17,7 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import uk.gov.companieshouse.config.CompanyProfileConfig;
-import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
+import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 
 import java.io.IOException;
 
