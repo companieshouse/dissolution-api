@@ -7,8 +7,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriTemplate;
 import reactor.core.publisher.Mono;
 import uk.gov.companieshouse.config.CompanyOfficersConfig;
-import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
-import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficersResponse;
+import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
+import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficersResponse;
 
 import java.util.Collections;
 import java.util.List;

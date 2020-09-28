@@ -2,7 +2,7 @@ package uk.gov.companieshouse.service.dissolution.validator;
 
 import org.junit.jupiter.api.Test;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
-import uk.gov.companieshouse.model.dto.companyProfile.CompanyProfile;
+import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.enums.CompanyStatus;
 import uk.gov.companieshouse.model.enums.CompanyType;
 

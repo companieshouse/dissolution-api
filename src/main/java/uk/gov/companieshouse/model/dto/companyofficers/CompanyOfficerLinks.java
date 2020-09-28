@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.model.dto.companyOfficers;
+package uk.gov.companieshouse.model.dto.companyofficers;
 
 public class CompanyOfficerLinks {
 

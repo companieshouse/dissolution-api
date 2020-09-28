@@ -1,7 +1,7 @@
 package uk.gov.companieshouse.service.dissolution.validator;
 
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.model.dto.companyOfficers.CompanyOfficer;
+import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 
 import java.util.List;
