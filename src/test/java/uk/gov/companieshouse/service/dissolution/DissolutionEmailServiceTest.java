@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.config.EnvironmentConfig;
 import uk.gov.companieshouse.fixtures.EmailFixtures;
 import uk.gov.companieshouse.mapper.email.DissolutionEmailMapper;
 import uk.gov.companieshouse.mapper.email.EmailMapper;
@@ -19,6 +20,7 @@ import uk.gov.companieshouse.service.email.EmailService;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -29,8 +31,7 @@ import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolu
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionDirector;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionRejectReason;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionVerdict;
-import static uk.gov.companieshouse.fixtures.EmailFixtures.generateEmailDocument;
-import static uk.gov.companieshouse.fixtures.EmailFixtures.generateSignatoryToSignEmailData;
+import static uk.gov.companieshouse.fixtures.EmailFixtures.*;
 
 @ExtendWith(MockitoExtension.class)
 public class DissolutionEmailServiceTest {
@@ -38,6 +39,7 @@ public class DissolutionEmailServiceTest {
     private static final String SIGNATORY_TO_SIGN_DEADLINE = "17 September 2020";
     private static final String SIGNATORY_EMAIL_ONE = "signatory1@mail.com";
     private static final String SIGNATORY_EMAIL_TWO = "signatory2@mail.com";
+    private static final String CHS_FINANCE_EMAIL = "finance@test.com";
 
     @InjectMocks
     private DissolutionEmailService dissolutionEmailService;
@@ -56,6 +58,9 @@ public class DissolutionEmailServiceTest {
 
     @Mock
     private DissolutionDeadlineDateCalculator deadlineDateCalculator;
+
+    @Mock
+    private EnvironmentConfig environmentConfig;
 
     @Test
     public void sendSuccessfulPaymentEmail_shouldGenerateAndSendASuccessfulPaymentEmail() {
@@ -116,13 +121,22 @@ public class DissolutionEmailServiceTest {
 
         final ApplicationRejectedEmailData emailData = EmailFixtures.generateApplicationRejectedEmailData();
         final EmailDocument<ApplicationRejectedEmailData> emailDocument = generateEmailDocument(emailData);
+        final ApplicationRejectedEmailData emailDataCopy = EmailFixtures.generateApplicationRejectedEmailData();
+        emailDataCopy.setTo(CHS_FINANCE_EMAIL);
+        final EmailDocument<ApplicationRejectedEmailData> emailDocumentCopy = generateEmailDocument(emailDataCopy);
 
         List<String> rejectReasonsAsStrings = dissolutionVerdict.getRejectReasons().stream().map(DissolutionRejectReason::getTextEnglish).collect(Collectors.toList());
-        when(dissolutionEmailMapper.mapToApplicationRejectedEmailData(dissolution, rejectReasonsAsStrings)).thenReturn(emailData);
+        when(environmentConfig.getChsFinanceEmail()).thenReturn(CHS_FINANCE_EMAIL);
+        when(dissolutionEmailMapper.mapToApplicationRejectedEmailData(dissolution, rejectReasonsAsStrings, Optional.of(CHS_FINANCE_EMAIL))).thenReturn(emailDataCopy);
+        when(dissolutionEmailMapper.mapToApplicationRejectedEmailData(dissolution, rejectReasonsAsStrings, Optional.empty())).thenReturn(emailData);
         when(messageTypeCalculator.getForApplicationRejected(dissolution)).thenReturn(MessageType.APPLICATION_REJECTED);
+        when(emailMapper.mapToEmailDocument(emailDataCopy, emailDataCopy.getTo(), MessageType.APPLICATION_REJECTED)).thenReturn(emailDocumentCopy);
         when(emailMapper.mapToEmailDocument(emailData, emailData.getTo(), MessageType.APPLICATION_REJECTED)).thenReturn(emailDocument);
 
         dissolutionEmailService.sendApplicationOutcomeEmail(dissolution, dissolutionVerdict);
+
+        verify(emailMapper).mapToEmailDocument(emailDataCopy, emailDataCopy.getTo(), MessageType.APPLICATION_REJECTED);
+        verify(emailService).sendMessage(emailDocumentCopy);
 
         verify(emailMapper).mapToEmailDocument(emailData, emailData.getTo(), MessageType.APPLICATION_REJECTED);
         verify(emailService).sendMessage(emailDocument);
