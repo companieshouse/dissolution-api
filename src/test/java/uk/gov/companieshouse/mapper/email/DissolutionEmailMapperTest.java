@@ -3,6 +3,9 @@ package uk.gov.companieshouse.mapper.email;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -15,6 +18,8 @@ import uk.gov.companieshouse.model.dto.email.ApplicationRejectedEmailData;
 import uk.gov.companieshouse.model.dto.email.PendingPaymentEmailData;
 import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
 import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
@@ -30,6 +35,7 @@ public class DissolutionEmailMapperTest {
 
     private static final String SIGNATORY_TO_SIGN_EMAIL = "signatory@mail.com";
     private static final String SIGNATORY_TO_SIGN_DEADLINE = "17 September 2020";
+    private static final String CHS_FINANCE_EMAIL = "finance@test.com";
 
     @InjectMocks
     private DissolutionEmailMapper dissolutionEmailMapper;
@@ -58,6 +64,7 @@ public class DissolutionEmailMapperTest {
         assertEquals(successfulPaymentEmailData.getCompanyNumber(), result.getCompanyNumber());
         assertEquals(successfulPaymentEmailData.getCompanyName(), result.getCompanyName());
         assertEquals(successfulPaymentEmailData.getChsUrl(), result.getChsUrl());
+        assertEquals(successfulPaymentEmailData.getPaymentReference(), result.getPaymentReference());
     }
 
     @Test
@@ -73,6 +80,7 @@ public class DissolutionEmailMapperTest {
         assertEquals(applicationAcceptedEmailData.getDissolutionReferenceNumber(), result.getDissolutionReferenceNumber());
         assertEquals(applicationAcceptedEmailData.getCompanyNumber(), result.getCompanyNumber());
         assertEquals(applicationAcceptedEmailData.getCompanyName(), result.getCompanyName());
+        assertEquals(applicationAcceptedEmailData.getPaymentReference(), result.getPaymentReference());
     }
 
     @Test
@@ -89,6 +97,30 @@ public class DissolutionEmailMapperTest {
         assertEquals(applicationRejectedEmailData.getCompanyNumber(), result.getCompanyNumber());
         assertEquals(applicationRejectedEmailData.getCompanyName(), result.getCompanyName());
         assertEquals(applicationRejectedEmailData.getRejectReasons(), result.getRejectReasons());
+        assertEquals(applicationRejectedEmailData.getPaymentReference(), result.getPaymentReference());
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {CHS_FINANCE_EMAIL})
+    public void mapToApplicationRejectedEmailData_mapsApplicationRejectedEmailData_withEmailParameter(String email) {
+        final Dissolution dissolution = generateDissolution();
+        final ApplicationRejectedEmailData applicationRejectedEmailData = EmailFixtures.generateApplicationRejectedEmailData();
+
+        ApplicationRejectedEmailData result = dissolutionEmailMapper.mapToApplicationRejectedEmailData(dissolution, applicationRejectedEmailData.getRejectReasons(), Optional.ofNullable(email));
+
+        if (email == null) {
+            assertEquals(applicationRejectedEmailData.getTo(), result.getTo());
+        } else {
+            assertEquals(email, result.getTo());
+        }
+        assertEquals(applicationRejectedEmailData.getSubject(), result.getSubject());
+        assertEquals(applicationRejectedEmailData.getCdnHost(), result.getCdnHost());
+        assertEquals(applicationRejectedEmailData.getDissolutionReferenceNumber(), result.getDissolutionReferenceNumber());
+        assertEquals(applicationRejectedEmailData.getCompanyNumber(), result.getCompanyNumber());
+        assertEquals(applicationRejectedEmailData.getCompanyName(), result.getCompanyName());
+        assertEquals(applicationRejectedEmailData.getRejectReasons(), result.getRejectReasons());
+        assertEquals(applicationRejectedEmailData.getPaymentReference(), result.getPaymentReference());
     }
 
     @Test
