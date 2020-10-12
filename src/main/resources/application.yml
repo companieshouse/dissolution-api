@@ -35,6 +35,9 @@ env:
   name: ${ENV_NAME}
   chsUrl: ${CHS_URL}
 
+featureToggles:
+  uniqueEmails: ${DISSOLUTION_UNIQUE_SIGNATORY_EMAILS_FEATURE_ENABLED}
+
 kafka:
   broker:
     addr: ${KAFKA_BROKER_ADDR}
