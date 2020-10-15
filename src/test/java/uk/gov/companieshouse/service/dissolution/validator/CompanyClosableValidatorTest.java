@@ -47,6 +47,94 @@ public class CompanyClosableValidatorTest {
     }
 
     @Test
+    public void mapCompanyDetailsToClosable_companyHasTypePrivateUnlimitedAndIsActive_returnsTrue() {
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        company.setType(CompanyType.PRIVATE_UNLIMITED.getValue());
+        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
+
+        final boolean isClosable = mapper.isCompanyClosable(company);
+
+        assertTrue(isClosable);
+    }
+
+    @Test
+    public void mapCompanyDetailsToClosable_companyHasTypeOldPublicCompanyAndIsActive_returnsTrue() {
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        company.setType(CompanyType.OLD_PUBLIC_COMPANY.getValue());
+        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
+
+        final boolean isClosable = mapper.isCompanyClosable(company);
+
+        assertTrue(isClosable);
+    }
+
+    @Test
+    public void mapCompanyDetailsToClosable_companyHasTypePrivateLimitedGuarantNscLimitedExemptionAndIsActive_returnsTrue() {
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        company.setType(CompanyType.PRIVATE_LIMITED_GUARANT_NSC_LIMITED_EXEMPTION.getValue());
+        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
+
+        final boolean isClosable = mapper.isCompanyClosable(company);
+
+        assertTrue(isClosable);
+    }
+
+    @Test
+    public void mapCompanyDetailsToClosable_companyHasTypePrivateLimitedGuarantNscAndIsActive_returnsTrue() {
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        company.setType(CompanyType.PRIVATE_LIMITED_GUARANT_NSC.getValue());
+        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
+
+        final boolean isClosable = mapper.isCompanyClosable(company);
+
+        assertTrue(isClosable);
+    }
+
+    @Test
+    public void mapCompanyDetailsToClosable_companyHasTypePrivateUnlimitedNscAndIsActive_returnsTrue() {
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        company.setType(CompanyType.PRIVATE_UNLIMITED_NSC.getValue());
+        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
+
+        final boolean isClosable = mapper.isCompanyClosable(company);
+
+        assertTrue(isClosable);
+    }
+
+    @Test
+    public void mapCompanyDetailsToClosable_companyHasTypePrivateLimitedSharesSection30ExemptionAndIsActive_returnsTrue() {
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        company.setType(CompanyType.PRIVATE_LIMITED_SHARES_SECTION_30_EXEMPTION.getValue());
+        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
+
+        final boolean isClosable = mapper.isCompanyClosable(company);
+
+        assertTrue(isClosable);
+    }
+
+    @Test
+    public void mapCompanyDetailsToClosable_companyHasTypeNorthernIrelandAndIsActive_returnsTrue() {
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        company.setType(CompanyType.NORTHERN_IRELAND.getValue());
+        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
+
+        final boolean isClosable = mapper.isCompanyClosable(company);
+
+        assertTrue(isClosable);
+    }
+
+    @Test
+    public void mapCompanyDetailsToClosable_companyHasTypeNorthernIrelandOtherAndIsActive_returnsTrue() {
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        company.setType(CompanyType.NORTHERN_IRELAND_OTHER.getValue());
+        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
+
+        final boolean isClosable = mapper.isCompanyClosable(company);
+
+        assertTrue(isClosable);
+    }
+
+    @Test
     public void mapCompanyDetailsToClosable_companyHasTypeLtdAndIsActiveAndOverseas_returnsFalse() {
         final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setType(CompanyType.LTD.getValue());

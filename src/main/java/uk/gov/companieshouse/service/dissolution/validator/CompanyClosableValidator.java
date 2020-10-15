@@ -15,7 +15,15 @@ public class CompanyClosableValidator {
     private static final List<String> CLOSABLE_TYPES = Arrays.asList(
             CompanyType.LTD.getValue(),
             CompanyType.PLC.getValue(),
-            CompanyType.LLP.getValue()
+            CompanyType.LLP.getValue(),
+            CompanyType.PRIVATE_UNLIMITED.getValue(),
+            CompanyType.OLD_PUBLIC_COMPANY.getValue(),
+            CompanyType.PRIVATE_LIMITED_GUARANT_NSC_LIMITED_EXEMPTION.getValue(),
+            CompanyType.PRIVATE_LIMITED_GUARANT_NSC.getValue(),
+            CompanyType.PRIVATE_UNLIMITED_NSC.getValue(),
+            CompanyType.PRIVATE_LIMITED_SHARES_SECTION_30_EXEMPTION.getValue(),
+            CompanyType.NORTHERN_IRELAND.getValue(),
+            CompanyType.NORTHERN_IRELAND_OTHER.getValue()
     );
 
     private static final List<String> OVERSEAS_PREFIXES = Arrays.asList(
