@@ -12,6 +12,7 @@ import uk.gov.companieshouse.model.db.dissolution.DissolutionRejectReason;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionSubmission;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionVerdict;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
+import uk.gov.companieshouse.model.db.payment.RefundInformation;
 import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
@@ -21,6 +22,7 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.documentrender.DissolutionCertificateData;
 import uk.gov.companieshouse.model.dto.documentrender.DissolutionCertificateDirector;
+import uk.gov.companieshouse.model.dto.payment.RefundResponse;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.SubmissionStatus;
@@ -226,5 +228,26 @@ public class DissolutionFixtures {
         userData.setUserId("some user id");
 
         return userData;
+    }
+
+    public static RefundResponse generateRefundResponse() {
+        final RefundResponse refundResponse = new RefundResponse();
+
+        refundResponse.setAmount(800);
+        refundResponse.setCreatedDateTime(LocalDateTime.now().toString());
+        refundResponse.setRefundId("GTY890");
+        refundResponse.setStatus("success");
+
+        return refundResponse;
+    }
+
+    public static RefundInformation generateRefundInformation() {
+        final RefundInformation refundInformation = new RefundInformation();
+
+        refundInformation.setAmount(800);
+        refundInformation.setCreatedDateTime(LocalDateTime.now().toString());
+        refundInformation.setRefundId("GTY890");
+
+        return refundInformation;
     }
 }

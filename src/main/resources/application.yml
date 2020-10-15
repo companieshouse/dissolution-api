@@ -53,6 +53,9 @@ logging:
     root: ${LOGLEVEL}
   namespace: dissolution-api
 
+payments:
+  url: ${PAYMENTS_API_URL}
+
 server:
   port: 3001
 

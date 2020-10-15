@@ -3,6 +3,7 @@ package uk.gov.companieshouse.model.db.payment;
 import org.springframework.data.mongodb.core.mapping.Field;
 import uk.gov.companieshouse.model.enums.PaymentMethod;
 
+import java.sql.Ref;
 import java.time.LocalDateTime;
 
 public class PaymentInformation {
@@ -12,6 +13,8 @@ public class PaymentInformation {
 
     @Field("date_time")
     private LocalDateTime dateTime;
+
+    private RefundInformation refund;
 
     public String getReference() {
         return reference;
@@ -36,4 +39,8 @@ public class PaymentInformation {
     public void setDateTime(LocalDateTime dateTime) {
         this.dateTime = dateTime;
     }
+
+    public RefundInformation getRefund() { return refund; }
+
+    public void setRefund(RefundInformation refund) { this.refund = refund; }
 }

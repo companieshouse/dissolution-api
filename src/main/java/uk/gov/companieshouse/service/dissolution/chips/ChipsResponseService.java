@@ -7,8 +7,10 @@ import uk.gov.companieshouse.mapper.DissolutionVerdictMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionVerdict;
 import uk.gov.companieshouse.model.dto.chips.ChipsResponseCreateRequest;
+import uk.gov.companieshouse.model.enums.VerdictResult;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.dissolution.DissolutionEmailService;
+import uk.gov.companieshouse.service.dissolution.DissolutionRefundService;
 
 @Service
 public class ChipsResponseService {
@@ -16,17 +18,20 @@ public class ChipsResponseService {
     private final DissolutionRepository repository;
     private final DissolutionVerdictMapper dissolutionVerdictMapper;
     private final DissolutionEmailService dissolutionEmailService;
+    private final DissolutionRefundService dissolutionRefundService;
     private final Logger logger;
 
     public ChipsResponseService(
             DissolutionRepository repository,
             DissolutionVerdictMapper dissolutionVerdictMapper,
             DissolutionEmailService dissolutionEmailService,
+            DissolutionRefundService dissolutionRefundService,
             Logger logger
     ) {
         this.repository = repository;
         this.dissolutionVerdictMapper = dissolutionVerdictMapper;
         this.dissolutionEmailService = dissolutionEmailService;
+        this.dissolutionRefundService = dissolutionRefundService;
         this.logger = logger;
     }
 
@@ -37,6 +42,10 @@ public class ChipsResponseService {
 
         dissolution.setVerdict(dissolutionVerdict);
         dissolution.setActive(false);
+
+        if (dissolutionVerdict.getResult() == VerdictResult.REJECTED) {
+            dissolutionRefundService.handleRefund(dissolution);
+        }
 
         logger.info(String.format("Received CHIPS verdict for company %s - %s", dissolution.getCompany().getNumber(), dissolutionVerdict.getResult().toString()));
 

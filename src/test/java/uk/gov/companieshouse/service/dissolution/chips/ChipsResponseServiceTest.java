@@ -13,14 +13,15 @@ import uk.gov.companieshouse.mapper.DissolutionVerdictMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionVerdict;
 import uk.gov.companieshouse.model.dto.chips.ChipsResponseCreateRequest;
+import uk.gov.companieshouse.model.enums.VerdictResult;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.dissolution.DissolutionEmailService;
+import uk.gov.companieshouse.service.dissolution.DissolutionRefundService;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ChipsResponseServiceTest {
@@ -38,12 +39,17 @@ public class ChipsResponseServiceTest {
     private DissolutionEmailService dissolutionEmailService;
 
     @Mock
+    private DissolutionRefundService dissolutionRefundService;
+
+    @Mock
     private Logger logger;
 
     @Test
-    public void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail() throws DissolutionNotFoundException {
+    public void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_acceptedApplication() throws DissolutionNotFoundException {
         ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
+        chipsResponseCreateRequest.setStatus(VerdictResult.ACCEPTED);
         DissolutionVerdict dissolutionVerdict = DissolutionFixtures.generateDissolutionVerdict();
+        dissolutionVerdict.setResult(VerdictResult.ACCEPTED);
         Dissolution dissolution = DissolutionFixtures.generateDissolution();
 
         when(dissolutionVerdictMapper.mapToDissolutionVerdict(chipsResponseCreateRequest)).thenReturn(dissolutionVerdict);
@@ -53,6 +59,26 @@ public class ChipsResponseServiceTest {
         
         assertFalse(dissolution.getActive());
 
+        verifyNoInteractions(dissolutionRefundService);
+        verify(dissolutionEmailService).sendApplicationOutcomeEmail(dissolution, dissolutionVerdict);
+    }
+
+    @Test
+    public void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_rejectedApplication() throws DissolutionNotFoundException {
+        ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
+        chipsResponseCreateRequest.setStatus(VerdictResult.REJECTED);
+        DissolutionVerdict dissolutionVerdict = DissolutionFixtures.generateDissolutionVerdict();
+        dissolutionVerdict.setResult(VerdictResult.REJECTED);
+        Dissolution dissolution = DissolutionFixtures.generateDissolution();
+
+        when(dissolutionVerdictMapper.mapToDissolutionVerdict(chipsResponseCreateRequest)).thenReturn(dissolutionVerdict);
+        when(repository.findByDataApplicationReference(chipsResponseCreateRequest.getSubmissionReference())).thenReturn(Optional.of(dissolution));
+
+        chipsResponseService.saveAndNotifyDissolutionApplicationOutcome(chipsResponseCreateRequest);
+
+        assertFalse(dissolution.getActive());
+
+        verify(dissolutionRefundService).handleRefund(dissolution);
         verify(dissolutionEmailService).sendApplicationOutcomeEmail(dissolution, dissolutionVerdict);
     }
 }
