@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.service.dissolution.certificate;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -41,44 +42,47 @@ public class DissolutionCertificateGeneratorTest {
     @Mock
     private Logger logger;
 
+    private Dissolution dissolution;
+
+    private DissolutionCertificateData dissolutionCertificateData;
+
+    @BeforeEach
+    public void setUp() {
+        dissolution = generateDissolution();
+        dissolutionCertificateData = generateDissolutionCertificateData();
+    }
+
     @Test
     public void generateDissolutionCertificate_generatesDataAndLocationForCertificate() {
-        final Dissolution dissolution = generateDissolution();
-        final DissolutionCertificateData data = generateDissolutionCertificateData();
-
-        when(mapper.mapToCertificateData(dissolution)).thenReturn(data);
-        when(locationGenerator.generateCertificateLocation()).thenReturn(LOCATION);
+        when(mapper.mapToCertificateData(dissolution)).thenReturn(dissolutionCertificateData);
+        when(locationGenerator.generateCertificateLocation(dissolution)).thenReturn(LOCATION);
 
         certificateGenerator.generateDissolutionCertificate(dissolution);
 
         verify(mapper).mapToCertificateData(dissolution);
-        verify(locationGenerator).generateCertificateLocation();
-        verify(client).generateAndStoreDocument(eq(data), anyString(), eq(LOCATION));
+        verify(locationGenerator).generateCertificateLocation(dissolution);
+        verify(client).generateAndStoreDocument(eq(dissolutionCertificateData), anyString(), eq(LOCATION));
     }
 
     @Test
     public void generateDissolutionCertificate_generatesDS01Certificate_whenApplicationIsADS01() {
-        final Dissolution dissolution = generateDissolution();
         dissolution.getData().getApplication().setType(ApplicationType.DS01);
-        final DissolutionCertificateData data = generateDissolutionCertificateData();
 
-        when(mapper.mapToCertificateData(dissolution)).thenReturn(data);
-        when(locationGenerator.generateCertificateLocation()).thenReturn(LOCATION);
+        when(mapper.mapToCertificateData(dissolution)).thenReturn(dissolutionCertificateData);
+        when(locationGenerator.generateCertificateLocation(dissolution)).thenReturn(LOCATION);
 
         certificateGenerator.generateDissolutionCertificate(dissolution);
 
-        verify(client).generateAndStoreDocument(data, "ds01.html", LOCATION);
+        verify(client).generateAndStoreDocument(dissolutionCertificateData, "ds01.html", LOCATION);
     }
 
     @Test
     public void generateDissolutionCertificate_mapsTheReturnedCertificateLocationToADissolutionCertificate() {
-        final Dissolution dissolution = generateDissolution();
-        final DissolutionCertificateData data = generateDissolutionCertificateData();
         final DissolutionCertificate certificate = generateDissolutionCertificate();
 
-        when(mapper.mapToCertificateData(dissolution)).thenReturn(data);
-        when(locationGenerator.generateCertificateLocation()).thenReturn(LOCATION);
-        when(client.generateAndStoreDocument(data, "ds01.html", LOCATION)).thenReturn(SAVED_LOCATION);
+        when(mapper.mapToCertificateData(dissolution)).thenReturn(dissolutionCertificateData);
+        when(locationGenerator.generateCertificateLocation(dissolution)).thenReturn(LOCATION);
+        when(client.generateAndStoreDocument(dissolutionCertificateData, "ds01.html", LOCATION)).thenReturn(SAVED_LOCATION);
         when(mapper.mapToDissolutionCertificate(SAVED_LOCATION)).thenReturn(certificate);
 
         final DissolutionCertificate result = certificateGenerator.generateDissolutionCertificate(dissolution);
