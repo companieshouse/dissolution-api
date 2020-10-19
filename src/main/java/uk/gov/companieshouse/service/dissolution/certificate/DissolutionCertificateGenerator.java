@@ -22,7 +22,8 @@ public class DissolutionCertificateGenerator {
             DissolutionCertificateMapper mapper,
             DissolutionCertificateLocationGenerator locationGenerator,
             DocumentRenderClient client,
-            Logger logger) {
+            Logger logger
+    ) {
         this.mapper = mapper;
         this.locationGenerator = locationGenerator;
         this.client = client;
@@ -32,7 +33,7 @@ public class DissolutionCertificateGenerator {
     public DissolutionCertificate generateDissolutionCertificate(Dissolution dissolution) {
         final DissolutionCertificateData data = mapper.mapToCertificateData(dissolution);
 
-        final String location = locationGenerator.generateCertificateLocation();
+        final String location = locationGenerator.generateCertificateLocation(dissolution);
 
         final String savedLocation = client.generateAndStoreDocument(data, getTemplateName(dissolution), location);
 
