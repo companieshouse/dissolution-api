@@ -7,6 +7,9 @@ public abstract class ApiConfig {
     @Value("${api.key}")
     private String apiKey;
 
+    @Value("${api.keyInternal}")
+    private String apiKeyInternal;
+
     @Value("${api.url}")
     private String apiUrl;
 
@@ -16,6 +19,14 @@ public abstract class ApiConfig {
 
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
+    }
+
+    public String getApiKeyInternal() {
+        return apiKeyInternal;
+    }
+
+    public void setApiKeyInternal(String apiKeyInternal) {
+        this.apiKeyInternal = apiKeyInternal;
     }
 
     public String getApiUrl() {

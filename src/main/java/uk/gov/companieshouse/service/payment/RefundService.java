@@ -18,7 +18,7 @@ public class RefundService {
     }
 
     public Optional<RefundResponse> refundPayment(String paymentReference, RefundRequest refundRequest) {
-        return  paymentsClient.refundPayment(
+        return paymentsClient.refundPayment(
                 refundRequest,
                 paymentReference
         );

@@ -3,7 +3,6 @@ package uk.gov.companieshouse.model.db.payment;
 import org.springframework.data.mongodb.core.mapping.Field;
 import uk.gov.companieshouse.model.enums.PaymentMethod;
 
-import java.sql.Ref;
 import java.time.LocalDateTime;
 
 public class PaymentInformation {
