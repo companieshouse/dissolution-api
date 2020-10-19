@@ -14,6 +14,7 @@ import java.util.Optional;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateRefundResponse;
+import static uk.gov.companieshouse.fixtures.PaymentFixtures.generateRefundRequest;
 
 @ExtendWith(MockitoExtension.class)
 public class RefundServiceTest {
@@ -24,17 +25,15 @@ public class RefundServiceTest {
     @Mock
     private PaymentsClient paymentsClient;
 
-    private static final int REFUND_AMOUNT = 800;
-
     @Test
     public void refundPayment_callsPaymentsClient() {
-        RefundRequest refundRequest = new RefundRequest(REFUND_AMOUNT);
+        RefundRequest refundRequest = generateRefundRequest();
         String paymentReference = "GYU890";
         RefundResponse refundResponse = generateRefundResponse();
 
         when(paymentsClient.refundPayment(refundRequest, paymentReference)).thenReturn(refundResponse);
 
-        paymentsClient.refundPayment(refundRequest, paymentReference);
+        refundService.refundPayment(paymentReference, refundRequest);
 
         verify(paymentsClient).refundPayment(refundRequest, paymentReference);
     }
