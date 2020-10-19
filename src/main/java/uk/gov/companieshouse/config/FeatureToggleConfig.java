@@ -6,14 +6,14 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class FeatureToggleConfig {
 
-    @Value("${featureToggles.automaticallyRequestRefund}")
-    private boolean automaticallyRequestRefundEnabled;
+    @Value("${featureToggles.refunds}")
+    private boolean refundsEnabled;
 
-    public boolean isAutomaticallyRequestRefundEnabled() {
-        return automaticallyRequestRefundEnabled;
+    public boolean isRefundsEnabled() {
+        return refundsEnabled;
     }
 
-    public void setAutomaticallyRequestRefundEnabled(boolean automaticallyRequestRefundEnabled) {
-        this.automaticallyRequestRefundEnabled = automaticallyRequestRefundEnabled;
+    public void setRefundsEnabled(boolean refundsEnabled) {
+        this.refundsEnabled = refundsEnabled;
     }
 }

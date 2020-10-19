@@ -37,7 +37,7 @@ env:
   chsUrl: ${CHS_URL}
 
 featureToggles:
-  automaticallyRequestRefund: ${DISSOLUTION_AUTOMATICALLY_REQUEST_REFUND_FEATURE_ENABLED}
+  refunds: ${DISSOLUTION_REFUNDS_FEATURE_ENABLED}
 
 kafka:
   broker:

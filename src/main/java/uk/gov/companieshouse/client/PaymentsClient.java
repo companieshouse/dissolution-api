@@ -8,8 +8,6 @@ import uk.gov.companieshouse.config.PaymentsConfig;
 import uk.gov.companieshouse.model.dto.payment.RefundRequest;
 import uk.gov.companieshouse.model.dto.payment.RefundResponse;
 
-import java.util.Optional;
-
 import static uk.gov.companieshouse.model.Constants.*;
 
 @Service

@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.fixtures;
 
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
+import uk.gov.companieshouse.model.db.payment.RefundInformation;
 import uk.gov.companieshouse.model.dto.payment.PaymentDescriptionValues;
 import uk.gov.companieshouse.model.dto.payment.PaymentGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentItem;
@@ -11,6 +12,7 @@ import uk.gov.companieshouse.model.dto.payment.RefundResponse;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.PaymentMethod;
 import uk.gov.companieshouse.model.enums.PaymentStatus;
+import uk.gov.companieshouse.model.enums.RefundStatus;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -77,8 +79,18 @@ public class PaymentFixtures {
         response.setAmount(800);
         response.setRefundId("REF123");
         response.setCreatedDateTime(LocalDateTime.now().toString());
-        response.setStatus("available");
+        response.setStatus(RefundStatus.SUCCESS);
 
         return response;
+    }
+
+    public static RefundInformation generateRefundInformation() {
+        final RefundInformation refundInformation = new RefundInformation();
+
+        refundInformation.setAmount(800);
+        refundInformation.setCreatedDateTime(LocalDateTime.now().toString());
+        refundInformation.setRefundId("GTY890");
+
+        return refundInformation;
     }
 }

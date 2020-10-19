@@ -47,7 +47,7 @@ public class ChipsResponseService {
         dissolution.setVerdict(dissolutionVerdict);
         dissolution.setActive(false);
 
-        if (featureToggleConfig.isAutomaticallyRequestRefundEnabled() && dissolutionVerdict.getResult() == VerdictResult.REJECTED) {
+        if (featureToggleConfig.isRefundsEnabled() && dissolutionVerdict.getResult() == VerdictResult.REJECTED) {
             dissolutionRefundService.handleRefund(dissolution);
         }
 

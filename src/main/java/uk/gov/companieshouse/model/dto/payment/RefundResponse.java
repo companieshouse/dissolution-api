@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.model.dto.payment;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import uk.gov.companieshouse.model.enums.RefundStatus;
 
 public class RefundResponse {
     @JsonProperty("refund_id")
@@ -11,7 +12,7 @@ public class RefundResponse {
 
     private int amount;
 
-    private String status;
+    private RefundStatus status;
 
     public void setRefundId(String refundId) {
         this.refundId = refundId;
@@ -37,11 +38,11 @@ public class RefundResponse {
         return amount;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(RefundStatus status) {
         this.status = status;
     }
 
-    public String getStatus() {
+    public RefundStatus getStatus() {
         return status;
     }
 }

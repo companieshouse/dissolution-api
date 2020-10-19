@@ -8,8 +8,6 @@ import uk.gov.companieshouse.model.db.payment.RefundInformation;
 import uk.gov.companieshouse.model.dto.payment.RefundResponse;
 import uk.gov.companieshouse.service.payment.RefundService;
 
-import java.util.Optional;
-
 @Service
 public class DissolutionRefundService {
     private static final int REFUND_AMOUNT = 800;
@@ -29,12 +27,11 @@ public class DissolutionRefundService {
     }
 
     public void handleRefund(Dissolution dissolution) {
-        RefundResponse refundResponse = refundService.refundPayment(
+        RefundInformation refund = refundService.refundPayment(
             dissolution.getPaymentInformation().getReference(),
             refundRequestMapper.mapToRefundRequest(REFUND_AMOUNT)
         );
 
-        RefundInformation refund = refundInformationMapper.mapToRefundInformation(refundResponse);
         dissolution.getPaymentInformation().setRefund(refund);
     }
 }
