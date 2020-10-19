@@ -1,6 +1,5 @@
 api:
   key: some-api-key
-  keyInternal: some-internal-api-key
   url: http://api
 
 aws:

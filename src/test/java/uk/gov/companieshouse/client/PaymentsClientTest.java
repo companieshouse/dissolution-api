@@ -28,7 +28,7 @@ import static uk.gov.companieshouse.fixtures.PaymentFixtures.generateRefundRespo
 public class PaymentsClientTest {
 
     private static final String PAYMENT_ID = "PAY123";
-    private static final String INTERNAL_API_KEY = "some-internal-api-key";
+    private static final String API_KEY = "some-api-key";
 
     public static MockWebServer mockBackEnd;
 
@@ -48,7 +48,7 @@ public class PaymentsClientTest {
     void initialize() {
         String baseUrl = String.format("http://localhost:%s", mockBackEnd.getPort());
 
-        when(config.getApiKeyInternal()).thenReturn(INTERNAL_API_KEY);
+        when(config.getApiKey()).thenReturn(API_KEY);
         when(config.getPaymentsHost()).thenReturn(baseUrl);
     }
 
@@ -91,7 +91,7 @@ public class PaymentsClientTest {
 
         RecordedRequest recordedRequest = mockBackEnd.takeRequest();
 
-        assertEquals(INTERNAL_API_KEY, recordedRequest.getHeader("Authorization"));
+        assertEquals(API_KEY, recordedRequest.getHeader("Authorization"));
         assertEquals("application/json", recordedRequest.getHeader("Accept"));
         assertEquals("application/json", recordedRequest.getHeader("Content-Type"));
     }

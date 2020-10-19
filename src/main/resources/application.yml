@@ -1,6 +1,5 @@
 api:
   key: ${CHS_API_KEY}
-  keyInternal: ${CHS_INTERNAL_API_KEY}
   url: ${API_URL}
 
 aws:

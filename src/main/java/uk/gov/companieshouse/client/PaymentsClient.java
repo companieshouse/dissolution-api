@@ -27,7 +27,7 @@ public class PaymentsClient {
             .create(config.getPaymentsHost())
             .post()
             .uri(REFUNDS_URI, paymentReference)
-            .header(HEADER_AUTHORIZATION, config.getApiKeyInternal())
+            .header(HEADER_AUTHORIZATION, config.getApiKey())
             .header(HEADER_ACCEPT, CONTENT_TYPE_JSON)
             .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
             .body(Mono.just(data), RefundRequest.class)
