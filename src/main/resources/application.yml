@@ -35,6 +35,9 @@ env:
   name: ${ENV_NAME}
   chsUrl: ${CHS_URL}
 
+featureToggles:
+  automaticallyRequestRefund: ${DISSOLUTION_AUTOMATICALLY_REQUEST_REFUND_FEATURE_ENABLED}
+
 kafka:
   broker:
     addr: ${KAFKA_BROKER_ADDR}

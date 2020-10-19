@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.config.FeatureToggleConfig;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.fixtures.ChipsFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
@@ -44,6 +45,9 @@ public class ChipsResponseServiceTest {
     @Mock
     private Logger logger;
 
+    @Mock
+    private FeatureToggleConfig featureToggleConfig;
+
     @Test
     public void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_acceptedApplication() throws DissolutionNotFoundException {
         ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
@@ -54,6 +58,7 @@ public class ChipsResponseServiceTest {
 
         when(dissolutionVerdictMapper.mapToDissolutionVerdict(chipsResponseCreateRequest)).thenReturn(dissolutionVerdict);
         when(repository.findByDataApplicationReference(chipsResponseCreateRequest.getSubmissionReference())).thenReturn(Optional.of(dissolution));
+        when(featureToggleConfig.isAutomaticallyRequestRefundEnabled()).thenReturn(true);
 
         chipsResponseService.saveAndNotifyDissolutionApplicationOutcome(chipsResponseCreateRequest);
         
@@ -73,6 +78,7 @@ public class ChipsResponseServiceTest {
 
         when(dissolutionVerdictMapper.mapToDissolutionVerdict(chipsResponseCreateRequest)).thenReturn(dissolutionVerdict);
         when(repository.findByDataApplicationReference(chipsResponseCreateRequest.getSubmissionReference())).thenReturn(Optional.of(dissolution));
+        when(featureToggleConfig.isAutomaticallyRequestRefundEnabled()).thenReturn(true);
 
         chipsResponseService.saveAndNotifyDissolutionApplicationOutcome(chipsResponseCreateRequest);
 

@@ -34,15 +34,13 @@ public class DissolutionRefundService {
     }
 
     public void handleRefund(Dissolution dissolution) {
-        Optional<RefundResponse> refundResponse = refundService.refundPayment(
-                dissolution.getPaymentInformation().getReference(),
-                refundRequestMapper.mapToRefundRequest(REFUND_AMOUNT)
+        RefundResponse refundResponse = refundService.refundPayment(
+            dissolution.getPaymentInformation().getReference(),
+            refundRequestMapper.mapToRefundRequest(REFUND_AMOUNT)
         );
 
-        if (refundResponse.isPresent()) {
-            RefundInformation refund = refundInformationMapper.mapToRefundInformation(refundResponse.get());
-            dissolution.getPaymentInformation().setRefund(refund);
-            repository.save(dissolution);
-        }
+        RefundInformation refund = refundInformationMapper.mapToRefundInformation(refundResponse);
+        dissolution.getPaymentInformation().setRefund(refund);
+        repository.save(dissolution);
     }
 }

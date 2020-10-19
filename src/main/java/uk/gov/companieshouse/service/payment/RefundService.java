@@ -17,7 +17,7 @@ public class RefundService {
         this.paymentsClient = paymentsClient;
     }
 
-    public Optional<RefundResponse> refundPayment(String paymentReference, RefundRequest refundRequest) {
+    public RefundResponse refundPayment(String paymentReference, RefundRequest refundRequest) {
         return  paymentsClient.refundPayment(
                 refundRequest,
                 paymentReference

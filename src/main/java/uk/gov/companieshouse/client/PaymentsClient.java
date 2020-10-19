@@ -28,21 +28,18 @@ public class PaymentsClient {
         this.config = config;
     }
 
-    public Optional<RefundResponse> refundPayment(RefundRequest data, String paymentReference) {
-        return Optional
-            .ofNullable(
-                WebClient
-                    .create(config.getPaymentsHost())
-                    .post()
-                    .uri(REFUNDS_URI, paymentReference)
-                    .header(HEADER_AUTHORIZATION, config.getApiKey())
-                    .header(HEADER_ACCEPT, CONTENT_TYPE_JSON)
-                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
-                    .body(Mono.just(asJsonString(data)), String.class)
-                    .retrieve()
-                    .bodyToMono(RefundResponse.class)
-                    .block()
-            );
+    public RefundResponse refundPayment(RefundRequest data, String paymentReference) {
+        return WebClient
+            .create(config.getPaymentsHost())
+            .post()
+            .uri(REFUNDS_URI, paymentReference)
+            .header(HEADER_AUTHORIZATION, config.getApiKey())
+            .header(HEADER_ACCEPT, CONTENT_TYPE_JSON)
+            .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
+            .body(Mono.just(asJsonString(data)), String.class)
+            .retrieve()
+            .bodyToMono(RefundResponse.class)
+            .block();
     }
 
     private String asJsonString(RefundRequest data) {

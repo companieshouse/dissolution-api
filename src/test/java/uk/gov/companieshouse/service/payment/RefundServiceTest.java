@@ -30,7 +30,7 @@ public class RefundServiceTest {
     public void refundPayment_callsPaymentsClient() {
         RefundRequest refundRequest = new RefundRequest(REFUND_AMOUNT);
         String paymentReference = "GYU890";
-        Optional<RefundResponse> refundResponse = Optional.of(generateRefundResponse());
+        RefundResponse refundResponse = generateRefundResponse();
 
         when(paymentsClient.refundPayment(refundRequest, paymentReference)).thenReturn(refundResponse);
 

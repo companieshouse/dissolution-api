@@ -45,13 +45,13 @@ public class DissolutionRefundServiceTest {
     public void handleRefund_refundPaidDissolution() {
         final Dissolution dissolution = generateDissolution();
         final RefundRequest refundRequest = new RefundRequest(REFUND_AMOUNT);
-        final Optional<RefundResponse> refundResponse = Optional.of(generateRefundResponse());
+        final RefundResponse refundResponse = generateRefundResponse();
         final String paymentReference = dissolution.getPaymentInformation().getReference();
         final RefundInformation refundInformation = generateRefundInformation();
 
         when(refundRequestMapper.mapToRefundRequest(REFUND_AMOUNT)).thenReturn(refundRequest);
         when(refundService.refundPayment(paymentReference, refundRequest)).thenReturn(refundResponse);
-        when(refundInformationMapper.mapToRefundInformation(refundResponse.get())).thenReturn(refundInformation);
+        when(refundInformationMapper.mapToRefundInformation(refundResponse)).thenReturn(refundInformation);
 
         dissolutionRefundService.handleRefund(dissolution);
 
