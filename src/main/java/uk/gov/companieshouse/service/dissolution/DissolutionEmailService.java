@@ -71,9 +71,6 @@ public class DissolutionEmailService {
         } else {
             EmailDocument<?> applicationRejectedEmailDocument = this.getApplicationRejectedEmailDocument(dissolution, dissolutionVerdict);
             sendEmail(applicationRejectedEmailDocument);
-
-            EmailDocument<?> applicationRejectedEmailDocumentForFinanceTeam = this.getApplicationRejectedEmailDocument(dissolution, dissolutionVerdict, Optional.of(environmentConfig.getChsFinanceEmail()));
-            sendEmail(applicationRejectedEmailDocumentForFinanceTeam);
         }
     }
 
