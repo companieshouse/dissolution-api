@@ -55,26 +55,13 @@ public class DissolutionEmailMapper {
     public ApplicationRejectedEmailData mapToApplicationRejectedEmailData(
             Dissolution dissolution, List<String> rejectReasons
     ) {
-        return this.mapToApplicationRejectedEmailData(dissolution, rejectReasons, Optional.empty());
-    }
-
-    public ApplicationRejectedEmailData mapToApplicationRejectedEmailData(
-            Dissolution dissolution, List<String> rejectReasons, Optional<String> emailAddress
-    ) {
         ApplicationRejectedEmailData applicationRejectedEmailData = new ApplicationRejectedEmailData();
-
-        if (emailAddress.isPresent()) {
-            applicationRejectedEmailData.setTo(emailAddress.get());
-        } else {
-            applicationRejectedEmailData.setTo(dissolution.getCreatedBy().getEmail());
-        }
         applicationRejectedEmailData.setSubject(APPLICATION_REJECTED_EMAIL_SUBJECT);
         applicationRejectedEmailData.setCdnHost(environmentConfig.getCdnHost());
         applicationRejectedEmailData.setDissolutionReferenceNumber(dissolution.getData().getApplication().getReference());
         applicationRejectedEmailData.setCompanyNumber(dissolution.getCompany().getNumber());
         applicationRejectedEmailData.setCompanyName(dissolution.getCompany().getName());
         applicationRejectedEmailData.setRejectReasons(rejectReasons);
-        applicationRejectedEmailData.setPaymentReference(dissolution.getPaymentInformation().getReference());
 
         return applicationRejectedEmailData;
     }
