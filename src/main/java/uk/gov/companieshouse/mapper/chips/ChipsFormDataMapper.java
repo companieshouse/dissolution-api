@@ -124,8 +124,12 @@ public class ChipsFormDataMapper {
         final ChipsPersonName personName = new ChipsPersonName();
         final int nameSeparatorIndex = name.indexOf(',');
 
-        personName.setForename(name.substring(nameSeparatorIndex + 1).trim());
-        personName.setSurname(name.substring(0, nameSeparatorIndex).trim());
+        if (nameSeparatorIndex == -1) {
+            personName.setSurname(name.trim());
+        } else {
+            personName.setForename(name.substring(nameSeparatorIndex + 1).trim());
+            personName.setSurname(name.substring(0, nameSeparatorIndex).trim());
+        }
 
         return personName;
     }

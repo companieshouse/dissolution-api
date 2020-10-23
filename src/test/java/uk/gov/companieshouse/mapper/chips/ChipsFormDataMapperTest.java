@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -188,7 +189,7 @@ public class ChipsFormDataMapperTest {
         approvalTwo.setDateTime(LocalDateTime.of(2020, 2, 2, 16, 15));
 
         DissolutionDirector directorTwo = generateDissolutionDirector();
-        directorTwo.setName("SMITH, Jane Janet, Mrs");
+        directorTwo.setName("ST.MARCUS CORPORATION");
         directorTwo.setDirectorApproval(approvalTwo);
         directorTwo.setEmail("mail2");
         directorTwo.setOnBehalfName("Mr. Accountant");
@@ -209,8 +210,8 @@ public class ChipsFormDataMapperTest {
         assertEquals("mail1", request.getCorporateBody().getOfficers().get(0).getEmail());
         assertEquals("192.168.0.2", request.getCorporateBody().getOfficers().get(0).getIpAddress());
 
-        assertEquals("Jane Janet, Mrs", request.getCorporateBody().getOfficers().get(1).getPersonName().getForename());
-        assertEquals("SMITH", request.getCorporateBody().getOfficers().get(1).getPersonName().getSurname());
+        assertNull(request.getCorporateBody().getOfficers().get(1).getPersonName().getForename());
+        assertEquals("ST.MARCUS CORPORATION", request.getCorporateBody().getOfficers().get(1).getPersonName().getSurname());
         assertEquals("2020-02-02", request.getCorporateBody().getOfficers().get(1).getSignDate());
         assertEquals("mail2", request.getCorporateBody().getOfficers().get(1).getEmail());
         assertEquals("Mr. Accountant", request.getCorporateBody().getOfficers().get(1).getOnBehalfName());
