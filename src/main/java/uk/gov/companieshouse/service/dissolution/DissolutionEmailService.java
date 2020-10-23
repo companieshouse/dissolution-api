@@ -38,7 +38,7 @@ public class DissolutionEmailService {
             DissolutionMessageTypeCalculator messageTypeCalculator,
             EmailMapper emailMapper,
             EmailService emailService,
-            DissolutionDeadlineDateCalculator deadlineDateCalculator,
+            DissolutionDeadlineDateCalculator deadlineDateCalculator
     ) {
         this.dissolutionEmailMapper = dissolutionEmailMapper;
         this.messageTypeCalculator = messageTypeCalculator;
