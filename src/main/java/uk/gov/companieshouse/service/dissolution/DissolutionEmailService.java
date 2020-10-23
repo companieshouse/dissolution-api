@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.service.dissolution;
 
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.mapper.email.DissolutionEmailMapper;
@@ -18,7 +17,6 @@ import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
 import uk.gov.companieshouse.model.enums.VerdictResult;
 import uk.gov.companieshouse.model.dto.email.PendingPaymentEmailData;
 import uk.gov.companieshouse.service.email.EmailService;
-import uk.gov.companieshouse.config.EnvironmentConfig;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,7 +31,6 @@ public class DissolutionEmailService {
     private final EmailMapper emailMapper;
     private final EmailService emailService;
     private final DissolutionDeadlineDateCalculator deadlineDateCalculator;
-    private final EnvironmentConfig environmentConfig;
 
     @Autowired
     public DissolutionEmailService(
@@ -41,15 +38,12 @@ public class DissolutionEmailService {
             DissolutionMessageTypeCalculator messageTypeCalculator,
             EmailMapper emailMapper,
             EmailService emailService,
-            DissolutionDeadlineDateCalculator deadlineDateCalculator,
-            EnvironmentConfig environmentConfig
     ) {
         this.dissolutionEmailMapper = dissolutionEmailMapper;
         this.messageTypeCalculator = messageTypeCalculator;
         this.emailMapper = emailMapper;
         this.emailService = emailService;
         this.deadlineDateCalculator = deadlineDateCalculator;
-        this.environmentConfig = environmentConfig;
     }
 
     public void sendSuccessfulPaymentEmail(Dissolution dissolution) {
@@ -65,13 +59,11 @@ public class DissolutionEmailService {
     }
 
     public void sendApplicationOutcomeEmail(Dissolution dissolution, DissolutionVerdict dissolutionVerdict) {
-        if (dissolutionVerdict.getResult() == VerdictResult.ACCEPTED) {
-            EmailDocument<?> applicationAcceptedEmailDocument = this.getApplicationAcceptedEmailDocument(dissolution);
-            sendEmail(applicationAcceptedEmailDocument);
-        } else {
-            EmailDocument<?> applicationRejectedEmailDocument = this.getApplicationRejectedEmailDocument(dissolution, dissolutionVerdict);
-            sendEmail(applicationRejectedEmailDocument);
-        }
+        EmailDocument<?> emailDocument = dissolutionVerdict.getResult() == VerdictResult.ACCEPTED ?
+                this.getApplicationAcceptedEmailDocument(dissolution) :
+                this.getApplicationRejectedEmailDocument(dissolution, dissolutionVerdict);
+
+        sendEmail(emailDocument);
     }
 
     public void sendPendingPaymentEmail(Dissolution dissolution) {
@@ -97,13 +89,9 @@ public class DissolutionEmailService {
     }
 
     private EmailDocument<ApplicationRejectedEmailData> getApplicationRejectedEmailDocument(Dissolution dissolution, DissolutionVerdict dissolutionVerdict) {
-        return getApplicationRejectedEmailDocument(dissolution, dissolutionVerdict, Optional.empty());
-    }
-
-    private EmailDocument<ApplicationRejectedEmailData> getApplicationRejectedEmailDocument(Dissolution dissolution, DissolutionVerdict dissolutionVerdict, Optional<String> emailAddress) {
         List<String> rejectReasonsAsStrings = dissolutionVerdict.getRejectReasons().stream().map(DissolutionRejectReason::getTextEnglish).collect(Collectors.toList());
 
-        final ApplicationRejectedEmailData emailData = this.dissolutionEmailMapper.mapToApplicationRejectedEmailData(dissolution, rejectReasonsAsStrings, emailAddress);
+        final ApplicationRejectedEmailData emailData = this.dissolutionEmailMapper.mapToApplicationRejectedEmailData(dissolution, rejectReasonsAsStrings);
 
         final MessageType messageType = messageTypeCalculator.getForApplicationRejected(dissolution);
 

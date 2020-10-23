@@ -12,8 +12,6 @@ public class ApplicationRejectedEmailData extends EmailData {
 
     private List<String> rejectReasons;
 
-    private String paymentReference;
-
     public String getDissolutionReferenceNumber() {
         return dissolutionReferenceNumber;
     }
@@ -44,13 +42,5 @@ public class ApplicationRejectedEmailData extends EmailData {
 
     public void setRejectReasons(List<String> rejectReasons) {
         this.rejectReasons = rejectReasons;
-    }
-
-    public String getPaymentReference() {
-        return paymentReference;
-    }
-
-    public void setPaymentReference(String paymentReference) {
-        this.paymentReference = paymentReference;
     }
 }

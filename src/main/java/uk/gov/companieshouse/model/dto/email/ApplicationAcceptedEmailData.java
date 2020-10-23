@@ -8,8 +8,6 @@ public class ApplicationAcceptedEmailData extends EmailData {
 
     private String companyName;
 
-    private String paymentReference;
-
     public String getDissolutionReferenceNumber() {
         return dissolutionReferenceNumber;
     }
@@ -32,13 +30,5 @@ public class ApplicationAcceptedEmailData extends EmailData {
 
     public void setCompanyName(String companyName) {
         this.companyName = companyName;
-    }
-
-    public String getPaymentReference() {
-        return paymentReference;
-    }
-
-    public void setPaymentReference(String paymentReference) {
-        this.paymentReference = paymentReference;
     }
 }

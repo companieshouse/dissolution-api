@@ -10,8 +10,6 @@ public class SuccessfulPaymentEmailData extends EmailData {
 
     private String chsUrl;
 
-    private String paymentReference;
-
     public String getDissolutionReferenceNumber() {
         return dissolutionReferenceNumber;
     }
@@ -42,13 +40,5 @@ public class SuccessfulPaymentEmailData extends EmailData {
 
     public void setChsUrl(String chsUrl) {
         this.chsUrl = chsUrl;
-    }
-
-    public String getPaymentReference() {
-        return paymentReference;
-    }
-
-    public void setPaymentReference(String paymentReference) {
-        this.paymentReference = paymentReference;
     }
 }

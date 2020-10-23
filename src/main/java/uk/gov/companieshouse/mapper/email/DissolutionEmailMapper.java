@@ -10,7 +10,6 @@ import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
 import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
 
 import java.util.List;
-import java.util.Optional;
 
 import static uk.gov.companieshouse.model.Constants.*;
 
@@ -33,7 +32,6 @@ public class DissolutionEmailMapper {
         successfulPaymentEmailData.setCompanyNumber(dissolution.getCompany().getNumber());
         successfulPaymentEmailData.setCompanyName(dissolution.getCompany().getName());
         successfulPaymentEmailData.setChsUrl(environmentConfig.getChsUrl());
-        successfulPaymentEmailData.setPaymentReference(dissolution.getPaymentInformation().getReference());
 
         return successfulPaymentEmailData;
     }
@@ -47,7 +45,6 @@ public class DissolutionEmailMapper {
         applicationAcceptedEmailData.setDissolutionReferenceNumber(dissolution.getData().getApplication().getReference());
         applicationAcceptedEmailData.setCompanyNumber(dissolution.getCompany().getNumber());
         applicationAcceptedEmailData.setCompanyName(dissolution.getCompany().getName());
-        applicationAcceptedEmailData.setPaymentReference(dissolution.getPaymentInformation().getReference());
 
         return applicationAcceptedEmailData;
     }
@@ -56,6 +53,8 @@ public class DissolutionEmailMapper {
             Dissolution dissolution, List<String> rejectReasons
     ) {
         ApplicationRejectedEmailData applicationRejectedEmailData = new ApplicationRejectedEmailData();
+
+        applicationRejectedEmailData.setTo(dissolution.getCreatedBy().getEmail());
         applicationRejectedEmailData.setSubject(APPLICATION_REJECTED_EMAIL_SUBJECT);
         applicationRejectedEmailData.setCdnHost(environmentConfig.getCdnHost());
         applicationRejectedEmailData.setDissolutionReferenceNumber(dissolution.getData().getApplication().getReference());
