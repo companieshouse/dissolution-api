@@ -58,6 +58,7 @@ public class DissolutionEmailMapperTest {
         assertEquals(successfulPaymentEmailData.getCompanyNumber(), result.getCompanyNumber());
         assertEquals(successfulPaymentEmailData.getCompanyName(), result.getCompanyName());
         assertEquals(successfulPaymentEmailData.getChsUrl(), result.getChsUrl());
+        assertEquals(successfulPaymentEmailData.getPaymentReference(), result.getPaymentReference());
     }
 
     @Test
@@ -73,6 +74,7 @@ public class DissolutionEmailMapperTest {
         assertEquals(applicationAcceptedEmailData.getDissolutionReferenceNumber(), result.getDissolutionReferenceNumber());
         assertEquals(applicationAcceptedEmailData.getCompanyNumber(), result.getCompanyNumber());
         assertEquals(applicationAcceptedEmailData.getCompanyName(), result.getCompanyName());
+        assertEquals(applicationAcceptedEmailData.getPaymentReference(), result.getPaymentReference());
     }
 
     @Test
@@ -89,6 +91,7 @@ public class DissolutionEmailMapperTest {
         assertEquals(applicationRejectedEmailData.getCompanyNumber(), result.getCompanyNumber());
         assertEquals(applicationRejectedEmailData.getCompanyName(), result.getCompanyName());
         assertEquals(applicationRejectedEmailData.getRejectReasons(), result.getRejectReasons());
+        assertEquals(applicationRejectedEmailData.getPaymentReference(), result.getPaymentReference());
     }
 
     @Test

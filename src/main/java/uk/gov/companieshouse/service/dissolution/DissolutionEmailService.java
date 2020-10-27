@@ -17,6 +17,7 @@ import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
 import uk.gov.companieshouse.model.enums.VerdictResult;
 import uk.gov.companieshouse.model.dto.email.PendingPaymentEmailData;
 import uk.gov.companieshouse.service.email.EmailService;
+import uk.gov.companieshouse.config.EnvironmentConfig;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,6 +39,7 @@ public class DissolutionEmailService {
             DissolutionMessageTypeCalculator messageTypeCalculator,
             EmailMapper emailMapper,
             EmailService emailService,
+            EnvironmentConfig environmentConfig,
             DissolutionDeadlineDateCalculator deadlineDateCalculator
     ) {
         this.dissolutionEmailMapper = dissolutionEmailMapper;
@@ -45,6 +47,7 @@ public class DissolutionEmailService {
         this.emailMapper = emailMapper;
         this.emailService = emailService;
         this.deadlineDateCalculator = deadlineDateCalculator;
+        this.environmentConfig = environmentConfig;
     }
 
     public void sendSuccessfulPaymentEmail(Dissolution dissolution) {
