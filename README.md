@@ -8,23 +8,17 @@
 
 ## Running locally
 
-1. Clone [Docker CHS Development](https://github.com/companieshouse/docker-chs-development) and follow the steps in the README.
+1. Clone [Docker CHS Development](https://github.com/companieshouse/docker-chs-development) and follow the steps in the README (Development workflow is available for this service)
 
 2. Enable the `dissolution` module
 
-3. Dissolution API can be accessed using `http://api.chs.local:4001/dissolution-request` from within a docker container.
+3. Dissolution API can be accessed using `http://api.chs.local:4001/dissolution-request` from within a docker container
 
-## To make local changes
+## Manually build the Docker container
 
-Development mode is available for this service in [Docker CHS Development](https://github.com/companieshouse/docker-chs-development).
+You must be connected to the VPN
 
-    ./bin/chs-dev development enable dissolution-api
-
-## To build the Docker container
-
-You must be connected to the VPN.
-
-    docker build -t 169942020521.dkr.ecr.eu-west-1.amazonaws.com/local/dissolution-api:latest .
+    mvn compile jib:dockerBuild -Dimage=169942020521.dkr.ecr.eu-west-1.amazonaws.com/local/dissolution-api
 
 ### API Documentation (Swagger)
 
