@@ -64,6 +64,7 @@ public class DissolutionEmailMapper {
         applicationRejectedEmailData.setCompanyNumber(dissolution.getCompany().getNumber());
         applicationRejectedEmailData.setCompanyName(dissolution.getCompany().getName());
         applicationRejectedEmailData.setRejectReasons(rejectReasons);
+        applicationRejectedEmailData.setPaymentReference(dissolution.getPaymentInformation().getReference());
 
         return applicationRejectedEmailData;
     }
