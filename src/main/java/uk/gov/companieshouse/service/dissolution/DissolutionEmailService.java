@@ -32,6 +32,7 @@ public class DissolutionEmailService {
     private final EmailMapper emailMapper;
     private final EmailService emailService;
     private final DissolutionDeadlineDateCalculator deadlineDateCalculator;
+    private final EnvironmentConfig environmentConfig;
 
     @Autowired
     public DissolutionEmailService(
