@@ -28,9 +28,6 @@ dissolution:
 documentRender:
   host: ${DOCUMENT_RENDER_SERVICE_HOST}
 
-email:
-  chsFinanceEmail: ${CHS_FINANCE_EMAIL}
-
 env:
   name: ${ENV_NAME}
   chsUrl: ${CHS_URL}
