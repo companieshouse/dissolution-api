@@ -13,7 +13,7 @@ import uk.gov.companieshouse.model.enums.SubmissionStatus;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.dissolution.certificate.DissolutionCertificateDownloader;
 
-import java.time.LocalDateTime;
+import static uk.gov.companieshouse.util.DateTimeGenerator.generateCurrentDateTime;
 
 @Service
 public class ChipsSubmitter {
@@ -72,7 +72,7 @@ public class ChipsSubmitter {
 
     private void updateDissolutionWithResult(Dissolution dissolution, boolean wasSuccessful) {
         final DissolutionSubmission submission = dissolution.getSubmission();
-        submission.setDateTime(LocalDateTime.now());
+        submission.setDateTime(generateCurrentDateTime());
 
         if (wasSuccessful) {
             submission.setStatus(SubmissionStatus.SENT);

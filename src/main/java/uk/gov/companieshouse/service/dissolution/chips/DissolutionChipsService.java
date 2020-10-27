@@ -8,8 +8,9 @@ import uk.gov.companieshouse.config.ChipsConfig;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
-import java.time.LocalDateTime;
 import java.util.List;
+
+import static uk.gov.companieshouse.util.DateTimeGenerator.generateCurrentDateTime;
 
 @Service
 public class DissolutionChipsService {
@@ -40,7 +41,7 @@ public class DissolutionChipsService {
 
     private List<Dissolution> getPendingDissolutions() {
         return repository.findPendingDissolutions(
-                LocalDateTime.now().minusMinutes(config.getChipsRetryDelayMinutes()),
+                generateCurrentDateTime().minusMinutes(config.getChipsRetryDelayMinutes()),
                 PageRequest.of(PAGE_NUMBER_INDEX, config.getChipsSubmissionLimit(), Sort.Direction.ASC, "payment.date_time"));
     }
 }
