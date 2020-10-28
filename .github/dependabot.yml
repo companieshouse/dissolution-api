@@ -7,11 +7,3 @@ updates:
     labels:
       - "maven"
       - "dependencies"
-
-  - package-ecosystem: "docker"
-    directory: "/"
-    schedule:
-      interval: "daily"
-    labels:
-      - "docker"
-      - "dependencies"
