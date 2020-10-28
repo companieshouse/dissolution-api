@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.model.dto.email.MessageType;
 import uk.gov.companieshouse.model.dto.email.EmailDocument;
-import uk.gov.companieshouse.util.DateTimeGenerator;
 import uk.gov.companieshouse.util.UUIDGenerator;
 
 import java.time.ZoneOffset;
@@ -24,7 +23,7 @@ public class EmailMapper {
         emailDocument.setMessageType(messageType.getValue());
         emailDocument.setData(emailData);
         emailDocument.setEmailAddress(emailAddress);
-        emailDocument.setCreatedAt(DateTimeGenerator.generateCurrentDateTime().toString());
+        emailDocument.setCreatedAt(generateCurrentDateTime().toString());
         emailDocument.setTopic(EMAIL_TOPIC);
 
         return emailDocument;
