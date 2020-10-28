@@ -10,6 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.HttpClientErrorException;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.client.CompanyProfileClient;
@@ -410,14 +411,23 @@ public class DissolutionControllerTest {
     }
 
     @Test
+    public void patchDissolutionRequest_returnsUnprocessableEntity_ifIPIsBlank() throws Exception, HttpClientErrorException.UnprocessableEntity {
+        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+        body.setIpAddress(null);
+
+        assertPatchBodyValidation(body, "{'ipAddress':'must not be blank'}");
+    }
+
+    @Test
     public void patchDissolutionRequest_returnsOK_andPatchResponse_ifDissolutionIsPatchedSuccessfully() throws Exception, DissolutionNotFoundException {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+        body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
         final DissolutionPatchResponse response = generateDissolutionPatchResponse();
 
         when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(true);
         when(service.isDirectorPendingApproval(eq(COMPANY_NUMBER), eq(OFFICER_ID))).thenReturn(true);
-        when(service.addDirectorApproval(eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(OFFICER_ID))).thenReturn(response);
+        when(service.addDirectorApproval(eq(COMPANY_NUMBER), eq(USER_ID), isA(DissolutionPatchRequest.class))).thenReturn(response);
 
         mockMvc
                 .perform(
@@ -428,7 +438,7 @@ public class DissolutionControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(asJsonString(response)));
 
-        verify(service).addDirectorApproval(eq(COMPANY_NUMBER), eq(USER_ID), eq(IP_ADDRESS), eq(OFFICER_ID));
+        verify(service).addDirectorApproval(eq(COMPANY_NUMBER), eq(USER_ID), isA(DissolutionPatchRequest.class));
     }
 
     private void assertPostBodyValidation(DissolutionCreateRequest body, String expectedErrorJson) throws Exception {

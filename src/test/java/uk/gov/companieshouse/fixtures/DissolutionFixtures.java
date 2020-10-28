@@ -38,6 +38,7 @@ public class DissolutionFixtures {
 
         request.setOfficerId("abc123");
         request.setHasApproved(true);
+        request.setIpAddress("127.0.0.1");
 
         return request;
     }

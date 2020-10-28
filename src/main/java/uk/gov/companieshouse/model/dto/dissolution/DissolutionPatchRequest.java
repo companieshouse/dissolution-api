@@ -15,6 +15,10 @@ public class DissolutionPatchRequest {
     @JsonProperty("has_approved")
     private boolean hasApproved;
 
+    @NotBlank
+    @JsonProperty("ip_address")
+    private String ipAddress;
+
     public String getOfficerId() {
         return officerId;
     }
@@ -30,4 +34,8 @@ public class DissolutionPatchRequest {
     public void setHasApproved(boolean hasApproved) {
         this.hasApproved = hasApproved;
     }
+
+    public String getIpAddress() { return ipAddress; }
+
+    public void setIpAddress(String ipAddress) { this.ipAddress = ipAddress; }
 }
