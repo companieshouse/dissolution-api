@@ -17,10 +17,11 @@ import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.CompanyType;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static uk.gov.companieshouse.util.DateTimeGenerator.generateCurrentDateTime;
 
 @Service
 public class DissolutionRequestMapper {
@@ -28,7 +29,7 @@ public class DissolutionRequestMapper {
     public Dissolution mapToDissolution(DissolutionCreateRequest body, CompanyProfile company, Map<String, CompanyOfficer> directors, DissolutionUserData userData, String reference, String barcode) {
         final Dissolution dissolution = new Dissolution();
 
-        dissolution.setModifiedDateTime(LocalDateTime.now());
+        dissolution.setModifiedDateTime(generateCurrentDateTime());
         dissolution.setData(mapToDissolutionData(body, company.getType(), directors, reference, barcode));
         dissolution.setCompany(mapToCompany(company.getCompanyNumber(), company.getCompanyName()));
         dissolution.setCreatedBy(mapToCreatedBy(userData.getUserId(), userData.getEmail(), userData.getIpAddress()));
@@ -92,7 +93,7 @@ public class DissolutionRequestMapper {
         createdBy.setUserId(userId);
         createdBy.setEmail(email);
         createdBy.setIpAddress(ip);
-        createdBy.setDateTime(LocalDateTime.now());
+        createdBy.setDateTime(generateCurrentDateTime());
 
         return createdBy;
     }

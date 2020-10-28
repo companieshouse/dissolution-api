@@ -7,7 +7,7 @@ import uk.gov.companieshouse.mapper.barcode.BarcodeMapper;
 import uk.gov.companieshouse.model.dto.barcode.BarcodeRequest;
 import uk.gov.companieshouse.model.dto.barcode.BarcodeResponse;
 
-import java.time.LocalDateTime;
+import static uk.gov.companieshouse.util.DateTimeGenerator.generateCurrentDateTime;
 
 @Service
 public class BarcodeGenerator {
@@ -22,7 +22,7 @@ public class BarcodeGenerator {
     }
 
     public String generateBarcode() {
-        final BarcodeRequest request = mapper.mapToBarcodeRequest(LocalDateTime.now());
+        final BarcodeRequest request = mapper.mapToBarcodeRequest(generateCurrentDateTime());
 
         final BarcodeResponse response = client.generateBarcode(request);
 

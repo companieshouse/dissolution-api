@@ -22,7 +22,7 @@ import uk.gov.companieshouse.config.EnvironmentConfig;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import java.time.LocalDateTime;
+import static uk.gov.companieshouse.util.DateTimeGenerator.generateCurrentDateTime;
 
 @Service
 public class DissolutionEmailService {
@@ -108,7 +108,7 @@ public class DissolutionEmailService {
     public void notifySignatoriesToSign(Dissolution dissolution) {
         final MessageType messageType = messageTypeCalculator.getForSignatoriesToSign(dissolution);
 
-        final String deadlineDate = deadlineDateCalculator.calculateSignatoryDeadlineDate(LocalDateTime.now());
+        final String deadlineDate = deadlineDateCalculator.calculateSignatoryDeadlineDate(generateCurrentDateTime());
 
         getUniqueSignatories(dissolution)
                 .stream()
