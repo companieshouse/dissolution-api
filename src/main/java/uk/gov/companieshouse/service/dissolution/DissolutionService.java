@@ -5,10 +5,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
+import uk.gov.companieshouse.model.dto.dissolution.*;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
@@ -35,8 +32,8 @@ public class DissolutionService {
         return creator.create(body, companyProfile, directors, userId, ip, email);
     }
 
-    public DissolutionPatchResponse addDirectorApproval(String companyNumber, String userId, String ip, String officerId) throws DissolutionNotFoundException {
-        return patcher.addDirectorApproval(companyNumber, userId, ip, officerId);
+    public DissolutionPatchResponse addDirectorApproval(String companyNumber, String userId, DissolutionPatchRequest body) throws DissolutionNotFoundException {
+        return patcher.addDirectorApproval(companyNumber, userId, body);
     }
 
     public void handlePayment(PaymentPatchRequest data, String companyNumber) throws DissolutionNotFoundException {

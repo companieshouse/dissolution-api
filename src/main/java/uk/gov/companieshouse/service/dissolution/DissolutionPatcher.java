@@ -11,6 +11,7 @@ import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.PaymentMethod;
@@ -49,10 +50,10 @@ public class DissolutionPatcher {
         this.dissolutionEmailService = dissolutionEmailService;
     }
 
-    public DissolutionPatchResponse addDirectorApproval(String companyNumber, String userId, String ip, String officerId) throws DissolutionNotFoundException {
+    public DissolutionPatchResponse addDirectorApproval(String companyNumber, String userId, DissolutionPatchRequest body) throws DissolutionNotFoundException {
         final Dissolution dissolution = this.repository.findByCompanyNumber(companyNumber).orElseThrow(DissolutionNotFoundException::new);
 
-        this.addDirectorApproval(userId, ip, officerId, dissolution);
+        this.addDirectorApproval(userId, body, dissolution);
 
         if (!this.hasDirectorsLeftToApprove(dissolution)) {
             handleFinalApproval(dissolution);
@@ -99,9 +100,9 @@ public class DissolutionPatcher {
         dissolution.setPaymentInformation(information);
     }
 
-    private void addDirectorApproval(String userId, String ip, String officerId, Dissolution dissolution) throws DissolutionNotFoundException {
-        final DirectorApproval approval = approvalMapper.mapToDirectorApproval(userId, ip);
-        DissolutionDirector director = this.findDirector(officerId, dissolution);
+    private void addDirectorApproval(String userId, DissolutionPatchRequest body, Dissolution dissolution) throws DissolutionNotFoundException {
+        final DirectorApproval approval = approvalMapper.mapToDirectorApproval(userId, body.getIpAddress());
+        DissolutionDirector director = this.findDirector(body.getOfficerId(), dissolution);
         director.setDirectorApproval(approval);
     }
 

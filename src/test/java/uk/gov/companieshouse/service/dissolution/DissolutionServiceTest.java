@@ -10,10 +10,7 @@ import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
+import uk.gov.companieshouse.model.dto.dissolution.*;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
@@ -24,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionPatchRequest;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 
 @ExtendWith(MockitoExtension.class)
@@ -119,13 +117,17 @@ public class DissolutionServiceTest {
 
     @Test
     public void addDirectorApproval_addsDirectorApproval_returnsPatchResponse() throws DissolutionNotFoundException {
+        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+        body.setIpAddress(IP);
+        body.setOfficerId(OFFICER_ID);
+
         final DissolutionPatchResponse response = DissolutionFixtures.generateDissolutionPatchResponse();
 
-        when(patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP, OFFICER_ID)).thenReturn(response);
+        when(patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, body)).thenReturn(response);
 
-        final DissolutionPatchResponse result = service.addDirectorApproval(COMPANY_NUMBER, USER_ID, IP, OFFICER_ID);
+        final DissolutionPatchResponse result = service.addDirectorApproval(COMPANY_NUMBER, USER_ID, body);
 
-        verify(patcher).addDirectorApproval(COMPANY_NUMBER, USER_ID, IP, OFFICER_ID);
+        verify(patcher).addDirectorApproval(COMPANY_NUMBER, USER_ID, body);
 
         assertNotNull(result);
         assertEquals(response, result);

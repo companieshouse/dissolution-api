@@ -119,7 +119,8 @@ public class DissolutionController {
             @RequestHeader("ERIC-identity") String userId,
             @PathVariable("company-number") final String companyNumber,
             @Valid @RequestBody final DissolutionPatchRequest body,
-            HttpServletRequest request) {
+            HttpServletRequest request
+            ) {
 
         if (!dissolutionService.doesDissolutionRequestExistForCompanyByCompanyNumber(companyNumber)) {
             throw new NotFoundException();
@@ -130,7 +131,7 @@ public class DissolutionController {
         }
 
         try {
-            return dissolutionService.addDirectorApproval(companyNumber, userId, request.getRemoteAddr(), body.getOfficerId());
+            return dissolutionService.addDirectorApproval(companyNumber, userId, body);
         } catch (DissolutionNotFoundException e) {
             throw new NotFoundException();
         }
