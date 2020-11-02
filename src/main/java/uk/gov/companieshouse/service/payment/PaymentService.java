@@ -36,7 +36,7 @@ public class PaymentService {
     private PaymentItem createPaymentItem(DissolutionGetResponse dissolution) {
         PaymentItem item = new PaymentItem();
 
-        item.setDescription(String.format(PAYMENT_DESCRIPTION, dissolution.getCompanyName(), "(%s)", dissolution.getCompanyNumber()));
+        item.setDescription(String.format(PAYMENT_DESCRIPTION, dissolution.getCompanyName(), dissolution.getCompanyNumber()));
         item.setDescriptionIdentifier(PAYMENT_DESCRIPTION_IDENTIFIER);
         item.setDescriptionValues(new PaymentDescriptionValues());
         item.setProductType(dissolution.getApplicationType());
