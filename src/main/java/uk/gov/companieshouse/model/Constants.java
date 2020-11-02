@@ -12,7 +12,7 @@ public final class Constants {
    public static final String PAYMENT_KIND = "dissolution-request#payment";
    public static final String PAYMENT_ITEM_KIND = "dissolution-request#payment-details";
    public static final String PAYMENT_RESOURCE_KIND = "dissolution-request#dissolution-request";
-   public static final String PAYMENT_DESCRIPTION = "Apply to strike off and dissolve a company:";
+   public static final String PAYMENT_DESCRIPTION = "Apply to strike off and dissolve a company: %s (%s)";
    public static final String PAYMENT_DESCRIPTION_IDENTIFIER = "Dissolution application";
    public static final String PAYMENT_AMOUNT = "8";
    public static final String PAYMENT_AVAILABLE_PAYMENT_METHOD = "credit-card";
