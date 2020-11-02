@@ -4,9 +4,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentGetResponse;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.service.payment.PaymentService;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionGetResponse;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -20,11 +22,15 @@ public class PaymentServiceTest {
 
     @Test
     public void get_getsPaymentUIData_returnsGetResponse() {
+        final DissolutionGetResponse response = generateDissolutionGetResponse();
         final String companyNumber = "12345678";
         final String eTag = "WATERMELONSAREGREAT12345678THEYREALLYARE";
         final ApplicationType applicationType = ApplicationType.DS01;
+        response.setCompanyNumber(companyNumber);
+        response.setETag(eTag);
+        response.setApplicationType(applicationType);
 
-        final PaymentGetResponse result = service.get(eTag, applicationType, companyNumber);
+        final PaymentGetResponse result = service.get(response);
 
         assertEquals(eTag, result.getETag());
         assertEquals(PAYMENT_KIND, result.getKind());
@@ -43,22 +49,31 @@ public class PaymentServiceTest {
 
     @Test
     public void get_getsPaymentUIData_returnsProperCodeForDS01() {
+        final DissolutionGetResponse response = generateDissolutionGetResponse();
         final String companyNumber = "12345678";
         final String eTag = "WATERMELONSAREGREAT12345678THEYREALLYARE";
         final ApplicationType applicationType = ApplicationType.DS01;
+        response.setCompanyNumber(companyNumber);
+        response.setETag(eTag);
+        response.setApplicationType(applicationType);
 
-        final PaymentGetResponse result = service.get(eTag, applicationType, companyNumber);
+        final PaymentGetResponse result = service.get(response);
 
         assertEquals(ApplicationType.DS01, result.getItems().get(0).getProductType());
     }
 
     @Test
     public void get_getsPaymentUIData_returnsProperCodeForLLDS01() {
+        final DissolutionGetResponse response = generateDissolutionGetResponse();
+
         final String companyNumber = "12345678";
         final String eTag = "WATERMELONSAREGREAT12345678THEYREALLYARE";
         final ApplicationType applicationType = ApplicationType.LLDS01;
+        response.setCompanyNumber(companyNumber);
+        response.setETag(eTag);
+        response.setApplicationType(applicationType);
 
-        final PaymentGetResponse result = service.get(eTag, applicationType, companyNumber);
+        final PaymentGetResponse result = service.get(response);
 
         System.out.println(result.getItems().get(0).getProductType());
         assertEquals(ApplicationType.LLDS01, result.getItems().get(0).getProductType());
