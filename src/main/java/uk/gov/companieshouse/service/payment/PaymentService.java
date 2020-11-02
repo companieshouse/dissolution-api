@@ -1,6 +1,8 @@
 package uk.gov.companieshouse.service.payment;
 
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentDescriptionValues;
 import uk.gov.companieshouse.model.dto.payment.PaymentGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentItem;
@@ -14,30 +16,30 @@ import static uk.gov.companieshouse.model.Constants.*;
 @Service
 public class PaymentService {
 
-    public PaymentGetResponse get(String eTag, ApplicationType applicationType, String companyNumber) {
+    public PaymentGetResponse get(DissolutionGetResponse dissolution) {
         PaymentGetResponse response = new PaymentGetResponse();
         PaymentLinks paymentLinks = new PaymentLinks();
-        paymentLinks.setSelf("/dissolution-request/" + companyNumber + "/payment");
-        paymentLinks.setDissolutionRequest("/dissolution-request/" + companyNumber);
+        paymentLinks.setSelf("/dissolution-request/" + dissolution.getCompanyNumber() + "/payment");
+        paymentLinks.setDissolutionRequest("/dissolution-request/" + dissolution.getCompanyNumber());
 
-        PaymentItem item = createPaymentItem(applicationType);
+        PaymentItem item = createPaymentItem(dissolution);
 
-        response.setETag(eTag);
+        response.setETag(dissolution.getETag());
         response.setKind(PAYMENT_KIND);
         response.setLinks(paymentLinks);
-        response.setCompanyNumber(companyNumber);
+        response.setCompanyNumber(dissolution.getCompanyNumber());
         response.setItems(List.of(item));
 
         return response;
     }
 
-    private PaymentItem createPaymentItem(ApplicationType applicationType) {
+    private PaymentItem createPaymentItem(DissolutionGetResponse dissolution) {
         PaymentItem item = new PaymentItem();
 
-        item.setDescription(PAYMENT_DESCRIPTION);
+        item.setDescription(String.format(PAYMENT_DESCRIPTION, dissolution.getCompanyName(), "(%s)", dissolution.getCompanyNumber()));
         item.setDescriptionIdentifier(PAYMENT_DESCRIPTION_IDENTIFIER);
         item.setDescriptionValues(new PaymentDescriptionValues());
-        item.setProductType(applicationType);
+        item.setProductType(dissolution.getApplicationType());
         item.setAmount(PAYMENT_AMOUNT);
         item.setAvailablePaymentMethods(List.of(PAYMENT_AVAILABLE_PAYMENT_METHOD));
         item.setClassOfPayment(List.of(PAYMENT_CLASS_OF_PAYMENT));
