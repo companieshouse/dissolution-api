@@ -4,12 +4,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentGetResponse;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.service.payment.PaymentService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionGetResponse;
 import static uk.gov.companieshouse.model.Constants.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -20,16 +22,21 @@ public class PaymentServiceTest {
 
     @Test
     public void get_getsPaymentUIData_returnsGetResponse() {
-        final String companyNumber = "12345678";
-        final String eTag = "WATERMELONSAREGREAT12345678THEYREALLYARE";
-        final ApplicationType applicationType = ApplicationType.DS01;
+        String companyNumber = "12345678";
+        String applicationReference = "ABC123";
 
-        final PaymentGetResponse result = service.get(eTag, applicationType, companyNumber);
+        DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
+        dissolutionGetResponse.setCompanyNumber(companyNumber);
+        dissolutionGetResponse.setApplicationReference(applicationReference);
+        dissolutionGetResponse.setETag("WATERMELONSAREGREAT12345678THEYREALLYARE");
+        dissolutionGetResponse.setApplicationType(ApplicationType.DS01);
 
-        assertEquals(eTag, result.getETag());
+        final PaymentGetResponse result = service.get(dissolutionGetResponse);
+
+        assertEquals(dissolutionGetResponse.getETag(), result.getETag());
         assertEquals(PAYMENT_KIND, result.getKind());
         assertEquals(companyNumber, result.getCompanyNumber());
-        assertEquals("/dissolution-request/" + companyNumber + "/payment", result.getLinks().getSelf());
+        assertEquals("/dissolution-request/" + applicationReference + "/payment", result.getLinks().getSelf());
         assertEquals("/dissolution-request/" + companyNumber, result.getLinks().getDissolutionRequest());
         assertEquals(PAYMENT_DESCRIPTION, result.getItems().get(0).getDescription());
         assertEquals(PAYMENT_DESCRIPTION_IDENTIFIER, result.getItems().get(0).getDescriptionIdentifier());
@@ -43,22 +50,28 @@ public class PaymentServiceTest {
 
     @Test
     public void get_getsPaymentUIData_returnsProperCodeForDS01() {
-        final String companyNumber = "12345678";
-        final String eTag = "WATERMELONSAREGREAT12345678THEYREALLYARE";
-        final ApplicationType applicationType = ApplicationType.DS01;
+        String companyNumber = "12345678";
 
-        final PaymentGetResponse result = service.get(eTag, applicationType, companyNumber);
+        DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
+        dissolutionGetResponse.setCompanyNumber(companyNumber);
+        dissolutionGetResponse.setETag("WATERMELONSAREGREAT12345678THEYREALLYARE");
+        dissolutionGetResponse.setApplicationType(ApplicationType.DS01);
+
+        final PaymentGetResponse result = service.get(dissolutionGetResponse);
 
         assertEquals(ApplicationType.DS01, result.getItems().get(0).getProductType());
     }
 
     @Test
     public void get_getsPaymentUIData_returnsProperCodeForLLDS01() {
-        final String companyNumber = "12345678";
-        final String eTag = "WATERMELONSAREGREAT12345678THEYREALLYARE";
-        final ApplicationType applicationType = ApplicationType.LLDS01;
+        String companyNumber = "12345678";
 
-        final PaymentGetResponse result = service.get(eTag, applicationType, companyNumber);
+        DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
+        dissolutionGetResponse.setCompanyNumber(companyNumber);
+        dissolutionGetResponse.setETag("WATERMELONSAREGREAT12345678THEYREALLYARE");
+        dissolutionGetResponse.setApplicationType(ApplicationType.LLDS01);
+
+        final PaymentGetResponse result = service.get(dissolutionGetResponse);
 
         System.out.println(result.getItems().get(0).getProductType());
         assertEquals(ApplicationType.LLDS01, result.getItems().get(0).getProductType());

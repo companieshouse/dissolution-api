@@ -61,7 +61,7 @@ public class DissolutionPatcher {
 
         this.repository.save(dissolution);
 
-        return this.responseMapper.mapToDissolutionPatchResponse(companyNumber);
+        return this.responseMapper.mapToDissolutionPatchResponse(dissolution);
     }
 
     private void handleFinalApproval(Dissolution dissolution) {

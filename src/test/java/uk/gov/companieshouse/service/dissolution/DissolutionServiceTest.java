@@ -116,6 +116,20 @@ public class DissolutionServiceTest {
     }
 
     @Test
+    public void getByApplicationReference_returnsDissolutionGetResponse() {
+        final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse();
+
+        when(getter.getByApplicationReference(APPLICATION_REFERENCE)).thenReturn(Optional.of(response));
+
+        final Optional<DissolutionGetResponse> result = service.getByApplicationReference(APPLICATION_REFERENCE);
+
+        verify(getter).getByApplicationReference(APPLICATION_REFERENCE);
+
+        assertTrue(result.isPresent());
+        assertEquals(response, result.get());
+    }
+
+    @Test
     public void addDirectorApproval_addsDirectorApproval_returnsPatchResponse() throws DissolutionNotFoundException {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP);

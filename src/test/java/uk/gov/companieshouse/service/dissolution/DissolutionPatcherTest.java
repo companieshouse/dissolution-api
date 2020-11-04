@@ -92,7 +92,7 @@ public class DissolutionPatcherTest {
         body.setOfficerId(OFFICER_ID);
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
-        when(responseMapper.mapToDissolutionPatchResponse(COMPANY_NUMBER)).thenReturn(response);
+        when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
         patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, body);
@@ -109,12 +109,12 @@ public class DissolutionPatcherTest {
         body.setOfficerId(OFFICER_ID);
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
-        when(responseMapper.mapToDissolutionPatchResponse(COMPANY_NUMBER)).thenReturn(response);
+        when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
         final DissolutionPatchResponse result = patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, body);
 
-        verify(responseMapper).mapToDissolutionPatchResponse(COMPANY_NUMBER);
+        verify(responseMapper).mapToDissolutionPatchResponse(dissolution);
         verify(repository).save(dissolutionCaptor.capture());
         verify(dissolutionEmailService).sendPendingPaymentEmail(dissolutionCaptor.capture());
 
@@ -132,7 +132,7 @@ public class DissolutionPatcherTest {
         body.setOfficerId(OFFICER_ID);
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
-        when(responseMapper.mapToDissolutionPatchResponse(COMPANY_NUMBER)).thenReturn(response);
+        when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
         when(certificateGenerator.generateDissolutionCertificate(dissolution)).thenReturn(certificate);
 
@@ -156,7 +156,7 @@ public class DissolutionPatcherTest {
         dissolution.getData().setDirectors(directors);
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
-        when(responseMapper.mapToDissolutionPatchResponse(COMPANY_NUMBER)).thenReturn(response);
+        when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
         patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, body);
@@ -186,7 +186,7 @@ public class DissolutionPatcherTest {
         dissolution.getData().setDirectors(Arrays.asList(directorOne, directorTwo));
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
-        when(responseMapper.mapToDissolutionPatchResponse(COMPANY_NUMBER)).thenReturn(response);
+        when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
         patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, body);

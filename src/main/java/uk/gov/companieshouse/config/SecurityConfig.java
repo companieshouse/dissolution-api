@@ -15,7 +15,7 @@ public class SecurityConfig implements WebMvcConfigurer {
     private static final String URI_PATTERN = "/dissolution-request/**";
 
     private static final String[] API_KEY_PERMISSION_AUTH_INCLUDE_LIST = {
-            "/dissolution-request/{company-number}/payment",
+            "/dissolution-request/{application-reference}/payment",
             "/dissolution-request/submit",
             "/dissolution-request/response"
     };

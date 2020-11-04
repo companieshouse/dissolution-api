@@ -29,6 +29,12 @@ public class DissolutionGetter {
                 .map(responseMapper::mapToDissolutionGetResponse);
     }
 
+    public Optional<DissolutionGetResponse> getByApplicationReference(String applicationReference) {
+        return repository
+                .findByDataApplicationReference(applicationReference)
+                .map(responseMapper::mapToDissolutionGetResponse);
+    }
+
     public boolean isDirectorPendingApproval(String companyNumber, String officerId) {
         return repository.findByCompanyNumber(companyNumber)
                 .map(dissolution -> isDirectorPendingApprovalForDissolution(officerId, dissolution))
