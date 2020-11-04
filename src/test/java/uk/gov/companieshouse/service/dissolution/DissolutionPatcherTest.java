@@ -64,6 +64,7 @@ public class DissolutionPatcherTest {
     private DissolutionEmailService dissolutionEmailService;
 
     private static final String COMPANY_NUMBER = "12345678";
+    private static final String APPLICATION_REFERENCE = "ABC123";
     private static final String USER_ID = "1234";
     private static final String OFFICER_ID = "abc123";
     private static final String IP_ADDRESS = "127.0.0.1";
@@ -203,13 +204,13 @@ public class DissolutionPatcherTest {
         PaymentInformation paymentInformation = generatePaymentInformation();
         DissolutionSubmission submission = generateDissolutionSubmission();
 
-        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
+        when(repository.findByDataApplicationReference(APPLICATION_REFERENCE)).thenReturn(java.util.Optional.of(dissolution));
         when(paymentInformationMapper
                 .mapToPaymentInformation(PaymentMethod.CREDIT_CARD, data.getPaymentReference(), data.getPaidAt()))
                 .thenReturn(paymentInformation);
         when(dissolutionSubmissionMapper.generateSubmissionInformation()).thenReturn(submission);
 
-        patcher.handlePayment(data.getPaymentReference(), data.getPaidAt(), COMPANY_NUMBER);
+        patcher.handlePayment(data.getPaymentReference(), data.getPaidAt(), APPLICATION_REFERENCE);
         verify(repository).save(dissolutionCaptor.capture());
         verify(dissolutionEmailService).sendSuccessfulPaymentEmail(dissolutionCaptor.capture());
 
