@@ -49,11 +49,12 @@ public class DissolutionResponseMapperTest {
     public void mapToDissolutionCreateResponse_generatesLinks() {
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
         dissolution.getCompany().setNumber("12345678");
+        dissolution.getData().getApplication().setReference("ABC123");
 
         final DissolutionCreateResponse result = mapper.mapToDissolutionCreateResponse(dissolution);
 
         assertEquals("/dissolution-request/12345678", result.getLinks().getSelf());
-        assertEquals("/dissolution-request/12345678/payment", result.getLinks().getPayment());
+        assertEquals("/dissolution-request/ABC123/payment", result.getLinks().getPayment());
     }
 
     @Test
@@ -76,7 +77,7 @@ public class DissolutionResponseMapperTest {
         assertEquals(ETAG, result.getETag());
         assertEquals(DISSOLUTION_KIND, result.getKind());
         assertEquals("/dissolution-request/12345678", result.getLinks().getSelf());
-        assertEquals("/dissolution-request/12345678/payment", result.getLinks().getPayment());
+        assertEquals("/dissolution-request/reference123/payment", result.getLinks().getPayment());
         assertEquals(STATUS, result.getApplicationStatus());
         assertEquals(REFERENCE, result.getApplicationReference());
         assertEquals(TYPE, result.getApplicationType());
@@ -155,13 +156,17 @@ public class DissolutionResponseMapperTest {
     }
 
     @Test
-    public void mapToDissolutionPatchResponse_mapsCompanyNumberToDissolutionLinks() {
-        final DissolutionPatchResponse result = mapper.mapToDissolutionPatchResponse(COMPANY_NUMBER);
-        final DissolutionLinks link = result.getLinks();
-        final String expectedSelfLink = String.format("/dissolution-request/%s", COMPANY_NUMBER);
-        final String expectedPayLink = String.format("/dissolution-request/%s/payment", COMPANY_NUMBER);
+    public void mapToDissolutionPatchResponse_mapsCompanyNumberAndReferenceToDissolutionLinks() {
+        final Dissolution dissolution = DissolutionFixtures.generateDissolution();
 
-        assertEquals(expectedSelfLink, link.getSelf());
-        assertEquals(expectedPayLink, link.getPayment());
+        dissolution.getCompany().setNumber(COMPANY_NUMBER);
+        dissolution.getData().getApplication().setReference(REFERENCE);
+
+        final DissolutionPatchResponse result = mapper.mapToDissolutionPatchResponse(dissolution);
+
+        final DissolutionLinks links = result.getLinks();
+
+        assertEquals(String.format("/dissolution-request/%s", COMPANY_NUMBER), links.getSelf());
+        assertEquals(String.format("/dissolution-request/%s/payment", REFERENCE), links.getPayment());
     }
 }

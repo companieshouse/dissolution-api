@@ -19,8 +19,10 @@ public class DissolutionResponseMapper {
     public DissolutionCreateResponse mapToDissolutionCreateResponse(Dissolution dissolution) {
         final DissolutionCreateResponse response = new DissolutionCreateResponse();
 
-        response.setApplicationReferenceNumber(dissolution.getData().getApplication().getReference());
-        response.setLinks(generateLinks(dissolution.getCompany().getNumber()));
+        final String reference = dissolution.getData().getApplication().getReference();
+
+        response.setApplicationReferenceNumber(reference);
+        response.setLinks(generateLinks(dissolution.getCompany().getNumber(), reference));
 
         return response;
     }
@@ -28,11 +30,13 @@ public class DissolutionResponseMapper {
     public DissolutionGetResponse mapToDissolutionGetResponse(Dissolution dissolution) {
         final DissolutionGetResponse response = new DissolutionGetResponse();
 
+        final String reference = dissolution.getData().getApplication().getReference();
+
         response.setETag(dissolution.getData().getETag());
         response.setKind(DISSOLUTION_KIND);
-        response.setLinks(generateLinks(dissolution.getCompany().getNumber()));
+        response.setLinks(generateLinks(dissolution.getCompany().getNumber(), reference));
         response.setApplicationStatus(dissolution.getData().getApplication().getStatus());
-        response.setApplicationReference(dissolution.getData().getApplication().getReference());
+        response.setApplicationReference(reference);
         response.setApplicationType(dissolution.getData().getApplication().getType());
         response.setCompanyName(dissolution.getCompany().getName());
         response.setCompanyNumber(dissolution.getCompany().getNumber());
@@ -47,18 +51,22 @@ public class DissolutionResponseMapper {
         return response;
     }
 
-    public DissolutionPatchResponse mapToDissolutionPatchResponse(String companyNumber) {
+    public DissolutionPatchResponse mapToDissolutionPatchResponse(Dissolution dissolution) {
         final DissolutionPatchResponse response = new DissolutionPatchResponse();
 
-        response.setLinks(generateLinks(companyNumber));
+        response.setLinks(generateLinks(
+                dissolution.getCompany().getNumber(),
+                dissolution.getData().getApplication().getReference()
+        ));
+
         return response;
     }
 
-    private DissolutionLinks generateLinks(String companyNumber) {
+    private DissolutionLinks generateLinks(String companyNumber, String reference) {
         final DissolutionLinks links = new DissolutionLinks();
 
         links.setSelf(String.format("/dissolution-request/%s", companyNumber));
-        links.setPayment(String.format("/dissolution-request/%s/payment", companyNumber));
+        links.setPayment(String.format("/dissolution-request/%s/payment", reference));
 
         return links;
     }
