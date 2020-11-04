@@ -27,7 +27,7 @@ import uk.gov.companieshouse.service.payment.PaymentService;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("/dissolution-request/{company-number}/payment")
+@RequestMapping("/dissolution-request/{application-reference}/payment")
 public class PaymentController {
 
     private final DissolutionService dissolutionService;
@@ -48,12 +48,12 @@ public class PaymentController {
     })
     @GetMapping()
     @ResponseStatus(HttpStatus.OK)
-    public PaymentGetResponse getPaymentUIData(@PathVariable("company-number") final String companyNumber) {
+    public PaymentGetResponse getPaymentUIData(@PathVariable("application-reference") final String applicationReference) {
         DissolutionGetResponse dissolutionInfo = dissolutionService
-                .getByCompanyNumber(companyNumber)
+                .getByApplicationReference(applicationReference)
                 .orElseThrow(NotFoundException::new);
 
-        return paymentService.get(dissolutionInfo.getETag(), dissolutionInfo.getApplicationType(), companyNumber);
+        return paymentService.get(dissolutionInfo, applicationReference);
     }
 
     @Operation(summary = "Patch Payment Status", tags = "Dissolution")
@@ -65,11 +65,11 @@ public class PaymentController {
     @PatchMapping()
     @ResponseStatus(HttpStatus.OK)
     public void patchPaymentData(
-            @PathVariable("company-number") final String companyNumber,
+            @PathVariable("application-reference") final String applicationReference,
             @Valid @RequestBody final PaymentPatchRequest body
     ) {
         DissolutionGetResponse dissolutionInfo = dissolutionService
-                .getByCompanyNumber(companyNumber)
+                .getByApplicationReference(applicationReference)
                 .orElseThrow(NotFoundException::new);
 
         if (dissolutionInfo.getApplicationStatus() != ApplicationStatus.PENDING_PAYMENT) {
@@ -78,7 +78,7 @@ public class PaymentController {
 
         if (PaymentStatus.PAID.equals(body.getStatus())) {
             try {
-                dissolutionService.handlePayment(body, companyNumber);
+                dissolutionService.handlePayment(body, applicationReference);
             } catch (EmailSendException e) {
                 throw new InternalServerErrorException(e.getMessage());
             } catch (DissolutionNotFoundException e) {

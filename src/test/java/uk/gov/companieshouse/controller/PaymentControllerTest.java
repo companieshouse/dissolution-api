@@ -39,7 +39,7 @@ import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatc
 public class PaymentControllerTest {
 
     private static final String PAYMENT_URI = "/dissolution-request/{company-number}/payment";
-    private static final String COMPANY_NUMBER = "12345678";
+    private static final String APPLICATION_REFERENCE = "12345678";
 
     private static final String IDENTITY_HEADER_VALUE = "identity";
 
@@ -61,7 +61,7 @@ public class PaymentControllerTest {
 
         mockMvc
                 .perform(
-                        get(PAYMENT_URI, COMPANY_NUMBER)
+                        get(PAYMENT_URI, APPLICATION_REFERENCE)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .headers(headers)
                 )
@@ -75,7 +75,7 @@ public class PaymentControllerTest {
 
         mockMvc
                 .perform(
-                        get(PAYMENT_URI, COMPANY_NUMBER)
+                        get(PAYMENT_URI, APPLICATION_REFERENCE)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .headers(headers)
                 )
@@ -89,7 +89,7 @@ public class PaymentControllerTest {
 
         mockMvc
                 .perform(
-                        get(PAYMENT_URI, COMPANY_NUMBER)
+                        get(PAYMENT_URI, APPLICATION_REFERENCE)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .headers(headers)
                 )
@@ -98,11 +98,11 @@ public class PaymentControllerTest {
 
     @Test
     public void getPaymentUIDataRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
-        when(dissolutionService.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
+        when(dissolutionService.getByApplicationReference(APPLICATION_REFERENCE)).thenReturn(Optional.empty());
 
         mockMvc
                 .perform(
-                        get(PAYMENT_URI, COMPANY_NUMBER)
+                        get(PAYMENT_URI, APPLICATION_REFERENCE)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .headers(createHttpHeaders())
                 )
@@ -112,14 +112,14 @@ public class PaymentControllerTest {
     @Test
     public void getPaymentUIDataRequest_returnsPaymentUIData_ifRequestIsValid() throws Exception {
         final DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
-        final PaymentGetResponse paymentGetResponse = generatePaymentGetResponse(dissolutionGetResponse.getETag(), COMPANY_NUMBER);
+        final PaymentGetResponse paymentGetResponse = generatePaymentGetResponse(dissolutionGetResponse.getETag(), APPLICATION_REFERENCE);
 
-        when(dissolutionService.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolutionGetResponse));
-        when(paymentService.get(dissolutionGetResponse.getETag(), dissolutionGetResponse.getApplicationType(), COMPANY_NUMBER)).thenReturn(paymentGetResponse);
+        when(dissolutionService.getByApplicationReference(APPLICATION_REFERENCE)).thenReturn(Optional.of(dissolutionGetResponse));
+        when(paymentService.get(dissolutionGetResponse, APPLICATION_REFERENCE)).thenReturn(paymentGetResponse);
 
         mockMvc
                 .perform(
-                        get(PAYMENT_URI, COMPANY_NUMBER)
+                        get(PAYMENT_URI, APPLICATION_REFERENCE)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .headers(createHttpHeaders())
                 )
@@ -134,7 +134,7 @@ public class PaymentControllerTest {
 
         mockMvc
                 .perform(
-                        patch(PAYMENT_URI, COMPANY_NUMBER)
+                        patch(PAYMENT_URI, APPLICATION_REFERENCE)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .headers(headers)
                 )
@@ -148,7 +148,7 @@ public class PaymentControllerTest {
 
         mockMvc
                 .perform(
-                        patch(PAYMENT_URI, COMPANY_NUMBER)
+                        patch(PAYMENT_URI, APPLICATION_REFERENCE)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .headers(headers)
                 )
@@ -162,7 +162,7 @@ public class PaymentControllerTest {
 
         mockMvc
                 .perform(
-                        patch(PAYMENT_URI, COMPANY_NUMBER)
+                        patch(PAYMENT_URI, APPLICATION_REFERENCE)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .headers(headers)
                 )
@@ -173,11 +173,11 @@ public class PaymentControllerTest {
     public void patchPaymentDataRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
         final PaymentPatchRequest body = generatePaymentPatchRequest();
 
-        when(dissolutionService.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
+        when(dissolutionService.getByApplicationReference(APPLICATION_REFERENCE)).thenReturn(Optional.empty());
 
         mockMvc
                 .perform(
-                        patch(PAYMENT_URI, COMPANY_NUMBER)
+                        patch(PAYMENT_URI, APPLICATION_REFERENCE)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(asJsonString(body))
                                 .headers(createHttpHeaders())
@@ -192,11 +192,11 @@ public class PaymentControllerTest {
 
         final PaymentPatchRequest body = generatePaymentPatchRequest();
 
-        when(dissolutionService.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolutionGetResponse));
+        when(dissolutionService.getByApplicationReference(APPLICATION_REFERENCE)).thenReturn(Optional.of(dissolutionGetResponse));
 
         mockMvc
                 .perform(
-                        patch(PAYMENT_URI, COMPANY_NUMBER)
+                        patch(PAYMENT_URI, APPLICATION_REFERENCE)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(asJsonString(body))
                                 .headers(createHttpHeaders())
@@ -212,18 +212,18 @@ public class PaymentControllerTest {
         final PaymentPatchRequest body = generatePaymentPatchRequest();
         body.setStatus(PaymentStatus.PAID);
 
-        when(dissolutionService.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolutionGetResponse));
+        when(dissolutionService.getByApplicationReference(APPLICATION_REFERENCE)).thenReturn(Optional.of(dissolutionGetResponse));
 
         mockMvc
                 .perform(
-                        patch(PAYMENT_URI, COMPANY_NUMBER)
+                        patch(PAYMENT_URI, APPLICATION_REFERENCE)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(asJsonString(body))
                                 .headers(createHttpHeaders())
                 )
                 .andExpect(status().isOk());
 
-        verify(dissolutionService).handlePayment(isA(PaymentPatchRequest.class), eq(COMPANY_NUMBER));
+        verify(dissolutionService).handlePayment(isA(PaymentPatchRequest.class), eq(APPLICATION_REFERENCE));
     }
 
     @Test
@@ -234,18 +234,18 @@ public class PaymentControllerTest {
         final PaymentPatchRequest body = generatePaymentPatchRequest();
         body.setStatus(PaymentStatus.FAILED);
 
-        when(dissolutionService.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolutionGetResponse));
+        when(dissolutionService.getByApplicationReference(APPLICATION_REFERENCE)).thenReturn(Optional.of(dissolutionGetResponse));
 
         mockMvc
                 .perform(
-                        patch(PAYMENT_URI, COMPANY_NUMBER)
+                        patch(PAYMENT_URI, APPLICATION_REFERENCE)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(asJsonString(body))
                                 .headers(createHttpHeaders())
                 )
                 .andExpect(status().isOk());
 
-        verify(dissolutionService, never()).handlePayment(isA(PaymentPatchRequest.class), eq(COMPANY_NUMBER));
+        verify(dissolutionService, never()).handlePayment(isA(PaymentPatchRequest.class), eq(APPLICATION_REFERENCE));
     }
 
     @Test
@@ -256,18 +256,18 @@ public class PaymentControllerTest {
         final PaymentPatchRequest body = generatePaymentPatchRequest();
         body.setStatus(PaymentStatus.CANCELLED);
 
-        when(dissolutionService.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolutionGetResponse));
+        when(dissolutionService.getByApplicationReference(APPLICATION_REFERENCE)).thenReturn(Optional.of(dissolutionGetResponse));
 
         mockMvc
                 .perform(
-                        patch(PAYMENT_URI, COMPANY_NUMBER)
+                        patch(PAYMENT_URI, APPLICATION_REFERENCE)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(asJsonString(body))
                                 .headers(createHttpHeaders())
                 )
                 .andExpect(status().isOk());
 
-        verify(dissolutionService, never()).handlePayment(isA(PaymentPatchRequest.class), eq(COMPANY_NUMBER));
+        verify(dissolutionService, never()).handlePayment(isA(PaymentPatchRequest.class), eq(APPLICATION_REFERENCE));
     }
 
     private HttpHeaders createHttpHeaders() {
