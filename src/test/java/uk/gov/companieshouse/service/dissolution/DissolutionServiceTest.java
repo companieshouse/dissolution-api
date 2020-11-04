@@ -165,8 +165,8 @@ public class DissolutionServiceTest {
     public void updatePaymentAndSubmissionStatus_updatesPaymentAndSubmissionStatus_returnNothing() throws DissolutionNotFoundException {
         PaymentPatchRequest data = generatePaymentPatchRequest();
 
-        service.handlePayment(data, COMPANY_NUMBER);
+        service.handlePayment(data, APPLICATION_REFERENCE);
 
-        verify(patcher).handlePayment(data.getPaymentReference(), data.getPaidAt(), COMPANY_NUMBER);
+        verify(patcher).handlePayment(data.getPaymentReference(), data.getPaidAt(), APPLICATION_REFERENCE);
     }
 }

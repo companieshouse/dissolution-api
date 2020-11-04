@@ -70,8 +70,8 @@ public class DissolutionPatcher {
         dissolutionEmailService.sendPendingPaymentEmail(dissolution);
     }
 
-    public void handlePayment(String paymentReference, Timestamp paidAt, String companyNumber) throws DissolutionNotFoundException {
-        final Dissolution dissolution = this.repository.findByCompanyNumber(companyNumber).orElseThrow(DissolutionNotFoundException::new);
+    public void handlePayment(String paymentReference, Timestamp paidAt, String applicationReference) throws DissolutionNotFoundException {
+        final Dissolution dissolution = this.repository.findByDataApplicationReference(applicationReference).orElseThrow(DissolutionNotFoundException::new);
 
         this.addPaymentInformation(paymentReference, paidAt, dissolution);
 
