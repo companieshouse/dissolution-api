@@ -53,7 +53,7 @@ public class PaymentController {
                 .getByApplicationReference(applicationReference)
                 .orElseThrow(NotFoundException::new);
 
-        return paymentService.get(dissolutionInfo, applicationReference);
+        return paymentService.get(dissolutionInfo);
     }
 
     @Operation(summary = "Patch Payment Status", tags = "Dissolution")

@@ -115,7 +115,7 @@ public class PaymentControllerTest {
         final PaymentGetResponse paymentGetResponse = generatePaymentGetResponse(dissolutionGetResponse.getETag(), APPLICATION_REFERENCE);
 
         when(dissolutionService.getByApplicationReference(APPLICATION_REFERENCE)).thenReturn(Optional.of(dissolutionGetResponse));
-        when(paymentService.get(dissolutionGetResponse, APPLICATION_REFERENCE)).thenReturn(paymentGetResponse);
+        when(paymentService.get(dissolutionGetResponse)).thenReturn(paymentGetResponse);
 
         mockMvc
                 .perform(

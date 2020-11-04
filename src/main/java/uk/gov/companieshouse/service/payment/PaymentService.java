@@ -15,11 +15,11 @@ import static uk.gov.companieshouse.model.Constants.*;
 @Service
 public class PaymentService {
 
-    public PaymentGetResponse get(DissolutionGetResponse dissolutionInfo, String applicationReference) {
+    public PaymentGetResponse get(DissolutionGetResponse dissolutionInfo) {
         PaymentGetResponse response = new PaymentGetResponse();
         PaymentLinks paymentLinks = new PaymentLinks();
-        paymentLinks.setSelf("/dissolution-request/" + applicationReference + "/payment");
-        paymentLinks.setDissolutionRequest("/dissolution-request/" + applicationReference);
+        paymentLinks.setSelf("/dissolution-request/" + dissolutionInfo.getApplicationReference() + "/payment");
+        paymentLinks.setDissolutionRequest("/dissolution-request/" + dissolutionInfo.getCompanyNumber());
 
         PaymentItem item = createPaymentItem(dissolutionInfo.getApplicationType());
 

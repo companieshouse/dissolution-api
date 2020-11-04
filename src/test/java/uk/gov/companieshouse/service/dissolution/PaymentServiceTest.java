@@ -23,18 +23,20 @@ public class PaymentServiceTest {
     @Test
     public void get_getsPaymentUIData_returnsGetResponse() {
         String companyNumber = "12345678";
+        String applicationReference = "ABC123";
 
         DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
         dissolutionGetResponse.setCompanyNumber(companyNumber);
+        dissolutionGetResponse.setApplicationReference(applicationReference);
         dissolutionGetResponse.setETag("WATERMELONSAREGREAT12345678THEYREALLYARE");
         dissolutionGetResponse.setApplicationType(ApplicationType.DS01);
 
-        final PaymentGetResponse result = service.get(dissolutionGetResponse, companyNumber);
+        final PaymentGetResponse result = service.get(dissolutionGetResponse);
 
         assertEquals(dissolutionGetResponse.getETag(), result.getETag());
         assertEquals(PAYMENT_KIND, result.getKind());
         assertEquals(companyNumber, result.getCompanyNumber());
-        assertEquals("/dissolution-request/" + companyNumber + "/payment", result.getLinks().getSelf());
+        assertEquals("/dissolution-request/" + applicationReference + "/payment", result.getLinks().getSelf());
         assertEquals("/dissolution-request/" + companyNumber, result.getLinks().getDissolutionRequest());
         assertEquals(PAYMENT_DESCRIPTION, result.getItems().get(0).getDescription());
         assertEquals(PAYMENT_DESCRIPTION_IDENTIFIER, result.getItems().get(0).getDescriptionIdentifier());
@@ -55,7 +57,7 @@ public class PaymentServiceTest {
         dissolutionGetResponse.setETag("WATERMELONSAREGREAT12345678THEYREALLYARE");
         dissolutionGetResponse.setApplicationType(ApplicationType.DS01);
 
-        final PaymentGetResponse result = service.get(dissolutionGetResponse, companyNumber);
+        final PaymentGetResponse result = service.get(dissolutionGetResponse);
 
         assertEquals(ApplicationType.DS01, result.getItems().get(0).getProductType());
     }
@@ -69,7 +71,7 @@ public class PaymentServiceTest {
         dissolutionGetResponse.setETag("WATERMELONSAREGREAT12345678THEYREALLYARE");
         dissolutionGetResponse.setApplicationType(ApplicationType.LLDS01);
 
-        final PaymentGetResponse result = service.get(dissolutionGetResponse, companyNumber);
+        final PaymentGetResponse result = service.get(dissolutionGetResponse);
 
         System.out.println(result.getItems().get(0).getProductType());
         assertEquals(ApplicationType.LLDS01, result.getItems().get(0).getProductType());
