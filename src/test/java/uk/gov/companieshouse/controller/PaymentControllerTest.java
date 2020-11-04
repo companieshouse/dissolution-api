@@ -38,7 +38,7 @@ import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatc
 @WebMvcTest(PaymentController.class)
 public class PaymentControllerTest {
 
-    private static final String PAYMENT_URI = "/dissolution-request/{company-number}/payment";
+    private static final String PAYMENT_URI = "/dissolution-request/{application-reference}/payment";
     private static final String APPLICATION_REFERENCE = "12345678";
 
     private static final String IDENTITY_HEADER_VALUE = "identity";
