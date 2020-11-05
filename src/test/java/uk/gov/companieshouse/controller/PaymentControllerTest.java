@@ -205,7 +205,7 @@ public class PaymentControllerTest {
     }
 
     @Test
-    public void patchPaymentDataRequest_returnsOK_updatesPaymentInfo_PaidPaymentIsProvided() throws Exception, DissolutionNotFoundException {
+    public void patchPaymentDataRequest_returnsNoContent_updatesPaymentInfo_PaidPaymentIsProvided() throws Exception, DissolutionNotFoundException {
         final DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
         dissolutionGetResponse.setApplicationStatus(ApplicationStatus.PENDING_PAYMENT);
 
@@ -221,13 +221,13 @@ public class PaymentControllerTest {
                                 .content(asJsonString(body))
                                 .headers(createHttpHeaders())
                 )
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         verify(dissolutionService).handlePayment(isA(PaymentPatchRequest.class), eq(APPLICATION_REFERENCE));
     }
 
     @Test
-    public void patchPaymentDataRequest_returnsOK_doesNotUpdatePaymentInfo_ifFailedPaymentIsProvided() throws Exception, DissolutionNotFoundException {
+    public void patchPaymentDataRequest_returnsNoContent_doesNotUpdatePaymentInfo_ifFailedPaymentIsProvided() throws Exception, DissolutionNotFoundException {
         final DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
         dissolutionGetResponse.setApplicationStatus(ApplicationStatus.PENDING_PAYMENT);
 
@@ -243,13 +243,13 @@ public class PaymentControllerTest {
                                 .content(asJsonString(body))
                                 .headers(createHttpHeaders())
                 )
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         verify(dissolutionService, never()).handlePayment(isA(PaymentPatchRequest.class), eq(APPLICATION_REFERENCE));
     }
 
     @Test
-    public void patchPaymentDataRequest_returnsOK_doesNotUpdatePaymentInfo_ifCancelledPaymentIsProvided() throws Exception, DissolutionNotFoundException {
+    public void patchPaymentDataRequest_returnsNoContent_doesNotUpdatePaymentInfo_ifCancelledPaymentIsProvided() throws Exception, DissolutionNotFoundException {
         final DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
         dissolutionGetResponse.setApplicationStatus(ApplicationStatus.PENDING_PAYMENT);
 
@@ -265,7 +265,7 @@ public class PaymentControllerTest {
                                 .content(asJsonString(body))
                                 .headers(createHttpHeaders())
                 )
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         verify(dissolutionService, never()).handlePayment(isA(PaymentPatchRequest.class), eq(APPLICATION_REFERENCE));
     }
