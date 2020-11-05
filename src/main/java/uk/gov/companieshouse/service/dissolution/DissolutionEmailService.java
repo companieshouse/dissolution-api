@@ -2,22 +2,22 @@ package uk.gov.companieshouse.service.dissolution;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.config.EnvironmentConfig;
 import uk.gov.companieshouse.mapper.email.DissolutionEmailMapper;
 import uk.gov.companieshouse.mapper.email.EmailMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionRejectReason;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionVerdict;
 import uk.gov.companieshouse.model.dto.email.ApplicationAcceptedEmailData;
 import uk.gov.companieshouse.model.dto.email.ApplicationRejectedEmailData;
-import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
-import uk.gov.companieshouse.model.dto.email.MessageType;
 import uk.gov.companieshouse.model.dto.email.EmailDocument;
+import uk.gov.companieshouse.model.dto.email.MessageType;
+import uk.gov.companieshouse.model.dto.email.PendingPaymentEmailData;
 import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
 import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
 import uk.gov.companieshouse.model.enums.VerdictResult;
-import uk.gov.companieshouse.model.dto.email.PendingPaymentEmailData;
 import uk.gov.companieshouse.service.email.EmailService;
-import uk.gov.companieshouse.config.EnvironmentConfig;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -112,6 +112,7 @@ public class DissolutionEmailService {
 
         getUniqueSignatories(dissolution)
                 .stream()
+                .filter(signatoryEmail -> !signatoryEmail.equals(dissolution.getCreatedBy().getEmail()))
                 .map(signatoryEmail -> mapToSignatoryToSignEmail(dissolution, signatoryEmail, messageType, deadlineDate))
                 .forEach(this::sendEmail);
     }

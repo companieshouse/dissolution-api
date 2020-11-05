@@ -8,11 +8,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.fixtures.EmailFixtures;
 import uk.gov.companieshouse.mapper.email.DissolutionEmailMapper;
 import uk.gov.companieshouse.mapper.email.EmailMapper;
+import uk.gov.companieshouse.model.db.dissolution.CreatedBy;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionRejectReason;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionVerdict;
-import uk.gov.companieshouse.model.dto.email.*;
+import uk.gov.companieshouse.model.dto.email.ApplicationAcceptedEmailData;
+import uk.gov.companieshouse.model.dto.email.ApplicationRejectedEmailData;
+import uk.gov.companieshouse.model.dto.email.EmailDocument;
+import uk.gov.companieshouse.model.dto.email.MessageType;
+import uk.gov.companieshouse.model.dto.email.PendingPaymentEmailData;
+import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
+import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
 import uk.gov.companieshouse.model.enums.VerdictResult;
 import uk.gov.companieshouse.service.email.EmailService;
 
@@ -22,13 +29,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolution;
-import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionDirector;
-import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionRejectReason;
-import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionVerdict;
+import static org.mockito.Mockito.*;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.*;
 import static uk.gov.companieshouse.fixtures.EmailFixtures.generateEmailDocument;
 import static uk.gov.companieshouse.fixtures.EmailFixtures.generateSignatoryToSignEmailData;
 
@@ -38,6 +40,7 @@ public class DissolutionEmailServiceTest {
     private static final String SIGNATORY_TO_SIGN_DEADLINE = "17 September 2020";
     private static final String SIGNATORY_EMAIL_ONE = "signatory1@mail.com";
     private static final String SIGNATORY_EMAIL_TWO = "signatory2@mail.com";
+    private static final String APPLICANT_EMAIL = "applicant@mail.com";
 
     @InjectMocks
     private DissolutionEmailService dissolutionEmailService;
@@ -152,15 +155,21 @@ public class DissolutionEmailServiceTest {
     }
 
     @Test
-    public void notifySignatoriesToSign_shouldGenerateAndSendAnEmail_forEachUniqueSignatory() {
+    public void notifySignatoriesToSign_shouldGenerateAndSendAnEmail_forEachUniqueSignatoryThatIsNotTheApplicant() {
         final DissolutionDirector signatoryOne = generateDissolutionDirector();
         signatoryOne.setEmail(SIGNATORY_EMAIL_ONE);
 
         final DissolutionDirector signatoryTwo = generateDissolutionDirector();
         signatoryTwo.setEmail(SIGNATORY_EMAIL_TWO);
 
+        final DissolutionDirector applicant = generateDissolutionDirector();
+        applicant.setEmail(APPLICANT_EMAIL);
+
         final Dissolution dissolution = generateDissolution();
-        dissolution.getData().setDirectors(Arrays.asList(signatoryOne, signatoryTwo));
+        final CreatedBy createdBy = generateCreatedBy();
+        createdBy.setEmail(APPLICANT_EMAIL);
+        dissolution.setCreatedBy(createdBy);
+        dissolution.getData().setDirectors(Arrays.asList(signatoryOne, signatoryTwo, applicant));
 
         final SignatoryToSignEmailData emailDataOne = generateSignatoryToSignEmailData();
         final SignatoryToSignEmailData emailDataTwo = generateSignatoryToSignEmailData();
