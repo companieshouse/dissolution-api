@@ -58,12 +58,12 @@ public class PaymentController {
 
     @Operation(summary = "Patch Payment Status", tags = "Dissolution")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Payment Status Updated"),
+            @ApiResponse(responseCode = "204", description = "Payment Status Updated"),
             @ApiResponse(responseCode = "400", description = "Wrong status of Dissolution Application"),
             @ApiResponse(responseCode = "404", description = "Dissolution Application not found")
     })
     @PatchMapping()
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void patchPaymentData(
             @PathVariable("application-reference") final String applicationReference,
             @Valid @RequestBody final PaymentPatchRequest body
