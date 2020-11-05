@@ -27,7 +27,7 @@
         <avro.version>1.10.0</avro.version>
         <ch-kafka.version>1.4.4</ch-kafka.version>
         <kafka-models.version>1.0.12</kafka-models.version>
-        <aws.java.sdk.version>2.15.11</aws.java.sdk.version>
+        <aws.java.sdk.version>2.15.21</aws.java.sdk.version>
     </properties>
 
     <dependencyManagement>
