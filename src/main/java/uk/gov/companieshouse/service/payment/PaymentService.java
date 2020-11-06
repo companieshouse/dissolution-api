@@ -21,7 +21,7 @@ public class PaymentService {
         paymentLinks.setSelf("/dissolution-request/" + dissolutionInfo.getApplicationReference() + "/payment");
         paymentLinks.setDissolutionRequest("/dissolution-request/" + dissolutionInfo.getCompanyNumber());
 
-        PaymentItem item = createPaymentItem(dissolutionInfo.getApplicationType());
+        PaymentItem item = createPaymentItem(dissolutionInfo);
 
         response.setETag(dissolutionInfo.getETag());
         response.setKind(PAYMENT_KIND);
@@ -32,13 +32,13 @@ public class PaymentService {
         return response;
     }
 
-    private PaymentItem createPaymentItem(ApplicationType applicationType) {
+    private PaymentItem createPaymentItem(DissolutionGetResponse dissolutionInfo) {
         PaymentItem item = new PaymentItem();
 
-        item.setDescription(PAYMENT_DESCRIPTION);
+        item.setDescription(String.format(PAYMENT_DESCRIPTION, dissolutionInfo.getCompanyName(), dissolutionInfo.getCompanyNumber()));
         item.setDescriptionIdentifier(PAYMENT_DESCRIPTION_IDENTIFIER);
         item.setDescriptionValues(new PaymentDescriptionValues());
-        item.setProductType(applicationType);
+        item.setProductType(dissolutionInfo.getApplicationType());
         item.setAmount(PAYMENT_AMOUNT);
         item.setAvailablePaymentMethods(List.of(PAYMENT_AVAILABLE_PAYMENT_METHOD));
         item.setClassOfPayment(List.of(PAYMENT_CLASS_OF_PAYMENT));
