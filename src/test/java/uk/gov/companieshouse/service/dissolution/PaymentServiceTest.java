@@ -24,12 +24,14 @@ public class PaymentServiceTest {
     public void get_getsPaymentUIData_returnsGetResponse() {
         String companyNumber = "12345678";
         String applicationReference = "ABC123";
+        String companyName = "Some company name";
 
         DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
         dissolutionGetResponse.setCompanyNumber(companyNumber);
         dissolutionGetResponse.setApplicationReference(applicationReference);
         dissolutionGetResponse.setETag("WATERMELONSAREGREAT12345678THEYREALLYARE");
         dissolutionGetResponse.setApplicationType(ApplicationType.DS01);
+        dissolutionGetResponse.setCompanyName(companyName);
 
         final PaymentGetResponse result = service.get(dissolutionGetResponse);
 
@@ -38,7 +40,7 @@ public class PaymentServiceTest {
         assertEquals(companyNumber, result.getCompanyNumber());
         assertEquals("/dissolution-request/" + applicationReference + "/payment", result.getLinks().getSelf());
         assertEquals("/dissolution-request/" + companyNumber, result.getLinks().getDissolutionRequest());
-        assertEquals(PAYMENT_DESCRIPTION, result.getItems().get(0).getDescription());
+        assertEquals("Apply to strike off and dissolve a company: " + companyName + " (" + companyNumber + ")", result.getItems().get(0).getDescription());
         assertEquals(PAYMENT_DESCRIPTION_IDENTIFIER, result.getItems().get(0).getDescriptionIdentifier());
         assertNotNull(result.getItems().get(0).getDescriptionValues());
         assertEquals(PAYMENT_AMOUNT, result.getItems().get(0).getAmount());
