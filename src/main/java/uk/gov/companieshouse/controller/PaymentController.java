@@ -22,6 +22,7 @@ import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.PaymentStatus;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
+import uk.gov.companieshouse.service.dissolution.validator.PaymentValidator;
 import uk.gov.companieshouse.service.payment.PaymentService;
 
 import javax.validation.Valid;
@@ -32,13 +33,17 @@ public class PaymentController {
 
     private final DissolutionService dissolutionService;
     private final PaymentService paymentService;
+    private final PaymentValidator paymentValidator;
 
     public PaymentController(
             DissolutionService dissolutionService,
-            PaymentService paymentService) {
+            PaymentService paymentService,
+            PaymentValidator paymentValidator
+    ) {
         super();
         this.dissolutionService = dissolutionService;
         this.paymentService = paymentService;
+        this.paymentValidator = paymentValidator;
     }
 
     @Operation(summary = "Get Payment UI Data", tags = "Dissolution")
@@ -75,6 +80,12 @@ public class PaymentController {
         if (dissolutionInfo.getApplicationStatus() != ApplicationStatus.PENDING_PAYMENT) {
             throw new BadRequestException("Dissolution status is not " + ApplicationStatus.PENDING_PAYMENT.getValue());
         }
+
+        paymentValidator
+                .checkBusinessRules(body)
+                .ifPresent(error -> {
+                    throw new BadRequestException(error);
+                });
 
         if (PaymentStatus.PAID.equals(body.getStatus())) {
             try {

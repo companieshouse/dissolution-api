@@ -8,6 +8,7 @@ import uk.gov.companieshouse.mapper.DissolutionVerdictMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionVerdict;
 import uk.gov.companieshouse.model.dto.chips.ChipsResponseCreateRequest;
+import uk.gov.companieshouse.model.enums.PaymentMethod;
 import uk.gov.companieshouse.model.enums.VerdictResult;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.dissolution.DissolutionEmailService;
@@ -47,7 +48,7 @@ public class ChipsResponseService {
         dissolution.setVerdict(dissolutionVerdict);
         dissolution.setActive(false);
 
-        if (featureToggleConfig.isRefundsEnabled() && dissolutionVerdict.getResult() == VerdictResult.REJECTED) {
+        if (canRefundDissolution(dissolutionVerdict, dissolution)) {
                 dissolutionRefundService.handleRefund(dissolution, dissolutionVerdict);
         }
 
@@ -56,5 +57,11 @@ public class ChipsResponseService {
         this.repository.save(dissolution);
 
         dissolutionEmailService.sendApplicationOutcomeEmail(dissolution, dissolutionVerdict);
+    }
+
+    private boolean canRefundDissolution(DissolutionVerdict dissolutionVerdict, Dissolution dissolution) {
+        return featureToggleConfig.isRefundsEnabled() &&
+            dissolutionVerdict.getResult() == VerdictResult.REJECTED &&
+            dissolution.getPaymentInformation().getMethod() == PaymentMethod.CREDIT_CARD;
     }
 }

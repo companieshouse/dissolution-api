@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.config.FeatureToggleConfig;
 import uk.gov.companieshouse.exception.ChipsMapperException;
 import uk.gov.companieshouse.model.db.dissolution.Company;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
@@ -19,6 +20,7 @@ import uk.gov.companieshouse.model.dto.chips.xml.ChipsPayment;
 import uk.gov.companieshouse.model.dto.chips.xml.ChipsPaymentMethod;
 import uk.gov.companieshouse.model.dto.chips.xml.ChipsPersonName;
 import uk.gov.companieshouse.model.dto.chips.xml.ChipsPresenterDetails;
+import uk.gov.companieshouse.model.enums.PaymentMethod;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -35,9 +37,15 @@ public class ChipsFormDataMapper {
 
     private static final String CHIPS_DATE_FORMAT = "yyyy-MM-dd";
 
+    private final XmlMapper xmlMapper;
+
+    private final FeatureToggleConfig featureToggleConfig;
+
     @Autowired
-    @Qualifier("xmlMapper")
-    private XmlMapper xmlMapper;
+    public ChipsFormDataMapper(@Qualifier("xmlMapper") XmlMapper xmlMapper, FeatureToggleConfig featureToggleConfig) {
+        this.xmlMapper = xmlMapper;
+        this.featureToggleConfig = featureToggleConfig;
+    }
 
     public String mapToChipsFormDataXml(Dissolution dissolution) {
         final ChipsFormData form = new ChipsFormData();
@@ -85,8 +93,13 @@ public class ChipsFormDataMapper {
 
         final PaymentInformation dissolutionPayment = dissolution.getPaymentInformation();
 
-        payment.setReferenceNumber(dissolutionPayment.getReference());
         payment.setPaymentMethod(ChipsPaymentMethod.findByDissolutionPaymentMethod(dissolutionPayment.getMethod()));
+
+        if (featureToggleConfig.isPayByAccountEnabled() && dissolutionPayment.getMethod() == PaymentMethod.ACCOUNT) {
+            payment.setAccountNumber(dissolutionPayment.getAccountNumber());
+        } else {
+            payment.setReferenceNumber(dissolutionPayment.getReference());
+        }
 
         return payment;
     }

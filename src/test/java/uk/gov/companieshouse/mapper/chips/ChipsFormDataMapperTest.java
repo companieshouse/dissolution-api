@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.mapper.chips;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,6 +9,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.config.FeatureToggleConfig;
 import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
@@ -38,12 +40,16 @@ public class ChipsFormDataMapperTest {
     private static final String DISSOLUTION_REFERENCE = "someRef";
     private static final String DISSOLUTION_BARCODE = "B4RC0D3";
     private static final String PAYMENT_REFERENCE = "somePaymentRef";
+    private static final String ACCOUNT_NUMBER = "222222";
 
     @InjectMocks
     private ChipsFormDataMapper mapper;
 
     @Mock
     private XmlMapper xmlMapper;
+
+    @Mock
+    private FeatureToggleConfig featureToggleConfig;
 
     private Dissolution dissolution;
     private ArgumentCaptor<ChipsFormData> requestCaptor;
@@ -57,6 +63,7 @@ public class ChipsFormDataMapperTest {
         requestCaptor = ArgumentCaptor.forClass(ChipsFormData.class);
 
         when(xmlMapper.writeValueAsString(any())).thenReturn("some xml");
+        when(featureToggleConfig.isPayByAccountEnabled()).thenReturn(false);
     }
 
     @Test
@@ -143,9 +150,29 @@ public class ChipsFormDataMapperTest {
     }
 
     @Test
-    public void mapToChipsFormDataXml_setsTheFilingDetails_paymentDetailsCorrectly() throws Exception {
+    public void mapToChipsFormDataXml_setsTheFilingDetails_paymentDetailsCorrectly_payByAccountFeatureToggleOn() throws Exception {
+        dissolution.getPaymentInformation().setMethod(PaymentMethod.ACCOUNT);
+        dissolution.getPaymentInformation().setAccountNumber(ACCOUNT_NUMBER);
+
+        when(featureToggleConfig.isPayByAccountEnabled()).thenReturn(true);
+
+        mapper.mapToChipsFormDataXml(dissolution);
+
+        verify(xmlMapper).writeValueAsString(requestCaptor.capture());
+
+        final ChipsFormData request = requestCaptor.getValue();
+
+        assertEquals(ChipsPaymentMethod.ACCOUNT, request.getFilingDetails().getPayment().getPaymentMethod());
+        assertEquals(ACCOUNT_NUMBER, request.getFilingDetails().getPayment().getAccountNumber());
+        Assert.assertNull(request.getFilingDetails().getPayment().getReferenceNumber());
+    }
+
+    @Test
+    public void mapToChipsFormDataXml_setsTheFilingDetails_paymentDetailsCorrectly_payByAccountFeatureToggleOff() throws Exception {
         dissolution.getPaymentInformation().setMethod(PaymentMethod.CREDIT_CARD);
         dissolution.getPaymentInformation().setReference(PAYMENT_REFERENCE);
+
+        when(featureToggleConfig.isPayByAccountEnabled()).thenReturn(false);
 
         mapper.mapToChipsFormDataXml(dissolution);
 
@@ -155,6 +182,7 @@ public class ChipsFormDataMapperTest {
 
         assertEquals(ChipsPaymentMethod.CREDIT_CARD, request.getFilingDetails().getPayment().getPaymentMethod());
         assertEquals(PAYMENT_REFERENCE, request.getFilingDetails().getPayment().getReferenceNumber());
+        Assert.assertNull(request.getFilingDetails().getPayment().getAccountNumber());
     }
 
     @Test

@@ -6,11 +6,12 @@ import uk.gov.companieshouse.model.enums.PaymentMethod;
 import java.util.Map;
 
 public enum ChipsPaymentMethod {
-
+    ACCOUNT("account"),
     CREDIT_CARD("creditcard");
 
     private static final Map<PaymentMethod, ChipsPaymentMethod> PAYMENT_METHOD_MAPPING = Map.of(
-            PaymentMethod.CREDIT_CARD, ChipsPaymentMethod.CREDIT_CARD
+            PaymentMethod.CREDIT_CARD, ChipsPaymentMethod.CREDIT_CARD,
+            PaymentMethod.ACCOUNT, ChipsPaymentMethod.ACCOUNT
     );
 
     private final String value;
