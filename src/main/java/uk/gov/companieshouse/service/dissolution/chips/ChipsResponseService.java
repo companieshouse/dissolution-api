@@ -48,7 +48,13 @@ public class ChipsResponseService {
         dissolution.setActive(false);
 
         if (featureToggleConfig.isRefundsEnabled() && dissolutionVerdict.getResult() == VerdictResult.REJECTED) {
-            dissolutionRefundService.handleRefund(dissolution);
+            try {
+                dissolutionRefundService.handleRefund(dissolution);
+            } catch (Exception e) {
+                logger.info("Automatic refund failed, sending rejection email to finance");
+
+                dissolutionEmailService.sendRejectionEmailToFinance(dissolution, dissolutionVerdict);
+            }
         }
 
         logger.info(String.format("Received CHIPS verdict for company %s - %s", dissolution.getCompany().getNumber(), dissolutionVerdict.getResult().toString()));

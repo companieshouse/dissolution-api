@@ -70,6 +70,13 @@ public class DissolutionEmailService {
 
         sendEmail(emailDocument);
     }
+    
+    public void sendRejectionEmailToFinance(Dissolution dissolution, DissolutionVerdict dissolutionVerdict) {
+        EmailDocument<?> emailDocument = this.getApplicationRejectedEmailDocument(dissolution, dissolutionVerdict);
+        emailDocument.setEmailAddress(environmentConfig.getChsFinanceEmail());
+        
+        sendEmail(emailDocument);
+    }
 
     public void sendPendingPaymentEmail(Dissolution dissolution) {
         final PendingPaymentEmailData emailData = this.dissolutionEmailMapper.mapToPendingPaymentEmailData(dissolution);
