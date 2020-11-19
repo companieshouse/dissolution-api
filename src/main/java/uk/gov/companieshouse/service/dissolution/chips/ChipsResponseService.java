@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.service.dissolution.chips;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClientException;
 import uk.gov.companieshouse.config.FeatureToggleConfig;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.logging.Logger;
@@ -50,8 +51,8 @@ public class ChipsResponseService {
         if (featureToggleConfig.isRefundsEnabled() && dissolutionVerdict.getResult() == VerdictResult.REJECTED) {
             try {
                 dissolutionRefundService.handleRefund(dissolution);
-            } catch (Exception e) {
-                logger.info("Automatic refund failed, sending rejection email to finance");
+            } catch (WebClientException e) {
+                logger.info(String.format("Automatic refund failed, sending rejection email to finance. Exception: %s", e.getMessage()));
 
                 dissolutionEmailService.sendRejectionEmailToFinance(dissolution, dissolutionVerdict);
             }
