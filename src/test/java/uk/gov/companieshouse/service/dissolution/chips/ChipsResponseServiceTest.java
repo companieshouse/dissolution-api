@@ -49,7 +49,7 @@ public class ChipsResponseServiceTest {
     private FeatureToggleConfig featureToggleConfig;
 
     @Test
-    public void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_acceptedApplication_refundsToggleTrue() throws DissolutionNotFoundException {
+    void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_acceptedApplication_refundsToggleTrue() throws DissolutionNotFoundException {
         ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
         chipsResponseCreateRequest.setStatus(VerdictResult.ACCEPTED);
         DissolutionVerdict dissolutionVerdict = DissolutionFixtures.generateDissolutionVerdict();
@@ -69,7 +69,7 @@ public class ChipsResponseServiceTest {
     }
 
     @Test
-    public void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_rejectedApplication_refundsToggleTrue() throws DissolutionNotFoundException {
+    void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_rejectedApplication_refundsToggleTrue() throws DissolutionNotFoundException {
         ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
         chipsResponseCreateRequest.setStatus(VerdictResult.REJECTED);
         DissolutionVerdict dissolutionVerdict = DissolutionFixtures.generateDissolutionVerdict();
@@ -84,12 +84,12 @@ public class ChipsResponseServiceTest {
 
         assertFalse(dissolution.getActive());
 
-        verify(dissolutionRefundService).handleRefund(dissolution);
+        verify(dissolutionRefundService).handleRefund(dissolution, dissolutionVerdict);
         verify(dissolutionEmailService).sendApplicationOutcomeEmail(dissolution, dissolutionVerdict);
     }
 
     @Test
-    public void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_acceptedApplication_refundsToggleFalse() throws DissolutionNotFoundException {
+    void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_acceptedApplication_refundsToggleFalse() throws DissolutionNotFoundException {
         ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
         chipsResponseCreateRequest.setStatus(VerdictResult.ACCEPTED);
         DissolutionVerdict dissolutionVerdict = DissolutionFixtures.generateDissolutionVerdict();
@@ -109,7 +109,7 @@ public class ChipsResponseServiceTest {
     }
 
     @Test
-    public void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_rejectedApplication_refundsToggleFalse() throws DissolutionNotFoundException {
+    void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_rejectedApplication_refundsToggleFalse() throws DissolutionNotFoundException {
         ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
         chipsResponseCreateRequest.setStatus(VerdictResult.REJECTED);
         DissolutionVerdict dissolutionVerdict = DissolutionFixtures.generateDissolutionVerdict();

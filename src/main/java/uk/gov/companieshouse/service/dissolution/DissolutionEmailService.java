@@ -66,7 +66,14 @@ public class DissolutionEmailService {
     public void sendApplicationOutcomeEmail(Dissolution dissolution, DissolutionVerdict dissolutionVerdict) {
         EmailDocument<?> emailDocument = dissolutionVerdict.getResult() == VerdictResult.ACCEPTED ?
                 this.getApplicationAcceptedEmailDocument(dissolution) :
-                this.getApplicationRejectedEmailDocument(dissolution, dissolutionVerdict);
+                this.getApplicationRejectedEmailDocument(dissolution, dissolutionVerdict, dissolution.getCreatedBy().getEmail());
+
+        sendEmail(emailDocument);
+    }
+
+    public void sendRejectionEmailToFinance(Dissolution dissolution, DissolutionVerdict dissolutionVerdict) {
+        EmailDocument<ApplicationRejectedEmailData> emailDocument = this.getApplicationRejectedEmailDocument(dissolution,
+                dissolutionVerdict, environmentConfig.getChsFinanceEmail());
 
         sendEmail(emailDocument);
     }
@@ -93,10 +100,10 @@ public class DissolutionEmailService {
         );
     }
 
-    private EmailDocument<ApplicationRejectedEmailData> getApplicationRejectedEmailDocument(Dissolution dissolution, DissolutionVerdict dissolutionVerdict) {
+    private EmailDocument<ApplicationRejectedEmailData> getApplicationRejectedEmailDocument(Dissolution dissolution, DissolutionVerdict dissolutionVerdict, String emailAddress) {
         List<String> rejectReasonsAsStrings = dissolutionVerdict.getRejectReasons().stream().map(DissolutionRejectReason::getTextEnglish).collect(Collectors.toList());
 
-        final ApplicationRejectedEmailData emailData = this.dissolutionEmailMapper.mapToApplicationRejectedEmailData(dissolution, rejectReasonsAsStrings);
+        final ApplicationRejectedEmailData emailData = this.dissolutionEmailMapper.mapToApplicationRejectedEmailData(dissolution, rejectReasonsAsStrings, emailAddress);
 
         final MessageType messageType = messageTypeCalculator.getForApplicationRejected(dissolution);
 

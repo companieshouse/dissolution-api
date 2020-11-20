@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.config.EnvironmentConfig;
 import uk.gov.companieshouse.fixtures.EmailFixtures;
 import uk.gov.companieshouse.mapper.email.DissolutionEmailMapper;
 import uk.gov.companieshouse.mapper.email.EmailMapper;
@@ -58,10 +59,13 @@ public class DissolutionEmailServiceTest {
     private EmailService emailService;
 
     @Mock
+    private EnvironmentConfig environmentConfig;
+
+    @Mock
     private DissolutionDeadlineDateCalculator deadlineDateCalculator;
 
     @Test
-    public void sendSuccessfulPaymentEmail_shouldGenerateAndSendASuccessfulPaymentEmail() {
+    void sendSuccessfulPaymentEmail_shouldGenerateAndSendASuccessfulPaymentEmail() {
         final Dissolution dissolution = generateDissolution();
         final SuccessfulPaymentEmailData emailData = EmailFixtures.generateSuccessfulPaymentEmailData();
         final EmailDocument<SuccessfulPaymentEmailData> emailDocument = generateEmailDocument(emailData);
@@ -77,7 +81,7 @@ public class DissolutionEmailServiceTest {
     }
 
     @Test
-    public void sendPendingPaymentEmail_shouldGenerateAndSendAPendingPaymentEmail() {
+    void sendPendingPaymentEmail_shouldGenerateAndSendAPendingPaymentEmail() {
         final Dissolution dissolution = generateDissolution();
         final PendingPaymentEmailData emailData = EmailFixtures.generatePendingPaymentEmailData();
         final EmailDocument<PendingPaymentEmailData> emailDocument = generateEmailDocument(emailData);
@@ -93,7 +97,7 @@ public class DissolutionEmailServiceTest {
     }
 
     @Test
-    public void sendApplicationOutcomeEmail_shouldGenerateAndSendAnApplicationAcceptedEmail() {
+    void sendApplicationOutcomeEmail_shouldGenerateAndSendAnApplicationAcceptedEmail() {
         final Dissolution dissolution = generateDissolution();
         final DissolutionVerdict dissolutionVerdict = generateDissolutionVerdict();
 
@@ -111,7 +115,7 @@ public class DissolutionEmailServiceTest {
     }
 
     @Test
-    public void sendApplicationOutcomeEmail_shouldGenerateAndSendAnApplicationRejectedEmail() {
+    void sendApplicationOutcomeEmail_shouldGenerateAndSendAnApplicationRejectedEmail() {
         final Dissolution dissolution = generateDissolution();
         final DissolutionVerdict dissolutionVerdict = generateDissolutionVerdict();
         dissolutionVerdict.setResult(VerdictResult.REJECTED);
@@ -121,7 +125,7 @@ public class DissolutionEmailServiceTest {
         final EmailDocument<ApplicationRejectedEmailData> emailDocument = generateEmailDocument(emailData);
 
         List<String> rejectReasonsAsStrings = dissolutionVerdict.getRejectReasons().stream().map(DissolutionRejectReason::getTextEnglish).collect(Collectors.toList());
-        when(dissolutionEmailMapper.mapToApplicationRejectedEmailData(dissolution, rejectReasonsAsStrings)).thenReturn(emailData);
+        when(dissolutionEmailMapper.mapToApplicationRejectedEmailData(dissolution, rejectReasonsAsStrings, dissolution.getCreatedBy().getEmail())).thenReturn(emailData);
         when(messageTypeCalculator.getForApplicationRejected(dissolution)).thenReturn(MessageType.APPLICATION_REJECTED);
         when(emailMapper.mapToEmailDocument(emailData, emailData.getTo(), MessageType.APPLICATION_REJECTED)).thenReturn(emailDocument);
 
@@ -132,7 +136,30 @@ public class DissolutionEmailServiceTest {
     }
 
     @Test
-    public void notifySignatoriesToSign_shouldCalculateDeadline_andIdentifyUniqueSignatories() {
+    void sendRejectionEmailToFinance_shouldGenerateAndSendAnApplicationRejectedEmail() {
+        final String email = "email@finance.com";
+        final Dissolution dissolution = generateDissolution();
+        final DissolutionVerdict dissolutionVerdict = generateDissolutionVerdict();
+        dissolutionVerdict.setResult(VerdictResult.REJECTED);
+        dissolutionVerdict.setRejectReasons(Collections.singletonList(generateDissolutionRejectReason()));
+
+        final ApplicationRejectedEmailData emailData = EmailFixtures.generateApplicationRejectedEmailData();
+        final EmailDocument<ApplicationRejectedEmailData> emailDocument = generateEmailDocument(emailData);
+
+        List<String> rejectReasonsAsStrings = dissolutionVerdict.getRejectReasons().stream().map(DissolutionRejectReason::getTextEnglish).collect(Collectors.toList());
+        when(environmentConfig.getChsFinanceEmail()).thenReturn(email);
+        when(dissolutionEmailMapper.mapToApplicationRejectedEmailData(dissolution, rejectReasonsAsStrings, email)).thenReturn(emailData);
+        when(messageTypeCalculator.getForApplicationRejected(dissolution)).thenReturn(MessageType.APPLICATION_REJECTED);
+        when(emailMapper.mapToEmailDocument(emailData, emailData.getTo(), MessageType.APPLICATION_REJECTED)).thenReturn(emailDocument);
+
+        dissolutionEmailService.sendRejectionEmailToFinance(dissolution, dissolutionVerdict);
+
+        verify(emailMapper).mapToEmailDocument(emailData, emailData.getTo(), MessageType.APPLICATION_REJECTED);
+        verify(emailService).sendMessage(emailDocument);
+    }
+
+    @Test
+    void notifySignatoriesToSign_shouldCalculateDeadline_andIdentifyUniqueSignatories() {
         final DissolutionDirector duplicateSignatoryOne = generateDissolutionDirector();
         duplicateSignatoryOne.setEmail(SIGNATORY_EMAIL_ONE);
 
@@ -155,7 +182,7 @@ public class DissolutionEmailServiceTest {
     }
 
     @Test
-    public void notifySignatoriesToSign_shouldGenerateAndSendAnEmail_forEachUniqueSignatoryThatIsNotTheApplicant() {
+    void notifySignatoriesToSign_shouldGenerateAndSendAnEmail_forEachUniqueSignatoryThatIsNotTheApplicant() {
         final DissolutionDirector signatoryOne = generateDissolutionDirector();
         signatoryOne.setEmail(SIGNATORY_EMAIL_ONE);
 
