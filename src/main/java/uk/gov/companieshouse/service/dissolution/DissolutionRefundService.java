@@ -43,7 +43,7 @@ public class DissolutionRefundService {
 
             dissolution.getPaymentInformation().setRefund(refund);
         } catch (WebClientException e) {
-            logger.info(String.format("Automatic refund failed, sending rejection email to finance. Exception: %s", e.getMessage()));
+            logger.error("Automatic refund failed, sending rejection email to finance", e);
 
             emailService.sendRejectionEmailToFinance(dissolution, verdict);
         }
