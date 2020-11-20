@@ -38,12 +38,12 @@ public class DissolutionEmailMapperTest {
     private EnvironmentConfig environmentConfig;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         when(environmentConfig.getCdnHost()).thenReturn(CDN_HOST);
     }
 
     @Test
-    public void mapToSuccessfulPaymentEmailData_mapsSuccessfulPaymentEmailData() {
+    void mapToSuccessfulPaymentEmailData_mapsSuccessfulPaymentEmailData() {
         final Dissolution dissolution = generateDissolution();
         final SuccessfulPaymentEmailData successfulPaymentEmailData = EmailFixtures.generateSuccessfulPaymentEmailData();
 
@@ -62,7 +62,7 @@ public class DissolutionEmailMapperTest {
     }
 
     @Test
-    public void mapToApplicationAcceptedEmailData_mapsApplicationAcceptedEmailData() {
+    void mapToApplicationAcceptedEmailData_mapsApplicationAcceptedEmailData() {
         final Dissolution dissolution = generateDissolution();
         final ApplicationAcceptedEmailData applicationAcceptedEmailData = EmailFixtures.generateApplicationAcceptedEmailData();
 
@@ -78,13 +78,14 @@ public class DissolutionEmailMapperTest {
     }
 
     @Test
-    public void mapToApplicationRejectedEmailData_mapsApplicationRejectedEmailData() {
+    void mapToApplicationRejectedEmailData_mapsApplicationRejectedEmailData() {
         final Dissolution dissolution = generateDissolution();
         final ApplicationRejectedEmailData applicationRejectedEmailData = EmailFixtures.generateApplicationRejectedEmailData();
+        final String email = "example@mail.com";
 
-        final ApplicationRejectedEmailData result = dissolutionEmailMapper.mapToApplicationRejectedEmailData(dissolution, applicationRejectedEmailData.getRejectReasons());
+        final ApplicationRejectedEmailData result = dissolutionEmailMapper.mapToApplicationRejectedEmailData(dissolution, applicationRejectedEmailData.getRejectReasons(), email);
 
-        assertEquals(applicationRejectedEmailData.getTo(), result.getTo());
+        assertEquals(email, result.getTo());
         assertEquals(applicationRejectedEmailData.getSubject(), result.getSubject());
         assertEquals(applicationRejectedEmailData.getCdnHost(), result.getCdnHost());
         assertEquals(applicationRejectedEmailData.getDissolutionReferenceNumber(), result.getDissolutionReferenceNumber());
@@ -95,7 +96,7 @@ public class DissolutionEmailMapperTest {
     }
 
     @Test
-    public void mapToPendingPaymentEmailData_mapsDissolutionInfo() {
+    void mapToPendingPaymentEmailData_mapsDissolutionInfo() {
         final Company company = generateCompany();
         company.setName("Some Company Name");
         company.setNumber("12345");
@@ -117,7 +118,7 @@ public class DissolutionEmailMapperTest {
     }
 
     @Test
-    public void mapToPendingPaymentEmailData_mapsEnvironmentInfo() {
+    void mapToPendingPaymentEmailData_mapsEnvironmentInfo() {
         when(environmentConfig.getChsUrl()).thenReturn(CHS_URL);
 
         final PendingPaymentEmailData result = dissolutionEmailMapper.mapToPendingPaymentEmailData(generateDissolution());
@@ -127,7 +128,7 @@ public class DissolutionEmailMapperTest {
     }
 
     @Test
-    public void mapToSignatoryToSignEmailData_mapsDissolutionInfo() {
+    void mapToSignatoryToSignEmailData_mapsDissolutionInfo() {
         final Company company = generateCompany();
         company.setName("Some Company Name");
         company.setNumber("12345");
@@ -146,7 +147,7 @@ public class DissolutionEmailMapperTest {
     }
 
     @Test
-    public void mapToSignatoryToSignEmailData_mapsSignatoryInfo_andDeadline_andSubject() {
+    void mapToSignatoryToSignEmailData_mapsSignatoryInfo_andDeadline_andSubject() {
         when(environmentConfig.getChsUrl()).thenReturn(CHS_URL);
 
         final SignatoryToSignEmailData result = dissolutionEmailMapper.mapToSignatoryToSignEmailData(generateDissolution(), SIGNATORY_TO_SIGN_EMAIL, SIGNATORY_TO_SIGN_DEADLINE);
@@ -157,7 +158,7 @@ public class DissolutionEmailMapperTest {
     }
 
     @Test
-    public void mapToSignatoryToSignEmailData_mapsEnvironmentInfo() {
+    void mapToSignatoryToSignEmailData_mapsEnvironmentInfo() {
         when(environmentConfig.getChsUrl()).thenReturn(CHS_URL);
 
         final SignatoryToSignEmailData result = dissolutionEmailMapper.mapToSignatoryToSignEmailData(generateDissolution(), SIGNATORY_TO_SIGN_EMAIL, SIGNATORY_TO_SIGN_DEADLINE);

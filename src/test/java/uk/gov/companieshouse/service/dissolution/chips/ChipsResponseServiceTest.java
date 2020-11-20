@@ -5,7 +5,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import uk.gov.companieshouse.config.FeatureToggleConfig;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.fixtures.ChipsFixtures;
@@ -50,7 +49,7 @@ public class ChipsResponseServiceTest {
     private FeatureToggleConfig featureToggleConfig;
 
     @Test
-    public void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_acceptedApplication_refundsToggleTrue() throws DissolutionNotFoundException {
+    void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_acceptedApplication_refundsToggleTrue() throws DissolutionNotFoundException {
         ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
         chipsResponseCreateRequest.setStatus(VerdictResult.ACCEPTED);
         DissolutionVerdict dissolutionVerdict = DissolutionFixtures.generateDissolutionVerdict();
@@ -67,11 +66,10 @@ public class ChipsResponseServiceTest {
 
         verifyNoInteractions(dissolutionRefundService);
         verify(dissolutionEmailService).sendApplicationOutcomeEmail(dissolution, dissolutionVerdict);
-        verify(dissolutionEmailService, times(0)).sendRejectionEmailToFinance(dissolution, dissolutionVerdict);
     }
 
     @Test
-    public void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_rejectedApplication_refundsToggleTrue() throws DissolutionNotFoundException {
+    void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_rejectedApplication_refundsToggleTrue() throws DissolutionNotFoundException {
         ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
         chipsResponseCreateRequest.setStatus(VerdictResult.REJECTED);
         DissolutionVerdict dissolutionVerdict = DissolutionFixtures.generateDissolutionVerdict();
@@ -86,36 +84,12 @@ public class ChipsResponseServiceTest {
 
         assertFalse(dissolution.getActive());
 
-        verify(dissolutionRefundService).handleRefund(dissolution);
+        verify(dissolutionRefundService).handleRefund(dissolution, dissolutionVerdict);
         verify(dissolutionEmailService).sendApplicationOutcomeEmail(dissolution, dissolutionVerdict);
-        verify(dissolutionEmailService, times(0)).sendRejectionEmailToFinance(dissolution, dissolutionVerdict);
-
     }
 
     @Test
-    public void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmailToFinanceWhenException_rejectedApplication_refundsToggleTrue() throws DissolutionNotFoundException {
-        ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
-        chipsResponseCreateRequest.setStatus(VerdictResult.REJECTED);
-        DissolutionVerdict dissolutionVerdict = DissolutionFixtures.generateDissolutionVerdict();
-        dissolutionVerdict.setResult(VerdictResult.REJECTED);
-        Dissolution dissolution = DissolutionFixtures.generateDissolution();
-
-        when(dissolutionVerdictMapper.mapToDissolutionVerdict(chipsResponseCreateRequest)).thenReturn(dissolutionVerdict);
-        when(repository.findByDataApplicationReference(chipsResponseCreateRequest.getSubmissionReference())).thenReturn(Optional.of(dissolution));
-        when(featureToggleConfig.isRefundsEnabled()).thenReturn(true);
-        doThrow(new WebClientResponseException(400, "BAD_REQUEST", null, null, null)).when(dissolutionRefundService).handleRefund(dissolution);
-
-        chipsResponseService.saveAndNotifyDissolutionApplicationOutcome(chipsResponseCreateRequest);
-
-        assertFalse(dissolution.getActive());
-
-        verify(dissolutionRefundService).handleRefund(dissolution);
-        verify(dissolutionEmailService).sendApplicationOutcomeEmail(dissolution, dissolutionVerdict);
-        verify(dissolutionEmailService).sendRejectionEmailToFinance(dissolution, dissolutionVerdict);
-    }
-
-    @Test
-    public void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_acceptedApplication_refundsToggleFalse() throws DissolutionNotFoundException {
+    void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_acceptedApplication_refundsToggleFalse() throws DissolutionNotFoundException {
         ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
         chipsResponseCreateRequest.setStatus(VerdictResult.ACCEPTED);
         DissolutionVerdict dissolutionVerdict = DissolutionFixtures.generateDissolutionVerdict();
@@ -132,12 +106,10 @@ public class ChipsResponseServiceTest {
 
         verifyNoInteractions(dissolutionRefundService);
         verify(dissolutionEmailService).sendApplicationOutcomeEmail(dissolution, dissolutionVerdict);
-        verify(dissolutionEmailService, times(0)).sendRejectionEmailToFinance(dissolution, dissolutionVerdict);
-
     }
 
     @Test
-    public void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_rejectedApplication_refundsToggleFalse() throws DissolutionNotFoundException {
+    void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_rejectedApplication_refundsToggleFalse() throws DissolutionNotFoundException {
         ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
         chipsResponseCreateRequest.setStatus(VerdictResult.REJECTED);
         DissolutionVerdict dissolutionVerdict = DissolutionFixtures.generateDissolutionVerdict();
@@ -154,7 +126,5 @@ public class ChipsResponseServiceTest {
 
         verifyNoInteractions(dissolutionRefundService);
         verify(dissolutionEmailService).sendApplicationOutcomeEmail(dissolution, dissolutionVerdict);
-        verify(dissolutionEmailService, times(0)).sendRejectionEmailToFinance(dissolution, dissolutionVerdict);
-
     }
 }
