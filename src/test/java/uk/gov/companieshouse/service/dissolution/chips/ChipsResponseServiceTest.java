@@ -9,11 +9,14 @@ import uk.gov.companieshouse.config.FeatureToggleConfig;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.fixtures.ChipsFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
+import uk.gov.companieshouse.fixtures.PaymentFixtures;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.DissolutionVerdictMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionVerdict;
+import uk.gov.companieshouse.model.db.payment.PaymentInformation;
 import uk.gov.companieshouse.model.dto.chips.ChipsResponseCreateRequest;
+import uk.gov.companieshouse.model.enums.PaymentMethod;
 import uk.gov.companieshouse.model.enums.VerdictResult;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.dissolution.DissolutionEmailService;
@@ -69,12 +72,14 @@ public class ChipsResponseServiceTest {
     }
 
     @Test
-    void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_rejectedApplication_refundsToggleTrue() throws DissolutionNotFoundException {
+    void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_rejectedApplicationAndCardPayment_refundsToggleTrue() throws DissolutionNotFoundException {
         ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
         chipsResponseCreateRequest.setStatus(VerdictResult.REJECTED);
         DissolutionVerdict dissolutionVerdict = DissolutionFixtures.generateDissolutionVerdict();
         dissolutionVerdict.setResult(VerdictResult.REJECTED);
         Dissolution dissolution = DissolutionFixtures.generateDissolution();
+        PaymentInformation paymentInformation = PaymentFixtures.generatePaymentInformation();
+        dissolution.setPaymentInformation(paymentInformation);
 
         when(dissolutionVerdictMapper.mapToDissolutionVerdict(chipsResponseCreateRequest)).thenReturn(dissolutionVerdict);
         when(repository.findByDataApplicationReference(chipsResponseCreateRequest.getSubmissionReference())).thenReturn(Optional.of(dissolution));
@@ -85,6 +90,29 @@ public class ChipsResponseServiceTest {
         assertFalse(dissolution.getActive());
 
         verify(dissolutionRefundService).handleRefund(dissolution, dissolutionVerdict);
+        verify(dissolutionEmailService).sendApplicationOutcomeEmail(dissolution, dissolutionVerdict);
+    }
+
+    @Test
+    public void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_rejectedApplicationAndAccountPayment_refundsToggleTrue() throws DissolutionNotFoundException {
+        ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
+        chipsResponseCreateRequest.setStatus(VerdictResult.REJECTED);
+        DissolutionVerdict dissolutionVerdict = DissolutionFixtures.generateDissolutionVerdict();
+        dissolutionVerdict.setResult(VerdictResult.REJECTED);
+        Dissolution dissolution = DissolutionFixtures.generateDissolution();
+        PaymentInformation paymentInformation = PaymentFixtures.generatePaymentInformation();
+        paymentInformation.setMethod(PaymentMethod.ACCOUNT);
+        dissolution.setPaymentInformation(paymentInformation);
+
+        when(dissolutionVerdictMapper.mapToDissolutionVerdict(chipsResponseCreateRequest)).thenReturn(dissolutionVerdict);
+        when(repository.findByDataApplicationReference(chipsResponseCreateRequest.getSubmissionReference())).thenReturn(Optional.of(dissolution));
+        when(featureToggleConfig.isRefundsEnabled()).thenReturn(true);
+
+        chipsResponseService.saveAndNotifyDissolutionApplicationOutcome(chipsResponseCreateRequest);
+
+        assertFalse(dissolution.getActive());
+
+        verify(dissolutionRefundService, never()).handleRefund(dissolution, dissolutionVerdict);
         verify(dissolutionEmailService).sendApplicationOutcomeEmail(dissolution, dissolutionVerdict);
     }
 

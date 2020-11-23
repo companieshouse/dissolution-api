@@ -19,6 +19,7 @@ import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.PaymentStatus;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
+import uk.gov.companieshouse.service.dissolution.validator.PaymentValidator;
 import uk.gov.companieshouse.service.payment.PaymentService;
 
 import java.util.Optional;
@@ -48,6 +49,9 @@ public class PaymentControllerTest {
 
     @MockBean
     private PaymentService paymentService;
+
+    @MockBean
+    private PaymentValidator paymentValidator;
 
     @Autowired
     private MockMvc mockMvc;
@@ -193,6 +197,25 @@ public class PaymentControllerTest {
         final PaymentPatchRequest body = generatePaymentPatchRequest();
 
         when(dissolutionService.getByApplicationReference(APPLICATION_REFERENCE)).thenReturn(Optional.of(dissolutionGetResponse));
+
+        mockMvc
+                .perform(
+                        patch(PAYMENT_URI, APPLICATION_REFERENCE)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(asJsonString(body))
+                                .headers(createHttpHeaders())
+                )
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void patchPaymentDataRequest_returnsBadRequest_ifRequestFailsValidation() throws Exception {
+        final DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
+
+        final PaymentPatchRequest body = generatePaymentPatchRequest();
+
+        when(dissolutionService.getByApplicationReference(APPLICATION_REFERENCE)).thenReturn(Optional.of(dissolutionGetResponse));
+        when(paymentValidator.checkBusinessRules(body)).thenReturn(Optional.of("Some error message"));
 
         mockMvc
                 .perform(

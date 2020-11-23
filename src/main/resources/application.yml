@@ -36,6 +36,7 @@ env:
   chsUrl: ${CHS_URL}
 
 featureToggles:
+  payByAccount: ${PAY_BY_ACCOUNT_FEATURE_ENABLED}
   refunds: ${DISSOLUTION_REFUNDS_FEATURE_ENABLED}
 
 kafka:

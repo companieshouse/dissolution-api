@@ -23,7 +23,6 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
-import uk.gov.companieshouse.model.enums.PaymentMethod;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.dissolution.certificate.DissolutionCertificateGenerator;
 
@@ -206,11 +205,11 @@ public class DissolutionPatcherTest {
 
         when(repository.findByDataApplicationReference(APPLICATION_REFERENCE)).thenReturn(java.util.Optional.of(dissolution));
         when(paymentInformationMapper
-                .mapToPaymentInformation(PaymentMethod.CREDIT_CARD, data.getPaymentReference(), data.getPaidAt()))
+                .mapToPaymentInformation(data))
                 .thenReturn(paymentInformation);
         when(dissolutionSubmissionMapper.generateSubmissionInformation()).thenReturn(submission);
 
-        patcher.handlePayment(data.getPaymentReference(), data.getPaidAt(), APPLICATION_REFERENCE);
+        patcher.handlePayment(data, APPLICATION_REFERENCE);
         verify(repository).save(dissolutionCaptor.capture());
         verify(dissolutionEmailService).sendSuccessfulPaymentEmail(dissolutionCaptor.capture());
 

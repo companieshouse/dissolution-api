@@ -40,8 +40,8 @@ public class DissolutionService {
         return patcher.addDirectorApproval(companyNumber, userId, body);
     }
 
-    public void handlePayment(PaymentPatchRequest data, String applicationReference) throws DissolutionNotFoundException {
-        patcher.handlePayment(data.getPaymentReference(), data.getPaidAt(), applicationReference);
+    public void handlePayment(PaymentPatchRequest body, String applicationReference) throws DissolutionNotFoundException {
+        patcher.handlePayment(body, applicationReference);
     }
 
     public boolean doesDissolutionRequestExistForCompanyByCompanyNumber(String companyNumber) {

@@ -13,6 +13,9 @@ public class PaymentInformation {
     @Field("date_time")
     private LocalDateTime dateTime;
 
+    @Field("account_number")
+    private String accountNumber;
+
     private RefundInformation refund;
 
     public String getReference() {
@@ -37,6 +40,14 @@ public class PaymentInformation {
 
     public void setDateTime(LocalDateTime dateTime) {
         this.dateTime = dateTime;
+    }
+
+    public String getAccountNumber() {
+        return accountNumber;
+    }
+
+    public void setAccountNumber(String accountNumber) {
+        this.accountNumber = accountNumber;
     }
 
     public RefundInformation getRefund() { return refund; }

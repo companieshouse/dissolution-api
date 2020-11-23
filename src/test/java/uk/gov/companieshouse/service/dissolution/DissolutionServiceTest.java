@@ -167,6 +167,6 @@ public class DissolutionServiceTest {
 
         service.handlePayment(data, APPLICATION_REFERENCE);
 
-        verify(patcher).handlePayment(data.getPaymentReference(), data.getPaidAt(), APPLICATION_REFERENCE);
+        verify(patcher).handlePayment(data, APPLICATION_REFERENCE);
     }
 }

@@ -13,6 +13,7 @@ import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
+import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.PaymentMethod;
 import uk.gov.companieshouse.repository.DissolutionRepository;
@@ -70,10 +71,10 @@ public class DissolutionPatcher {
         dissolutionEmailService.sendPendingPaymentEmail(dissolution);
     }
 
-    public void handlePayment(String paymentReference, Timestamp paidAt, String applicationReference) throws DissolutionNotFoundException {
+    public void handlePayment(PaymentPatchRequest body, String applicationReference) throws DissolutionNotFoundException {
         final Dissolution dissolution = this.repository.findByDataApplicationReference(applicationReference).orElseThrow(DissolutionNotFoundException::new);
 
-        this.addPaymentInformation(paymentReference, paidAt, dissolution);
+        this.addPaymentInformation(body, dissolution);
 
         setDissolutionStatus(dissolution, ApplicationStatus.PAID);
 
@@ -94,8 +95,8 @@ public class DissolutionPatcher {
                 .orElseThrow(DissolutionNotFoundException::new);
     }
 
-    private void addPaymentInformation(String paymentReference, Timestamp paidAt, Dissolution dissolution) {
-        final PaymentInformation information = paymentInformationMapper.mapToPaymentInformation(PaymentMethod.CREDIT_CARD, paymentReference, paidAt);
+    private void addPaymentInformation(PaymentPatchRequest body, Dissolution dissolution) {
+        final PaymentInformation information = paymentInformationMapper.mapToPaymentInformation(body);
 
         dissolution.setPaymentInformation(information);
     }
