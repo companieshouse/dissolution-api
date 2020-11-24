@@ -53,3 +53,7 @@ sonar:
 .PHONY: sonar-pr-analysis
 sonar-pr-analysis:
 	mvn sonar:sonar	-P sonar-pr-analysis
+
+.PHONY: security-check
+security-check:
+	mvn org.owasp:dependency-check-maven:check -DassemblyAnalyzerEnabled=false -DfailBuildOnCVSS=0 -DsuppressionFiles=suppressed-security-checks.xml

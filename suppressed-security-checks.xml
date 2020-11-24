@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions>
+    <suppress>
+        <notes><![CDATA[
+       file name: structured-logging-1.9.4.jar
+       ]]></notes>
+        <packageUrl regex="true">^pkg:maven/uk\.gov\.companieshouse/structured\-logging@.*$</packageUrl>
+        <cve>CVE-2020-9488</cve>
+    </suppress>
+</suppressions>

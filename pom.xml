@@ -28,6 +28,9 @@
         <ch-kafka.version>1.4.4</ch-kafka.version>
         <kafka-models.version>1.0.12</kafka-models.version>
         <aws.java.sdk.version>2.15.11</aws.java.sdk.version>
+        <version.sonar-maven-plugin>3.7.0.1746</version.sonar-maven-plugin>
+        <version.avro>1.10.0</version.avro>
+        <version.kafka-clients>0.10.2.2</version.kafka-clients>
     </properties>
 
     <dependencyManagement>
@@ -70,6 +73,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
             <version>${version.spring.boot}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.sonarsource.scanner.maven</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -156,6 +165,12 @@
                     <artifactId>jackson-core</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.sonarsource.scanner.maven</groupId>
+            <artifactId>sonar-maven-plugin</artifactId>
+            <version>${version.sonar-maven-plugin}</version>
         </dependency>
 
         <!-- Testing -->
