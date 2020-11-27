@@ -21,7 +21,7 @@
         <version.spring.boot>2.4.0</version.spring.boot>
         <version.springdoc.openapi>1.4.8</version.springdoc.openapi>
         <api-helper-java.version>1.4.2</api-helper-java.version>
-        <api-security-java.version>0.3.0</api-security-java.version>
+        <api-security-java.version>0.2.11</api-security-java.version>
         <structured-logging.version>1.9.4</structured-logging.version>
         <commons-lang3.version>3.11</commons-lang3.version>
         <avro.version>1.10.0</avro.version>
@@ -203,6 +203,12 @@
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>ch-kafka</artifactId>
             <version>${ch-kafka.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.kafka</groupId>
+                    <artifactId>kafka-clients</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
