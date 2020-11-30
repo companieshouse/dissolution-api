@@ -252,6 +252,7 @@
                 <configuration>
                     <container>
                         <jvmFlags>
+                            <jvmFlag>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005</jvmFlag>
                             <jvmFlag>-Djava.security.egd=file:/dev/./urandom</jvmFlag>
                         </jvmFlags>
                     </container>
