@@ -18,7 +18,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Versions -->
-        <version.spring.boot>2.3.3.RELEASE</version.spring.boot>
+        <version.spring.boot>2.4.0</version.spring.boot>
         <version.springdoc.openapi>1.4.8</version.springdoc.openapi>
         <api-helper-java.version>1.4.2</api-helper-java.version>
         <api-security-java.version>0.2.11</api-security-java.version>
@@ -28,6 +28,8 @@
         <ch-kafka.version>1.4.4</ch-kafka.version>
         <kafka-models.version>1.0.12</kafka-models.version>
         <aws.java.sdk.version>2.15.11</aws.java.sdk.version>
+        <version.sonar-maven-plugin>3.7.0.1746</version.sonar-maven-plugin>
+        <version.avro>1.10.0</version.avro>
     </properties>
 
     <dependencyManagement>
@@ -70,6 +72,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
             <version>${version.spring.boot}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.sonarsource.scanner.maven</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -158,6 +166,12 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>org.sonarsource.scanner.maven</groupId>
+            <artifactId>sonar-maven-plugin</artifactId>
+            <version>${version.sonar-maven-plugin}</version>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -189,11 +203,22 @@
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>ch-kafka</artifactId>
             <version>${ch-kafka.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.kafka</groupId>
+                    <artifactId>kafka-clients</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>kafka-models</artifactId>
             <version>${kafka-models.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>2.3.1</version>
         </dependency>
     </dependencies>
 
