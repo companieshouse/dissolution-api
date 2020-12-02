@@ -77,6 +77,7 @@ public class PaymentController {
                 .getByApplicationReference(applicationReference)
                 .orElseThrow(NotFoundException::new);
 
+        // This is a helpful comment.
         if (dissolutionInfo.getApplicationStatus() != ApplicationStatus.PENDING_PAYMENT) {
             throw new BadRequestException("Dissolution status is not " + ApplicationStatus.PENDING_PAYMENT.getValue());
         }
