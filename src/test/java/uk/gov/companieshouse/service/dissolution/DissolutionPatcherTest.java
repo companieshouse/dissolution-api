@@ -91,7 +91,7 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_addsApprovalToSingleDirector_savesInDatabase() throws DissolutionNotFoundException {
+    void patch_addsApprovalToSingleDirector_savesInDatabase() throws DissolutionNotFoundException {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
@@ -108,7 +108,7 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApproved() throws DissolutionNotFoundException {
+    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApproved() throws DissolutionNotFoundException {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
@@ -131,7 +131,7 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_generatesCertificateAndSavesInDatabase_ifAllDirectorHaveApproved() throws DissolutionNotFoundException {
+    void patch_generatesCertificateAndSavesInDatabase_ifAllDirectorHaveApproved() throws DissolutionNotFoundException {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
@@ -150,7 +150,7 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_doesNotUpdateStatus_ifNotAllDirectorHaveApproved() throws DissolutionNotFoundException {
+    void patch_doesNotUpdateStatus_ifNotAllDirectorHaveApproved() throws DissolutionNotFoundException {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
@@ -175,7 +175,7 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_doesNotGenerateCertificate_ifNotAllDirectorHaveApproved() throws DissolutionNotFoundException {
+    void patch_doesNotGenerateCertificate_ifNotAllDirectorHaveApproved() throws DissolutionNotFoundException {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
@@ -203,7 +203,7 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_updatesDissolutionWithPaymentAndSubmissionInformation_savesInDatabase() throws DissolutionNotFoundException {
+    void patch_updatesDissolutionWithPaymentAndSubmissionInformation_savesInDatabase() throws DissolutionNotFoundException {
         PaymentPatchRequest data = generatePaymentPatchRequest();
         PaymentInformation paymentInformation = generatePaymentInformation();
         DissolutionSubmission submission = generateDissolutionSubmission();
@@ -223,7 +223,7 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_updateSignatory_updatesSignatoryWithEmail_SavesInDatabaseAndSendsEmail() throws DirectorNotFoundException, DissolutionNotFoundException {
+    void patch_updateSignatory_updatesSignatoryWithEmail_SavesInDatabaseAndSendsEmail() throws DirectorNotFoundException, DissolutionNotFoundException {
         final DissolutionPatchDirectorRequest body = generateDissolutionPatchDirectorRequest();
 
         body.setEmail(EMAIL);
@@ -241,7 +241,7 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_updateSignatory_updatesSignatoryWithEmailAndOnBehalfName_SavesInDatabaseAndSendsEmail() throws DirectorNotFoundException, DissolutionNotFoundException {
+    void patch_updateSignatory_updatesSignatoryWithEmailAndOnBehalfName_SavesInDatabaseAndSendsEmail() throws DirectorNotFoundException, DissolutionNotFoundException {
         final DissolutionPatchDirectorRequest body = generateDissolutionPatchDirectorRequest();
         dissolution.getData().getDirectors().get(0).setEmail(EMAIL+"asd");
 
@@ -260,7 +260,7 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_updateSignatory_updatesSignatoryWithTheSameEmailButDifferentName_SavesInDatabaseAndSendsEmail() throws DirectorNotFoundException, DissolutionNotFoundException {
+    void patch_updateSignatory_updatesSignatoryWithTheSameEmailButDifferentName_SavesInDatabaseAndSendsEmail() throws DirectorNotFoundException, DissolutionNotFoundException {
         final DissolutionPatchDirectorRequest body = generateDissolutionPatchDirectorRequest();
         dissolution.getData().getDirectors().get(0).setEmail(EMAIL);
         dissolution.getData().getDirectors().get(0).setOnBehalfName(null);
@@ -280,7 +280,7 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_updateSignatory_updatesSignatoryWithTheSameEmailAndOnBehalfName_DoesNotSaveInDatabaseAndDoesNotSendEmail() throws DirectorNotFoundException, DissolutionNotFoundException {
+    void patch_updateSignatory_updatesSignatoryWithTheSameEmailAndOnBehalfName_DoesNotSaveInDatabaseAndDoesNotSendEmail() throws DirectorNotFoundException, DissolutionNotFoundException {
         final DissolutionPatchDirectorRequest body = generateDissolutionPatchDirectorRequest();
         dissolution.getData().getDirectors().get(0).setEmail(EMAIL);
         dissolution.getData().getDirectors().get(0).setOnBehalfName(ON_BEHALF_NAME);
@@ -297,7 +297,7 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_updateSignatory_updatesSignatoryWithTheSameEmailAndBothNullOnBehalfName_DoesNotSaveInDatabaseAndDoesNotSendEmail() throws DirectorNotFoundException, DissolutionNotFoundException {
+    void patch_updateSignatory_updatesSignatoryWithTheSameEmailAndBothNullOnBehalfName_DoesNotSaveInDatabaseAndDoesNotSendEmail() throws DirectorNotFoundException, DissolutionNotFoundException {
         final DissolutionPatchDirectorRequest body = generateDissolutionPatchDirectorRequest();
         dissolution.getData().getDirectors().get(0).setEmail(EMAIL);
         dissolution.getData().getDirectors().get(0).setOnBehalfName(null);
