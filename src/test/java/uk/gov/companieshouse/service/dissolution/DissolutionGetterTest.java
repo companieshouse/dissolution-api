@@ -39,6 +39,7 @@ public class DissolutionGetterTest {
     public static final String APPLICATION_REFERENCE = "XYZ456";
     public static final String OFFICER_ID_ONE = "abc123";
     public static final String OFFICER_ID_TWO = "def456";
+    private static final String EMAIL = "applicant@email.com";
 
     @Test
     public void getByCompanyNumber_findsDissolution_mapsToDissolutionResponse_returnsGetResponse() {
@@ -144,5 +145,63 @@ public class DissolutionGetterTest {
         final boolean result = getter.isDirectorPendingApproval(COMPANY_NUMBER, OFFICER_ID_ONE);
 
         assertTrue(result);
+    }
+
+    @Test
+    public void doesDirectorExist_returnsFalse_whenDirectorDoesNotExist() {
+        final Dissolution dissolution = DissolutionFixtures.generateDissolution();
+
+        final DissolutionDirector director = generateDissolutionDirector();
+        director.setOfficerId(OFFICER_ID_TWO);
+
+        dissolution.getData().setDirectors(Collections.singletonList(director));
+
+        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
+
+        final boolean result = getter.doesDirectorExist(COMPANY_NUMBER, OFFICER_ID_ONE);
+
+        assertFalse(result);
+    }
+
+    @Test
+    public void doesDirectorExist_returnsTrue_whenDirectorExists() {
+        final Dissolution dissolution = DissolutionFixtures.generateDissolution();
+
+        final DissolutionDirector director = generateDissolutionDirector();
+        director.setOfficerId(OFFICER_ID_ONE);
+
+        dissolution.getData().setDirectors(Collections.singletonList(director));
+
+        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
+
+        final boolean result = getter.doesDirectorExist(COMPANY_NUMBER, OFFICER_ID_ONE);
+
+        assertTrue(result);
+    }
+
+    @Test
+    public void doesEmailBelongToApplicant_returnsTrue_whenEmailMatches() {
+        final Dissolution dissolution = DissolutionFixtures.generateDissolution();
+
+        dissolution.getCreatedBy().setEmail(EMAIL);
+
+        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
+
+        final boolean result = getter.doesEmailBelongToApplicant(COMPANY_NUMBER, EMAIL);
+
+        assertTrue(result);
+    }
+
+    @Test
+    public void doesEmailBelongToApplicant_returnsFalse_whenEmailDoesNotMatch() {
+        final Dissolution dissolution = DissolutionFixtures.generateDissolution();
+
+        dissolution.getCreatedBy().setEmail(EMAIL+"asd");
+
+        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
+
+        final boolean result = getter.doesEmailBelongToApplicant(COMPANY_NUMBER, EMAIL);
+
+        assertFalse(result);
     }
 }

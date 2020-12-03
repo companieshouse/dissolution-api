@@ -2,6 +2,7 @@ package uk.gov.companieshouse.service.dissolution;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.exception.DirectorNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
@@ -11,15 +12,15 @@ import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchDirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
-import uk.gov.companieshouse.model.enums.PaymentMethod;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.dissolution.certificate.DissolutionCertificateGenerator;
 
-import java.sql.Timestamp;
+import java.util.Objects;
 
 @Service
 public class DissolutionPatcher {
@@ -61,6 +62,14 @@ public class DissolutionPatcher {
         }
 
         this.repository.save(dissolution);
+
+        return this.responseMapper.mapToDissolutionPatchResponse(dissolution);
+    }
+
+    public DissolutionPatchResponse updateSignatory(String companyNumber, DissolutionPatchDirectorRequest body, String officerId) throws DissolutionNotFoundException, DirectorNotFoundException {
+        final Dissolution dissolution = this.repository.findByCompanyNumber(companyNumber).orElseThrow(DissolutionNotFoundException::new);
+
+        this.updateSignatory(body, dissolution, officerId);
 
         return this.responseMapper.mapToDissolutionPatchResponse(dissolution);
     }
@@ -107,6 +116,24 @@ public class DissolutionPatcher {
         director.setDirectorApproval(approval);
     }
 
+    private void updateSignatory(DissolutionPatchDirectorRequest body, Dissolution dissolution, String officerId) throws DissolutionNotFoundException, DirectorNotFoundException {
+        DissolutionDirector director = this.findDirector(officerId, dissolution);
+
+        if (director == null) {
+            throw new DirectorNotFoundException();
+        }
+
+        if (!director.getEmail().equals(body.getEmail()) || !Objects.equals(director.getOnBehalfName(), body.getOnBehalfName())) {
+
+            director.setEmail(body.getEmail());
+            director.setOnBehalfName(body.getOnBehalfName());
+
+            this.repository.save(dissolution);
+
+            dissolutionEmailService.notifySignatoryToSign(dissolution, director.getEmail());
+        }
+    }
+
     private boolean hasDirectorsLeftToApprove(Dissolution dissolution) {
         return dissolution
                 .getData()
@@ -121,4 +148,5 @@ public class DissolutionPatcher {
                 .getApplication()
                 .setStatus(status);
     }
+
 }

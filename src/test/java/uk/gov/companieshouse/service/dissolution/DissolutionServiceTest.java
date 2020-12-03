@@ -5,12 +5,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.exception.DirectorNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
-import uk.gov.companieshouse.model.dto.dissolution.*;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchDirectorRequest;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
@@ -21,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionPatchDirectorRequest;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionPatchRequest;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 
@@ -48,6 +55,7 @@ public class DissolutionServiceTest {
     public static final String IP = "192.168.0.1";
     public static final String EMAIL = "user@mail.com";
     public static final String OFFICER_ID = "abc123";
+    public static final String ON_BEHALF_NAME = "on_behalf_name";
 
     @Test
     public void create_createsADissolutionRequest_returnsCreateResponse() {
@@ -142,6 +150,24 @@ public class DissolutionServiceTest {
         final DissolutionPatchResponse result = service.addDirectorApproval(COMPANY_NUMBER, USER_ID, body);
 
         verify(patcher).addDirectorApproval(COMPANY_NUMBER, USER_ID, body);
+
+        assertNotNull(result);
+        assertEquals(response, result);
+    }
+
+    @Test
+    public void updateSignatory_updatesSignatory_returnsPatchResponse() throws DissolutionNotFoundException, DirectorNotFoundException {
+        final DissolutionPatchDirectorRequest body = generateDissolutionPatchDirectorRequest();
+        body.setEmail(EMAIL);
+        body.setOnBehalfName(ON_BEHALF_NAME);
+
+        final DissolutionPatchResponse response = DissolutionFixtures.generateDissolutionPatchResponse();
+
+        when(patcher.updateSignatory(COMPANY_NUMBER, body, EMAIL)).thenReturn(response);
+
+        final DissolutionPatchResponse result = service.updateSignatory(COMPANY_NUMBER, body, EMAIL);
+
+        verify(patcher).updateSignatory(COMPANY_NUMBER, body, EMAIL);
 
         assertNotNull(result);
         assertEquals(response, result);

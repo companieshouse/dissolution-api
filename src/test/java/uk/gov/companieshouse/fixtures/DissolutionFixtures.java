@@ -17,6 +17,7 @@ import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchDirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.documentrender.DissolutionCertificateData;
@@ -39,6 +40,15 @@ public class DissolutionFixtures {
         request.setOfficerId("abc123");
         request.setHasApproved(true);
         request.setIpAddress("127.0.0.1");
+
+        return request;
+    }
+
+    public static DissolutionPatchDirectorRequest generateDissolutionPatchDirectorRequest() {
+        final DissolutionPatchDirectorRequest request = new DissolutionPatchDirectorRequest();
+
+        request.setEmail("abc123@mail.com");
+        request.setOnBehalfName("asd");
 
         return request;
     }

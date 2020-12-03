@@ -7,6 +7,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.exception.DirectorNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
@@ -19,6 +20,7 @@ import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionSubmission;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchDirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
@@ -28,6 +30,7 @@ import uk.gov.companieshouse.service.dissolution.certificate.DissolutionCertific
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -68,6 +71,8 @@ public class DissolutionPatcherTest {
     private static final String OFFICER_ID = "abc123";
     private static final String IP_ADDRESS = "127.0.0.1";
     private static final String OFFICER_ID_TWO = "def456";
+    private static final String EMAIL = "mail@mail.com";
+    private static final String ON_BEHALF_NAME = "on behalf name";
 
     private Dissolution dissolution;
     private DissolutionPatchResponse response;
@@ -215,5 +220,96 @@ public class DissolutionPatcherTest {
 
         assertEquals(paymentInformation, dissolutionCaptor.getValue().getPaymentInformation());
         assertEquals(submission, dissolutionCaptor.getValue().getSubmission());
+    }
+
+    @Test
+    public void patch_updateSignatory_updatesSignatoryWithEmail_SavesInDatabaseAndSendsEmail() throws DirectorNotFoundException, DissolutionNotFoundException {
+        final DissolutionPatchDirectorRequest body = generateDissolutionPatchDirectorRequest();
+
+        body.setEmail(EMAIL);
+        body.setOnBehalfName(null);
+
+        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
+
+        patcher.updateSignatory(COMPANY_NUMBER, body, OFFICER_ID);
+
+        verify(dissolutionEmailService).notifySignatoryToSign(dissolutionCaptor.capture(), eq(EMAIL));
+        verify(repository).save(dissolutionCaptor.capture());
+
+        assertEquals(EMAIL, dissolutionCaptor.getValue().getData().getDirectors().get(0).getEmail());
+        assertNull(null, dissolutionCaptor.getValue().getData().getDirectors().get(0).getOnBehalfName());
+    }
+
+    @Test
+    public void patch_updateSignatory_updatesSignatoryWithEmailAndOnBehalfName_SavesInDatabaseAndSendsEmail() throws DirectorNotFoundException, DissolutionNotFoundException {
+        final DissolutionPatchDirectorRequest body = generateDissolutionPatchDirectorRequest();
+        dissolution.getData().getDirectors().get(0).setEmail(EMAIL+"asd");
+
+        body.setEmail(EMAIL);
+        body.setOnBehalfName(ON_BEHALF_NAME);
+
+        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
+
+        patcher.updateSignatory(COMPANY_NUMBER, body, OFFICER_ID);
+
+        verify(dissolutionEmailService).notifySignatoryToSign(dissolutionCaptor.capture(), eq(EMAIL));
+        verify(repository).save(dissolutionCaptor.capture());
+
+        assertEquals(EMAIL, dissolutionCaptor.getValue().getData().getDirectors().get(0).getEmail());
+        assertEquals(ON_BEHALF_NAME, dissolutionCaptor.getValue().getData().getDirectors().get(0).getOnBehalfName());
+    }
+
+    @Test
+    public void patch_updateSignatory_updatesSignatoryWithTheSameEmailButDifferentName_SavesInDatabaseAndSendsEmail() throws DirectorNotFoundException, DissolutionNotFoundException {
+        final DissolutionPatchDirectorRequest body = generateDissolutionPatchDirectorRequest();
+        dissolution.getData().getDirectors().get(0).setEmail(EMAIL);
+        dissolution.getData().getDirectors().get(0).setOnBehalfName(null);
+
+        body.setEmail(EMAIL);
+        body.setOnBehalfName(ON_BEHALF_NAME);
+
+        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
+
+        patcher.updateSignatory(COMPANY_NUMBER, body, OFFICER_ID);
+
+        verify(dissolutionEmailService).notifySignatoryToSign(dissolutionCaptor.capture(), eq(EMAIL));
+        verify(repository).save(dissolutionCaptor.capture());
+
+        assertEquals(EMAIL, dissolutionCaptor.getValue().getData().getDirectors().get(0).getEmail());
+        assertEquals(ON_BEHALF_NAME, dissolutionCaptor.getValue().getData().getDirectors().get(0).getOnBehalfName());
+    }
+
+    @Test
+    public void patch_updateSignatory_updatesSignatoryWithTheSameEmailAndOnBehalfName_DoesNotSaveInDatabaseAndDoesNotSendEmail() throws DirectorNotFoundException, DissolutionNotFoundException {
+        final DissolutionPatchDirectorRequest body = generateDissolutionPatchDirectorRequest();
+        dissolution.getData().getDirectors().get(0).setEmail(EMAIL);
+        dissolution.getData().getDirectors().get(0).setOnBehalfName(ON_BEHALF_NAME);
+
+        body.setEmail(EMAIL);
+        body.setOnBehalfName(ON_BEHALF_NAME);
+
+        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
+
+        patcher.updateSignatory(COMPANY_NUMBER, body, OFFICER_ID);
+
+        verify(dissolutionEmailService, times(0)).notifySignatoryToSign(any(), any());
+        verify(repository, times(0)).save(any());
+    }
+
+    @Test
+    public void patch_updateSignatory_updatesSignatoryWithTheSameEmailAndBothNullOnBehalfName_DoesNotSaveInDatabaseAndDoesNotSendEmail() throws DirectorNotFoundException, DissolutionNotFoundException {
+        final DissolutionPatchDirectorRequest body = generateDissolutionPatchDirectorRequest();
+        dissolution.getData().getDirectors().get(0).setEmail(EMAIL);
+        dissolution.getData().getDirectors().get(0).setOnBehalfName(null);
+
+        body.setEmail(EMAIL);
+        body.setOnBehalfName(null);
+
+        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
+
+        patcher.updateSignatory(COMPANY_NUMBER, body, OFFICER_ID);
+
+        verify(dissolutionEmailService, times(0)).notifySignatoryToSign(any(), any());
+        verify(repository, times(0)).save(any());
     }
 }

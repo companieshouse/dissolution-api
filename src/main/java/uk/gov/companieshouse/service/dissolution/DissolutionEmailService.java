@@ -22,8 +22,6 @@ import uk.gov.companieshouse.service.email.EmailService;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static uk.gov.companieshouse.util.DateTimeGenerator.generateCurrentDateTime;
-
 @Service
 public class DissolutionEmailService {
 
@@ -90,6 +88,28 @@ public class DissolutionEmailService {
         sendEmail(emailDocument);
     }
 
+    public void notifySignatoriesToSign(Dissolution dissolution) {
+        final MessageType messageType = messageTypeCalculator.getForSignatoriesToSign(dissolution);
+
+        final String deadlineDate = deadlineDateCalculator.calculateSignatoryDeadlineDate(dissolution.getCreatedBy().getDateTime());
+
+        getUniqueSignatories(dissolution)
+                .stream()
+                .filter(signatoryEmail -> !signatoryEmail.equals(dissolution.getCreatedBy().getEmail()))
+                .map(signatoryEmail -> mapToSignatoryToSignEmail(dissolution, signatoryEmail, messageType, deadlineDate))
+                .forEach(this::sendEmail);
+    }
+
+    public void notifySignatoryToSign(Dissolution dissolution, String email) {
+        final MessageType messageType = messageTypeCalculator.getForSignatoriesToSign(dissolution);
+
+        final String deadlineDate = deadlineDateCalculator.calculateSignatoryDeadlineDate(dissolution.getCreatedBy().getDateTime());
+
+        EmailDocument<SignatoryToSignEmailData> emailDocument = mapToSignatoryToSignEmail(dissolution, email, messageType, deadlineDate);
+
+        this.sendEmail(emailDocument);
+    }
+
     private EmailDocument<ApplicationAcceptedEmailData> getApplicationAcceptedEmailDocument(Dissolution dissolution) {
         final ApplicationAcceptedEmailData emailData = this.dissolutionEmailMapper.mapToApplicationAcceptedEmailData(dissolution);
 
@@ -110,18 +130,6 @@ public class DissolutionEmailService {
         return this.emailMapper.mapToEmailDocument(
                 emailData, emailData.getTo(), messageType
         );
-    }
-
-    public void notifySignatoriesToSign(Dissolution dissolution) {
-        final MessageType messageType = messageTypeCalculator.getForSignatoriesToSign(dissolution);
-
-        final String deadlineDate = deadlineDateCalculator.calculateSignatoryDeadlineDate(generateCurrentDateTime());
-
-        getUniqueSignatories(dissolution)
-                .stream()
-                .filter(signatoryEmail -> !signatoryEmail.equals(dissolution.getCreatedBy().getEmail()))
-                .map(signatoryEmail -> mapToSignatoryToSignEmail(dissolution, signatoryEmail, messageType, deadlineDate))
-                .forEach(this::sendEmail);
     }
 
     private List<String> getUniqueSignatories(Dissolution dissolution) {

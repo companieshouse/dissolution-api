@@ -2,12 +2,14 @@ package uk.gov.companieshouse.service.dissolution;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.exception.DirectorNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchDirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
@@ -40,6 +42,10 @@ public class DissolutionService {
         return patcher.addDirectorApproval(companyNumber, userId, body);
     }
 
+    public DissolutionPatchResponse updateSignatory(String companyNumber, DissolutionPatchDirectorRequest body, String directorId) throws DissolutionNotFoundException, DirectorNotFoundException {
+        return patcher.updateSignatory(companyNumber, body, directorId);
+    }
+
     public void handlePayment(PaymentPatchRequest body, String applicationReference) throws DissolutionNotFoundException {
         patcher.handlePayment(body, applicationReference);
     }
@@ -62,5 +68,13 @@ public class DissolutionService {
 
     public boolean isDirectorPendingApproval(String companyNumber, String officerId) {
         return getter.isDirectorPendingApproval(companyNumber, officerId);
+    }
+
+    public boolean doesDirectorExist(String companyNumber, String officerId) {
+        return getter.isDirectorPendingApproval(companyNumber, officerId);
+    }
+
+    public boolean doesEmailBelongToApplicant(String companyNumber, String email) {
+        return getter.doesEmailBelongToApplicant(companyNumber, email);
     }
 }
