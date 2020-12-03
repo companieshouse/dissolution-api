@@ -188,6 +188,34 @@ public class DissolutionServiceTest {
     }
 
     @Test
+    public void doesDirectorExist_callsDissolutionGetter_doesDirectorExist() {
+        final String companyNumber = "12345678";
+        final String officerId = OFFICER_ID;
+
+        when(getter.doesDirectorExist(companyNumber, officerId)).thenReturn(true);
+
+        final boolean result = service.doesDirectorExist(companyNumber, officerId);
+
+        verify(getter).doesDirectorExist(companyNumber, officerId);
+
+        assertTrue(result);
+    }
+
+    @Test
+    public void doesEmailBelongToApplicant_callsDissolutionGetter_doesEmailBelongToApplicant() {
+        final String companyNumber = "12345678";
+        final String email = "user@mail.com";
+
+        when(getter.doesEmailBelongToApplicant(companyNumber, email)).thenReturn(true);
+
+        final boolean result = service.doesEmailBelongToApplicant(companyNumber, email);
+
+        verify(getter).doesEmailBelongToApplicant(companyNumber, email);
+
+        assertTrue(result);
+    }
+
+    @Test
     public void updatePaymentAndSubmissionStatus_updatesPaymentAndSubmissionStatus_returnNothing() throws DissolutionNotFoundException {
         PaymentPatchRequest data = generatePaymentPatchRequest();
 

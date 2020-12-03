@@ -71,7 +71,7 @@ public class DissolutionService {
     }
 
     public boolean doesDirectorExist(String companyNumber, String officerId) {
-        return getter.isDirectorPendingApproval(companyNumber, officerId);
+        return getter.doesDirectorExist(companyNumber, officerId);
     }
 
     public boolean doesEmailBelongToApplicant(String companyNumber, String email) {
