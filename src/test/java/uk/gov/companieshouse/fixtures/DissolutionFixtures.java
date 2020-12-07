@@ -16,8 +16,8 @@ import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchDirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.documentrender.DissolutionCertificateData;
@@ -44,15 +44,6 @@ public class DissolutionFixtures {
         return request;
     }
 
-    public static DissolutionPatchDirectorRequest generateDissolutionPatchDirectorRequest() {
-        final DissolutionPatchDirectorRequest request = new DissolutionPatchDirectorRequest();
-
-        request.setEmail("abc123@mail.com");
-        request.setOnBehalfName("asd");
-
-        return request;
-    }
-
     public static DissolutionCreateRequest generateDissolutionCreateRequest() {
         final DissolutionCreateRequest request = new DissolutionCreateRequest();
 
@@ -72,6 +63,10 @@ public class DissolutionFixtures {
 
     public static DissolutionPatchResponse generateDissolutionPatchResponse() {
         return new DissolutionPatchResponse();
+    }
+
+    public static DissolutionDirectorPatchResponse generateDissolutionDirectorPatchResponse() {
+        return new DissolutionDirectorPatchResponse();
     }
 
     public static DissolutionCreateResponse generateDissolutionCreateResponse() {

@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.client.CompanyProfileClient;
 import uk.gov.companieshouse.exception.BadRequestException;
 import uk.gov.companieshouse.exception.ConflictException;
-import uk.gov.companieshouse.exception.DirectorNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
@@ -26,7 +25,6 @@ import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchDirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.service.CompanyOfficerService;
@@ -134,35 +132,6 @@ public class DissolutionController {
         try {
             return dissolutionService.addDirectorApproval(companyNumber, userId, body);
         } catch (DissolutionNotFoundException e) {
-            throw new NotFoundException();
-        }
-    }
-
-    @PatchMapping("/directors/{director-id}")
-    @ResponseStatus(HttpStatus.OK)
-    public DissolutionPatchResponse patchDissolutionDirector(
-            @RequestHeader("ERIC-Authorised-User") String authorisedUser,
-            @PathVariable("company-number") final String companyNumber,
-            @PathVariable("director-id") final String directorId,
-            @Valid @RequestBody final DissolutionPatchDirectorRequest body
-    ) {
-
-        if (!dissolutionService.doesDissolutionRequestExistForCompanyByCompanyNumber(companyNumber)
-                || !dissolutionService.doesDirectorExist(companyNumber, directorId)) {
-            throw new NotFoundException();
-        }
-
-        if (!dissolutionService.isDirectorPendingApproval(companyNumber, directorId)) {
-            throw new BadRequestException("Director is not pending approval");
-        }
-
-        if (!dissolutionService.doesEmailBelongToApplicant(companyNumber, getEmail(authorisedUser))) {
-            throw new BadRequestException("Only the applicant can update signatory");
-        }
-
-        try {
-            return dissolutionService.updateSignatory(companyNumber, body, directorId);
-        } catch (DissolutionNotFoundException | DirectorNotFoundException e) {
             throw new NotFoundException();
         }
     }

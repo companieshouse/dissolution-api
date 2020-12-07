@@ -47,13 +47,7 @@ public class DissolutionGetter {
                 .orElse(false);
     }
 
-    public boolean doesEmailBelongToApplicant(String companyNumber, String email) {
-        return repository.findByCompanyNumber(companyNumber)
-                .map(dissolution -> this.doesEmailBelongToApplicant(email, dissolution))
-                .orElse(false);
-    }
-
-    private boolean isDirectorPendingApprovalForDissolution(String officerId, Dissolution dissolution) {
+    public boolean isDirectorPendingApprovalForDissolution(String officerId, Dissolution dissolution) {
         return dissolution
                 .getData()
                 .getDirectors()
@@ -69,7 +63,7 @@ public class DissolutionGetter {
                 .anyMatch(director -> director.getOfficerId().equals(officerId));
     }
 
-    private boolean doesEmailBelongToApplicant(String email, Dissolution dissolution) {
+    public boolean doesEmailBelongToApplicant(String email, Dissolution dissolution) {
         return dissolution
                 .getCreatedBy()
                 .getEmail()

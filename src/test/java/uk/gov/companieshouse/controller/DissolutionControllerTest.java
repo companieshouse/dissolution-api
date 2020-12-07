@@ -21,7 +21,6 @@ import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchDirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.service.CompanyOfficerService;
@@ -49,7 +48,6 @@ import static uk.gov.companieshouse.fixtures.DissolutionFixtures.*;
 public class DissolutionControllerTest {
 
     private static final String DISSOLUTION_URI = "/dissolution-request/{company-number}";
-    private static final String DIRECTOR_URI = "/directors/{director-id}";
 
     private static final String AUTHORISED_USER_HEADER = "ERIC-Authorised-User";
 
@@ -443,116 +441,6 @@ public class DissolutionControllerTest {
         verify(service).addDirectorApproval(eq(COMPANY_NUMBER), eq(USER_ID), isA(DissolutionPatchRequest.class));
     }
 
-    @Test
-    public void patchDissolutionDirectorRequest_returnsUnprocessableEntity_ifNoEmailProvided() throws Exception {
-        final DissolutionPatchDirectorRequest body = generateDissolutionPatchDirectorRequest();
-        body.setEmail(null);
-
-        assertPatchDirectorBodyValidation(body, "{'email':'must not be blank'}");
-    }
-
-    @Test
-    public void patchDissolutionDirectorRequest_returnsUnprocessableEntity_ifEmailIsWrongFormat() throws Exception {
-        final DissolutionPatchDirectorRequest body = generateDissolutionPatchDirectorRequest();
-        body.setEmail("wrongemail");
-
-        assertPatchDirectorBodyValidation(body, "{'email':'must be a well-formed email address'}");
-    }
-
-    @Test
-    public void patchDissolutionDirectorRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
-        final DissolutionPatchDirectorRequest body = generateDissolutionPatchDirectorRequest();
-
-        when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(false);
-
-        mockMvc
-                .perform(
-                        patch(DISSOLUTION_URI + DIRECTOR_URI, COMPANY_NUMBER, OFFICER_ID)
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .headers(createHttpHeaders())
-                                .content(asJsonString(body))
-                )
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    public void patchDissolutionDirectorRequest_returnsNotFound_ifDirectorDoesntExist() throws Exception {
-        final DissolutionPatchDirectorRequest body = generateDissolutionPatchDirectorRequest();
-
-        when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(true);
-        when(service.doesDirectorExist(COMPANY_NUMBER, OFFICER_ID)).thenReturn(false);
-
-        mockMvc
-                .perform(
-                        patch(DISSOLUTION_URI + DIRECTOR_URI, COMPANY_NUMBER, OFFICER_ID)
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .headers(createHttpHeaders())
-                                .content(asJsonString(body))
-                )
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    public void patchDissolutionDirectorRequest_returnsBadRequest_ifDirectorNotPendingApproval() throws Exception {
-        final DissolutionPatchDirectorRequest body = generateDissolutionPatchDirectorRequest();
-
-        when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(true);
-        when(service.doesDirectorExist(COMPANY_NUMBER, OFFICER_ID)).thenReturn(true);
-        when(service.isDirectorPendingApproval(eq(COMPANY_NUMBER), eq(OFFICER_ID))).thenReturn(false);
-
-        mockMvc
-                .perform(
-                        patch(DISSOLUTION_URI + DIRECTOR_URI, COMPANY_NUMBER, OFFICER_ID)
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .headers(createHttpHeaders())
-                                .content(asJsonString(body)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void patchDissolutionDirectorRequest_returnsBadRequest_ifRequesterIsNotApplicant() throws Exception {
-        final DissolutionPatchDirectorRequest body = generateDissolutionPatchDirectorRequest();
-
-        when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(true);
-        when(service.doesDirectorExist(COMPANY_NUMBER, OFFICER_ID)).thenReturn(true);
-        when(service.isDirectorPendingApproval(eq(COMPANY_NUMBER), eq(OFFICER_ID))).thenReturn(true);
-        when(service.doesEmailBelongToApplicant(eq(COMPANY_NUMBER), eq(EMAIL))).thenReturn(false);
-
-        mockMvc
-                .perform(
-                        patch(DISSOLUTION_URI + DIRECTOR_URI, COMPANY_NUMBER, OFFICER_ID)
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .headers(createHttpHeaders())
-                                .content(asJsonString(body)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void patchDissolutionDirectorRequest_returnsOK_andPatchResponse_ifDirectorIsPatchedSuccessfully() throws Exception, DissolutionNotFoundException {
-        final DissolutionPatchDirectorRequest body = generateDissolutionPatchDirectorRequest();
-
-        final DissolutionPatchResponse response = generateDissolutionPatchResponse();
-
-        when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(true);
-        when(service.doesDirectorExist(COMPANY_NUMBER, OFFICER_ID)).thenReturn(true);
-        when(service.isDirectorPendingApproval(eq(COMPANY_NUMBER), eq(OFFICER_ID))).thenReturn(true);
-        when(service.doesEmailBelongToApplicant(eq(COMPANY_NUMBER), eq(EMAIL))).thenReturn(true);
-
-        when(service.updateSignatory(eq(COMPANY_NUMBER), isA(DissolutionPatchDirectorRequest.class), eq(OFFICER_ID))).thenReturn(response);
-
-
-        mockMvc
-                .perform(
-                        patch(DISSOLUTION_URI + DIRECTOR_URI, COMPANY_NUMBER, OFFICER_ID)
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .headers(createHttpHeaders())
-                                .content(asJsonString(body)))
-                .andExpect(status().isOk())
-                .andExpect(content().json(asJsonString(response)));
-
-        verify(service).updateSignatory(eq(COMPANY_NUMBER), isA(DissolutionPatchDirectorRequest.class), eq(OFFICER_ID));
-    }
-
     private void assertPostBodyValidation(DissolutionCreateRequest body, String expectedErrorJson) throws Exception {
         mockMvc
                 .perform(
@@ -569,18 +457,6 @@ public class DissolutionControllerTest {
         mockMvc
                 .perform(
                         patch(DISSOLUTION_URI, COMPANY_NUMBER)
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .headers(createHttpHeaders())
-                                .content(asJsonString(body))
-                )
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(content().json(expectedErrorJson));
-    }
-
-    private void assertPatchDirectorBodyValidation(DissolutionPatchDirectorRequest body, String expectedErrorJson) throws Exception {
-        mockMvc
-                .perform(
-                        patch(DISSOLUTION_URI + DIRECTOR_URI, COMPANY_NUMBER, OFFICER_ID)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .headers(createHttpHeaders())
                                 .content(asJsonString(body))

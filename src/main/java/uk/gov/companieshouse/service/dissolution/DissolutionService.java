@@ -4,12 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.exception.DirectorNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
+import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchRequest;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchDirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
@@ -21,6 +23,8 @@ import java.util.Optional;
 @Service
 public class DissolutionService {
 
+    public static final String DIRECTOR_IS_NOT_PENDING_APPROVAL = "Director is not pending approval";
+    public static final String ONLY_THE_APPLICANT_CAN_UPDATE_SIGNATORY = "Only the applicant can update signatory";
     private final DissolutionCreator creator;
     private final DissolutionGetter getter;
     private final DissolutionPatcher patcher;
@@ -42,7 +46,7 @@ public class DissolutionService {
         return patcher.addDirectorApproval(companyNumber, userId, body);
     }
 
-    public DissolutionPatchResponse updateSignatory(String companyNumber, DissolutionPatchDirectorRequest body, String directorId) throws DissolutionNotFoundException, DirectorNotFoundException {
+    public DissolutionDirectorPatchResponse updateSignatory(String companyNumber, DissolutionDirectorPatchRequest body, String directorId) throws DissolutionNotFoundException, DirectorNotFoundException {
         return patcher.updateSignatory(companyNumber, body, directorId);
     }
 
@@ -74,7 +78,14 @@ public class DissolutionService {
         return getter.doesDirectorExist(companyNumber, officerId);
     }
 
-    public boolean doesEmailBelongToApplicant(String companyNumber, String email) {
-        return getter.doesEmailBelongToApplicant(companyNumber, email);
+    public Optional<String> checkPatchDirectorConstraints(String companyNumber, String directorId, String email) throws DissolutionNotFoundException {
+        final Dissolution dissolution = repository.findByCompanyNumber(companyNumber).orElseThrow(DissolutionNotFoundException::new);
+        if (!getter.isDirectorPendingApprovalForDissolution(directorId, dissolution)) {
+            return Optional.of(DIRECTOR_IS_NOT_PENDING_APPROVAL);
+        }
+        if (!getter.doesEmailBelongToApplicant(email, dissolution)) {
+            return Optional.of(ONLY_THE_APPLICANT_CAN_UPDATE_SIGNATORY);
+        }
+        return Optional.empty();
     }
 }

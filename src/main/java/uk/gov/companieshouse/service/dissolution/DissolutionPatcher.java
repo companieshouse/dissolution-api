@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.exception.DirectorNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
+import uk.gov.companieshouse.mapper.DissolutionDirectorResponseMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.mapper.DissolutionSubmissionMapper;
 import uk.gov.companieshouse.mapper.PaymentInformationMapper;
@@ -12,7 +13,8 @@ import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchDirectorRequest;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchRequest;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
@@ -27,6 +29,7 @@ public class DissolutionPatcher {
 
     private final DissolutionRepository repository;
     private final DissolutionResponseMapper responseMapper;
+    private final DissolutionDirectorResponseMapper directorResponseMapper;
     private final DirectorApprovalMapper approvalMapper;
     private final PaymentInformationMapper paymentInformationMapper;
     private final DissolutionSubmissionMapper dissolutionSubmissionMapper;
@@ -37,6 +40,7 @@ public class DissolutionPatcher {
     public DissolutionPatcher(
             DissolutionRepository repository,
             DissolutionResponseMapper responseMapper,
+            DissolutionDirectorResponseMapper directorResponseMapper,
             DirectorApprovalMapper approvalMapper,
             PaymentInformationMapper paymentInformationMapper,
             DissolutionSubmissionMapper dissolutionSubmissionMapper,
@@ -45,6 +49,7 @@ public class DissolutionPatcher {
     ) {
         this.repository = repository;
         this.responseMapper = responseMapper;
+        this.directorResponseMapper = directorResponseMapper;
         this.approvalMapper = approvalMapper;
         this.paymentInformationMapper = paymentInformationMapper;
         this.dissolutionSubmissionMapper = dissolutionSubmissionMapper;
@@ -66,12 +71,12 @@ public class DissolutionPatcher {
         return this.responseMapper.mapToDissolutionPatchResponse(dissolution);
     }
 
-    public DissolutionPatchResponse updateSignatory(String companyNumber, DissolutionPatchDirectorRequest body, String officerId) throws DissolutionNotFoundException, DirectorNotFoundException {
+    public DissolutionDirectorPatchResponse updateSignatory(String companyNumber, DissolutionDirectorPatchRequest body, String officerId) throws DissolutionNotFoundException, DirectorNotFoundException {
         final Dissolution dissolution = this.repository.findByCompanyNumber(companyNumber).orElseThrow(DissolutionNotFoundException::new);
 
         this.updateSignatory(body, dissolution, officerId);
 
-        return this.responseMapper.mapToDissolutionPatchResponse(dissolution);
+        return this.directorResponseMapper.mapToDissolutionDirectorPatchResponse(dissolution);
     }
 
     private void handleFinalApproval(Dissolution dissolution) {
@@ -116,7 +121,7 @@ public class DissolutionPatcher {
         director.setDirectorApproval(approval);
     }
 
-    private void updateSignatory(DissolutionPatchDirectorRequest body, Dissolution dissolution, String officerId) throws DissolutionNotFoundException, DirectorNotFoundException {
+    private void updateSignatory(DissolutionDirectorPatchRequest body, Dissolution dissolution, String officerId) throws DissolutionNotFoundException, DirectorNotFoundException {
         DissolutionDirector director = this.findDirector(officerId, dissolution);
 
         if (director == null) {

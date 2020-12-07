@@ -11,6 +11,7 @@ import uk.gov.companieshouse.exception.DirectorNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
+import uk.gov.companieshouse.mapper.DissolutionDirectorResponseMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.mapper.DissolutionSubmissionMapper;
 import uk.gov.companieshouse.mapper.PaymentInformationMapper;
@@ -20,7 +21,8 @@ import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionSubmission;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchDirectorRequest;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchRequest;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
@@ -34,6 +36,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static uk.gov.companieshouse.fixtures.DissolutionDirectorFixtures.generateDissolutionPatchDirectorRequest;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.*;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentInformation;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
@@ -49,6 +52,9 @@ public class DissolutionPatcherTest {
 
     @Mock
     private DissolutionResponseMapper responseMapper;
+
+    @Mock
+    private DissolutionDirectorResponseMapper directorResponseMapper;
 
     @Mock
     private DirectorApprovalMapper approvalMapper;
@@ -76,6 +82,7 @@ public class DissolutionPatcherTest {
 
     private Dissolution dissolution;
     private DissolutionPatchResponse response;
+    private DissolutionDirectorPatchResponse directorResponse;
     private DirectorApproval approval;
     private DissolutionCertificate certificate;
     private ArgumentCaptor<Dissolution> dissolutionCaptor;
@@ -85,6 +92,7 @@ public class DissolutionPatcherTest {
         dissolution = DissolutionFixtures.generateDissolution();
         dissolution.getData().getDirectors().get(0).setOfficerId(OFFICER_ID);
         response = DissolutionFixtures.generateDissolutionPatchResponse();
+        directorResponse = DissolutionFixtures.generateDissolutionDirectorPatchResponse();
         approval = DissolutionFixtures.generateDirectorApproval();
         certificate = generateDissolutionCertificate();
         dissolutionCaptor = ArgumentCaptor.forClass(Dissolution.class);
@@ -224,7 +232,7 @@ public class DissolutionPatcherTest {
 
     @Test
     void patch_updateSignatory_updatesSignatoryWithEmail_SavesInDatabaseAndSendsEmail() throws DirectorNotFoundException, DissolutionNotFoundException {
-        final DissolutionPatchDirectorRequest body = generateDissolutionPatchDirectorRequest();
+        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
 
         body.setEmail(EMAIL);
         body.setOnBehalfName(null);
@@ -242,7 +250,7 @@ public class DissolutionPatcherTest {
 
     @Test
     void patch_updateSignatory_updatesSignatoryWithEmailAndOnBehalfName_SavesInDatabaseAndSendsEmail() throws DirectorNotFoundException, DissolutionNotFoundException {
-        final DissolutionPatchDirectorRequest body = generateDissolutionPatchDirectorRequest();
+        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
         dissolution.getData().getDirectors().get(0).setEmail(EMAIL+"asd");
 
         body.setEmail(EMAIL);
@@ -261,7 +269,7 @@ public class DissolutionPatcherTest {
 
     @Test
     void patch_updateSignatory_updatesSignatoryWithTheSameEmailButDifferentName_SavesInDatabaseAndSendsEmail() throws DirectorNotFoundException, DissolutionNotFoundException {
-        final DissolutionPatchDirectorRequest body = generateDissolutionPatchDirectorRequest();
+        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
         dissolution.getData().getDirectors().get(0).setEmail(EMAIL);
         dissolution.getData().getDirectors().get(0).setOnBehalfName(null);
 
@@ -269,19 +277,22 @@ public class DissolutionPatcherTest {
         body.setOnBehalfName(ON_BEHALF_NAME);
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
+        when(directorResponseMapper.mapToDissolutionDirectorPatchResponse(dissolution)).thenReturn(directorResponse);
 
-        patcher.updateSignatory(COMPANY_NUMBER, body, OFFICER_ID);
+        final DissolutionDirectorPatchResponse result = patcher.updateSignatory(COMPANY_NUMBER, body, OFFICER_ID);
 
+        verify(directorResponseMapper).mapToDissolutionDirectorPatchResponse(dissolution);
         verify(dissolutionEmailService).notifySignatoryToSign(dissolutionCaptor.capture(), eq(EMAIL));
         verify(repository).save(dissolutionCaptor.capture());
 
+        assertEquals(directorResponse, result);
         assertEquals(EMAIL, dissolutionCaptor.getValue().getData().getDirectors().get(0).getEmail());
         assertEquals(ON_BEHALF_NAME, dissolutionCaptor.getValue().getData().getDirectors().get(0).getOnBehalfName());
     }
 
     @Test
     void patch_updateSignatory_updatesSignatoryWithTheSameEmailAndOnBehalfName_DoesNotSaveInDatabaseAndDoesNotSendEmail() throws DirectorNotFoundException, DissolutionNotFoundException {
-        final DissolutionPatchDirectorRequest body = generateDissolutionPatchDirectorRequest();
+        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
         dissolution.getData().getDirectors().get(0).setEmail(EMAIL);
         dissolution.getData().getDirectors().get(0).setOnBehalfName(ON_BEHALF_NAME);
 
@@ -298,7 +309,7 @@ public class DissolutionPatcherTest {
 
     @Test
     void patch_updateSignatory_updatesSignatoryWithTheSameEmailAndBothNullOnBehalfName_DoesNotSaveInDatabaseAndDoesNotSendEmail() throws DirectorNotFoundException, DissolutionNotFoundException {
-        final DissolutionPatchDirectorRequest body = generateDissolutionPatchDirectorRequest();
+        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
         dissolution.getData().getDirectors().get(0).setEmail(EMAIL);
         dissolution.getData().getDirectors().get(0).setOnBehalfName(null);
 
