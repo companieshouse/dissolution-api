@@ -2,7 +2,6 @@ package uk.gov.companieshouse.service.dissolution;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.exception.DirectorNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
 import uk.gov.companieshouse.mapper.DissolutionDirectorResponseMapper;
@@ -71,7 +70,7 @@ public class DissolutionPatcher {
         return this.responseMapper.mapToDissolutionPatchResponse(dissolution);
     }
 
-    public DissolutionDirectorPatchResponse updateSignatory(String companyNumber, DissolutionDirectorPatchRequest body, String officerId) throws DissolutionNotFoundException, DirectorNotFoundException {
+    public DissolutionDirectorPatchResponse updateSignatory(String companyNumber, DissolutionDirectorPatchRequest body, String officerId) throws DissolutionNotFoundException {
         final Dissolution dissolution = this.repository.findByCompanyNumber(companyNumber).orElseThrow(DissolutionNotFoundException::new);
 
         this.updateSignatory(body, dissolution, officerId);
@@ -121,12 +120,8 @@ public class DissolutionPatcher {
         director.setDirectorApproval(approval);
     }
 
-    private void updateSignatory(DissolutionDirectorPatchRequest body, Dissolution dissolution, String officerId) throws DissolutionNotFoundException, DirectorNotFoundException {
+    private void updateSignatory(DissolutionDirectorPatchRequest body, Dissolution dissolution, String officerId) throws DissolutionNotFoundException {
         DissolutionDirector director = this.findDirector(officerId, dissolution);
-
-        if (director == null) {
-            throw new DirectorNotFoundException();
-        }
 
         if (!director.getEmail().equals(body.getEmail()) || !Objects.equals(director.getOnBehalfName(), body.getOnBehalfName())) {
 

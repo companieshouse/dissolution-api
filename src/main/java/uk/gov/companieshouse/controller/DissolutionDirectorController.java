@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.exception.BadRequestException;
-import uk.gov.companieshouse.exception.DirectorNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchRequest;
@@ -51,7 +50,7 @@ public class DissolutionDirectorController {
 
         try {
             return dissolutionService.updateSignatory(companyNumber, body, directorId);
-        } catch (DissolutionNotFoundException | DirectorNotFoundException e) {
+        } catch (DissolutionNotFoundException e) {
             throw new NotFoundException();
         }
     }

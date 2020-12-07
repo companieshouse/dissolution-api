@@ -2,7 +2,6 @@ package uk.gov.companieshouse.service.dissolution;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.exception.DirectorNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
@@ -46,7 +45,7 @@ public class DissolutionService {
         return patcher.addDirectorApproval(companyNumber, userId, body);
     }
 
-    public DissolutionDirectorPatchResponse updateSignatory(String companyNumber, DissolutionDirectorPatchRequest body, String directorId) throws DissolutionNotFoundException, DirectorNotFoundException {
+    public DissolutionDirectorPatchResponse updateSignatory(String companyNumber, DissolutionDirectorPatchRequest body, String directorId) throws DissolutionNotFoundException{
         return patcher.updateSignatory(companyNumber, body, directorId);
     }
 

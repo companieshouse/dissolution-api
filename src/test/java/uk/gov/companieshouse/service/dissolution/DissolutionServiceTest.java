@@ -5,7 +5,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.companieshouse.exception.DirectorNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
@@ -159,7 +158,7 @@ public class DissolutionServiceTest {
     }
 
     @Test
-    void updateSignatory_updatesSignatory_returnsPatchResponse() throws DissolutionNotFoundException, DirectorNotFoundException {
+    void updateSignatory_updatesSignatory_returnsPatchResponse() throws DissolutionNotFoundException {
         final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
         body.setEmail(EMAIL);
         body.setOnBehalfName(ON_BEHALF_NAME);
