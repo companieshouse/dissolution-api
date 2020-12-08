@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
+import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchResponse;
@@ -43,9 +44,9 @@ public class DissolutionDirectorServiceTest {
     @Test
     void checkPatchDirectorConstraints_returnsErrorString_whenDirectorIsNotPendingApproval() throws DissolutionNotFoundException {
         Dissolution dissolution = generateDissolution();
+        dissolution.getData().getDirectors().get(0).setDirectorApproval(new DirectorApproval());
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
-        when(getter.isDirectorPendingApprovalForDissolution(OFFICER_ID, dissolution)).thenReturn(false);
 
         Optional<String> error = service.checkPatchDirectorConstraints(COMPANY_NUMBER, OFFICER_ID, EMAIL);
 
@@ -55,10 +56,10 @@ public class DissolutionDirectorServiceTest {
     @Test
     void checkPatchDirectorConstraints_returnsErrorString_whenDirectorIsEmailIsNotApplicant() throws DissolutionNotFoundException {
         Dissolution dissolution = generateDissolution();
+        dissolution.getData().getDirectors().get(0).setEmail(EMAIL);
+        dissolution.getCreatedBy().setEmail(EMAIL + "asd");
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
-        when(getter.isDirectorPendingApprovalForDissolution(OFFICER_ID, dissolution)).thenReturn(true);
-        when(getter.doesEmailBelongToApplicant(EMAIL, dissolution)).thenReturn(false);
 
         Optional<String> error = service.checkPatchDirectorConstraints(COMPANY_NUMBER, OFFICER_ID, EMAIL);
 
@@ -68,10 +69,12 @@ public class DissolutionDirectorServiceTest {
     @Test
     void checkPatchDirectorConstraints_OptionalEmpty_ChecksPass() throws DissolutionNotFoundException {
         Dissolution dissolution = generateDissolution();
+        dissolution.getData().getDirectors().get(0).setEmail(EMAIL);
+        dissolution.getCreatedBy().setEmail(EMAIL);
+        dissolution.getData().getDirectors().get(0).setDirectorApproval(null);
+
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
-        when(getter.isDirectorPendingApprovalForDissolution(OFFICER_ID, dissolution)).thenReturn(true);
-        when(getter.doesEmailBelongToApplicant(EMAIL, dissolution)).thenReturn(true);
 
         Optional<String> error = service.checkPatchDirectorConstraints(COMPANY_NUMBER, OFFICER_ID, EMAIL);
 

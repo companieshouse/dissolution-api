@@ -6,7 +6,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
-import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.repository.DissolutionRepository;
@@ -29,56 +28,8 @@ public class DissolutionDirectorGetterTest {
     private DissolutionRepository repository;
 
     public static final String COMPANY_NUMBER = "12345678";
-    public static final String APPLICATION_REFERENCE = "XYZ456";
     public static final String OFFICER_ID_ONE = "abc123";
     public static final String OFFICER_ID_TWO = "def456";
-    private static final String EMAIL = "applicant@email.com";
-
-    @Test
-    void doesEmailBelongToApplicant_returnsTrue_whenEmailMatches() {
-        final Dissolution dissolution = DissolutionFixtures.generateDissolution();
-
-        dissolution.getCreatedBy().setEmail(EMAIL);
-
-        final boolean result = getter.doesEmailBelongToApplicant(EMAIL, dissolution);
-
-        assertTrue(result);
-    }
-
-    @Test
-    void doesEmailBelongToApplicant_returnsFalse_whenEmailDoesNotMatch() {
-        final Dissolution dissolution = DissolutionFixtures.generateDissolution();
-
-        dissolution.getCreatedBy().setEmail(EMAIL + "asd");
-
-        final boolean result = getter.doesEmailBelongToApplicant(EMAIL, dissolution);
-
-        assertFalse(result);
-    }
-
-    @Test
-    void isDirectorPendingApprovalForDissolution_returnsFalse_whenDirectorHasApprovalObject() {
-        final Dissolution dissolution = DissolutionFixtures.generateDissolution();
-
-        dissolution.getData().getDirectors().get(0).setDirectorApproval(new DirectorApproval());
-        dissolution.getData().getDirectors().get(0).setOfficerId(OFFICER_ID_ONE);
-
-        final boolean result = getter.isDirectorPendingApprovalForDissolution(OFFICER_ID_ONE, dissolution);
-
-        assertFalse(result);
-    }
-
-    @Test
-    void isDirectorPendingApprovalForDissolution_returnsTrue_whenDirectorDoesntHaveApprovalObject() {
-        final Dissolution dissolution = DissolutionFixtures.generateDissolution();
-
-        dissolution.getData().getDirectors().get(0).setDirectorApproval(null);
-        dissolution.getData().getDirectors().get(0).setOfficerId(OFFICER_ID_ONE);
-
-        final boolean result = getter.isDirectorPendingApprovalForDissolution(OFFICER_ID_ONE, dissolution);
-
-        assertTrue(result);
-    }
 
     @Test
     void doesDirectorExist_returnsFalse_whenDirectorDoesNotExist() {

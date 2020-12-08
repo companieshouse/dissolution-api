@@ -36,12 +36,27 @@ public class DissolutionDirectorService {
 
     public Optional<String> checkPatchDirectorConstraints(String companyNumber, String directorId, String email) throws DissolutionNotFoundException {
         final Dissolution dissolution = repository.findByCompanyNumber(companyNumber).orElseThrow(DissolutionNotFoundException::new);
-        if (!getter.isDirectorPendingApprovalForDissolution(directorId, dissolution)) {
+        if (!isDirectorPendingApprovalForDissolution(directorId, dissolution)) {
             return Optional.of(DIRECTOR_IS_NOT_PENDING_APPROVAL);
         }
-        if (!getter.doesEmailBelongToApplicant(email, dissolution)) {
+        if (!doesEmailBelongToApplicant(email, dissolution)) {
             return Optional.of(ONLY_THE_APPLICANT_CAN_UPDATE_SIGNATORY);
         }
         return Optional.empty();
+    }
+
+    private boolean doesEmailBelongToApplicant(String email, Dissolution dissolution) {
+        return dissolution
+                .getCreatedBy()
+                .getEmail()
+                .equals(email);
+    }
+
+    private boolean isDirectorPendingApprovalForDissolution(String officerId, Dissolution dissolution) {
+        return dissolution
+                .getData()
+                .getDirectors()
+                .stream()
+                .anyMatch(director -> director.getOfficerId().equals(officerId) && !director.hasDirectorApproval());
     }
 }
