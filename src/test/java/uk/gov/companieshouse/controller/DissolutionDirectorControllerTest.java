@@ -99,7 +99,7 @@ public class DissolutionDirectorControllerTest {
     }
 
     @Test
-    public void patchDissolutionDirectorRequest_returnsBadRequest_ifRequesterIsNotApplicant() throws Exception {
+    public void patchDissolutionDirectorRequest_returnsBadRequest_ifPatchConstraintFail() throws Exception {
         final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
 
         when(service.doesDirectorExist(COMPANY_NUMBER, OFFICER_ID)).thenReturn(true);

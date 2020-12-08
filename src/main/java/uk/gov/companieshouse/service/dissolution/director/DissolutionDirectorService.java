@@ -15,6 +15,7 @@ public class DissolutionDirectorService {
 
     public static final String DIRECTOR_IS_NOT_PENDING_APPROVAL = "Director is not pending approval";
     public static final String ONLY_THE_APPLICANT_CAN_UPDATE_SIGNATORY = "Only the applicant can update signatory";
+
     private final DissolutionDirectorGetter getter;
     private final DissolutionDirectorPatcher patcher;
     private final DissolutionRepository repository;
@@ -36,12 +37,15 @@ public class DissolutionDirectorService {
 
     public Optional<String> checkPatchDirectorConstraints(String companyNumber, String directorId, String email) throws DissolutionNotFoundException {
         final Dissolution dissolution = repository.findByCompanyNumber(companyNumber).orElseThrow(DissolutionNotFoundException::new);
+
         if (!isDirectorPendingApprovalForDissolution(directorId, dissolution)) {
             return Optional.of(DIRECTOR_IS_NOT_PENDING_APPROVAL);
         }
+
         if (!doesEmailBelongToApplicant(email, dissolution)) {
             return Optional.of(ONLY_THE_APPLICANT_CAN_UPDATE_SIGNATORY);
         }
+
         return Optional.empty();
     }
 

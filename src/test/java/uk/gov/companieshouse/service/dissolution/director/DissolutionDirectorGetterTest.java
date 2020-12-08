@@ -19,7 +19,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionDirector;
 
 @ExtendWith(MockitoExtension.class)
-public class DissolutionDirectorGetterTest {
+class DissolutionDirectorGetterTest {
 
     @InjectMocks
     private DissolutionDirectorGetter getter;

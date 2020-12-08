@@ -2,7 +2,7 @@ package uk.gov.companieshouse.mapper;
 
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionLinks;
 
-public class ResponseMapper {
+public abstract class ResponseMapper {
     protected DissolutionLinks generateLinks(String companyNumber, String reference) {
         final DissolutionLinks links = new DissolutionLinks();
 

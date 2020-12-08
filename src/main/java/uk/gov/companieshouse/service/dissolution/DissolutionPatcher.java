@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
-import uk.gov.companieshouse.mapper.DissolutionDirectorResponseMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.mapper.DissolutionSubmissionMapper;
 import uk.gov.companieshouse.mapper.PaymentInformationMapper;
@@ -24,7 +23,6 @@ public class DissolutionPatcher {
 
     private final DissolutionRepository repository;
     private final DissolutionResponseMapper responseMapper;
-    private final DissolutionDirectorResponseMapper directorResponseMapper;
     private final DirectorApprovalMapper approvalMapper;
     private final PaymentInformationMapper paymentInformationMapper;
     private final DissolutionSubmissionMapper dissolutionSubmissionMapper;
@@ -35,7 +33,6 @@ public class DissolutionPatcher {
     public DissolutionPatcher(
             DissolutionRepository repository,
             DissolutionResponseMapper responseMapper,
-            DissolutionDirectorResponseMapper directorResponseMapper,
             DirectorApprovalMapper approvalMapper,
             PaymentInformationMapper paymentInformationMapper,
             DissolutionSubmissionMapper dissolutionSubmissionMapper,
@@ -44,7 +41,6 @@ public class DissolutionPatcher {
     ) {
         this.repository = repository;
         this.responseMapper = responseMapper;
-        this.directorResponseMapper = directorResponseMapper;
         this.approvalMapper = approvalMapper;
         this.paymentInformationMapper = paymentInformationMapper;
         this.dissolutionSubmissionMapper = dissolutionSubmissionMapper;

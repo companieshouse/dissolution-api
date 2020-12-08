@@ -10,7 +10,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
-import uk.gov.companieshouse.mapper.DissolutionDirectorResponseMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.mapper.DissolutionSubmissionMapper;
 import uk.gov.companieshouse.mapper.PaymentInformationMapper;
@@ -20,7 +19,6 @@ import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionSubmission;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
@@ -38,7 +36,7 @@ import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentInfo
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 
 @ExtendWith(MockitoExtension.class)
-public class DissolutionPatcherTest {
+class DissolutionPatcherTest {
 
     @InjectMocks
     private DissolutionPatcher patcher;
@@ -48,9 +46,6 @@ public class DissolutionPatcherTest {
 
     @Mock
     private DissolutionResponseMapper responseMapper;
-
-    @Mock
-    private DissolutionDirectorResponseMapper directorResponseMapper;
 
     @Mock
     private DirectorApprovalMapper approvalMapper;
@@ -73,12 +68,9 @@ public class DissolutionPatcherTest {
     private static final String OFFICER_ID = "abc123";
     private static final String IP_ADDRESS = "127.0.0.1";
     private static final String OFFICER_ID_TWO = "def456";
-    private static final String EMAIL = "mail@mail.com";
-    private static final String ON_BEHALF_NAME = "on behalf name";
 
     private Dissolution dissolution;
     private DissolutionPatchResponse response;
-    private DissolutionDirectorPatchResponse directorResponse;
     private DirectorApproval approval;
     private DissolutionCertificate certificate;
     private ArgumentCaptor<Dissolution> dissolutionCaptor;
@@ -88,7 +80,6 @@ public class DissolutionPatcherTest {
         dissolution = DissolutionFixtures.generateDissolution();
         dissolution.getData().getDirectors().get(0).setOfficerId(OFFICER_ID);
         response = DissolutionFixtures.generateDissolutionPatchResponse();
-        directorResponse = DissolutionFixtures.generateDissolutionDirectorPatchResponse();
         approval = DissolutionFixtures.generateDirectorApproval();
         certificate = generateDissolutionCertificate();
         dissolutionCaptor = ArgumentCaptor.forClass(Dissolution.class);

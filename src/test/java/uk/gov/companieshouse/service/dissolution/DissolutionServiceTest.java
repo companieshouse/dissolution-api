@@ -29,7 +29,7 @@ import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolu
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 
 @ExtendWith(MockitoExtension.class)
-public class DissolutionServiceTest {
+class DissolutionServiceTest {
 
     @InjectMocks
     private DissolutionService service;
@@ -52,7 +52,6 @@ public class DissolutionServiceTest {
     public static final String IP = "192.168.0.1";
     public static final String EMAIL = "user@mail.com";
     public static final String OFFICER_ID = "abc123";
-    public static final String ON_BEHALF_NAME = "on_behalf_name";
 
     @Test
     void create_createsADissolutionRequest_returnsCreateResponse() {

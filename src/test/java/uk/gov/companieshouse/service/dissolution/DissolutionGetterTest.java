@@ -24,7 +24,7 @@ import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDirecto
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionDirector;
 
 @ExtendWith(MockitoExtension.class)
-public class DissolutionGetterTest {
+class DissolutionGetterTest {
 
     @InjectMocks
     private DissolutionGetter getter;
@@ -39,7 +39,6 @@ public class DissolutionGetterTest {
     public static final String APPLICATION_REFERENCE = "XYZ456";
     public static final String OFFICER_ID_ONE = "abc123";
     public static final String OFFICER_ID_TWO = "def456";
-    private static final String EMAIL = "applicant@email.com";
 
     @Test
     void getByCompanyNumber_findsDissolution_mapsToDissolutionResponse_returnsGetResponse() {

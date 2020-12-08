@@ -22,7 +22,7 @@ import static uk.gov.companieshouse.fixtures.DissolutionDirectorFixtures.generat
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolution;
 
 @ExtendWith(MockitoExtension.class)
-public class DissolutionDirectorServiceTest {
+class DissolutionDirectorServiceTest {
 
     @InjectMocks
     private DissolutionDirectorService service;

@@ -19,8 +19,6 @@ import java.util.Optional;
 @Service
 public class DissolutionService {
 
-    public static final String DIRECTOR_IS_NOT_PENDING_APPROVAL = "Director is not pending approval";
-    public static final String ONLY_THE_APPLICANT_CAN_UPDATE_SIGNATORY = "Only the applicant can update signatory";
     private final DissolutionCreator creator;
     private final DissolutionGetter getter;
     private final DissolutionPatcher patcher;

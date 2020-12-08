@@ -26,7 +26,7 @@ import static uk.gov.companieshouse.fixtures.DissolutionDirectorFixtures.generat
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionDirector;
 
 @ExtendWith(MockitoExtension.class)
-public class DissolutionDirectorPatcherTest {
+class DissolutionDirectorPatcherTest {
 
     @InjectMocks
     private DissolutionDirectorPatcher patcher;
