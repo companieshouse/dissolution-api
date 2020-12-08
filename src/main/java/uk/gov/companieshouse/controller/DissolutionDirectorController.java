@@ -26,7 +26,6 @@ public class DissolutionDirectorController {
     private final DissolutionDirectorService dissolutionDirectorService;
 
     public DissolutionDirectorController(DissolutionDirectorService dissolutionDirectorService) {
-        super();
         this.dissolutionDirectorService = dissolutionDirectorService;
     }
 

@@ -52,7 +52,6 @@ public class DissolutionController {
             DissolutionValidator dissolutionValidator,
             CompanyProfileClient companyProfileClient,
             CompanyOfficerService companyOfficerService) {
-        super();
         this.dissolutionService = dissolutionService;
         this.dissolutionValidator = dissolutionValidator;
         this.companyProfileClient = companyProfileClient;
