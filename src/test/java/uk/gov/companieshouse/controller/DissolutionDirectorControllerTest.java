@@ -15,7 +15,7 @@ import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchResponse;
-import uk.gov.companieshouse.service.dissolution.DissolutionService;
+import uk.gov.companieshouse.service.dissolution.director.DissolutionDirectorService;
 
 import java.util.Optional;
 
@@ -33,8 +33,7 @@ import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolu
 @WebMvcTest(DissolutionDirectorController.class)
 public class DissolutionDirectorControllerTest {
 
-    private static final String DISSOLUTION_URI = "/dissolution-request/{company-number}";
-    private static final String DIRECTOR_URI = "/directors/{director-id}";
+    private static final String DIRECTOR_URI = "/dissolution-request/{company-number}/directors/{director-id}";
 
     private static final String AUTHORISED_USER_HEADER = "ERIC-Authorised-User";
 
@@ -44,7 +43,7 @@ public class DissolutionDirectorControllerTest {
     private static final String EMAIL = "user@mail.com";
 
     @MockBean
-    private DissolutionService service;
+    private DissolutionDirectorService service;
 
     @Autowired
     private MockMvc mockMvc;
@@ -75,7 +74,7 @@ public class DissolutionDirectorControllerTest {
 
         mockMvc
                 .perform(
-                        patch(DISSOLUTION_URI + DIRECTOR_URI, COMPANY_NUMBER, OFFICER_ID)
+                        patch(DIRECTOR_URI, COMPANY_NUMBER, OFFICER_ID)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .headers(createHttpHeaders())
                                 .content(asJsonString(body))
@@ -92,7 +91,7 @@ public class DissolutionDirectorControllerTest {
 
         mockMvc
                 .perform(
-                        patch(DISSOLUTION_URI + DIRECTOR_URI, COMPANY_NUMBER, OFFICER_ID)
+                        patch(DIRECTOR_URI, COMPANY_NUMBER, OFFICER_ID)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .headers(createHttpHeaders())
                                 .content(asJsonString(body)))
@@ -108,7 +107,7 @@ public class DissolutionDirectorControllerTest {
 
         mockMvc
                 .perform(
-                        patch(DISSOLUTION_URI + DIRECTOR_URI, COMPANY_NUMBER, OFFICER_ID)
+                        patch(DIRECTOR_URI, COMPANY_NUMBER, OFFICER_ID)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .headers(createHttpHeaders())
                                 .content(asJsonString(body)))
@@ -128,7 +127,7 @@ public class DissolutionDirectorControllerTest {
 
         mockMvc
                 .perform(
-                        patch(DISSOLUTION_URI + DIRECTOR_URI, COMPANY_NUMBER, OFFICER_ID)
+                        patch(DIRECTOR_URI, COMPANY_NUMBER, OFFICER_ID)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .headers(createHttpHeaders())
                                 .content(asJsonString(body)))
@@ -141,7 +140,7 @@ public class DissolutionDirectorControllerTest {
     private void assertPatchDirectorBodyValidation(DissolutionDirectorPatchRequest body, String expectedErrorJson) throws Exception {
         mockMvc
                 .perform(
-                        patch(DISSOLUTION_URI + DIRECTOR_URI, COMPANY_NUMBER, OFFICER_ID)
+                        patch(DIRECTOR_URI, COMPANY_NUMBER, OFFICER_ID)
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .headers(createHttpHeaders())
                                 .content(asJsonString(body))

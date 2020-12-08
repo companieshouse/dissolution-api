@@ -12,16 +12,12 @@ import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchRequest;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.dissolution.certificate.DissolutionCertificateGenerator;
-
-import java.util.Objects;
 
 @Service
 public class DissolutionPatcher {
@@ -70,14 +66,6 @@ public class DissolutionPatcher {
         return this.responseMapper.mapToDissolutionPatchResponse(dissolution);
     }
 
-    public DissolutionDirectorPatchResponse updateSignatory(String companyNumber, DissolutionDirectorPatchRequest body, String officerId) throws DissolutionNotFoundException {
-        final Dissolution dissolution = this.repository.findByCompanyNumber(companyNumber).orElseThrow(DissolutionNotFoundException::new);
-
-        this.updateSignatory(body, dissolution, officerId);
-
-        return this.directorResponseMapper.mapToDissolutionDirectorPatchResponse(dissolution);
-    }
-
     private void handleFinalApproval(Dissolution dissolution) {
         setDissolutionStatus(dissolution, ApplicationStatus.PENDING_PAYMENT);
         dissolution.setCertificate(this.certificateGenerator.generateDissolutionCertificate(dissolution));
@@ -118,20 +106,6 @@ public class DissolutionPatcher {
         final DirectorApproval approval = approvalMapper.mapToDirectorApproval(userId, body.getIpAddress());
         DissolutionDirector director = this.findDirector(body.getOfficerId(), dissolution);
         director.setDirectorApproval(approval);
-    }
-
-    private void updateSignatory(DissolutionDirectorPatchRequest body, Dissolution dissolution, String officerId) throws DissolutionNotFoundException {
-        DissolutionDirector director = this.findDirector(officerId, dissolution);
-
-        if (!director.getEmail().equals(body.getEmail()) || !Objects.equals(director.getOnBehalfName(), body.getOnBehalfName())) {
-
-            director.setEmail(body.getEmail());
-            director.setOnBehalfName(body.getOnBehalfName());
-
-            this.repository.save(dissolution);
-
-            dissolutionEmailService.notifySignatoryToSign(dissolution, director.getEmail());
-        }
     }
 
     private boolean hasDirectorsLeftToApprove(Dissolution dissolution) {

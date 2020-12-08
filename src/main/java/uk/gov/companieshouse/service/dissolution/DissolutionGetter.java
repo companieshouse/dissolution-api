@@ -41,32 +41,11 @@ public class DissolutionGetter {
                 .orElse(false);
     }
 
-    public boolean doesDirectorExist(String companyNumber, String officerId) {
-        return repository.findByCompanyNumber(companyNumber)
-                .map(dissolution -> doesDirectorExistInDissolutionRequest(officerId, dissolution))
-                .orElse(false);
-    }
-
-    public boolean isDirectorPendingApprovalForDissolution(String officerId, Dissolution dissolution) {
+    private boolean isDirectorPendingApprovalForDissolution(String officerId, Dissolution dissolution) {
         return dissolution
                 .getData()
                 .getDirectors()
                 .stream()
                 .anyMatch(director -> director.getOfficerId().equals(officerId) && !director.hasDirectorApproval());
-    }
-
-    private boolean doesDirectorExistInDissolutionRequest(String officerId, Dissolution dissolution) {
-        return dissolution
-                .getData()
-                .getDirectors()
-                .stream()
-                .anyMatch(director -> director.getOfficerId().equals(officerId));
-    }
-
-    public boolean doesEmailBelongToApplicant(String email, Dissolution dissolution) {
-        return dissolution
-                .getCreatedBy()
-                .getEmail()
-                .equals(email);
     }
 }

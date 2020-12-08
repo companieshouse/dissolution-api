@@ -13,7 +13,7 @@ import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchResponse;
-import uk.gov.companieshouse.service.dissolution.DissolutionService;
+import uk.gov.companieshouse.service.dissolution.director.DissolutionDirectorService;
 
 import javax.validation.Valid;
 import java.util.Optional;
@@ -23,11 +23,11 @@ import static uk.gov.companieshouse.util.EricHelper.getEmail;
 @RestController
 @RequestMapping("/dissolution-request/{company-number}/directors/{director-id}")
 public class DissolutionDirectorController {
-    private final DissolutionService dissolutionService;
+    private final DissolutionDirectorService dissolutionDirectorService;
 
-    public DissolutionDirectorController(DissolutionService dissolutionService) {
+    public DissolutionDirectorController(DissolutionDirectorService dissolutionDirectorService) {
         super();
-        this.dissolutionService = dissolutionService;
+        this.dissolutionDirectorService = dissolutionDirectorService;
     }
 
     @PatchMapping
@@ -39,17 +39,17 @@ public class DissolutionDirectorController {
             @Valid @RequestBody final DissolutionDirectorPatchRequest body
     ) throws DissolutionNotFoundException {
 
-        if (!dissolutionService.doesDirectorExist(companyNumber, directorId)) {
+        if (!dissolutionDirectorService.doesDirectorExist(companyNumber, directorId)) {
             throw new NotFoundException();
         }
 
-        final Optional<String> error = dissolutionService.checkPatchDirectorConstraints(companyNumber, directorId, getEmail(authorisedUser));
+        final Optional<String> error = dissolutionDirectorService.checkPatchDirectorConstraints(companyNumber, directorId, getEmail(authorisedUser));
         if (error.isPresent()) {
             throw new BadRequestException(error.get());
         }
 
         try {
-            return dissolutionService.updateSignatory(companyNumber, body, directorId);
+            return dissolutionDirectorService.updateSignatory(companyNumber, body, directorId);
         } catch (DissolutionNotFoundException e) {
             throw new NotFoundException();
         }
