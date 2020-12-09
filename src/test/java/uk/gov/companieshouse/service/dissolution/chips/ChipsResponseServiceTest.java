@@ -88,7 +88,7 @@ public class ChipsResponseServiceTest {
     }
 
     @Test
-    public void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_rejectedApplicationAndAccountPayment() throws DissolutionNotFoundException {
+    void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_rejectedApplicationAndAccountPayment() throws DissolutionNotFoundException {
         ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
         chipsResponseCreateRequest.setStatus(VerdictResult.REJECTED);
         DissolutionVerdict dissolutionVerdict = DissolutionFixtures.generateDissolutionVerdict();
