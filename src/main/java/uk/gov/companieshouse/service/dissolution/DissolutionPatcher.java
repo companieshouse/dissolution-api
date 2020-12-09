@@ -15,11 +15,8 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
-import uk.gov.companieshouse.model.enums.PaymentMethod;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.dissolution.certificate.DissolutionCertificateGenerator;
-
-import java.sql.Timestamp;
 
 @Service
 public class DissolutionPatcher {
@@ -121,4 +118,5 @@ public class DissolutionPatcher {
                 .getApplication()
                 .setStatus(status);
     }
+
 }

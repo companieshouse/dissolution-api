@@ -24,4 +24,20 @@
         <packageUrl regex="true">^pkg:maven/com\.google\.oauth\-client/google\-oauth\-client@.*$</packageUrl>
         <cve>CVE-2020-7692</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+            file name: tomcat-embed-core-9.0.39.jar
+            JIRA ticket: https://companieshouse.atlassian.net/browse/BI-6412
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-core@.*$</packageUrl>
+        <cve>CVE-2020-17527</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+            file name: tomcat-embed-websocket-9.0.39.jar
+            JIRA ticket: https://companieshouse.atlassian.net/browse/BI-6412
+            ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-websocket@.*$</packageUrl>
+        <cve>CVE-2020-17527</cve>
+    </suppress>
 </suppressions>

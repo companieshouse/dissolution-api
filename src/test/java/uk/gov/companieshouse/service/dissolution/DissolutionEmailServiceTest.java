@@ -217,4 +217,26 @@ public class DissolutionEmailServiceTest {
         verify(emailService).sendMessage(emailOne);
         verify(emailService).sendMessage(emailTwo);
     }
+
+    @Test
+    void notifySignatoryToSign_shouldGenerateAndSendAnEmail_toSpecifiedEmail() {
+        final DissolutionDirector signatoryOne = generateDissolutionDirector();
+        signatoryOne.setEmail(SIGNATORY_EMAIL_ONE);
+
+        final Dissolution dissolution = generateDissolution();
+        dissolution.getData().setDirectors(Collections.singletonList(signatoryOne));
+
+        final SignatoryToSignEmailData emailDataOne = generateSignatoryToSignEmailData();
+
+        final EmailDocument<SignatoryToSignEmailData> emailOne = generateEmailDocument(emailDataOne);
+
+        when(messageTypeCalculator.getForSignatoriesToSign(dissolution)).thenReturn(MessageType.SIGNATORY_TO_SIGN);
+        when(deadlineDateCalculator.calculateSignatoryDeadlineDate(any())).thenReturn(SIGNATORY_TO_SIGN_DEADLINE);
+        when(dissolutionEmailMapper.mapToSignatoryToSignEmailData(dissolution, SIGNATORY_EMAIL_ONE, SIGNATORY_TO_SIGN_DEADLINE)).thenReturn(emailDataOne);
+        when(emailMapper.mapToEmailDocument(emailDataOne, SIGNATORY_EMAIL_ONE, MessageType.SIGNATORY_TO_SIGN)).thenReturn(emailOne);
+
+        dissolutionEmailService.notifySignatoryToSign(dissolution, SIGNATORY_EMAIL_ONE);
+
+        verify(emailService).sendMessage(emailOne);
+    }
 }
