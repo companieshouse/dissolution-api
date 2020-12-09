@@ -5,7 +5,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.companieshouse.config.FeatureToggleConfig;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.fixtures.ChipsFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
@@ -48,11 +47,8 @@ public class ChipsResponseServiceTest {
     @Mock
     private Logger logger;
 
-    @Mock
-    private FeatureToggleConfig featureToggleConfig;
-
     @Test
-    void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_acceptedApplication_refundsToggleTrue() throws DissolutionNotFoundException {
+    void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_acceptedApplication() throws DissolutionNotFoundException {
         ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
         chipsResponseCreateRequest.setStatus(VerdictResult.ACCEPTED);
         DissolutionVerdict dissolutionVerdict = DissolutionFixtures.generateDissolutionVerdict();
@@ -61,7 +57,6 @@ public class ChipsResponseServiceTest {
 
         when(dissolutionVerdictMapper.mapToDissolutionVerdict(chipsResponseCreateRequest)).thenReturn(dissolutionVerdict);
         when(repository.findByDataApplicationReference(chipsResponseCreateRequest.getSubmissionReference())).thenReturn(Optional.of(dissolution));
-        when(featureToggleConfig.isRefundsEnabled()).thenReturn(true);
 
         chipsResponseService.saveAndNotifyDissolutionApplicationOutcome(chipsResponseCreateRequest);
         
@@ -72,7 +67,7 @@ public class ChipsResponseServiceTest {
     }
 
     @Test
-    void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_rejectedApplicationAndCardPayment_refundsToggleTrue() throws DissolutionNotFoundException {
+    void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_rejectedApplicationAndCardPayment() throws DissolutionNotFoundException {
         ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
         chipsResponseCreateRequest.setStatus(VerdictResult.REJECTED);
         DissolutionVerdict dissolutionVerdict = DissolutionFixtures.generateDissolutionVerdict();
@@ -83,7 +78,6 @@ public class ChipsResponseServiceTest {
 
         when(dissolutionVerdictMapper.mapToDissolutionVerdict(chipsResponseCreateRequest)).thenReturn(dissolutionVerdict);
         when(repository.findByDataApplicationReference(chipsResponseCreateRequest.getSubmissionReference())).thenReturn(Optional.of(dissolution));
-        when(featureToggleConfig.isRefundsEnabled()).thenReturn(true);
 
         chipsResponseService.saveAndNotifyDissolutionApplicationOutcome(chipsResponseCreateRequest);
 
@@ -94,7 +88,7 @@ public class ChipsResponseServiceTest {
     }
 
     @Test
-    public void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_rejectedApplicationAndAccountPayment_refundsToggleTrue() throws DissolutionNotFoundException {
+    public void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_rejectedApplicationAndAccountPayment() throws DissolutionNotFoundException {
         ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
         chipsResponseCreateRequest.setStatus(VerdictResult.REJECTED);
         DissolutionVerdict dissolutionVerdict = DissolutionFixtures.generateDissolutionVerdict();
@@ -106,53 +100,12 @@ public class ChipsResponseServiceTest {
 
         when(dissolutionVerdictMapper.mapToDissolutionVerdict(chipsResponseCreateRequest)).thenReturn(dissolutionVerdict);
         when(repository.findByDataApplicationReference(chipsResponseCreateRequest.getSubmissionReference())).thenReturn(Optional.of(dissolution));
-        when(featureToggleConfig.isRefundsEnabled()).thenReturn(true);
 
         chipsResponseService.saveAndNotifyDissolutionApplicationOutcome(chipsResponseCreateRequest);
 
         assertFalse(dissolution.getActive());
 
         verify(dissolutionRefundService, never()).handleRefund(dissolution, dissolutionVerdict);
-        verify(dissolutionEmailService).sendApplicationOutcomeEmail(dissolution, dissolutionVerdict);
-    }
-
-    @Test
-    void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_acceptedApplication_refundsToggleFalse() throws DissolutionNotFoundException {
-        ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
-        chipsResponseCreateRequest.setStatus(VerdictResult.ACCEPTED);
-        DissolutionVerdict dissolutionVerdict = DissolutionFixtures.generateDissolutionVerdict();
-        dissolutionVerdict.setResult(VerdictResult.ACCEPTED);
-        Dissolution dissolution = DissolutionFixtures.generateDissolution();
-
-        when(dissolutionVerdictMapper.mapToDissolutionVerdict(chipsResponseCreateRequest)).thenReturn(dissolutionVerdict);
-        when(repository.findByDataApplicationReference(chipsResponseCreateRequest.getSubmissionReference())).thenReturn(Optional.of(dissolution));
-        when(featureToggleConfig.isRefundsEnabled()).thenReturn(false);
-
-        chipsResponseService.saveAndNotifyDissolutionApplicationOutcome(chipsResponseCreateRequest);
-
-        assertFalse(dissolution.getActive());
-
-        verifyNoInteractions(dissolutionRefundService);
-        verify(dissolutionEmailService).sendApplicationOutcomeEmail(dissolution, dissolutionVerdict);
-    }
-
-    @Test
-    void saveAndNotifyDissolutionApplicationOutcome_saveDissolutionApplicationOutcomeAndSendEmail_rejectedApplication_refundsToggleFalse() throws DissolutionNotFoundException {
-        ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
-        chipsResponseCreateRequest.setStatus(VerdictResult.REJECTED);
-        DissolutionVerdict dissolutionVerdict = DissolutionFixtures.generateDissolutionVerdict();
-        dissolutionVerdict.setResult(VerdictResult.REJECTED);
-        Dissolution dissolution = DissolutionFixtures.generateDissolution();
-
-        when(dissolutionVerdictMapper.mapToDissolutionVerdict(chipsResponseCreateRequest)).thenReturn(dissolutionVerdict);
-        when(repository.findByDataApplicationReference(chipsResponseCreateRequest.getSubmissionReference())).thenReturn(Optional.of(dissolution));
-        when(featureToggleConfig.isRefundsEnabled()).thenReturn(false);
-
-        chipsResponseService.saveAndNotifyDissolutionApplicationOutcome(chipsResponseCreateRequest);
-
-        assertFalse(dissolution.getActive());
-
-        verifyNoInteractions(dissolutionRefundService);
         verify(dissolutionEmailService).sendApplicationOutcomeEmail(dissolution, dissolutionVerdict);
     }
 }

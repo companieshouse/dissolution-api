@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.service.dissolution.chips;
 
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.config.FeatureToggleConfig;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.DissolutionVerdictMapper;
@@ -22,22 +21,19 @@ public class ChipsResponseService {
     private final DissolutionEmailService dissolutionEmailService;
     private final DissolutionRefundService dissolutionRefundService;
     private final Logger logger;
-    private final FeatureToggleConfig featureToggleConfig;
 
     public ChipsResponseService(
             DissolutionRepository repository,
             DissolutionVerdictMapper dissolutionVerdictMapper,
             DissolutionEmailService dissolutionEmailService,
             DissolutionRefundService dissolutionRefundService,
-            Logger logger,
-            FeatureToggleConfig featureToggleConfig
+            Logger logger
     ) {
         this.repository = repository;
         this.dissolutionVerdictMapper = dissolutionVerdictMapper;
         this.dissolutionEmailService = dissolutionEmailService;
         this.dissolutionRefundService = dissolutionRefundService;
         this.logger = logger;
-        this.featureToggleConfig = featureToggleConfig;
     }
 
     public void saveAndNotifyDissolutionApplicationOutcome(ChipsResponseCreateRequest body) throws DissolutionNotFoundException {
@@ -60,8 +56,7 @@ public class ChipsResponseService {
     }
 
     private boolean canRefundDissolution(DissolutionVerdict dissolutionVerdict, Dissolution dissolution) {
-        return featureToggleConfig.isRefundsEnabled() &&
-            dissolutionVerdict.getResult() == VerdictResult.REJECTED &&
+        return dissolutionVerdict.getResult() == VerdictResult.REJECTED &&
             dissolution.getPaymentInformation().getMethod() == PaymentMethod.CREDIT_CARD;
     }
 }
