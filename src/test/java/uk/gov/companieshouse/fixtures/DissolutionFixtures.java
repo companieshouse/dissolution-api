@@ -16,6 +16,7 @@ import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
@@ -62,6 +63,10 @@ public class DissolutionFixtures {
 
     public static DissolutionPatchResponse generateDissolutionPatchResponse() {
         return new DissolutionPatchResponse();
+    }
+
+    public static DissolutionDirectorPatchResponse generateDissolutionDirectorPatchResponse() {
+        return new DissolutionDirectorPatchResponse();
     }
 
     public static DissolutionCreateResponse generateDissolutionCreateResponse() {

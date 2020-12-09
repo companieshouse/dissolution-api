@@ -52,7 +52,6 @@ public class DissolutionController {
             DissolutionValidator dissolutionValidator,
             CompanyProfileClient companyProfileClient,
             CompanyOfficerService companyOfficerService) {
-        super();
         this.dissolutionService = dissolutionService;
         this.dissolutionValidator = dissolutionValidator;
         this.companyProfileClient = companyProfileClient;
@@ -118,9 +117,8 @@ public class DissolutionController {
     public DissolutionPatchResponse patchDissolutionApplication(
             @RequestHeader("ERIC-identity") String userId,
             @PathVariable("company-number") final String companyNumber,
-            @Valid @RequestBody final DissolutionPatchRequest body,
-            HttpServletRequest request
-            ) {
+            @Valid @RequestBody final DissolutionPatchRequest body
+    ) {
 
         if (!dissolutionService.doesDissolutionRequestExistForCompanyByCompanyNumber(companyNumber)) {
             throw new NotFoundException();

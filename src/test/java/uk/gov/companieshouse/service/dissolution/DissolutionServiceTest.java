@@ -10,7 +10,11 @@ import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
-import uk.gov.companieshouse.model.dto.dissolution.*;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
@@ -25,7 +29,7 @@ import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolu
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 
 @ExtendWith(MockitoExtension.class)
-public class DissolutionServiceTest {
+class DissolutionServiceTest {
 
     @InjectMocks
     private DissolutionService service;
@@ -50,7 +54,7 @@ public class DissolutionServiceTest {
     public static final String OFFICER_ID = "abc123";
 
     @Test
-    public void create_createsADissolutionRequest_returnsCreateResponse() {
+    void create_createsADissolutionRequest_returnsCreateResponse() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
         final DissolutionCreateResponse response = DissolutionFixtures.generateDissolutionCreateResponse();
         final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
@@ -66,7 +70,7 @@ public class DissolutionServiceTest {
     }
 
     @Test
-    public void doesDissolutionRequestExistForCompanyByCompanyNumber_returnsTrue_ifDissolutionForCompanyExists() {
+    void doesDissolutionRequestExistForCompanyByCompanyNumber_returnsTrue_ifDissolutionForCompanyExists() {
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(DissolutionFixtures.generateDissolution()));
 
         final boolean result = service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER);
@@ -75,7 +79,7 @@ public class DissolutionServiceTest {
     }
 
     @Test
-    public void doesDissolutionRequestExistForCompanyByCompanyNumber_returnsFalse_ifDissolutionForCompanyDoesNotExist() {
+    void doesDissolutionRequestExistForCompanyByCompanyNumber_returnsFalse_ifDissolutionForCompanyDoesNotExist() {
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
 
         final boolean result = service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER);
@@ -84,7 +88,7 @@ public class DissolutionServiceTest {
     }
 
     @Test
-    public void doesDissolutionRequestExistForCompanyByApplicationReference_returnsTrue_ifDissolutionForCompanyExists() {
+    void doesDissolutionRequestExistForCompanyByApplicationReference_returnsTrue_ifDissolutionForCompanyExists() {
         when(repository.findByDataApplicationReference(APPLICATION_REFERENCE)).thenReturn(Optional.of(DissolutionFixtures.generateDissolution()));
 
         final boolean result = service.doesDissolutionRequestExistForCompanyByApplicationReference(APPLICATION_REFERENCE);
@@ -93,7 +97,7 @@ public class DissolutionServiceTest {
     }
 
     @Test
-    public void doesDissolutionRequestExistForCompanyByApplicationReference_returnsFalse_ifDissolutionForCompanyDoesNotExist() {
+    void doesDissolutionRequestExistForCompanyByApplicationReference_returnsFalse_ifDissolutionForCompanyDoesNotExist() {
         when(repository.findByDataApplicationReference(APPLICATION_REFERENCE)).thenReturn(Optional.empty());
 
         final boolean result = service.doesDissolutionRequestExistForCompanyByApplicationReference(APPLICATION_REFERENCE);
@@ -102,7 +106,7 @@ public class DissolutionServiceTest {
     }
 
     @Test
-    public void getByCompanyNumber_returnsDissolutionGetResponse() {
+    void getByCompanyNumber_returnsDissolutionGetResponse() {
         final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse();
 
         when(getter.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(response));
@@ -116,7 +120,7 @@ public class DissolutionServiceTest {
     }
 
     @Test
-    public void getByApplicationReference_returnsDissolutionGetResponse() {
+    void getByApplicationReference_returnsDissolutionGetResponse() {
         final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse();
 
         when(getter.getByApplicationReference(APPLICATION_REFERENCE)).thenReturn(Optional.of(response));
@@ -130,7 +134,7 @@ public class DissolutionServiceTest {
     }
 
     @Test
-    public void addDirectorApproval_addsDirectorApproval_returnsPatchResponse() throws DissolutionNotFoundException {
+    void addDirectorApproval_addsDirectorApproval_returnsPatchResponse() throws DissolutionNotFoundException {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP);
         body.setOfficerId(OFFICER_ID);
@@ -148,7 +152,7 @@ public class DissolutionServiceTest {
     }
 
     @Test
-    public void hasDirectorAlreadyApproved_callsDissolutionGetter_isDirectorPendingApproval() {
+    void hasDirectorAlreadyApproved_callsDissolutionGetter_isDirectorPendingApproval() {
         final String companyNumber = "12345678";
         final String email = "user@mail.com";
 
@@ -162,7 +166,7 @@ public class DissolutionServiceTest {
     }
 
     @Test
-    public void updatePaymentAndSubmissionStatus_updatesPaymentAndSubmissionStatus_returnNothing() throws DissolutionNotFoundException {
+    void updatePaymentAndSubmissionStatus_updatesPaymentAndSubmissionStatus_returnNothing() throws DissolutionNotFoundException {
         PaymentPatchRequest data = generatePaymentPatchRequest();
 
         service.handlePayment(data, APPLICATION_REFERENCE);

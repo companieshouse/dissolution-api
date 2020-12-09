@@ -4,7 +4,10 @@ import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
-import uk.gov.companieshouse.model.dto.dissolution.*;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetDirector;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -14,7 +17,7 @@ import java.util.stream.Collectors;
 import static uk.gov.companieshouse.model.Constants.DISSOLUTION_KIND;
 
 @Service
-public class DissolutionResponseMapper {
+public class DissolutionResponseMapper extends ResponseMapper {
 
     public DissolutionCreateResponse mapToDissolutionCreateResponse(Dissolution dissolution) {
         final DissolutionCreateResponse response = new DissolutionCreateResponse();
@@ -60,15 +63,6 @@ public class DissolutionResponseMapper {
         ));
 
         return response;
-    }
-
-    private DissolutionLinks generateLinks(String companyNumber, String reference) {
-        final DissolutionLinks links = new DissolutionLinks();
-
-        links.setSelf(String.format("/dissolution-request/%s", companyNumber));
-        links.setPayment(String.format("/dissolution-request/%s/payment", reference));
-
-        return links;
     }
 
     private List<DissolutionGetDirector> mapToDissolutionGetDirectors(List<DissolutionDirector> directors) {

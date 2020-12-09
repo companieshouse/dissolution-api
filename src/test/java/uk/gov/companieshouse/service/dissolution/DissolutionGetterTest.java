@@ -24,7 +24,7 @@ import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDirecto
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionDirector;
 
 @ExtendWith(MockitoExtension.class)
-public class DissolutionGetterTest {
+class DissolutionGetterTest {
 
     @InjectMocks
     private DissolutionGetter getter;
@@ -41,7 +41,7 @@ public class DissolutionGetterTest {
     public static final String OFFICER_ID_TWO = "def456";
 
     @Test
-    public void getByCompanyNumber_findsDissolution_mapsToDissolutionResponse_returnsGetResponse() {
+    void getByCompanyNumber_findsDissolution_mapsToDissolutionResponse_returnsGetResponse() {
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
         final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse();
 
@@ -58,7 +58,7 @@ public class DissolutionGetterTest {
     }
 
     @Test
-    public void getByCompanyNumber_doesNotFindDissolution_returnsOptionalEmpty() {
+    void getByCompanyNumber_doesNotFindDissolution_returnsOptionalEmpty() {
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
 
         final Optional<DissolutionGetResponse> result = getter.getByCompanyNumber(COMPANY_NUMBER);
@@ -69,7 +69,7 @@ public class DissolutionGetterTest {
     }
 
     @Test
-    public void getByApplicationReference_findsDissolution_mapsToDissolutionResponse_returnsGetResponse() {
+    void getByApplicationReference_findsDissolution_mapsToDissolutionResponse_returnsGetResponse() {
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
         final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse();
 
@@ -86,7 +86,7 @@ public class DissolutionGetterTest {
     }
 
     @Test
-    public void getByApplicationReference_doesNotFindDissolution_returnsOptionalEmpty() {
+    void getByApplicationReference_doesNotFindDissolution_returnsOptionalEmpty() {
         when(repository.findByDataApplicationReference(APPLICATION_REFERENCE)).thenReturn(Optional.empty());
 
         final Optional<DissolutionGetResponse> result = getter.getByApplicationReference(APPLICATION_REFERENCE);
@@ -97,7 +97,7 @@ public class DissolutionGetterTest {
     }
 
     @Test
-    public void isDirectorPendingApproval_returnsFalse_whenOfficerIdNotFound() {
+    void isDirectorPendingApproval_returnsFalse_whenOfficerIdNotFound() {
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
 
         final DissolutionDirector director = generateDissolutionDirector();
@@ -113,7 +113,7 @@ public class DissolutionGetterTest {
     }
 
     @Test
-    public void isDirectorPendingApproval_returnsFalse_whenAlreadyApproved() {
+    void isDirectorPendingApproval_returnsFalse_whenAlreadyApproved() {
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
 
         final DissolutionDirector director = generateDissolutionDirector();
@@ -130,7 +130,7 @@ public class DissolutionGetterTest {
     }
 
     @Test
-    public void isDirectorPendingApproval_returnsTrue_whenNotApproved() {
+    void isDirectorPendingApproval_returnsTrue_whenNotApproved() {
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
 
         final DissolutionDirector director = generateDissolutionDirector();

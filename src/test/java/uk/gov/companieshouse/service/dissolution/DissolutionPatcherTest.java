@@ -36,7 +36,7 @@ import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentInfo
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 
 @ExtendWith(MockitoExtension.class)
-public class DissolutionPatcherTest {
+class DissolutionPatcherTest {
 
     @InjectMocks
     private DissolutionPatcher patcher;
@@ -86,7 +86,7 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_addsApprovalToSingleDirector_savesInDatabase() throws DissolutionNotFoundException {
+    void patch_addsApprovalToSingleDirector_savesInDatabase() throws DissolutionNotFoundException {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
@@ -103,7 +103,7 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApproved() throws DissolutionNotFoundException {
+    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApproved() throws DissolutionNotFoundException {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
@@ -126,7 +126,7 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_generatesCertificateAndSavesInDatabase_ifAllDirectorHaveApproved() throws DissolutionNotFoundException {
+    void patch_generatesCertificateAndSavesInDatabase_ifAllDirectorHaveApproved() throws DissolutionNotFoundException {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
@@ -145,7 +145,7 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_doesNotUpdateStatus_ifNotAllDirectorHaveApproved() throws DissolutionNotFoundException {
+    void patch_doesNotUpdateStatus_ifNotAllDirectorHaveApproved() throws DissolutionNotFoundException {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
@@ -170,7 +170,7 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_doesNotGenerateCertificate_ifNotAllDirectorHaveApproved() throws DissolutionNotFoundException {
+    void patch_doesNotGenerateCertificate_ifNotAllDirectorHaveApproved() throws DissolutionNotFoundException {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
@@ -198,7 +198,7 @@ public class DissolutionPatcherTest {
     }
 
     @Test
-    public void patch_updatesDissolutionWithPaymentAndSubmissionInformation_savesInDatabase() throws DissolutionNotFoundException {
+    void patch_updatesDissolutionWithPaymentAndSubmissionInformation_savesInDatabase() throws DissolutionNotFoundException {
         PaymentPatchRequest data = generatePaymentPatchRequest();
         PaymentInformation paymentInformation = generatePaymentInformation();
         DissolutionSubmission submission = generateDissolutionSubmission();
