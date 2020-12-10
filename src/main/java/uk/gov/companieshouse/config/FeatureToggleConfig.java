@@ -9,22 +9,11 @@ public class FeatureToggleConfig {
     @Value("${featureToggles.payByAccount}")
     private boolean payByAccountEnabled;
 
-    @Value("${featureToggles.refunds}")
-    private boolean refundsEnabled;
-
     public boolean isPayByAccountEnabled() {
         return payByAccountEnabled;
     }
 
     public void setPayByAccountEnabled(boolean payByAccountEnabled) {
         this.payByAccountEnabled = payByAccountEnabled;
-    }
-
-    public boolean isRefundsEnabled() {
-        return refundsEnabled;
-    }
-
-    public void setRefundsEnabled(boolean refundsEnabled) {
-        this.refundsEnabled = refundsEnabled;
     }
 }
