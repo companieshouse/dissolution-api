@@ -16,14 +16,14 @@ import uk.gov.companieshouse.service.dissolution.DissolutionEmailService;
 public class ResendEmailController {
 
     private final DissolutionEmailService emailService;
-    private final DissolutionRepository repository;
+    private final DissolutionRepository dissolutionRepository;
 
     public ResendEmailController(
             DissolutionEmailService emailService,
-            DissolutionRepository repository) {
+            DissolutionRepository dissolutionRepository) {
 
         this.emailService = emailService;
-        this.repository = repository;
+        this.dissolutionRepository = dissolutionRepository;
     }
 
     @Operation(summary = "Resend signatory email", tags = "Dissolution")
@@ -39,7 +39,7 @@ public class ResendEmailController {
             @PathVariable("email-address") final String emailAddress) {
 
         try {
-            final Dissolution dissolution = repository.findByCompanyNumber(companyNumber).orElseThrow(DissolutionNotFoundException::new);
+            final Dissolution dissolution = dissolutionRepository.findByCompanyNumber(companyNumber).orElseThrow(DissolutionNotFoundException::new);
             emailService.notifySignatoryToSign(dissolution, emailAddress);
         } catch(Exception e) {
             throw new NotFoundException();

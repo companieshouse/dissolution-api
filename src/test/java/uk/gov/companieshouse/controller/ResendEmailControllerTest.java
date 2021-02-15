@@ -15,17 +15,17 @@ import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.dissolution.DissolutionEmailService;
 import uk.gov.companieshouse.service.dissolution.chips.DissolutionChipsService;
 
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(ResendEmailController.class)
 public class ResendEmailControllerTest {
 
     private static final String EMAIL_URI = "/dissolution-request/{company-number}/resend-email/{email-address}";
-    private static final String COMPANY_NUMBER = "12345";
-    private static final String EMAIL_ADDRESS = "yaboi@mail.com";
+    private static final String COMPANY_NUMBER = "01777777";
+    private static final String EMAIL_ADDRESS = "test@gmail.com";
     private static final String USER_ID = "1234";
     private static final String AUTHORISED_USER_HEADER = "ERIC-Authorised-User";
 
@@ -36,7 +36,7 @@ public class ResendEmailControllerTest {
     private DissolutionEmailService emailService;
 
     @MockBean
-    private DissolutionRepository repository;
+    private DissolutionRepository dissolutionRepository;
 
     @MockBean
     private Dissolution dissolution;
@@ -45,16 +45,20 @@ public class ResendEmailControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    public void testEmailResendIsAuthorisedReturnsOk() throws Exception {
-        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.ofNullable(dissolution));
+    public void testEmailResendFunctionReturnStatusOKWhenGivenValidEmailAndActiveDissolutionCase() throws Exception {
+        when(dissolutionRepository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.ofNullable(dissolution));
         mockMvc.perform(post(EMAIL_URI,COMPANY_NUMBER,EMAIL_ADDRESS).headers(createHttpHeaders()))
                 .andExpect(status().isOk());
+        verify(dissolutionRepository).findByCompanyNumber(COMPANY_NUMBER);
+        verify(emailService).notifySignatoryToSign(dissolution, EMAIL_ADDRESS);
     }
 
     @Test
-    public void testEmailResendIsNotAuthorisedReturns401() throws Exception {
+    public void testEmailFunctionReturns404WhenGivenCompanyIsNotInActiveDissolution() throws Exception {
         mockMvc.perform(post(EMAIL_URI,COMPANY_NUMBER,EMAIL_ADDRESS).headers(createHttpHeaders()))
                 .andExpect(status().isNotFound());
+        verify(dissolutionRepository).findByCompanyNumber(COMPANY_NUMBER);
+        verifyNoInteractions(emailService);
     }
 
     private HttpHeaders createHttpHeaders() {
