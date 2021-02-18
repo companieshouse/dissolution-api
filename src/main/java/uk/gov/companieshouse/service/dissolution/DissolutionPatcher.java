@@ -18,6 +18,8 @@ import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.dissolution.certificate.DissolutionCertificateGenerator;
 
+import java.util.List;
+
 @Service
 public class DissolutionPatcher {
 
@@ -63,9 +65,12 @@ public class DissolutionPatcher {
     }
 
     private void handleFinalApproval(Dissolution dissolution) {
+        final List<DissolutionDirector> directors = dissolution.getData().getDirectors();
         setDissolutionStatus(dissolution, ApplicationStatus.PENDING_PAYMENT);
         dissolution.setCertificate(this.certificateGenerator.generateDissolutionCertificate(dissolution));
-        dissolutionEmailService.sendPendingPaymentEmail(dissolution);
+        if (directors.size()>1) {
+            dissolutionEmailService.sendPendingPaymentEmail(dissolution);
+        }
     }
 
     public void handlePayment(PaymentPatchRequest body, String applicationReference) throws DissolutionNotFoundException {

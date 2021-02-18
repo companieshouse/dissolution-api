@@ -103,7 +103,36 @@ class DissolutionPatcherTest {
     }
 
     @Test
-    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApproved() throws DissolutionNotFoundException {
+    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApprovedForMultiDirectorCompany() throws DissolutionNotFoundException {
+        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+        body.setIpAddress(IP_ADDRESS);
+        body.setOfficerId(OFFICER_ID);
+
+        final List<DissolutionDirector> directors = DissolutionFixtures.generateDissolutionDirectorList();
+        directors.get(0).setOfficerId(OFFICER_ID);
+        directors.get(1).setOfficerId(OFFICER_ID_TWO);
+        directors.get(1).setDirectorApproval(approval);
+        dissolution.getData().setDirectors(directors);
+
+        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
+        when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
+        when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
+
+        final DissolutionPatchResponse result = patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, body);
+
+        verify(responseMapper).mapToDissolutionPatchResponse(dissolution);
+        verify(repository).save(dissolutionCaptor.capture());
+        verify(dissolutionEmailService).sendPendingPaymentEmail(dissolutionCaptor.capture());
+
+        assertEquals(response, result);
+        assertEquals(
+                ApplicationStatus.PENDING_PAYMENT,
+                dissolutionCaptor.getValue().getData().getApplication().getStatus()
+        );
+    }
+
+    @Test
+    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApprovedForSingleDirectorCompany() throws DissolutionNotFoundException {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
@@ -116,7 +145,7 @@ class DissolutionPatcherTest {
 
         verify(responseMapper).mapToDissolutionPatchResponse(dissolution);
         verify(repository).save(dissolutionCaptor.capture());
-        verify(dissolutionEmailService).sendPendingPaymentEmail(dissolutionCaptor.capture());
+        verifyNoInteractions(dissolutionEmailService);
 
         assertEquals(response, result);
         assertEquals(
