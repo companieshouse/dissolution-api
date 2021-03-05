@@ -54,6 +54,19 @@ public class EmailFixtures {
         return applicationAcceptedEmailData;
     }
 
+    public static ApplicationAcceptedEmailData generateApplicationAcceptedEmailDataForDirector() {
+        final ApplicationAcceptedEmailData applicationAcceptedEmailData = new ApplicationAcceptedEmailData();
+
+        applicationAcceptedEmailData.setTo("john@doe.com");
+        applicationAcceptedEmailData.setSubject(APPLICATION_ACCEPTED_EMAIL_SUBJECT);
+        applicationAcceptedEmailData.setCdnHost(CDN_HOST);
+        applicationAcceptedEmailData.setDissolutionReferenceNumber("ABC123");
+        applicationAcceptedEmailData.setCompanyNumber("12345678");
+        applicationAcceptedEmailData.setCompanyName("Companies House");
+
+        return applicationAcceptedEmailData;
+    }
+
     public static ApplicationRejectedEmailData generateApplicationRejectedEmailData() {
         final ApplicationRejectedEmailData applicationRejectedEmailData = new ApplicationRejectedEmailData();
 

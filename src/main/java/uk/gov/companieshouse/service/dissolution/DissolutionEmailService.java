@@ -111,9 +111,14 @@ public class DissolutionEmailService {
     }
 
     private EmailDocument<ApplicationAcceptedEmailData> getApplicationAcceptedEmailDocument(Dissolution dissolution) {
-        final ApplicationAcceptedEmailData emailData = this.dissolutionEmailMapper.mapToApplicationAcceptedEmailData(dissolution);
+        final ApplicationAcceptedEmailData emailData = this.dissolutionEmailMapper.mapToApplicationAcceptedEmailData(dissolution, dissolution.getCreatedBy().getEmail());
 
         final MessageType messageType = messageTypeCalculator.getForApplicationAccepted(dissolution);
+
+        getUniqueSignatories(dissolution)
+                .stream()
+                .filter(signatoryEmail -> !signatoryEmail.equals(dissolution.getCreatedBy().getEmail()))
+                .forEach(signatoryEmail -> mapToAndSendApplicationAcceptedEmail(dissolution, signatoryEmail, messageType));
 
         return this.emailMapper.mapToEmailDocument(
                 emailData, emailData.getTo(), messageType
@@ -145,6 +150,11 @@ public class DissolutionEmailService {
     private EmailDocument<SignatoryToSignEmailData> mapToSignatoryToSignEmail(Dissolution dissolution, String signatoryEmail, MessageType messageType, String deadlineDate) {
         final SignatoryToSignEmailData emailData = dissolutionEmailMapper.mapToSignatoryToSignEmailData(dissolution, signatoryEmail, deadlineDate);
         return this.emailMapper.mapToEmailDocument(emailData, signatoryEmail, messageType);
+    }
+
+    private void mapToAndSendApplicationAcceptedEmail(Dissolution dissolution, String signatoryEmail, MessageType messageType) {
+        final ApplicationAcceptedEmailData emailData = this.dissolutionEmailMapper.mapToApplicationAcceptedEmailData(dissolution, signatoryEmail);
+        sendEmail(emailMapper.mapToEmailDocument(emailData, signatoryEmail, messageType));
     }
 
     private <T> void sendEmail(EmailDocument<T> emailDocument) {

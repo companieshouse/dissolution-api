@@ -66,7 +66,7 @@ public class DissolutionEmailMapperTest {
         final Dissolution dissolution = generateDissolution();
         final ApplicationAcceptedEmailData applicationAcceptedEmailData = EmailFixtures.generateApplicationAcceptedEmailData();
 
-        final ApplicationAcceptedEmailData result = dissolutionEmailMapper.mapToApplicationAcceptedEmailData(dissolution);
+        final ApplicationAcceptedEmailData result = dissolutionEmailMapper.mapToApplicationAcceptedEmailData(dissolution, dissolution.getCreatedBy().getEmail());
 
         assertEquals(applicationAcceptedEmailData.getTo(), result.getTo());
         assertEquals(applicationAcceptedEmailData.getSubject(), result.getSubject());

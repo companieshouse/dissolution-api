@@ -37,10 +37,10 @@ public class DissolutionEmailMapper {
         return successfulPaymentEmailData;
     }
 
-    public ApplicationAcceptedEmailData mapToApplicationAcceptedEmailData(Dissolution dissolution) {
+    public ApplicationAcceptedEmailData mapToApplicationAcceptedEmailData(Dissolution dissolution, String signatoryEmail) {
         ApplicationAcceptedEmailData applicationAcceptedEmailData = new ApplicationAcceptedEmailData();
 
-        applicationAcceptedEmailData.setTo(dissolution.getCreatedBy().getEmail());
+        applicationAcceptedEmailData.setTo(signatoryEmail);
         applicationAcceptedEmailData.setSubject(APPLICATION_ACCEPTED_EMAIL_SUBJECT);
         applicationAcceptedEmailData.setCdnHost(environmentConfig.getCdnHost());
         applicationAcceptedEmailData.setDissolutionReferenceNumber(dissolution.getData().getApplication().getReference());

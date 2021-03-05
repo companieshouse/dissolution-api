@@ -42,6 +42,7 @@ public class DissolutionEmailServiceTest {
     private static final String SIGNATORY_EMAIL_ONE = "signatory1@mail.com";
     private static final String SIGNATORY_EMAIL_TWO = "signatory2@mail.com";
     private static final String APPLICANT_EMAIL = "applicant@mail.com";
+    private static final String DIRECTOR_EMAIL = "john@doe.com";
 
     @InjectMocks
     private DissolutionEmailService dissolutionEmailService;
@@ -97,21 +98,28 @@ public class DissolutionEmailServiceTest {
     }
 
     @Test
-    void sendApplicationOutcomeEmail_shouldGenerateAndSendAnApplicationAcceptedEmail() {
+    void sendApplicationOutcomeEmail_shouldGenerateAndSendAnApplicationAcceptedEmailToAllDirectors() {
         final Dissolution dissolution = generateDissolution();
         final DissolutionVerdict dissolutionVerdict = generateDissolutionVerdict();
 
         final ApplicationAcceptedEmailData emailData = EmailFixtures.generateApplicationAcceptedEmailData();
+        final ApplicationAcceptedEmailData directorEmailData = EmailFixtures.generateApplicationAcceptedEmailDataForDirector();
         final EmailDocument<ApplicationAcceptedEmailData> emailDocument = generateEmailDocument(emailData);
+        final EmailDocument<ApplicationAcceptedEmailData> directorEmailDocument = generateEmailDocument(directorEmailData);
 
-        when(dissolutionEmailMapper.mapToApplicationAcceptedEmailData(dissolution)).thenReturn(emailData);
+        when(dissolutionEmailMapper.mapToApplicationAcceptedEmailData(dissolution,dissolution.getCreatedBy().getEmail())).thenReturn(emailData);
+        when(dissolutionEmailMapper.mapToApplicationAcceptedEmailData(dissolution,DIRECTOR_EMAIL)).thenReturn(directorEmailData);
         when(messageTypeCalculator.getForApplicationAccepted(dissolution)).thenReturn(MessageType.APPLICATION_ACCEPTED);
         when(emailMapper.mapToEmailDocument(emailData, emailData.getTo(), MessageType.APPLICATION_ACCEPTED)).thenReturn(emailDocument);
+        when(emailMapper.mapToEmailDocument(directorEmailData, DIRECTOR_EMAIL, MessageType.APPLICATION_ACCEPTED)).thenReturn(directorEmailDocument);
 
         dissolutionEmailService.sendApplicationOutcomeEmail(dissolution, dissolutionVerdict);
 
+        verify(emailService, times(2)).sendMessage(any());
         verify(emailService).sendMessage(emailDocument);
+        verify(emailService).sendMessage(directorEmailDocument);
         verify(emailMapper).mapToEmailDocument(emailData, emailData.getTo(), MessageType.APPLICATION_ACCEPTED);
+        verify(emailMapper).mapToEmailDocument(directorEmailData, directorEmailData.getTo(), MessageType.APPLICATION_ACCEPTED);
     }
 
     @Test
