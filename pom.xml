@@ -73,6 +73,18 @@
             <version>20200518</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-core</artifactId>
+            <version>4.1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
+            <version>4.1.2</version>
+        </dependency>
+
+
         <!-- Spring/SpringBoot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
