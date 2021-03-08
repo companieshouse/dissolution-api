@@ -22,10 +22,10 @@ public class DissolutionEmailMapper {
         this.environmentConfig = environmentConfig;
     }
 
-    public SuccessfulPaymentEmailData mapToSuccessfulPaymentEmailData(Dissolution dissolution) {
+    public SuccessfulPaymentEmailData mapToSuccessfulPaymentEmailData(Dissolution dissolution, String signatoryEmail) {
         SuccessfulPaymentEmailData successfulPaymentEmailData = new SuccessfulPaymentEmailData();
 
-        successfulPaymentEmailData.setTo(dissolution.getCreatedBy().getEmail());
+        successfulPaymentEmailData.setTo(signatoryEmail);
         successfulPaymentEmailData.setSubject(SUCCESSFUL_PAYMENT_EMAIL_SUBJECT);
         successfulPaymentEmailData.setCdnHost(environmentConfig.getCdnHost());
         successfulPaymentEmailData.setDissolutionReferenceNumber(dissolution.getData().getApplication().getReference());
@@ -37,10 +37,10 @@ public class DissolutionEmailMapper {
         return successfulPaymentEmailData;
     }
 
-    public ApplicationAcceptedEmailData mapToApplicationAcceptedEmailData(Dissolution dissolution, String signatoryEmail) {
+    public ApplicationAcceptedEmailData mapToApplicationAcceptedEmailData(Dissolution dissolution) {
         ApplicationAcceptedEmailData applicationAcceptedEmailData = new ApplicationAcceptedEmailData();
 
-        applicationAcceptedEmailData.setTo(signatoryEmail);
+        applicationAcceptedEmailData.setTo(dissolution.getCreatedBy().getEmail());
         applicationAcceptedEmailData.setSubject(APPLICATION_ACCEPTED_EMAIL_SUBJECT);
         applicationAcceptedEmailData.setCdnHost(environmentConfig.getCdnHost());
         applicationAcceptedEmailData.setDissolutionReferenceNumber(dissolution.getData().getApplication().getReference());

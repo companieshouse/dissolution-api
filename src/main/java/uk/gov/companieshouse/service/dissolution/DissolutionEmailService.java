@@ -50,7 +50,7 @@ public class DissolutionEmailService {
     }
 
     public void sendSuccessfulPaymentEmail(Dissolution dissolution) {
-        final SuccessfulPaymentEmailData emailData = this.dissolutionEmailMapper.mapToSuccessfulPaymentEmailData(dissolution);
+        final SuccessfulPaymentEmailData emailData = this.dissolutionEmailMapper.mapToSuccessfulPaymentEmailData(dissolution, dissolution.getCreatedBy().getEmail());
 
         final MessageType messageType = messageTypeCalculator.getForSuccessfulPayment(dissolution);
 
@@ -59,6 +59,11 @@ public class DissolutionEmailService {
         );
 
         sendEmail(emailDocument);
+
+        getUniqueSignatories(dissolution)
+                .stream()
+                .filter(signatoryEmail -> !signatoryEmail.equals(dissolution.getCreatedBy().getEmail()))
+                .forEach(signatoryEmail -> mapToAndSendApplicationSubmittedEmail(dissolution, signatoryEmail, messageType));
     }
 
     public void sendApplicationOutcomeEmail(Dissolution dissolution, DissolutionVerdict dissolutionVerdict) {
@@ -111,14 +116,9 @@ public class DissolutionEmailService {
     }
 
     private EmailDocument<ApplicationAcceptedEmailData> getApplicationAcceptedEmailDocument(Dissolution dissolution) {
-        final ApplicationAcceptedEmailData emailData = this.dissolutionEmailMapper.mapToApplicationAcceptedEmailData(dissolution, dissolution.getCreatedBy().getEmail());
+        final ApplicationAcceptedEmailData emailData = this.dissolutionEmailMapper.mapToApplicationAcceptedEmailData(dissolution);
 
         final MessageType messageType = messageTypeCalculator.getForApplicationAccepted(dissolution);
-
-        getUniqueSignatories(dissolution)
-                .stream()
-                .filter(signatoryEmail -> !signatoryEmail.equals(dissolution.getCreatedBy().getEmail()))
-                .forEach(signatoryEmail -> mapToAndSendApplicationAcceptedEmail(dissolution, signatoryEmail, messageType));
 
         return this.emailMapper.mapToEmailDocument(
                 emailData, emailData.getTo(), messageType
@@ -152,8 +152,8 @@ public class DissolutionEmailService {
         return this.emailMapper.mapToEmailDocument(emailData, signatoryEmail, messageType);
     }
 
-    private void mapToAndSendApplicationAcceptedEmail(Dissolution dissolution, String signatoryEmail, MessageType messageType) {
-        final ApplicationAcceptedEmailData emailData = this.dissolutionEmailMapper.mapToApplicationAcceptedEmailData(dissolution, signatoryEmail);
+    private void mapToAndSendApplicationSubmittedEmail(Dissolution dissolution, String signatoryEmail, MessageType messageType) {
+        final SuccessfulPaymentEmailData emailData = this.dissolutionEmailMapper.mapToSuccessfulPaymentEmailData(dissolution, signatoryEmail);
         sendEmail(emailMapper.mapToEmailDocument(emailData, signatoryEmail, messageType));
     }
 

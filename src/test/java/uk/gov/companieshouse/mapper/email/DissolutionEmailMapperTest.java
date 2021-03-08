@@ -49,7 +49,7 @@ public class DissolutionEmailMapperTest {
 
         when(environmentConfig.getChsUrl()).thenReturn(CHS_URL);
 
-        final SuccessfulPaymentEmailData result = dissolutionEmailMapper.mapToSuccessfulPaymentEmailData(dissolution);
+        final SuccessfulPaymentEmailData result = dissolutionEmailMapper.mapToSuccessfulPaymentEmailData(dissolution, dissolution.getCreatedBy().getEmail());
 
         assertEquals(successfulPaymentEmailData.getTo(), result.getTo());
         assertEquals(successfulPaymentEmailData.getSubject(), result.getSubject());
@@ -66,7 +66,7 @@ public class DissolutionEmailMapperTest {
         final Dissolution dissolution = generateDissolution();
         final ApplicationAcceptedEmailData applicationAcceptedEmailData = EmailFixtures.generateApplicationAcceptedEmailData();
 
-        final ApplicationAcceptedEmailData result = dissolutionEmailMapper.mapToApplicationAcceptedEmailData(dissolution, dissolution.getCreatedBy().getEmail());
+        final ApplicationAcceptedEmailData result = dissolutionEmailMapper.mapToApplicationAcceptedEmailData(dissolution);
 
         assertEquals(applicationAcceptedEmailData.getTo(), result.getTo());
         assertEquals(applicationAcceptedEmailData.getSubject(), result.getSubject());

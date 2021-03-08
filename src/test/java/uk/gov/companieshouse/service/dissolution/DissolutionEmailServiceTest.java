@@ -69,16 +69,23 @@ public class DissolutionEmailServiceTest {
     void sendSuccessfulPaymentEmail_shouldGenerateAndSendASuccessfulPaymentEmail() {
         final Dissolution dissolution = generateDissolution();
         final SuccessfulPaymentEmailData emailData = EmailFixtures.generateSuccessfulPaymentEmailData();
+        final SuccessfulPaymentEmailData directorEmailData = EmailFixtures.generateSuccessfulPaymentEmailDataForDirector();
         final EmailDocument<SuccessfulPaymentEmailData> emailDocument = generateEmailDocument(emailData);
+        final EmailDocument<SuccessfulPaymentEmailData> directorEmailDocument = generateEmailDocument(directorEmailData);
 
-        when(dissolutionEmailMapper.mapToSuccessfulPaymentEmailData(dissolution)).thenReturn(emailData);
+        when(dissolutionEmailMapper.mapToSuccessfulPaymentEmailData(dissolution,dissolution.getCreatedBy().getEmail())).thenReturn(emailData);
+        when(dissolutionEmailMapper.mapToSuccessfulPaymentEmailData(dissolution,DIRECTOR_EMAIL)).thenReturn(directorEmailData);
         when(messageTypeCalculator.getForSuccessfulPayment(dissolution)).thenReturn(MessageType.SUCCESSFUL_PAYMENT);
         when(emailMapper.mapToEmailDocument(emailData, emailData.getTo(), MessageType.SUCCESSFUL_PAYMENT)).thenReturn(emailDocument);
+        when(emailMapper.mapToEmailDocument(directorEmailData, directorEmailData.getTo(), MessageType.SUCCESSFUL_PAYMENT)).thenReturn(directorEmailDocument);
 
         dissolutionEmailService.sendSuccessfulPaymentEmail(dissolution);
 
         verify(emailMapper).mapToEmailDocument(emailData, emailData.getTo(), MessageType.SUCCESSFUL_PAYMENT);
+        verify(emailMapper).mapToEmailDocument(directorEmailData, directorEmailData.getTo(), MessageType.SUCCESSFUL_PAYMENT);
         verify(emailService).sendMessage(emailDocument);
+        verify(emailService).sendMessage(directorEmailDocument);
+        verify(emailService, times(2)).sendMessage(any());
     }
 
     @Test
@@ -103,23 +110,16 @@ public class DissolutionEmailServiceTest {
         final DissolutionVerdict dissolutionVerdict = generateDissolutionVerdict();
 
         final ApplicationAcceptedEmailData emailData = EmailFixtures.generateApplicationAcceptedEmailData();
-        final ApplicationAcceptedEmailData directorEmailData = EmailFixtures.generateApplicationAcceptedEmailDataForDirector();
         final EmailDocument<ApplicationAcceptedEmailData> emailDocument = generateEmailDocument(emailData);
-        final EmailDocument<ApplicationAcceptedEmailData> directorEmailDocument = generateEmailDocument(directorEmailData);
 
-        when(dissolutionEmailMapper.mapToApplicationAcceptedEmailData(dissolution,dissolution.getCreatedBy().getEmail())).thenReturn(emailData);
-        when(dissolutionEmailMapper.mapToApplicationAcceptedEmailData(dissolution,DIRECTOR_EMAIL)).thenReturn(directorEmailData);
+        when(dissolutionEmailMapper.mapToApplicationAcceptedEmailData(dissolution)).thenReturn(emailData);
         when(messageTypeCalculator.getForApplicationAccepted(dissolution)).thenReturn(MessageType.APPLICATION_ACCEPTED);
         when(emailMapper.mapToEmailDocument(emailData, emailData.getTo(), MessageType.APPLICATION_ACCEPTED)).thenReturn(emailDocument);
-        when(emailMapper.mapToEmailDocument(directorEmailData, DIRECTOR_EMAIL, MessageType.APPLICATION_ACCEPTED)).thenReturn(directorEmailDocument);
 
         dissolutionEmailService.sendApplicationOutcomeEmail(dissolution, dissolutionVerdict);
 
-        verify(emailService, times(2)).sendMessage(any());
         verify(emailService).sendMessage(emailDocument);
-        verify(emailService).sendMessage(directorEmailDocument);
         verify(emailMapper).mapToEmailDocument(emailData, emailData.getTo(), MessageType.APPLICATION_ACCEPTED);
-        verify(emailMapper).mapToEmailDocument(directorEmailData, directorEmailData.getTo(), MessageType.APPLICATION_ACCEPTED);
     }
 
     @Test

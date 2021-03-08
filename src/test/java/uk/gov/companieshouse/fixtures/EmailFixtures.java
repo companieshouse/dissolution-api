@@ -41,6 +41,20 @@ public class EmailFixtures {
         return successfulPaymentEmailData;
     }
 
+    public static SuccessfulPaymentEmailData generateSuccessfulPaymentEmailDataForDirector() {
+        final SuccessfulPaymentEmailData successfulPaymentEmailData = new SuccessfulPaymentEmailData();
+
+        successfulPaymentEmailData.setTo("john@doe.com");
+        successfulPaymentEmailData.setSubject(SUCCESSFUL_PAYMENT_EMAIL_SUBJECT);
+        successfulPaymentEmailData.setCdnHost(CDN_HOST);
+        successfulPaymentEmailData.setDissolutionReferenceNumber("ABC123");
+        successfulPaymentEmailData.setCompanyNumber("12345678");
+        successfulPaymentEmailData.setCompanyName("Companies House");
+        successfulPaymentEmailData.setChsUrl(CHS_URL);
+
+        return successfulPaymentEmailData;
+    }
+
     public static ApplicationAcceptedEmailData generateApplicationAcceptedEmailData() {
         final ApplicationAcceptedEmailData applicationAcceptedEmailData = new ApplicationAcceptedEmailData();
 
@@ -54,18 +68,6 @@ public class EmailFixtures {
         return applicationAcceptedEmailData;
     }
 
-    public static ApplicationAcceptedEmailData generateApplicationAcceptedEmailDataForDirector() {
-        final ApplicationAcceptedEmailData applicationAcceptedEmailData = new ApplicationAcceptedEmailData();
-
-        applicationAcceptedEmailData.setTo("john@doe.com");
-        applicationAcceptedEmailData.setSubject(APPLICATION_ACCEPTED_EMAIL_SUBJECT);
-        applicationAcceptedEmailData.setCdnHost(CDN_HOST);
-        applicationAcceptedEmailData.setDissolutionReferenceNumber("ABC123");
-        applicationAcceptedEmailData.setCompanyNumber("12345678");
-        applicationAcceptedEmailData.setCompanyName("Companies House");
-
-        return applicationAcceptedEmailData;
-    }
 
     public static ApplicationRejectedEmailData generateApplicationRejectedEmailData() {
         final ApplicationRejectedEmailData applicationRejectedEmailData = new ApplicationRejectedEmailData();
