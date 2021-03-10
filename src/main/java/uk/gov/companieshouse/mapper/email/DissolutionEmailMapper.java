@@ -106,6 +106,7 @@ public class DissolutionEmailMapper {
         supportNotificationEmailData.setDissolutionReferenceNumber(dissolution.getData().getApplication().getReference());
         supportNotificationEmailData.setCompanyNumber(dissolution.getCompany().getNumber());
         supportNotificationEmailData.setCompanyName(dissolution.getCompany().getName());
+        supportNotificationEmailData.setCdnHost(environmentConfig.getCdnHost());
         supportNotificationEmailData.setStatus(dissolution.getSubmission().getStatus().name());
         supportNotificationEmailData.setTimestamp(dissolution.getSubmission().getDateTime().toString());
         supportNotificationEmailData.setRetryCounter(dissolution.getSubmission().getRetryCounter());
