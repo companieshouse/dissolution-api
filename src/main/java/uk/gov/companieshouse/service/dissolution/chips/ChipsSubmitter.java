@@ -11,6 +11,7 @@ import uk.gov.companieshouse.model.db.dissolution.DissolutionSubmission;
 import uk.gov.companieshouse.model.dto.chips.DissolutionChipsRequest;
 import uk.gov.companieshouse.model.enums.SubmissionStatus;
 import uk.gov.companieshouse.repository.DissolutionRepository;
+import uk.gov.companieshouse.service.dissolution.DissolutionEmailService;
 import uk.gov.companieshouse.service.dissolution.certificate.DissolutionCertificateDownloader;
 
 import static uk.gov.companieshouse.util.DateTimeGenerator.generateCurrentDateTime;
@@ -23,6 +24,7 @@ public class ChipsSubmitter {
     private final ChipsClient client;
     private final ChipsConfig config;
     private final DissolutionRepository repository;
+    private final DissolutionEmailService dissolutionService;
     private final Logger logger;
 
     public ChipsSubmitter(
@@ -31,12 +33,14 @@ public class ChipsSubmitter {
             ChipsClient client,
             ChipsConfig config,
             DissolutionRepository repository,
+            DissolutionEmailService dissolutionService,
             Logger logger) {
         this.certificateDownloader = certificateDownloader;
         this.mapper = mapper;
         this.client = client;
         this.config = config;
         this.repository = repository;
+        this.dissolutionService = dissolutionService;
         this.logger = logger;
     }
 
@@ -89,6 +93,7 @@ public class ChipsSubmitter {
         if (submission.getRetryCounter() == config.getChipsRetryLimit()) {
             logger.error(String.format("Marking dissolution as failed for company %s", dissolution.getCompany().getNumber()));
             submission.setStatus(SubmissionStatus.FAILED);
+            dissolutionService.sendFailedSubmissionNotificationEmail(dissolution);
         }
     }
 }

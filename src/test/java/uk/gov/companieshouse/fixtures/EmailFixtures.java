@@ -8,6 +8,7 @@ import uk.gov.companieshouse.model.dto.email.EmailDocument;
 import uk.gov.companieshouse.model.dto.email.PendingPaymentEmailData;
 import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
 import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
+import uk.gov.companieshouse.model.dto.email.SupportNotificationEmailData;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ import static uk.gov.companieshouse.model.Constants.APPLICATION_REJECTED_EMAIL_S
 import static uk.gov.companieshouse.model.Constants.EMAIL_APP_ID;
 import static uk.gov.companieshouse.model.Constants.EMAIL_TOPIC;
 import static uk.gov.companieshouse.model.Constants.SIGNATORY_TO_SIGN_EMAIL_SUBJECT;
+import static uk.gov.companieshouse.model.Constants.SUBMISSION_TO_CHIPS_FAILED_SUBJECT;
 import static uk.gov.companieshouse.model.Constants.SUCCESSFUL_PAYMENT_EMAIL_SUBJECT;
 import static uk.gov.companieshouse.model.Constants.PENDING_PAYMENT_EMAIL_SUBJECT;
 
@@ -138,5 +140,16 @@ public class EmailFixtures {
         message.setValue(value);
 
         return message;
+    }
+
+    public static SupportNotificationEmailData generateSupportNotificationEmailData() {
+        SupportNotificationEmailData emailData = new SupportNotificationEmailData();
+        emailData.setTo("support@mail.com");
+        emailData.setSubject(SUBMISSION_TO_CHIPS_FAILED_SUBJECT);
+        emailData.setCdnHost(CDN_HOST);
+        emailData.setDissolutionReferenceNumber("ABC123");
+        emailData.setCompanyNumber("12345678");
+        emailData.setCompanyName("Companies House");
+        return emailData;
     }
 }

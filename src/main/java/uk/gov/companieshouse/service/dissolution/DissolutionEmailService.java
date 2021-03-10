@@ -16,6 +16,7 @@ import uk.gov.companieshouse.model.dto.email.MessageType;
 import uk.gov.companieshouse.model.dto.email.PendingPaymentEmailData;
 import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
 import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
+import uk.gov.companieshouse.model.dto.email.SupportNotificationEmailData;
 import uk.gov.companieshouse.model.enums.VerdictResult;
 import uk.gov.companieshouse.service.email.EmailService;
 
@@ -113,6 +114,17 @@ public class DissolutionEmailService {
         EmailDocument<SignatoryToSignEmailData> emailDocument = mapToSignatoryToSignEmail(dissolution, email, messageType, deadlineDate);
 
         this.sendEmail(emailDocument);
+    }
+
+    public void sendFailedSubmissionNotificationEmail(Dissolution dissolution) {
+        sendEmail(this.getSupportNotificationEmailDocument(dissolution));
+    }
+
+    private EmailDocument<SupportNotificationEmailData> getSupportNotificationEmailDocument(Dissolution dissolution) {
+
+        final SupportNotificationEmailData emailData = this.dissolutionEmailMapper.mapToSupportNotificationEmailData(dissolution);
+
+        return this.emailMapper.mapToEmailDocument(emailData, emailData.getTo(), MessageType.SUBMISSION_TO_CHIPS_FAILED);
     }
 
     private EmailDocument<ApplicationAcceptedEmailData> getApplicationAcceptedEmailDocument(Dissolution dissolution) {

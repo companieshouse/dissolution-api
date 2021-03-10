@@ -14,6 +14,9 @@ public class EnvironmentConfig {
 
     @Value("${email.chsFinanceEmail}")
     private String chsFinanceEmail;
+
+    @Value("$email.chsSupportEmail")
+    private String chsSupportEmail;
     
     @Value("${cdn.host}")
     private String cdnHost;
@@ -44,6 +47,10 @@ public class EnvironmentConfig {
 
     public String getChsFinanceEmail() {
         return chsFinanceEmail;
+    }
+
+    public String getChsSupportEmail() {
+        return chsSupportEmail;
     }
 
     public void setChsFinanceEmail(String chsFinanceEmail) {

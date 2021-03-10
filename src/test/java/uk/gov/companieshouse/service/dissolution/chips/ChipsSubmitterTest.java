@@ -17,6 +17,7 @@ import uk.gov.companieshouse.model.db.dissolution.DissolutionSubmission;
 import uk.gov.companieshouse.model.dto.chips.DissolutionChipsRequest;
 import uk.gov.companieshouse.model.enums.SubmissionStatus;
 import uk.gov.companieshouse.repository.DissolutionRepository;
+import uk.gov.companieshouse.service.dissolution.DissolutionEmailService;
 import uk.gov.companieshouse.service.dissolution.certificate.DissolutionCertificateDownloader;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -48,6 +49,9 @@ public class ChipsSubmitterTest {
 
     @Mock
     private DissolutionRepository repository;
+
+    @Mock
+    private DissolutionEmailService dissolutionService;
 
     @Mock
     private Logger logger;
@@ -90,6 +94,7 @@ public class ChipsSubmitterTest {
         submitter.submitDissolutionToChips(dissolution);
 
         verify(repository).save(dissolutionCaptor.capture());
+        verify(dissolutionService, times(0)).sendFailedSubmissionNotificationEmail(dissolution);
 
         final Dissolution updatedDissolution = dissolutionCaptor.getValue();
 
@@ -111,6 +116,7 @@ public class ChipsSubmitterTest {
         submitter.submitDissolutionToChips(dissolution);
 
         verify(repository).save(dissolutionCaptor.capture());
+        verify(dissolutionService, times(0)).sendFailedSubmissionNotificationEmail(dissolution);
 
         final Dissolution updatedDissolution = dissolutionCaptor.getValue();
 
@@ -133,6 +139,7 @@ public class ChipsSubmitterTest {
         submitter.submitDissolutionToChips(dissolution);
 
         verify(repository).save(dissolutionCaptor.capture());
+        verify(dissolutionService, times(1)).sendFailedSubmissionNotificationEmail(dissolution);
 
         final Dissolution updatedDissolution = dissolutionCaptor.getValue();
 

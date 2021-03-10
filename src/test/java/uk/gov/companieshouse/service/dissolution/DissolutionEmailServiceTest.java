@@ -21,6 +21,7 @@ import uk.gov.companieshouse.model.dto.email.MessageType;
 import uk.gov.companieshouse.model.dto.email.PendingPaymentEmailData;
 import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
 import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
+import uk.gov.companieshouse.model.dto.email.SupportNotificationEmailData;
 import uk.gov.companieshouse.model.enums.VerdictResult;
 import uk.gov.companieshouse.service.email.EmailService;
 
@@ -34,6 +35,7 @@ import static org.mockito.Mockito.*;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.*;
 import static uk.gov.companieshouse.fixtures.EmailFixtures.generateEmailDocument;
 import static uk.gov.companieshouse.fixtures.EmailFixtures.generateSignatoryToSignEmailData;
+import static uk.gov.companieshouse.fixtures.EmailFixtures.generateSupportNotificationEmailData;
 
 @ExtendWith(MockitoExtension.class)
 public class DissolutionEmailServiceTest {
@@ -246,5 +248,19 @@ public class DissolutionEmailServiceTest {
         dissolutionEmailService.notifySignatoryToSign(dissolution, SIGNATORY_EMAIL_ONE);
 
         verify(emailService).sendMessage(emailOne);
+    }
+
+    @Test
+    void sendFailedSubmissionNotificationEmail_shouldSendEmailToSupport() {
+        final Dissolution dissolution = generateDissolution();
+        final SupportNotificationEmailData emailData = generateSupportNotificationEmailData();
+        final EmailDocument<SupportNotificationEmailData> emailDoc = generateEmailDocument(emailData);
+
+        when(dissolutionEmailMapper.mapToSupportNotificationEmailData(dissolution)).thenReturn(emailData);
+        when(emailMapper.mapToEmailDocument(emailData, emailData.getTo(), MessageType.SUBMISSION_TO_CHIPS_FAILED)).thenReturn(emailDoc);
+
+        dissolutionEmailService.sendFailedSubmissionNotificationEmail(dissolution);
+
+        verify(emailService).sendMessage(emailDoc);
     }
 }
