@@ -102,11 +102,13 @@ public class DissolutionEmailMapper {
         SupportNotificationEmailData supportNotificationEmailData = new SupportNotificationEmailData();
 
         supportNotificationEmailData.setTo(environmentConfig.getChsSupportEmail());
-        supportNotificationEmailData.setSubject(SUBMISSION_TO_CHIPS_FAILED_SUBJECT);
+        supportNotificationEmailData.setSubject(DISSOLUTION_SUBMISSION_ALERT);
         supportNotificationEmailData.setDissolutionReferenceNumber(dissolution.getData().getApplication().getReference());
         supportNotificationEmailData.setCompanyNumber(dissolution.getCompany().getNumber());
         supportNotificationEmailData.setCompanyName(dissolution.getCompany().getName());
-        supportNotificationEmailData.setCdnHost(environmentConfig.getCdnHost());
+        supportNotificationEmailData.setStatus(dissolution.getSubmission().getStatus().name());
+        supportNotificationEmailData.setTimestamp(dissolution.getSubmission().getDateTime().toString());
+        supportNotificationEmailData.setRetryCounter(dissolution.getSubmission().getRetryCounter());
 
         return supportNotificationEmailData;
     }
