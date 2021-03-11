@@ -12,7 +12,8 @@ public enum MessageType {
     APPLICATION_ACCEPTED("dissolution_submission_accepted"),
     APPLICATION_ACCEPTED_LLDS01("dissolution_submission_accepted_llds01"),
     APPLICATION_REJECTED("dissolution_submission_rejected"),
-    APPLICATION_REJECTED_LLDS01("dissolution_submission_rejected_llds01");
+    APPLICATION_REJECTED_LLDS01("dissolution_submission_rejected_llds01"),
+    SUBMISSION_TO_CHIPS_FAILED("dissolution_alert");
 
     private final String value;
 

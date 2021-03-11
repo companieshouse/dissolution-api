@@ -30,6 +30,7 @@ documentRender:
 
 email:
   chsFinanceEmail: ${CHS_FINANCE_EMAIL}
+  chsSupportEmail: ${CHS_SUPPORT_EMAIL}
 
 env:
   name: ${ENV_NAME}

@@ -15,6 +15,10 @@ import uk.gov.companieshouse.model.dto.email.ApplicationRejectedEmailData;
 import uk.gov.companieshouse.model.dto.email.PendingPaymentEmailData;
 import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
 import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
+import uk.gov.companieshouse.model.dto.email.SupportNotificationEmailData;
+import uk.gov.companieshouse.model.enums.SubmissionStatus;
+
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
@@ -165,5 +169,22 @@ public class DissolutionEmailMapperTest {
 
         assertEquals(CHS_URL, result.getChsUrl());
         assertEquals(CDN_HOST, result.getCdnHost());
+    }
+
+    @Test
+    void mapToSupportNotificationEmailData_mapsSupportNotificationInfo() {
+        final Dissolution dissolution = generateDissolution();
+        dissolution.getSubmission().setStatus(SubmissionStatus.FAILED);
+        dissolution.getSubmission().setRetryCounter(3);
+        dissolution.getSubmission().setDateTime(LocalDateTime.now().minusMinutes(15));
+        SupportNotificationEmailData supportNotificationEmailData = EmailFixtures.generateSupportNotificationEmailData();
+
+        final SupportNotificationEmailData result = dissolutionEmailMapper.mapToSupportNotificationEmailData(dissolution);
+        assertEquals(supportNotificationEmailData.getSubject(), result.getSubject());
+        assertEquals(supportNotificationEmailData.getSubject(), result.getSubject());
+        assertEquals(supportNotificationEmailData.getCdnHost(), result.getCdnHost());
+        assertEquals(supportNotificationEmailData.getCompanyName(), result.getCompanyName());
+        assertEquals(supportNotificationEmailData.getCompanyNumber(), result.getCompanyNumber());
+        assertEquals(supportNotificationEmailData.getDissolutionReferenceNumber(), result.getDissolutionReferenceNumber());
     }
 }
