@@ -86,6 +86,7 @@ public class CompanyOfficerServiceTest {
         final Map<String, CompanyOfficer> result = service.getActiveDirectorsForCompany(COMPANY_NUMBER);
 
         assertEquals(2, result.size());
+        assertEquals(2, result.size());
         assertEquals(activeDirector1, result.get("123abc"));
         assertEquals(activeDirector2, result.get("456def"));
         assertNull(result.get("789ghi"));
