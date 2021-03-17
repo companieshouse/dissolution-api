@@ -101,7 +101,7 @@ public class DissolutionEmailMapper {
     public SupportNotificationEmailData mapToSupportNotificationEmailData(Dissolution dissolution) {
         SupportNotificationEmailData supportNotificationEmailData = new SupportNotificationEmailData();
 
-        supportNotificationEmailData.setTo(environmentConfig.getChsSupportEmail());
+        supportNotificationEmailData.setTo("asaleem@companieshouse.gov.uk");
         supportNotificationEmailData.setSubject(DISSOLUTION_SUBMISSION_ALERT);
         supportNotificationEmailData.setDissolutionReferenceNumber(dissolution.getData().getApplication().getReference());
         supportNotificationEmailData.setCompanyNumber(dissolution.getCompany().getNumber());
