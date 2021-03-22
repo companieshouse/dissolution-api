@@ -94,7 +94,7 @@ public class ChipsSubmitterTest {
         submitter.submitDissolutionToChips(dissolution);
 
         verify(repository).save(dissolutionCaptor.capture());
-        verify(dissolutionService, times(1)).sendFailedSubmissionNotificationEmail(dissolution);
+        verify(dissolutionService, times(0)).sendFailedSubmissionNotificationEmail(dissolution);
 
         final Dissolution updatedDissolution = dissolutionCaptor.getValue();
 
@@ -116,7 +116,7 @@ public class ChipsSubmitterTest {
         submitter.submitDissolutionToChips(dissolution);
 
         verify(repository).save(dissolutionCaptor.capture());
-        verify(dissolutionService, times(1)).sendFailedSubmissionNotificationEmail(dissolution);
+        verify(dissolutionService, times(0)).sendFailedSubmissionNotificationEmail(dissolution);
 
         final Dissolution updatedDissolution = dissolutionCaptor.getValue();
 

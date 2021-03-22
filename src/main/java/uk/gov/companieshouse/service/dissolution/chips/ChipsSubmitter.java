@@ -84,7 +84,6 @@ public class ChipsSubmitter {
             handleFailedSubmission(submission, dissolution);
         }
 
-        dissolutionService.sendFailedSubmissionNotificationEmail(dissolution);
         repository.save(dissolution);
     }
 
@@ -94,6 +93,7 @@ public class ChipsSubmitter {
         if (submission.getRetryCounter() == config.getChipsRetryLimit()) {
             logger.error(String.format("Marking dissolution as failed for company %s", dissolution.getCompany().getNumber()));
             submission.setStatus(SubmissionStatus.FAILED);
+            dissolutionService.sendFailedSubmissionNotificationEmail(dissolution);
         }
     }
 }
