@@ -28,7 +28,7 @@
         <ch-kafka.version>1.4.4</ch-kafka.version>
         <kafka-models.version>1.0.12</kafka-models.version>
         <aws.java.sdk.version>2.15.20</aws.java.sdk.version>
-        <version.sonar-maven-plugin>3.7.0.1746</version.sonar-maven-plugin>
+        <version.sonar-maven-plugin>3.9.0.2155</version.sonar-maven-plugin>
         <version.avro>1.10.0</version.avro>
     </properties>
 
@@ -297,7 +297,7 @@
             <plugin>
                 <groupId>org.sonarsource.scanner.maven</groupId>
                 <artifactId>sonar-maven-plugin</artifactId>
-                <version>3.7.0.1746</version>
+                <version>3.9.0.2155</version>
             </plugin>
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
