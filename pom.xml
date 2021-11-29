@@ -29,7 +29,6 @@
         <kafka-models.version>1.0.12</kafka-models.version>
         <aws.java.sdk.version>2.15.20</aws.java.sdk.version>
         <version.sonar-maven-plugin>3.7.0.1746</version.sonar-maven-plugin>
-        <version.avro>1.10.0</version.avro>
     </properties>
 
     <dependencyManagement>
