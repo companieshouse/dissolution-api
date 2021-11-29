@@ -27,7 +27,7 @@
         <avro.version>1.10.0</avro.version>
         <ch-kafka.version>1.4.4</ch-kafka.version>
         <kafka-models.version>1.0.12</kafka-models.version>
-        <aws.java.sdk.version>2.15.20</aws.java.sdk.version>
+        <aws.java.sdk.version>2.17.91</aws.java.sdk.version>
         <version.sonar-maven-plugin>3.7.0.1746</version.sonar-maven-plugin>
         <version.avro>1.10.0</version.avro>
     </properties>
@@ -49,17 +49,17 @@
         <dependency>
             <groupId>io.projectreactor.netty</groupId>
             <artifactId>reactor-netty-core</artifactId>
-            <version>1.0.4</version>
+            <version>1.0.13</version>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.59.Final</version>
+            <version>4.1.70.Final</version>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-codec-http2</artifactId>
-            <version>4.1.59.Final</version>
+            <version>4.1.70.Final</version>
         </dependency>
 
         <dependency>
@@ -212,7 +212,7 @@
         <dependency>
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo</artifactId>
-            <version>2.2.0</version>
+            <version>3.0.0</version>
             <scope>test</scope>
         </dependency>
 
