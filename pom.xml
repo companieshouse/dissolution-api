@@ -18,7 +18,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Versions -->
-        <version.spring.boot>2.5.5</version.spring.boot>
+        <version.spring.boot>2.5.7</version.spring.boot>
         <version.springdoc.openapi>1.4.8</version.springdoc.openapi>
         <api-helper-java.version>1.4.2</api-helper-java.version>
         <api-security-java.version>0.2.11</api-security-java.version>
@@ -27,7 +27,7 @@
         <avro.version>1.11.0</avro.version>
         <ch-kafka.version>1.4.4</ch-kafka.version>
         <kafka-models.version>1.0.12</kafka-models.version>
-        <aws.java.sdk.version>2.15.20</aws.java.sdk.version>
+        <aws.java.sdk.version>2.17.97</aws.java.sdk.version>
         <version.sonar-maven-plugin>3.7.0.1746</version.sonar-maven-plugin>
         <version.netty>4.1.70.Final</version.netty>
     </properties>
@@ -209,6 +209,8 @@
             <version>4.9.0</version>
             <scope>test</scope>
         </dependency>
+
+        <!--Embedded MongoDB-->
         <dependency>
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo</artifactId>
