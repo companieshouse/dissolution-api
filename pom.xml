@@ -22,14 +22,14 @@
         <version.springdoc.openapi>1.4.8</version.springdoc.openapi>
         <api-helper-java.version>1.4.2</api-helper-java.version>
         <api-security-java.version>0.2.11</api-security-java.version>
-        <structured-logging.version>1.9.10</structured-logging.version>
+        <structured-logging.version>1.9.11</structured-logging.version>
         <commons-lang3.version>3.11</commons-lang3.version>
         <avro.version>1.11.0</avro.version>
         <ch-kafka.version>1.4.4</ch-kafka.version>
         <kafka-models.version>1.0.12</kafka-models.version>
         <aws.java.sdk.version>2.15.20</aws.java.sdk.version>
         <version.sonar-maven-plugin>3.7.0.1746</version.sonar-maven-plugin>
-        <version.netty>4.1.70.Final</version.netty>
+        <version.netty>4.1.72.Final</version.netty>
     </properties>
 
     <dependencyManagement>
@@ -41,6 +41,13 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-bom</artifactId>
+                <version>2.16.0</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
         </dependencies>
 
     </dependencyManagement>
@@ -49,7 +56,7 @@
         <dependency>
             <groupId>io.projectreactor.netty</groupId>
             <artifactId>reactor-netty-core</artifactId>
-            <version>1.0.11</version>
+            <version>1.0.14</version>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
@@ -83,18 +90,6 @@
                 <exclusion>
                     <groupId>ch.qos.logback</groupId>
                     <artifactId>logback-classic</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-to-slf4j</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
