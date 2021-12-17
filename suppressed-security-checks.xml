@@ -72,4 +72,23 @@
         <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-core@.*$</packageUrl>
         <cve>CVE-2021-42340</cve>
     </suppress>
+        <suppress>
+        <notes><![CDATA[
+            file name: netty-tcnative-classes-2.0.46.Final.jar
+            JIRA ticket: TBC
+            Note: This is a false positive security issue see https://github.com/jeremylong/DependencyCheck/issues/3865
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-tcnative\-classes@.*$</packageUrl>
+        <cve>CVE-2021-43797</cve>
+        <cve>CVE-2019-16869</cve>
+        <cve>CVE-2015-2156</cve>
+        <cve>CVE-2021-37136</cve>
+        <cve>CVE-2014-3488</cve>
+        <cve>CVE-2021-37137</cve>
+        <cve>CVE-2019-20445</cve>
+        <cve>CVE-2019-20444</cve>
+        <cve>CVE-2021-21295</cve>
+        <cve>CVE-2021-21409</cve>
+        <cve>CVE-2021-21290</cve>
+    </suppress>
 </suppressions>
