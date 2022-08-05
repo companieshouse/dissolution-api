@@ -5,7 +5,6 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.config.FeatureToggleConfig;
 import uk.gov.companieshouse.exception.ChipsMapperException;
 import uk.gov.companieshouse.model.db.dissolution.Company;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
@@ -39,12 +38,9 @@ public class ChipsFormDataMapper {
 
     private final XmlMapper xmlMapper;
 
-    private final FeatureToggleConfig featureToggleConfig;
-
     @Autowired
-    public ChipsFormDataMapper(@Qualifier("xmlMapper") XmlMapper xmlMapper, FeatureToggleConfig featureToggleConfig) {
+    public ChipsFormDataMapper(@Qualifier("xmlMapper") XmlMapper xmlMapper) {
         this.xmlMapper = xmlMapper;
-        this.featureToggleConfig = featureToggleConfig;
     }
 
     public String mapToChipsFormDataXml(Dissolution dissolution) {
@@ -95,7 +91,7 @@ public class ChipsFormDataMapper {
 
         payment.setPaymentMethod(ChipsPaymentMethod.findByDissolutionPaymentMethod(dissolutionPayment.getMethod()));
 
-        if (featureToggleConfig.isPayByAccountEnabled() && dissolutionPayment.getMethod() == PaymentMethod.ACCOUNT) {
+        if (dissolutionPayment.getMethod() == PaymentMethod.ACCOUNT) {
             payment.setAccountNumber(dissolutionPayment.getAccountNumber());
         } else {
             payment.setReferenceNumber(dissolutionPayment.getReference());

@@ -3,7 +3,6 @@ package uk.gov.companieshouse.service.dissolution.validator;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.config.FeatureToggleConfig;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.PaymentMethod;
 
@@ -16,12 +15,8 @@ public class PaymentValidator {
     private static final String ERROR_PAYMENT_REFERENCE_CANNOT_BE_EMPTY_FOR_CARD_PAYMENT = "You must provide a payment reference number for a card payment";
     private static final String ERROR_ACCOUNT_NUMBER_CANNOT_BE_EMPTY_FOR_ACCOUNT_PAYMENT = "You must provide an account number to pay by account";
 
-    private final FeatureToggleConfig featureToggleConfig;
-
     @Autowired
-    public PaymentValidator(FeatureToggleConfig featureToggleConfig) {
-        this.featureToggleConfig = featureToggleConfig;
-    }
+    public PaymentValidator() {}
 
     public Optional<String> checkBusinessRules(PaymentPatchRequest body) {
         if (isPaymentReferenceAndAccountNumberProvided(body)) {
@@ -40,8 +35,7 @@ public class PaymentValidator {
     }
 
     private boolean isPaymentReferenceAndAccountNumberProvided(PaymentPatchRequest body) {
-        return featureToggleConfig.isPayByAccountEnabled() &&
-                !StringUtils.isEmpty(body.getPaymentReference()) &&
+        return  !StringUtils.isEmpty(body.getPaymentReference()) &&
                 !StringUtils.isEmpty(body.getAccountNumber());
     }
 
@@ -50,8 +44,7 @@ public class PaymentValidator {
     }
 
     private boolean isAccountNumberNotProvidedForAccountPayment(PaymentPatchRequest body) {
-        return featureToggleConfig.isPayByAccountEnabled() &&
-                body.getPaymentMethod() == PaymentMethod.ACCOUNT &&
+        return  body.getPaymentMethod() == PaymentMethod.ACCOUNT &&
                 StringUtils.isEmpty(body.getAccountNumber());
     }
 }

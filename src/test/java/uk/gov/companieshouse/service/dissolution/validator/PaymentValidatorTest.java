@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.companieshouse.config.FeatureToggleConfig;
 import uk.gov.companieshouse.fixtures.PaymentFixtures;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.PaymentMethod;
@@ -23,9 +22,6 @@ public class PaymentValidatorTest {
     @InjectMocks
     private PaymentValidator paymentValidator;
 
-    @Mock
-    private FeatureToggleConfig featureToggleConfig;
-
     private PaymentPatchRequest paymentPatchRequest;
 
     @BeforeEach
@@ -38,8 +34,6 @@ public class PaymentValidatorTest {
         paymentPatchRequest.setPaymentReference("some payment reference");
         paymentPatchRequest.setAccountNumber("some account number");
 
-        when(featureToggleConfig.isPayByAccountEnabled()).thenReturn(true);
-
         final Optional<String> result = paymentValidator.checkBusinessRules(paymentPatchRequest);
 
         assertEquals("You cannot submit both a payment reference number and an account number", result.get());
@@ -49,8 +43,6 @@ public class PaymentValidatorTest {
     public void checkBusinessRules_paymentReferenceNotProvidedForCardPayment_returnsValidationMessage() {
         paymentPatchRequest.setPaymentReference(null);
         paymentPatchRequest.setPaymentMethod(PaymentMethod.CREDIT_CARD);
-
-        when(featureToggleConfig.isPayByAccountEnabled()).thenReturn(true);
 
         final Optional<String> result = paymentValidator.checkBusinessRules(paymentPatchRequest);
 
@@ -62,8 +54,6 @@ public class PaymentValidatorTest {
         paymentPatchRequest.setAccountNumber(null);
         paymentPatchRequest.setPaymentMethod(PaymentMethod.ACCOUNT);
 
-        when(featureToggleConfig.isPayByAccountEnabled()).thenReturn(true);
-
         final Optional<String> result = paymentValidator.checkBusinessRules(paymentPatchRequest);
 
         assertEquals("You must provide an account number to pay by account", result.get());
@@ -74,8 +64,6 @@ public class PaymentValidatorTest {
         paymentPatchRequest.setAccountNumber("222222");
         paymentPatchRequest.setPaymentReference(null);
         paymentPatchRequest.setPaymentMethod(PaymentMethod.ACCOUNT);
-
-        when(featureToggleConfig.isPayByAccountEnabled()).thenReturn(true);
 
         final Optional<String> result = paymentValidator.checkBusinessRules(paymentPatchRequest);
 
