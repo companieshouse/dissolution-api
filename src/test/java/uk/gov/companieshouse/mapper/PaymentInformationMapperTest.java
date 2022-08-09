@@ -24,7 +24,7 @@ public class PaymentInformationMapperTest {
     private PaymentInformationMapper paymentInformationMapper;
 
     @Test
-    public void mapToPaymentInformation_getsPaymentInformation_payByAccount() {
+    void mapToPaymentInformation_getsPaymentInformation_payByAccount() {
         final PaymentPatchRequest paymentPatchRequest = generatePaymentPatchRequest();
         paymentPatchRequest.setPaymentReference(null);
         paymentPatchRequest.setPaymentMethod(PaymentMethod.ACCOUNT);
@@ -39,7 +39,7 @@ public class PaymentInformationMapperTest {
     }
 
     @Test
-    public void mapToPaymentInformation_getsPaymentInformation_payByCreditCard() {
+    void mapToPaymentInformation_getsPaymentInformation_payByCreditCard() {
         final PaymentPatchRequest paymentPatchRequest = generatePaymentPatchRequest();
         paymentPatchRequest.setPaymentReference(PAYMENT_REFERENCE);
         paymentPatchRequest.setPaymentMethod(PaymentMethod.CREDIT_CARD);

@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.service.dissolution.validator;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.PaymentMethod;
@@ -14,9 +13,6 @@ public class PaymentValidator {
     private static final String ERROR_CANNOT_SUBMIT_BOTH_PAYMENT_REFERENCE_AND_ACCOUNT_NUMBER = "You cannot submit both a payment reference number and an account number";
     private static final String ERROR_PAYMENT_REFERENCE_CANNOT_BE_EMPTY_FOR_CARD_PAYMENT = "You must provide a payment reference number for a card payment";
     private static final String ERROR_ACCOUNT_NUMBER_CANNOT_BE_EMPTY_FOR_ACCOUNT_PAYMENT = "You must provide an account number to pay by account";
-
-    @Autowired
-    public PaymentValidator() {}
 
     public Optional<String> checkBusinessRules(PaymentPatchRequest body) {
         if (isPaymentReferenceAndAccountNumberProvided(body)) {
