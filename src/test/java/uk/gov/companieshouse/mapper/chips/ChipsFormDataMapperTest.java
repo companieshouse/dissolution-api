@@ -9,7 +9,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.companieshouse.config.FeatureToggleConfig;
 import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
@@ -48,9 +47,6 @@ public class ChipsFormDataMapperTest {
     @Mock
     private XmlMapper xmlMapper;
 
-    @Mock
-    private FeatureToggleConfig featureToggleConfig;
-
     private Dissolution dissolution;
     private ArgumentCaptor<ChipsFormData> requestCaptor;
 
@@ -63,7 +59,6 @@ public class ChipsFormDataMapperTest {
         requestCaptor = ArgumentCaptor.forClass(ChipsFormData.class);
 
         when(xmlMapper.writeValueAsString(any())).thenReturn("some xml");
-        when(featureToggleConfig.isPayByAccountEnabled()).thenReturn(false);
     }
 
     @Test
@@ -154,8 +149,6 @@ public class ChipsFormDataMapperTest {
         dissolution.getPaymentInformation().setMethod(PaymentMethod.ACCOUNT);
         dissolution.getPaymentInformation().setAccountNumber(ACCOUNT_NUMBER);
 
-        when(featureToggleConfig.isPayByAccountEnabled()).thenReturn(true);
-
         mapper.mapToChipsFormDataXml(dissolution);
 
         verify(xmlMapper).writeValueAsString(requestCaptor.capture());
@@ -171,8 +164,6 @@ public class ChipsFormDataMapperTest {
     public void mapToChipsFormDataXml_setsTheFilingDetails_paymentDetailsCorrectly_payByAccountFeatureToggleOff() throws Exception {
         dissolution.getPaymentInformation().setMethod(PaymentMethod.CREDIT_CARD);
         dissolution.getPaymentInformation().setReference(PAYMENT_REFERENCE);
-
-        when(featureToggleConfig.isPayByAccountEnabled()).thenReturn(false);
 
         mapper.mapToChipsFormDataXml(dissolution);
 

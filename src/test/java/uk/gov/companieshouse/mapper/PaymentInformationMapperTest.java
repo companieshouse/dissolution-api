@@ -5,7 +5,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.companieshouse.config.FeatureToggleConfig;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.PaymentMethod;
@@ -24,17 +23,12 @@ public class PaymentInformationMapperTest {
     @InjectMocks
     private PaymentInformationMapper paymentInformationMapper;
 
-    @Mock
-    private FeatureToggleConfig featureToggleConfig;
-
     @Test
-    public void mapToPaymentInformation_getsPaymentInformation_payByAccountFeatureToggleOn() {
+    void mapToPaymentInformation_getsPaymentInformation_payByAccount() {
         final PaymentPatchRequest paymentPatchRequest = generatePaymentPatchRequest();
         paymentPatchRequest.setPaymentReference(null);
         paymentPatchRequest.setPaymentMethod(PaymentMethod.ACCOUNT);
         paymentPatchRequest.setAccountNumber(ACCOUNT_NUMBER);
-
-        when(featureToggleConfig.isPayByAccountEnabled()).thenReturn(true);
 
         final PaymentInformation paymentInformation = paymentInformationMapper.mapToPaymentInformation(paymentPatchRequest);
 
@@ -45,13 +39,11 @@ public class PaymentInformationMapperTest {
     }
 
     @Test
-    public void mapToPaymentInformation_getsPaymentInformation_payByAccountFeatureToggleOff() {
+    void mapToPaymentInformation_getsPaymentInformation_payByCreditCard() {
         final PaymentPatchRequest paymentPatchRequest = generatePaymentPatchRequest();
         paymentPatchRequest.setPaymentReference(PAYMENT_REFERENCE);
         paymentPatchRequest.setPaymentMethod(PaymentMethod.CREDIT_CARD);
         paymentPatchRequest.setAccountNumber(null);
-
-        when(featureToggleConfig.isPayByAccountEnabled()).thenReturn(false);
 
         final PaymentInformation paymentInformation = paymentInformationMapper.mapToPaymentInformation(paymentPatchRequest);
 
