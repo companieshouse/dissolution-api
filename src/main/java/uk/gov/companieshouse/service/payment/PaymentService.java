@@ -1,12 +1,13 @@
 package uk.gov.companieshouse.service.payment;
 
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.client.PaymentsClient;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentDescriptionValues;
+import uk.gov.companieshouse.model.dto.payment.PaymentDetailsResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentItem;
 import uk.gov.companieshouse.model.dto.payment.PaymentLinks;
-import uk.gov.companieshouse.model.enums.ApplicationType;
 
 import java.util.List;
 
@@ -14,6 +15,13 @@ import static uk.gov.companieshouse.model.Constants.*;
 
 @Service
 public class PaymentService {
+    private final PaymentsClient paymentsClient;
+
+    public PaymentService(
+            PaymentsClient paymentsClient
+    ) {
+        this.paymentsClient = paymentsClient;
+    }
 
     public PaymentGetResponse get(DissolutionGetResponse dissolutionInfo) {
         PaymentGetResponse response = new PaymentGetResponse();
@@ -31,6 +39,11 @@ public class PaymentService {
 
         return response;
     }
+    public String getPaymentStatus(String paymentReference) {
+        PaymentDetailsResponse paymentDetailsResponse = paymentsClient.getPaymentDetails(paymentReference);
+
+        return paymentDetailsResponse.getPaymentStatus();
+    }
 
     private PaymentItem createPaymentItem(DissolutionGetResponse dissolutionInfo) {
         PaymentItem item = new PaymentItem();
@@ -47,4 +60,5 @@ public class PaymentService {
 
         return item;
     }
+
 }

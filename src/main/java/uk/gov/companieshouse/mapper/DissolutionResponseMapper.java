@@ -46,6 +46,7 @@ public class DissolutionResponseMapper extends ResponseMapper {
         response.setCreatedAt(Timestamp.valueOf(dissolution.getCreatedBy().getDateTime()));
         response.setCreatedBy(dissolution.getCreatedBy().getEmail());
         response.setDirectors(mapToDissolutionGetDirectors(dissolution.getData().getDirectors()));
+        response.setPaymentReference(dissolution.getPaymentInformation().getReference());
 
         Optional
                 .ofNullable(dissolution.getCertificate())
