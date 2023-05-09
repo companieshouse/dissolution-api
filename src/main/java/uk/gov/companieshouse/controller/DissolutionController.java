@@ -27,9 +27,7 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
-import uk.gov.companieshouse.model.dto.payment.PaymentDetailsResponse;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
-import uk.gov.companieshouse.model.enums.PaymentStatus;
 import uk.gov.companieshouse.service.CompanyOfficerService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import uk.gov.companieshouse.service.dissolution.validator.DissolutionValidator;
@@ -111,14 +109,13 @@ public class DissolutionController {
         DissolutionGetResponse dissolutionGetResponse = dissolutionService
                 .getByCompanyNumber(companyNumber)
                 .orElseThrow(NotFoundException::new);
-
-        if (dissolutionGetResponse.getApplicationStatus().equals(ApplicationStatus.PENDING_PAYMENT)) {
+        String paymentRef = dissolutionGetResponse.getPaymentReference();
+        if ( paymentRef != null && !paymentRef.equals("") && dissolutionGetResponse.getApplicationStatus().equals(ApplicationStatus.PENDING_PAYMENT)) {
             // payment could be complete, we need to get up-to-date status to be sure
             String paymentStatus = paymentService.getPaymentStatus(dissolutionGetResponse.getPaymentReference());
-            if (paymentStatus.equals(PaymentStatus.PAID)) {
+            if (paymentStatus.equals("accepted")) {
                 dissolutionGetResponse.setApplicationStatus(ApplicationStatus.PAID);
             }
-
         }
 
         return dissolutionGetResponse;

@@ -23,4 +23,11 @@ public class PaymentInformationMapper {
 
         return paymentInformation;
     }
+
+    public PaymentInformation mapPaymentReference(String paymentReference) {
+        PaymentInformation paymentInformation = new PaymentInformation();
+        paymentInformation.setReference(paymentReference);
+
+        return paymentInformation;
+    }
 }
