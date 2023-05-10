@@ -27,9 +27,11 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
+import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.service.CompanyOfficerService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import uk.gov.companieshouse.service.dissolution.validator.DissolutionValidator;
+import uk.gov.companieshouse.service.payment.PaymentService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -46,16 +48,19 @@ public class DissolutionController {
     private final DissolutionValidator dissolutionValidator;
     private final CompanyProfileClient companyProfileClient;
     private final CompanyOfficerService companyOfficerService;
+    private final PaymentService paymentService;
 
     public DissolutionController(
             DissolutionService dissolutionService,
             DissolutionValidator dissolutionValidator,
             CompanyProfileClient companyProfileClient,
-            CompanyOfficerService companyOfficerService) {
+            CompanyOfficerService companyOfficerService,
+            PaymentService paymentService) {
         this.dissolutionService = dissolutionService;
         this.dissolutionValidator = dissolutionValidator;
         this.companyProfileClient = companyProfileClient;
         this.companyOfficerService = companyOfficerService;
+        this.paymentService = paymentService;
     }
 
     @Operation(summary = "Create Dissolution Request", tags = "Dissolution")
@@ -101,9 +106,19 @@ public class DissolutionController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public DissolutionGetResponse getDissolutionApplication(@PathVariable("company-number") final String companyNumber) {
-        return dissolutionService
+        DissolutionGetResponse dissolutionGetResponse = dissolutionService
                 .getByCompanyNumber(companyNumber)
                 .orElseThrow(NotFoundException::new);
+        String paymentRef = dissolutionGetResponse.getPaymentReference();
+        if ( paymentRef != null && !paymentRef.equals("") && dissolutionGetResponse.getApplicationStatus().equals(ApplicationStatus.PENDING_PAYMENT)) {
+            // payment could be complete, we need to get up-to-date status to be sure
+            String paymentStatus = paymentService.getPaymentStatus(dissolutionGetResponse.getPaymentReference());
+            if (paymentStatus.equals("accepted")) {
+                dissolutionGetResponse.setApplicationStatus(ApplicationStatus.PAID);
+            }
+        }
+
+        return dissolutionGetResponse;
     }
 
     @Operation(summary = "Patch Dissolution Application", tags = "Dissolution")

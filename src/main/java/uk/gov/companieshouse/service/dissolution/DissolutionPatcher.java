@@ -67,7 +67,6 @@ public class DissolutionPatcher {
     private void handleFinalApproval(Dissolution dissolution) {
         final List<DissolutionDirector> directors = dissolution.getData().getDirectors();
         setDissolutionStatus(dissolution, ApplicationStatus.PENDING_PAYMENT);
-        dissolution.setCertificate(this.certificateGenerator.generateDissolutionCertificate(dissolution));
         if (directors.size()>1) {
             dissolutionEmailService.sendPendingPaymentEmail(dissolution);
         }
@@ -87,6 +86,14 @@ public class DissolutionPatcher {
         dissolutionEmailService.sendSuccessfulPaymentEmail(dissolution);
     }
 
+    public void setPaymentReference(String paymentReference, String applicationReference) throws DissolutionNotFoundException {
+        final Dissolution dissolution = this.repository.findByDataApplicationReference(applicationReference).orElseThrow(DissolutionNotFoundException::new);
+
+        this.addPaymentReference(paymentReference, dissolution);
+
+        this.repository.save(dissolution);
+    }
+
     private DissolutionDirector findDirector(String officerId, Dissolution dissolution) throws DissolutionNotFoundException {
         return dissolution
                 .getData()
@@ -99,6 +106,12 @@ public class DissolutionPatcher {
 
     private void addPaymentInformation(PaymentPatchRequest body, Dissolution dissolution) {
         final PaymentInformation information = paymentInformationMapper.mapToPaymentInformation(body);
+
+        dissolution.setPaymentInformation(information);
+    }
+
+    private void addPaymentReference(String paymentReference, Dissolution dissolution) {
+        final PaymentInformation information = paymentInformationMapper.mapPaymentReference(paymentReference);
 
         dissolution.setPaymentInformation(information);
     }

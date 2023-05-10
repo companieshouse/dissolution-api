@@ -44,6 +44,9 @@ public class DissolutionGetResponse {
 
     private List<DissolutionGetDirector> directors;
 
+    @JsonProperty("payment_reference")
+    private String paymentReference;
+
     @JsonProperty("ETag")
     public String getETag() {
         return eTag;
@@ -147,5 +150,13 @@ public class DissolutionGetResponse {
 
     public void setCertificateKey(String certificateKey) {
         this.certificateKey = certificateKey;
+    }
+
+    public String getPaymentReference() {
+        return paymentReference;
+    }
+
+    public void setPaymentReference(String paymentReference) {
+        this.paymentReference = paymentReference;
     }
 }

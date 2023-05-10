@@ -44,6 +44,10 @@ public class DissolutionService {
         patcher.handlePayment(body, applicationReference);
     }
 
+    public void setPaymentReference(String paymentReference, String applicationReference) throws DissolutionNotFoundException {
+        patcher.setPaymentReference(paymentReference, applicationReference);
+    }
+
     public boolean doesDissolutionRequestExistForCompanyByCompanyNumber(String companyNumber) {
         return repository.findByCompanyNumber(companyNumber).isPresent();
     }

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import uk.gov.companieshouse.config.PaymentsConfig;
+import uk.gov.companieshouse.model.dto.payment.PaymentDetailsResponse;
 import uk.gov.companieshouse.model.dto.payment.RefundRequest;
 import uk.gov.companieshouse.model.dto.payment.RefundResponse;
 
@@ -14,6 +15,7 @@ import static uk.gov.companieshouse.model.Constants.*;
 public class PaymentsClient {
 
     private static final String REFUNDS_URI = "/payments/{paymentReference}/refunds";
+    private static final String PAYMENT_DETAILS_URI = "/private/payments/{paymentReference}/payment-details";
 
     private final PaymentsConfig config;
 
@@ -34,5 +36,17 @@ public class PaymentsClient {
             .retrieve()
             .bodyToMono(RefundResponse.class)
             .block();
+    }
+
+    public PaymentDetailsResponse getPaymentDetails(String paymentReference) {
+        return WebClient
+                .create(config.getPaymentsHost())
+                .get()
+                .uri(PAYMENT_DETAILS_URI, paymentReference)
+                .header(HEADER_AUTHORIZATION, config.getApiKey())
+                .header(HEADER_ACCEPT, CONTENT_TYPE_JSON)
+                .retrieve()
+                .bodyToMono(PaymentDetailsResponse.class)
+                .block();
     }
 }

@@ -51,6 +51,11 @@ public class DissolutionResponseMapper extends ResponseMapper {
                 .ofNullable(dissolution.getCertificate())
                 .ifPresent(certificate -> setCertificateDetails(response, certificate));
 
+        if (dissolution.getPaymentInformation() != null) {
+            Optional
+                    .ofNullable(dissolution.getPaymentInformation().getReference())
+                    .ifPresent(paymentReference -> setPaymentReference(response, paymentReference));
+        }
         return response;
     }
 
@@ -87,5 +92,9 @@ public class DissolutionResponseMapper extends ResponseMapper {
     private void setCertificateDetails(DissolutionGetResponse response, DissolutionCertificate certificate) {
         response.setCertificateBucket(certificate.getBucket());
         response.setCertificateKey(certificate.getKey());
+    }
+
+    private void setPaymentReference(DissolutionGetResponse response, String paymentReference) {
+        response.setPaymentReference(paymentReference);
     }
 }

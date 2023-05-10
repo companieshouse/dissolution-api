@@ -95,6 +95,12 @@ public class PaymentController {
             } catch (DissolutionNotFoundException e) {
                 throw new NotFoundException();
             }
+        } else {
+            try {
+                dissolutionService.setPaymentReference(body.getPaymentReference(), applicationReference);
+            } catch (DissolutionNotFoundException e) {
+                throw new NotFoundException();
+            }
         }
     }
 }
