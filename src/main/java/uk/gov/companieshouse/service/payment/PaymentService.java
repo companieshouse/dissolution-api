@@ -42,7 +42,10 @@ public class PaymentService {
     public String getPaymentStatus(String paymentReference) {
         PaymentDetailsResponse paymentDetailsResponse = paymentsClient.getPaymentDetails(paymentReference);
 
-        return paymentDetailsResponse.getPaymentStatus();
+        if (paymentDetailsResponse != null) {
+            return paymentDetailsResponse.getPaymentStatus();
+        }
+        return null;
     }
 
     private PaymentItem createPaymentItem(DissolutionGetResponse dissolutionInfo) {
