@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.client;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -13,6 +14,8 @@ import static uk.gov.companieshouse.model.Constants.*;
 
 @Service
 public class PaymentsClient {
+
+    private static class PaymentDetailsException extends RuntimeException {}
 
     private static final String REFUNDS_URI = "/payments/{paymentReference}/refunds";
     private static final String PAYMENT_DETAILS_URI = "/private/payments/{paymentReference}/payment-details";
@@ -39,14 +42,21 @@ public class PaymentsClient {
     }
 
     public PaymentDetailsResponse getPaymentDetails(String paymentReference) {
-        return WebClient
-                .create(config.getPaymentsHost())
-                .get()
-                .uri(PAYMENT_DETAILS_URI, paymentReference)
-                .header(HEADER_AUTHORIZATION, config.getApiKey())
-                .header(HEADER_ACCEPT, CONTENT_TYPE_JSON)
-                .retrieve()
-                .bodyToMono(PaymentDetailsResponse.class)
-                .block();
+        try {
+            return WebClient
+                    .create(config.getPaymentsHost())
+                    .get()
+                    .uri(PAYMENT_DETAILS_URI, paymentReference)
+                    .header(HEADER_AUTHORIZATION, config.getApiKey())
+                    .header(HEADER_ACCEPT, CONTENT_TYPE_JSON)
+                    .retrieve()
+                    .onStatus(HttpStatus.INTERNAL_SERVER_ERROR::equals, clientResponse -> {
+                        throw new PaymentDetailsException();
+                    })
+                    .bodyToMono(PaymentDetailsResponse.class)
+                    .block();
+        } catch (PaymentDetailsException ex) {
+            return null;
+        }
     }
 }
