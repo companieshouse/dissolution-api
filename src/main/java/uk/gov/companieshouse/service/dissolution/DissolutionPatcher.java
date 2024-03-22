@@ -67,7 +67,7 @@ public class DissolutionPatcher {
     private void handleFinalApproval(Dissolution dissolution) {
         final List<DissolutionDirector> directors = dissolution.getData().getDirectors();
         setDissolutionStatus(dissolution, ApplicationStatus.PENDING_PAYMENT);
-        dissolution.setCertificate(this.certificateGenerator.generateDissolutionCertificate(dissolution));
+        //dissolution.setCertificate(this.certificateGenerator.generateDissolutionCertificate(dissolution));
         if (directors.size()>1) {
             dissolutionEmailService.sendPendingPaymentEmail(dissolution);
         }
