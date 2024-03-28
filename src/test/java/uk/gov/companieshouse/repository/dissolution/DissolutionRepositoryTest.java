@@ -20,14 +20,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataMongoTest
 @ExtendWith(SpringExtension.class)
-public class DissolutionRepositoryTest {
+class DissolutionRepositoryTest {
 
     @Autowired
     public DissolutionRepository repository;
 
-   /* @Test
-    public void findByCompanyNumber_findsActiveDissolution() {
-        final String COMPANY_NUMBER = "123";
+    @Test
+    void findByCompanyNumber_findsActiveDissolution() {
+        final String COMPANY_NUMBER = "728"; //reference should be unique everytime you test
 
         Dissolution dissolution = DissolutionFixtures.generateDissolution();
         dissolution.getCompany().setNumber(COMPANY_NUMBER);
@@ -36,11 +36,11 @@ public class DissolutionRepositoryTest {
         repository.insert(dissolution);
 
         assertEquals(COMPANY_NUMBER, repository.findByCompanyNumber(COMPANY_NUMBER).get().getCompany().getNumber());
-    }*/
+    }
 
-    /*@Test
-    public void findByCompanyNumber_DoesNotFindInactiveDissolution() {
-        final String COMPANY_NUMBER = "123";
+    @Test
+    void findByCompanyNumber_DoesNotFindInactiveDissolution() {
+        final String COMPANY_NUMBER = "225"; //reference should be unique everytime you test
 
         Dissolution dissolution = DissolutionFixtures.generateDissolution();
         dissolution.getCompany().setNumber(COMPANY_NUMBER);
@@ -49,11 +49,11 @@ public class DissolutionRepositoryTest {
         repository.insert(dissolution);
 
         assertTrue(repository.findByCompanyNumber(COMPANY_NUMBER).isEmpty());
-    }*/
+    }
 
-    /*@Test
-    public void findByDataApplicationReference_findsCorrectDissolution() {
-        final String APPLICATION_REFERENCE = "ABC123";
+    @Test
+    void findByDataApplicationReference_findsCorrectDissolution() {
+        final String APPLICATION_REFERENCE = "GQB973"; //reference should be unique everytime you test
 
         Dissolution dissolution = DissolutionFixtures.generateDissolution();
         dissolution.getData().getApplication().setReference(APPLICATION_REFERENCE);
@@ -61,10 +61,10 @@ public class DissolutionRepositoryTest {
         repository.insert(dissolution);
 
         assertEquals(APPLICATION_REFERENCE, repository.findByDataApplicationReference(APPLICATION_REFERENCE).get().getData().getApplication().getReference());
-    }*/
+    }
 
-  /*  @Test
-    public void findPendingDissolutions_findsDissolutionsThatArePendingAndWithCorrectSubmissionDateTime() {
+    @Test
+    void findPendingDissolutions_findsDissolutionsThatArePendingAndWithCorrectSubmissionDateTime() {
         final int SUBMISSION_LIMIT = 2;
 
         Dissolution dissolution1 = this.generateDissolution("1", LocalDateTime.now().minusMinutes(50),
@@ -94,7 +94,7 @@ public class DissolutionRepositoryTest {
         // Order is important - older first
         assertEquals("3", dissolutions.get(0).getCompany().getNumber());
         assertEquals("2", dissolutions.get(1).getCompany().getNumber());
-    }*/
+    }
 
     private Dissolution generateDissolution(String companyNumber, LocalDateTime submissionDateTime, SubmissionStatus submissionStatus, LocalDateTime paymentDateTime) {
         Dissolution dissolution = DissolutionFixtures.generateDissolution();
