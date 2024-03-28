@@ -1,7 +1,7 @@
 package uk.gov.companieshouse.model.dto.dissolution;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Size;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 
 public class DissolutionCreateRequest {

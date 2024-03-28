@@ -34,8 +34,8 @@ import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import uk.gov.companieshouse.service.dissolution.validator.DissolutionValidator;
 import uk.gov.companieshouse.service.payment.PaymentService;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import java.util.Map;
 import java.util.Optional;
 

@@ -15,7 +15,7 @@ import uk.gov.companieshouse.model.dto.chips.ChipsResponseCreateRequest;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import uk.gov.companieshouse.service.dissolution.chips.ChipsResponseService;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/dissolution-request/response")

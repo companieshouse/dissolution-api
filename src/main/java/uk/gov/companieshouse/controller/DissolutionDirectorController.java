@@ -15,7 +15,7 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchReque
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchResponse;
 import uk.gov.companieshouse.service.dissolution.director.DissolutionDirectorService;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.Optional;
 
 import static uk.gov.companieshouse.util.EricHelper.getEmail;

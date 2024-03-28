@@ -25,7 +25,7 @@ import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import uk.gov.companieshouse.service.dissolution.validator.PaymentValidator;
 import uk.gov.companieshouse.service.payment.PaymentService;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/dissolution-request/{application-reference}/payment")

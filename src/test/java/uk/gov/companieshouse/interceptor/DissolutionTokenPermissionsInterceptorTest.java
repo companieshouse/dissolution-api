@@ -7,8 +7,8 @@ import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.api.util.security.TokenPermissions;
 import uk.gov.companieshouse.exception.UnauthorisedException;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.Map;
 
@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
-public class DissolutionTokenPermissionsInterceptorTest {
+class DissolutionTokenPermissionsInterceptorTest {
 
     private static final String COMPANY_NUMBER = "1234";
     private static final String TOKEN_PERMISSION_ATTRIBUTE = "token_permissions";
@@ -37,7 +37,7 @@ public class DissolutionTokenPermissionsInterceptorTest {
     }
 
     @Test
-    public void interceptor_throwsAnUnauthorisedError_ifNoTokenPermissionsArePresent() {
+    void interceptor_throwsAnUnauthorisedError_ifNoTokenPermissionsArePresent() {
         when(request.getAttribute(TOKEN_PERMISSION_ATTRIBUTE)).thenReturn(null);
 
         assertThrows(UnauthorisedException.class, () -> interceptor.preHandle(request, response, handler), "TokenPermissions not present in request");
@@ -46,7 +46,7 @@ public class DissolutionTokenPermissionsInterceptorTest {
     }
 
     @Test
-    public void interceptor_throwsAnUnauthorisedError_ifCompanyNumberTokenPermissionsDoesNotMatchUri() {
+    void interceptor_throwsAnUnauthorisedError_ifCompanyNumberTokenPermissionsDoesNotMatchUri() {
         TokenPermissions tokenPermissions = mock(TokenPermissions.class);
 
         when(request.getAttribute(TOKEN_PERMISSION_ATTRIBUTE)).thenReturn(tokenPermissions);
@@ -58,7 +58,7 @@ public class DissolutionTokenPermissionsInterceptorTest {
     }
 
     @Test
-    public void interceptor_throwsAnUnauthorisedError_ifTokenPermissionsDoesNotContainRequiredPermissions() {
+    void interceptor_throwsAnUnauthorisedError_ifTokenPermissionsDoesNotContainRequiredPermissions() {
         TokenPermissions tokenPermissions = mock(TokenPermissions.class);
 
         when(request.getAttribute(TOKEN_PERMISSION_ATTRIBUTE)).thenReturn(tokenPermissions);
@@ -71,7 +71,7 @@ public class DissolutionTokenPermissionsInterceptorTest {
     }
 
     @Test
-    public void interceptor_returnsTrue_ifTokenPermissionsContainsAllRequiredPermissions() {
+    void interceptor_returnsTrue_ifTokenPermissionsContainsAllRequiredPermissions() {
         TokenPermissions tokenPermissions = mock(TokenPermissions.class);
 
         when(request.getAttribute(TOKEN_PERMISSION_ATTRIBUTE)).thenReturn(tokenPermissions);

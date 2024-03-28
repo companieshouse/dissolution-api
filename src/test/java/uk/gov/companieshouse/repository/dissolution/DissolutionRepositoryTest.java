@@ -20,14 +20,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataMongoTest
 @ExtendWith(SpringExtension.class)
-public class DissolutionRepositoryTest {
+class DissolutionRepositoryTest {
 
     @Autowired
     public DissolutionRepository repository;
 
     @Test
-    public void findByCompanyNumber_findsActiveDissolution() {
-        final String COMPANY_NUMBER = "123";
+    void findByCompanyNumber_findsActiveDissolution() {
+        final String COMPANY_NUMBER = "728"; //reference should be unique everytime you test
 
         Dissolution dissolution = DissolutionFixtures.generateDissolution();
         dissolution.getCompany().setNumber(COMPANY_NUMBER);
@@ -39,8 +39,8 @@ public class DissolutionRepositoryTest {
     }
 
     @Test
-    public void findByCompanyNumber_DoesNotFindInactiveDissolution() {
-        final String COMPANY_NUMBER = "123";
+    void findByCompanyNumber_DoesNotFindInactiveDissolution() {
+        final String COMPANY_NUMBER = "225"; //reference should be unique everytime you test
 
         Dissolution dissolution = DissolutionFixtures.generateDissolution();
         dissolution.getCompany().setNumber(COMPANY_NUMBER);
@@ -52,8 +52,8 @@ public class DissolutionRepositoryTest {
     }
 
     @Test
-    public void findByDataApplicationReference_findsCorrectDissolution() {
-        final String APPLICATION_REFERENCE = "XYZ456";
+    void findByDataApplicationReference_findsCorrectDissolution() {
+        final String APPLICATION_REFERENCE = "GQB973"; //reference should be unique everytime you test
 
         Dissolution dissolution = DissolutionFixtures.generateDissolution();
         dissolution.getData().getApplication().setReference(APPLICATION_REFERENCE);
@@ -64,7 +64,7 @@ public class DissolutionRepositoryTest {
     }
 
     @Test
-    public void findPendingDissolutions_findsDissolutionsThatArePendingAndWithCorrectSubmissionDateTime() {
+    void findPendingDissolutions_findsDissolutionsThatArePendingAndWithCorrectSubmissionDateTime() {
         final int SUBMISSION_LIMIT = 2;
 
         Dissolution dissolution1 = this.generateDissolution("1", LocalDateTime.now().minusMinutes(50),
