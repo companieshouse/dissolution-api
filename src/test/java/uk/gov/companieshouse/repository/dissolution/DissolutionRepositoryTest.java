@@ -27,7 +27,7 @@ class DissolutionRepositoryTest {
 
     @Test
     void findByCompanyNumber_findsActiveDissolution() {
-        final String COMPANY_NUMBER = "728"; //reference should be unique everytime you test
+        final String COMPANY_NUMBER = "728"; //This is a random number. Reference should be unique everytime you test
 
         Dissolution dissolution = DissolutionFixtures.generateDissolution();
         dissolution.getCompany().setNumber(COMPANY_NUMBER);
@@ -40,7 +40,7 @@ class DissolutionRepositoryTest {
 
     @Test
     void findByCompanyNumber_DoesNotFindInactiveDissolution() {
-        final String COMPANY_NUMBER = "225"; //reference should be unique everytime you test
+        final String COMPANY_NUMBER = "225"; //This is a random number. Reference should be unique everytime you test
 
         Dissolution dissolution = DissolutionFixtures.generateDissolution();
         dissolution.getCompany().setNumber(COMPANY_NUMBER);
@@ -53,7 +53,7 @@ class DissolutionRepositoryTest {
 
     @Test
     void findByDataApplicationReference_findsCorrectDissolution() {
-        final String APPLICATION_REFERENCE = "GQB973"; //reference should be unique everytime you test
+        final String APPLICATION_REFERENCE = "GQB973"; //This is a random string. Reference should be unique everytime you test
 
         Dissolution dissolution = DissolutionFixtures.generateDissolution();
         dissolution.getData().getApplication().setReference(APPLICATION_REFERENCE);
