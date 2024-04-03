@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.interceptor;
 
 import jakarta.validation.constraints.NotNull;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.HandlerMapping;
@@ -20,7 +19,9 @@ public class DissolutionTokenPermissionsInterceptor implements HandlerIntercepto
     private static final String PATH_VARIABLE_COMPANY_NUMBER = "company-number";
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+    public boolean preHandle(@NotNull HttpServletRequest request,
+                             @NotNull HttpServletResponse response,
+                             @NotNull Object handler) {
         final TokenPermissions tokenPermissions = AuthorisationUtil
                 .getTokenPermissions(request)
                 .orElseThrow(() -> new UnauthorisedException("TokenPermissions not present in request"));

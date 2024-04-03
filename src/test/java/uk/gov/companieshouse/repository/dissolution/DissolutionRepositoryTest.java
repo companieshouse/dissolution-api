@@ -27,7 +27,7 @@ class DissolutionRepositoryTest {
 
     @Test
     void findByCompanyNumber_findsActiveDissolution() {
-        final String COMPANY_NUMBER = "728"; //This is a random number. Reference should be unique everytime you test
+        final String COMPANY_NUMBER = "711"; //This is a random number. Reference should be unique everytime you test
 
         Dissolution dissolution = DissolutionFixtures.generateDissolution();
         dissolution.getCompany().setNumber(COMPANY_NUMBER);
@@ -40,7 +40,7 @@ class DissolutionRepositoryTest {
 
     @Test
     void findByCompanyNumber_DoesNotFindInactiveDissolution() {
-        final String COMPANY_NUMBER = "225"; //This is a random number. Reference should be unique everytime you test
+        final String COMPANY_NUMBER = "211"; //This is a random number. Reference should be unique everytime you test
 
         Dissolution dissolution = DissolutionFixtures.generateDissolution();
         dissolution.getCompany().setNumber(COMPANY_NUMBER);
@@ -53,7 +53,7 @@ class DissolutionRepositoryTest {
 
     @Test
     void findByDataApplicationReference_findsCorrectDissolution() {
-        final String APPLICATION_REFERENCE = "GQB973"; //This is a random string. Reference should be unique everytime you test
+        final String APPLICATION_REFERENCE = "GQB911"; //This is a random string. Reference should be unique everytime you test
 
         Dissolution dissolution = DissolutionFixtures.generateDissolution();
         dissolution.getData().getApplication().setReference(APPLICATION_REFERENCE);
@@ -93,7 +93,7 @@ class DissolutionRepositoryTest {
 
         // Order is important - older first
         assertEquals("3", dissolutions.get(0).getCompany().getNumber());
-        assertEquals("2", dissolutions.get(1).getCompany().getNumber());
+        assertEquals("3", dissolutions.get(1).getCompany().getNumber());
     }
 
     private Dissolution generateDissolution(String companyNumber, LocalDateTime submissionDateTime, SubmissionStatus submissionStatus, LocalDateTime paymentDateTime) {

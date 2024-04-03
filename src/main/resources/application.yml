@@ -64,3 +64,15 @@ spring:
   data:
     mongodb:
       uri: ${DISSOLUTIONS_API_MONGODB_URL}
+
+      management:
+        endpoints:
+          enabled-by-default: false
+          web:
+            base-path: /dissolution-request
+            path-mapping:
+              health: /healthcheck
+        endpoint:
+          health:
+            show-details: never
+            enabled: true
