@@ -19,10 +19,8 @@ public class DissolutionTokenPermissionsInterceptor implements HandlerIntercepto
 
     private static final String PATH_VARIABLE_COMPANY_NUMBER = "company-number";
 
-    @Bean
-    public boolean preHandle(@NotNull HttpServletRequest request,
-                             @NotNull HttpServletResponse response,
-                             @NotNull Object handler) {
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         final TokenPermissions tokenPermissions = AuthorisationUtil
                 .getTokenPermissions(request)
                 .orElseThrow(() -> new UnauthorisedException("TokenPermissions not present in request"));

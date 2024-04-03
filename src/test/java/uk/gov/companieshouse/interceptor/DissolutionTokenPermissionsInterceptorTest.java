@@ -3,6 +3,7 @@ package uk.gov.companieshouse.interceptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.servlet.HandlerMapping;
+import uk.gov.companieshouse.api.util.security.InvalidTokenPermissionException;
 import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.api.util.security.TokenPermissions;
 import uk.gov.companieshouse.exception.UnauthorisedException;
@@ -71,7 +72,7 @@ class DissolutionTokenPermissionsInterceptorTest {
     }
 
     @Test
-    void interceptor_returnsTrue_ifTokenPermissionsContainsAllRequiredPermissions() {
+    void interceptor_returnsTrue_ifTokenPermissionsContainsAllRequiredPermissions() throws InvalidTokenPermissionException {
         TokenPermissions tokenPermissions = mock(TokenPermissions.class);
 
         when(request.getAttribute(TOKEN_PERMISSION_ATTRIBUTE)).thenReturn(tokenPermissions);

@@ -23,6 +23,9 @@
         <version.springdoc.openapi>1.6.0</version.springdoc.openapi>
         <api-helper-java.version>3.0.0</api-helper-java.version>
         <api-security-java.version>2.0.1</api-security-java.version>
+        <api-sdk-java.version>6.0.0</api-sdk-java.version>
+        <private-api-sdk-java.version>3.0.0</private-api-sdk-java.version>
+        <api-sdk-manager-java-library.version>3.0.0</api-sdk-manager-java-library.version>
         <structured-logging.version>3.0.0</structured-logging.version>
         <commons-lang3.version>3.14.0</commons-lang3.version>
         <avro.version>1.11.3</avro.version>
@@ -92,6 +95,16 @@
             <groupId>org.apache.avro</groupId>
             <artifactId>avro</artifactId>
             <version>${avro.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
@@ -122,6 +135,38 @@
                     <artifactId>sonar-maven-plugin</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.companieshouse</groupId>
+            <artifactId>api-sdk-java</artifactId>
+            <version>${api-sdk-java.version}</version>
+            <optional>true</optional>
+            <exclusions>
+            <!-- exclude conflicting jackson core libraries -->
+            <exclusion>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+            </exclusion>
+            <exclusion>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+            </exclusion>
+            <exclusion>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+            </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.companieshouse</groupId>
+            <artifactId>private-api-sdk-java</artifactId>
+            <version>${private-api-sdk-java.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.companieshouse</groupId>
+            <artifactId>api-sdk-manager-java-library</artifactId>
+            <version>${api-sdk-manager-java-library.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -177,6 +222,16 @@
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
+            <version>2.17.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.17.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
             <version>2.17.0</version>
         </dependency>
 

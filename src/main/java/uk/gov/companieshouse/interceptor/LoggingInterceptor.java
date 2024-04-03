@@ -22,15 +22,13 @@ public class LoggingInterceptor implements RequestLogger, HandlerInterceptor {
         this.logger = logger;
     }
 
-    @Bean
-    public boolean preHandle(@NotNull HttpServletRequest request,
-                             @NotNull HttpServletResponse response,
-                             @NotNull Object handler) {
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         logStartRequestProcessing(request, logger);
         return true;
     }
 
-    @Bean
+    @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
         logEndRequestProcessing(request, response, logger);
     }
