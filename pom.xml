@@ -35,6 +35,7 @@
         <aws.java.sdk.version>2.15.20</aws.java.sdk.version>
         <sonar-maven-plugin.version>3.11.0.3922</sonar-maven-plugin.version>
         <version.netty>4.1.107.Final</version.netty>
+        <reactor-netty-core.version>1.1.17</reactor-netty-core.version>
         <jib-maven-plugin.version>3.4.1</jib-maven-plugin.version>
         <sonar-maven-plugin.version>3.11.0.3922</sonar-maven-plugin.version>
         <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
@@ -43,6 +44,12 @@
         <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
         <apache-log4j-bom.version>2.23.1</apache-log4j-bom.version>
         <argLine>-Dnet.bytebuddy.experimental=true</argLine>
+        <flapdoodle.version>3.0.0</flapdoodle.version>
+        <squareup.version>4.9.0</squareup.version>
+        <fasterxml-jackson.version>2.17.0</fasterxml-jackson.version>
+        <slf4j.version>2.0.12</slf4j.version>
+        <spring-core.version>6.1.4</spring-core.version>
+        <org-json.version>20240303</org-json.version>
     </properties>
 
     <dependencyManagement>
@@ -57,18 +64,18 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>2.0.12</version>
+                <version>${slf4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-simple</artifactId>
-                <version>2.0.12</version>
+                <version>${slf4j.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-core</artifactId>
-                <version>6.1.4</version>
+                <version>${spring-core.version}</version>
             </dependency>
         </dependencies>
 
@@ -78,7 +85,7 @@
         <dependency>
             <groupId>io.projectreactor.netty</groupId>
             <artifactId>reactor-netty-core</artifactId>
-            <version>1.1.17</version>
+            <version>${reactor-netty-core.version}</version>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
@@ -222,17 +229,17 @@
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
-            <version>2.17.0</version>
+            <version>${fasterxml-jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.17.0</version>
+            <version>${fasterxml-jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>2.17.0</version>
+            <version>${fasterxml-jackson.version}</version>
         </dependency>
 
         <!-- Swagger documentation -->
@@ -273,13 +280,13 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>4.9.0</version>
+            <version>${squareup.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>mockwebserver</artifactId>
-            <version>4.9.0</version>
+            <version>${squareup.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -287,7 +294,7 @@
         <dependency>
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo</artifactId>
-            <version>3.0.0</version>
+            <version>${flapdoodle.version}</version>
             <scope>test</scope>
         </dependency>
 
