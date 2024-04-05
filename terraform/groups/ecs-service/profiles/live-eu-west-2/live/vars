@@ -7,3 +7,4 @@ log_level = "debug"
 
 # scaling configs
 desired_task_count = 2 # use multi instance in Live
+ 

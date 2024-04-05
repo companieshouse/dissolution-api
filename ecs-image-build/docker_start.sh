@@ -5,3 +5,4 @@
 PORT=8080
 
 exec java -jar -Dserver.port="${PORT}" "dissolution-api.jar"
+ 

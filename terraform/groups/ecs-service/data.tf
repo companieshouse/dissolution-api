@@ -77,3 +77,4 @@ data "aws_ssm_parameter" "global_secret" {
 data "vault_generic_secret" "shared_s3" {
   path = "aws-accounts/shared-services/s3"
 }
+ 
