@@ -7,29 +7,49 @@
     <parent>
         <groupId>uk.gov.companieshouse</groupId>
         <artifactId>companies-house-parent</artifactId>
-        <version>1.3.0</version>
+        <version>2.1.5</version>
     </parent>
 
     <artifactId>dissolution-api</artifactId>
     <version>0.0.1</version>
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <java.version>21</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Versions -->
-        <version.spring.boot>2.5.7</version.spring.boot>
-        <version.springdoc.openapi>1.4.8</version.springdoc.openapi>
-        <api-helper-java.version>1.4.2</api-helper-java.version>
-        <api-security-java.version>0.2.11</api-security-java.version>
-        <structured-logging.version>1.9.11</structured-logging.version>
-        <commons-lang3.version>3.11</commons-lang3.version>
-        <avro.version>1.11.0</avro.version>
-        <ch-kafka.version>1.4.4</ch-kafka.version>
-        <kafka-models.version>1.0.12</kafka-models.version>
+        <version.spring.boot>3.2.4</version.spring.boot>
+        <version.springdoc.openapi>1.6.0</version.springdoc.openapi>
+        <api-helper-java.version>3.0.0</api-helper-java.version>
+        <api-security-java.version>2.0.1</api-security-java.version>
+        <api-sdk-java.version>6.0.0</api-sdk-java.version>
+        <private-api-sdk-java.version>3.0.0</private-api-sdk-java.version>
+        <api-sdk-manager-java-library.version>3.0.0</api-sdk-manager-java-library.version>
+        <structured-logging.version>3.0.0</structured-logging.version>
+        <commons-lang3.version>3.14.0</commons-lang3.version>
+        <avro.version>1.11.3</avro.version>
+        <ch-kafka.version>3.0.0</ch-kafka.version>
+        <kafka-models.version>3.0.7</kafka-models.version>
+        <kafka-clients.version>3.7.0</kafka-clients.version>
         <aws.java.sdk.version>2.15.20</aws.java.sdk.version>
-        <version.sonar-maven-plugin>3.7.0.1746</version.sonar-maven-plugin>
-        <version.netty>4.1.72.Final</version.netty>
+        <sonar-maven-plugin.version>3.11.0.3922</sonar-maven-plugin.version>
+        <version.netty>4.1.107.Final</version.netty>
+        <reactor-netty-core.version>1.1.17</reactor-netty-core.version>
+        <jib-maven-plugin.version>3.4.1</jib-maven-plugin.version>
+        <sonar-maven-plugin.version>3.11.0.3922</sonar-maven-plugin.version>
+        <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
+        <maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
+        <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+        <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
+        <apache-log4j-bom.version>2.23.1</apache-log4j-bom.version>
+        <argLine>-Dnet.bytebuddy.experimental=true</argLine>
+        <flapdoodle.version>3.0.0</flapdoodle.version>
+        <squareup.version>4.9.0</squareup.version>
+        <fasterxml-jackson.version>2.17.0</fasterxml-jackson.version>
+        <slf4j.version>2.0.12</slf4j.version>
+        <spring-core.version>6.1.4</spring-core.version>
+        <org-json.version>20240303</org-json.version>
     </properties>
 
     <dependencyManagement>
@@ -42,11 +62,20 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-bom</artifactId>
-                <version>2.16.0</version>
-                <scope>import</scope>
-                <type>pom</type>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-simple</artifactId>
+                <version>${slf4j.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-core</artifactId>
+                <version>${spring-core.version}</version>
             </dependency>
         </dependencies>
 
@@ -56,7 +85,7 @@
         <dependency>
             <groupId>io.projectreactor.netty</groupId>
             <artifactId>reactor-netty-core</artifactId>
-            <version>1.0.14</version>
+            <version>${reactor-netty-core.version}</version>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
@@ -73,11 +102,21 @@
             <groupId>org.apache.avro</groupId>
             <artifactId>avro</artifactId>
             <version>${avro.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20200518</version>
+            <version>20240303</version>
         </dependency>
 
 
@@ -103,6 +142,38 @@
                     <artifactId>sonar-maven-plugin</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.companieshouse</groupId>
+            <artifactId>api-sdk-java</artifactId>
+            <version>${api-sdk-java.version}</version>
+            <optional>true</optional>
+            <exclusions>
+            <!-- exclude conflicting jackson core libraries -->
+            <exclusion>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+            </exclusion>
+            <exclusion>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+            </exclusion>
+            <exclusion>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+            </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.companieshouse</groupId>
+            <artifactId>private-api-sdk-java</artifactId>
+            <version>${private-api-sdk-java.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.companieshouse</groupId>
+            <artifactId>api-sdk-manager-java-library</artifactId>
+            <version>${api-sdk-manager-java-library.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -158,7 +229,17 @@
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
-            <version>2.12.5</version>
+            <version>${fasterxml-jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${fasterxml-jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${fasterxml-jackson.version}</version>
         </dependency>
 
         <!-- Swagger documentation -->
@@ -186,7 +267,7 @@
         <dependency>
             <groupId>org.sonarsource.scanner.maven</groupId>
             <artifactId>sonar-maven-plugin</artifactId>
-            <version>${version.sonar-maven-plugin}</version>
+            <version>${sonar-maven-plugin.version}</version>
         </dependency>
 
         <!-- Testing -->
@@ -199,13 +280,13 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>4.9.0</version>
+            <version>${squareup.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>mockwebserver</artifactId>
-            <version>4.9.0</version>
+            <version>${squareup.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -213,7 +294,7 @@
         <dependency>
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo</artifactId>
-            <version>3.0.0</version>
+            <version>${flapdoodle.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -237,7 +318,7 @@
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
-            <version>3.0.0</version>
+            <version>${kafka-clients.version}</version>
         </dependency>
     </dependencies>
 
@@ -258,17 +339,17 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>${maven-resources-plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>${maven-compiler-plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.2</version>
+                <version>${maven-surefire-plugin.version}</version>
                 <configuration>
                     <includes>
                         <include>**/*Test*.java</include>
@@ -278,7 +359,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>${maven-jar-plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -287,13 +368,20 @@
             <plugin>
                 <groupId>org.sonarsource.scanner.maven</groupId>
                 <artifactId>sonar-maven-plugin</artifactId>
-                <version>3.7.0.1746</version>
+                <version>${sonar-maven-plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
-                <version>3.1.1</version>
+                <version>${jib-maven-plugin.version}</version>
                 <configuration>
+                    <from>
+                        <image>416670754337.dkr.ecr.eu-west-2.amazonaws.com/ci-corretto-build-21:latest</image>
+                    </from>
+                    <to>
+                        //Once the pipeline is moved to shared services need to update this to image reference from shared services
+                        <image>169942020521.dkr.ecr.eu-west-1.amazonaws.com/local/dissolution-api:latest</image>
+                    </to>
                     <container>
                         <expandClasspathDependencies>true</expandClasspathDependencies>
                         <jvmFlags>
