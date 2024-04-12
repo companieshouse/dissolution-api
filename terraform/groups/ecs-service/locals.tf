@@ -68,5 +68,5 @@ locals {
     { "name": "AES256_KEY", "valueFrom": local.global_secrets_arn_map.eric_aes256_key }
   ]
   eric_environment_filename = "eric.env"
-}
+} 
  
