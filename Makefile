@@ -16,12 +16,15 @@ build:
 	mvn compile
 
 .PHONY: test
-test: clean
-	mvn verify
+test: test-unit test-integration
 
 .PHONY: test-unit
 test-unit: clean
 	mvn test
+
+.PHONY: test-integration
+test-integration: clean
+	mvn verify -Dskip.unit.tests=true
 
 .PHONY: dev
 dev: clean
