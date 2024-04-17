@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.repository.dissolution;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import uk.gov.companieshouse.config.AbstractMongoConfig;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.enums.SubmissionStatus;
@@ -20,7 +22,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataMongoTest
 @ExtendWith(SpringExtension.class)
-class DissolutionRepositoryTest {
+class DissolutionRepositoryTest extends AbstractMongoConfig {
+
+    @BeforeAll
+    static void setup() {
+        mongoDBContainer.start();
+    }
 
     @Autowired
     public DissolutionRepository repository;
@@ -93,7 +100,7 @@ class DissolutionRepositoryTest {
 
         // Order is important - older first
         assertEquals("3", dissolutions.get(0).getCompany().getNumber());
-        assertEquals("3", dissolutions.get(1).getCompany().getNumber());
+        assertEquals("2", dissolutions.get(1).getCompany().getNumber());
     }
 
     private Dissolution generateDissolution(String companyNumber, LocalDateTime submissionDateTime, SubmissionStatus submissionStatus, LocalDateTime paymentDateTime) {
