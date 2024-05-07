@@ -20,22 +20,21 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Versions -->
         <version.spring.boot>3.2.4</version.spring.boot>
-        <version.springdoc.openapi>1.6.0</version.springdoc.openapi>
+        <version.springdoc.openapi>1.8.0</version.springdoc.openapi>
         <api-helper-java.version>3.0.0</api-helper-java.version>
         <api-security-java.version>2.0.1</api-security-java.version>
-        <api-sdk-java.version>6.0.0</api-sdk-java.version>
+        <api-sdk-java.version>6.0.17</api-sdk-java.version>
         <private-api-sdk-java.version>3.0.0</private-api-sdk-java.version>
         <api-sdk-manager-java-library.version>3.0.0</api-sdk-manager-java-library.version>
         <structured-logging.version>3.0.0</structured-logging.version>
         <commons-lang3.version>3.14.0</commons-lang3.version>
         <avro.version>1.11.3</avro.version>
-        <ch-kafka.version>3.0.0</ch-kafka.version>
+        <ch-kafka.version>3.0.1</ch-kafka.version>
         <kafka-models.version>3.0.7</kafka-models.version>
         <kafka-clients.version>3.7.0</kafka-clients.version>
         <aws.java.sdk.version>2.15.20</aws.java.sdk.version>
-        <sonar-maven-plugin.version>3.11.0.3922</sonar-maven-plugin.version>
-        <version.netty>4.1.107.Final</version.netty>
-        <reactor-netty-core.version>1.1.17</reactor-netty-core.version>
+        <version.netty>4.1.109.Final</version.netty>
+        <reactor-netty-core.version>1.1.18</reactor-netty-core.version>
         <jib-maven-plugin.version>3.4.1</jib-maven-plugin.version>
         <sonar-maven-plugin.version>3.11.0.3922</sonar-maven-plugin.version>
         <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
@@ -45,7 +44,7 @@
         <apache-log4j-bom.version>2.23.1</apache-log4j-bom.version>
         <argLine>-Dnet.bytebuddy.experimental=true</argLine>
         <flapdoodle.version>3.0.0</flapdoodle.version>
-        <squareup.version>4.9.0</squareup.version>
+        <squareup.version>4.12.0</squareup.version>
         <fasterxml-jackson.version>2.17.0</fasterxml-jackson.version>
         <slf4j.version>2.0.12</slf4j.version>
         <spring-core.version>6.1.4</spring-core.version>
@@ -111,6 +110,10 @@
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-core</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-compress</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -133,15 +136,15 @@
             </exclusions>
         </dependency>
         <dependency>
+            <!--Overriding spring-web version to remove vulnerability-->
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>6.1.6</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
             <version>${version.spring.boot}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.sonarsource.scanner.maven</groupId>
-                    <artifactId>sonar-maven-plugin</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
@@ -173,6 +176,13 @@
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>api-sdk-manager-java-library</artifactId>
             <version>${api-sdk-manager-java-library.version}</version>
+            <exclusions>
+                <!--excluded to remove vulnerability-->
+                <exclusion>
+                    <groupId>commons-collections</groupId>
+                    <artifactId>commons-collections</artifactId>
+                </exclusion>
+            </exclusions>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -264,12 +274,6 @@
             </exclusions>
         </dependency>
 
-        <dependency>
-            <groupId>org.sonarsource.scanner.maven</groupId>
-            <artifactId>sonar-maven-plugin</artifactId>
-            <version>${sonar-maven-plugin.version}</version>
-        </dependency>
-
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -295,6 +299,12 @@
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo</artifactId>
             <version>${flapdoodle.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-compress</artifactId>
+                </exclusion>
+            </exclusions>
             <scope>test</scope>
         </dependency>
 
@@ -308,17 +318,54 @@
                     <groupId>org.apache.kafka</groupId>
                     <artifactId>kafka-clients</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-compress</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>kafka-models</artifactId>
             <version>${kafka-models.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-fileupload</groupId>
+                    <artifactId>commons-fileupload</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-compress</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.http2</groupId>
+                    <artifactId>http2-common</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
             <version>${kafka-clients.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mongodb</artifactId>
+            <version>1.19.7</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-compress</artifactId>
+                </exclusion>
+            </exclusions>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>1.19.7</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

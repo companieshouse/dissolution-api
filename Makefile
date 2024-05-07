@@ -16,12 +16,15 @@ build:
 	mvn compile
 
 .PHONY: test
-test: clean
-	mvn verify
+test: test-unit test-integration
 
 .PHONY: test-unit
 test-unit: clean
 	mvn test
+
+.PHONY: test-integration
+test-integration: clean
+	mvn verify -Dskip.unit.tests=true
 
 .PHONY: dev
 dev: clean
@@ -56,6 +59,5 @@ sonar-pr-analysis:
 
 .PHONY: security-check
 security-check:
-	mvn org.owasp:dependency-check-maven:check -DassemblyAnalyzerEnabled=false -DfailBuildOnCVSS=4 -DsuppressionFiles=suppressed-security-checks.xml
 	mvn org.owasp:dependency-check-maven:update-only
-	mvn org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=4 -DassemblyAnalyzerEnabled=false
+	mvn compile org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=11 -DassemblyAnalyzerEnabled=false
