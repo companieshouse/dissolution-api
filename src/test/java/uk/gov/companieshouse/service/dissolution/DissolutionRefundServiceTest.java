@@ -40,7 +40,7 @@ public class DissolutionRefundServiceTest {
     @Mock
     private Logger logger;
 
-    private static final int REFUND_AMOUNT = 800;
+    private static final int REFUND_AMOUNT = 3300;
 
     @Test
     void handleRefund_refundPaidDissolution() {

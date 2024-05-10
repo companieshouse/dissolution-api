@@ -11,9 +11,9 @@ public class RefundRequestMapperTest {
 
     @Test
     public void mapToRefundRequest_shouldMapTheAmount() {
-        final RefundRequest result = mapper.mapToRefundRequest(800);
+        final RefundRequest result = mapper.mapToRefundRequest(3300);
 
-        assertEquals(800, result.getAmount());
+        assertEquals(3300, result.getAmount());
     }
 
 }
