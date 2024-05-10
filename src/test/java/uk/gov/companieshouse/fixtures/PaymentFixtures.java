@@ -31,7 +31,7 @@ public class PaymentFixtures {
         item.setDescriptionIdentifier("Dissolution application");
         item.setDescriptionValues(new PaymentDescriptionValues());
         item.setProductType(ApplicationType.DS01);
-        item.setAmount("8");
+        item.setAmount("33");
         item.setAvailablePaymentMethods(List.of("credit-card"));
         item.setClassOfPayment(List.of("data-maintenance"));
         item.setKind("dissolution-request#payment-details");
@@ -68,7 +68,7 @@ public class PaymentFixtures {
     public static RefundRequest generateRefundRequest() {
         final RefundRequest request = new RefundRequest();
 
-        request.setAmount(800);
+        request.setAmount(3300);
 
         return request;
     }
@@ -76,7 +76,7 @@ public class PaymentFixtures {
     public static RefundResponse generateRefundResponse() {
         final RefundResponse response = new RefundResponse();
 
-        response.setAmount(800);
+        response.setAmount(3300);
         response.setRefundId("REF123");
         response.setCreatedDateTime(LocalDateTime.now().toString());
         response.setStatus(RefundStatus.SUCCESS);
@@ -87,7 +87,7 @@ public class PaymentFixtures {
     public static RefundInformation generateRefundInformation() {
         final RefundInformation refundInformation = new RefundInformation();
 
-        refundInformation.setAmount(800);
+        refundInformation.setAmount(3300);
         refundInformation.setCreatedDateTime(LocalDateTime.now().toString());
         refundInformation.setRefundId("GTY890");
 
