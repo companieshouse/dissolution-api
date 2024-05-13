@@ -12,7 +12,7 @@ import uk.gov.companieshouse.service.payment.RefundService;
 
 @Service
 public class DissolutionRefundService {
-    private static final int REFUND_AMOUNT = 800;
+    private static final int REFUND_AMOUNT = 3300;
 
     private final RefundRequestMapper refundRequestMapper;
     private final RefundInformationMapper refundInformationMapper;
