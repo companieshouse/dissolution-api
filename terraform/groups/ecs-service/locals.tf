@@ -8,7 +8,7 @@ locals {
   eric_port                  = "10000"
   docker_repo                = "dissolution-api"
   kms_alias                  = "alias/${var.aws_profile}/environment-services-kms"
-  lb_listener_rule_priority  = 53
+  lb_listener_rule_priority  = 180
   lb_listener_paths          = ["/dissolution-request/*", "/dissolution-request/healthcheck"]
   healthcheck_path           = "/dissolution-request/healthcheck" #healthcheck path for dissolution api
   healthcheck_matcher        = "200"
