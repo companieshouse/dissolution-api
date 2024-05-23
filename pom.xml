@@ -26,7 +26,7 @@
         <api-sdk-java.version>6.0.17</api-sdk-java.version>
         <private-api-sdk-java.version>3.0.0</private-api-sdk-java.version>
         <api-sdk-manager-java-library.version>3.0.0</api-sdk-manager-java-library.version>
-        <structured-logging.version>3.0.0</structured-logging.version>
+        <structured-logging.version>3.0.3</structured-logging.version>
         <commons-lang3.version>3.14.0</commons-lang3.version>
         <avro.version>1.11.3</avro.version>
         <ch-kafka.version>3.0.1</ch-kafka.version>
@@ -64,12 +64,6 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-simple</artifactId>
-                <version>${slf4j.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
