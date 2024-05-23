@@ -1,9 +1,6 @@
-print('dissolution-api')
-
-include(path = './Tiltfile.dev')
-
-docker_compose(
-  configPaths = [
-    './docker-compose.yaml'
-  ]
+update_settings(suppress_unused_image_warnings=["dissolution-api"])
+custom_build(
+  ref = 'dissolution-api',
+  command = 'make all',
+  deps = ['./dissolution-api.jar']
 )
