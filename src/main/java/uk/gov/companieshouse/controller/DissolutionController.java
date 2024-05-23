@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
 import uk.gov.companieshouse.client.CompanyProfileClient;
 import uk.gov.companieshouse.exception.BadRequestException;
 import uk.gov.companieshouse.exception.ConflictException;
@@ -29,7 +30,9 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
+import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 import uk.gov.companieshouse.service.CompanyOfficerService;
+import uk.gov.companieshouse.service.CompanyProfileServiceA;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import uk.gov.companieshouse.service.dissolution.validator.DissolutionValidator;
 import uk.gov.companieshouse.service.payment.PaymentService;
@@ -48,6 +51,7 @@ public class DissolutionController {
     private final DissolutionService dissolutionService;
     private final DissolutionValidator dissolutionValidator;
     private final CompanyProfileClient companyProfileClient;
+    private final CompanyProfileServiceA companyProfileServiceA;
     private final CompanyOfficerService companyOfficerService;
     private final PaymentService paymentService;
     private final Logger logger;
@@ -56,12 +60,14 @@ public class DissolutionController {
             DissolutionService dissolutionService,
             DissolutionValidator dissolutionValidator,
             CompanyProfileClient companyProfileClient,
+            CompanyProfileServiceA companyProfileServiceA,
             CompanyOfficerService companyOfficerService,
             PaymentService paymentService,
             Logger logger) {
         this.dissolutionService = dissolutionService;
         this.dissolutionValidator = dissolutionValidator;
         this.companyProfileClient = companyProfileClient;
+        this.companyProfileServiceA = companyProfileServiceA;
         this.companyOfficerService = companyOfficerService;
         this.paymentService = paymentService;
         this.logger = logger;
@@ -83,9 +89,15 @@ public class DissolutionController {
             @Valid @RequestBody final DissolutionCreateRequest body,
             HttpServletRequest request) {
 
-        final CompanyProfile company = Optional
-                .ofNullable(companyProfileClient.getCompanyProfile(companyNumber))
+        final CompanyProfileApi companyProfileApi = Optional.ofNullable(companyProfileServiceA.getCompanyProfile(companyNumber,
+                request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())))
                 .orElseThrow(NotFoundException::new);
+
+        CompanyProfile company = new CompanyProfile();
+        company.setCompanyName(companyProfileApi.getCompanyName());
+        company.setType(companyProfileApi.getType());
+        company.setCompanyNumber(companyProfileApi.getCompanyNumber());
+        company.setCompanyStatus(companyProfileApi.getCompanyStatus());
 
         if (dissolutionService.doesDissolutionRequestExistForCompanyByCompanyNumber(companyNumber)) {
             throw new ConflictException("Dissolution already exists");
