@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
@@ -34,6 +35,9 @@ public class DissolutionValidatorTest {
 
     @Mock
     private CompanyOfficerService companyOfficerService;
+
+    @Mock
+    private Logger logger;
 
     private final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
     private final Map<String, CompanyOfficer> companyDirectors = Map.of("abc123", generateCompanyOfficer());
