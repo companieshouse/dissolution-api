@@ -105,7 +105,7 @@ public class DissolutionController {
 
         final Map<String, CompanyOfficer> directors = companyOfficerService.getActiveDirectorsForCompany(companyNumber);
 
-        logger.info("Directors found and mapped: " + directors);
+        logger.info("Directors found and mapped: " + directors.values());
 
         dissolutionValidator
                 .checkBusinessRules(company, directors, body.getDirectors())
@@ -115,7 +115,11 @@ public class DissolutionController {
 
         logger.info("Validation passed");
 
-        DissolutionCreateResponse dissolutionCreateResponse = dissolutionService.create(body, company, directors, userId, request.getRemoteAddr(), getEmail(authorisedUser));
+        String email = getEmail(authorisedUser);
+
+        logger.info("Email for authorised used" + email);
+
+        DissolutionCreateResponse dissolutionCreateResponse = dissolutionService.create(body, company, directors, userId, request.getRemoteAddr(), email);
 
         logger.info("DissolutionCreateRepsponse: " + dissolutionCreateResponse);
 
