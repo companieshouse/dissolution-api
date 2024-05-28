@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.client.BarcodeGeneratorClient;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.barcode.BarcodeMapper;
 import uk.gov.companieshouse.model.dto.barcode.BarcodeRequest;
 import uk.gov.companieshouse.model.dto.barcode.BarcodeResponse;
@@ -30,6 +31,9 @@ public class BarcodeGeneratorTest {
 
     @Mock
     private BarcodeGeneratorClient client;
+
+    @Mock
+    private Logger logger;
 
     @Test
     public void generateBarcode_createsABarcodeRequest_retrivesBarcode() {

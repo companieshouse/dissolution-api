@@ -15,7 +15,7 @@ import static uk.gov.companieshouse.model.Constants.CONTENT_TYPE_JSON;
 @Service
 public class BarcodeGeneratorClient {
 
-    private static final String GENERATE_BARCODE_URI = "/";
+//    private static final String GENERATE_BARCODE_URI = "/";
 
     private final BarcodeGeneratorConfig config;
 
@@ -28,7 +28,7 @@ public class BarcodeGeneratorClient {
         return WebClient
                 .create(config.getBarcodeGeneatorHost())
                 .post()
-                .uri(GENERATE_BARCODE_URI)
+//                .uri(GENERATE_BARCODE_URI)
                 .header(HEADER_AUTHORIZATION, config.getApiKey())
                 .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
                 .body(Mono.just(request), BarcodeRequest.class)

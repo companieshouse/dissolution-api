@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import uk.gov.companieshouse.config.BarcodeGeneratorConfig;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.model.dto.barcode.BarcodeRequest;
 import uk.gov.companieshouse.model.dto.barcode.BarcodeResponse;
 
@@ -37,6 +38,9 @@ public class BarcodeGeneratorClientTest {
 
     @Mock
     private BarcodeGeneratorConfig config;
+
+    @Mock
+    private Logger logger;
 
     @BeforeAll
     public static void setUp() throws IOException {
