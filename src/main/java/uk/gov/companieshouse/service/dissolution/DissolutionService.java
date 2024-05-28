@@ -3,6 +3,7 @@ package uk.gov.companieshouse.service.dissolution;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
@@ -24,15 +25,21 @@ public class DissolutionService {
     private final DissolutionPatcher patcher;
     private final DissolutionRepository repository;
 
+    private final Logger logger;
+
     @Autowired
-    public DissolutionService(DissolutionCreator creator, DissolutionGetter getter, DissolutionPatcher patcher, DissolutionRepository repository) {
+    public DissolutionService(DissolutionCreator creator, DissolutionGetter getter, DissolutionPatcher patcher, DissolutionRepository repository, Logger logger) {
         this.creator = creator;
         this.getter = getter;
         this.patcher = patcher;
         this.repository = repository;
+        this.logger = logger;
     }
 
     public DissolutionCreateResponse create(DissolutionCreateRequest body, CompanyProfile companyProfile, Map<String, CompanyOfficer> directors, String userId, String ip, String email) {
+
+        logger.info("DissolutionService.create: " + creator.create(body, companyProfile, directors, userId, ip, email));
+
         return creator.create(body, companyProfile, directors, userId, ip, email);
     }
 

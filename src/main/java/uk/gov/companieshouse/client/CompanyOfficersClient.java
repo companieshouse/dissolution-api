@@ -7,6 +7,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriTemplate;
 import reactor.core.publisher.Mono;
 import uk.gov.companieshouse.config.CompanyOfficersConfig;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficersResponse;
 
@@ -26,13 +27,16 @@ public class CompanyOfficersClient {
 
     private final CompanyOfficersConfig config;
 
+    private final Logger logger;
+
     @Autowired
-    public CompanyOfficersClient(CompanyOfficersConfig config) {
+    public CompanyOfficersClient(CompanyOfficersConfig config, Logger logger) {
         this.config = config;
+        this.logger = logger;
     }
 
     public List<CompanyOfficer> getCompanyOfficers(String companyNumber) {
-        return Optional
+        List<CompanyOfficer> companyOfficerList = Optional
                 .ofNullable(
                     WebClient
                         .create(config.getApiUrl())
@@ -48,5 +52,9 @@ public class CompanyOfficersClient {
                 )
                 .map(CompanyOfficersResponse::getItems)
                 .orElse(Collections.emptyList());
+
+        logger.info("List of CompanyOfficers: " + companyOfficerList);
+
+        return companyOfficerList;
     }
 }
