@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.mapper.DissolutionUserDataMapper;
@@ -49,6 +50,9 @@ public class DissolutionCreatorTest {
 
     @Mock
     private DissolutionResponseMapper responseMapper;
+
+    @Mock
+    private Logger logger;
 
     @Mock
     private DissolutionEmailService emailService;

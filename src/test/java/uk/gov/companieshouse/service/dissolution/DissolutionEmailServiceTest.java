@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.config.EnvironmentConfig;
 import uk.gov.companieshouse.fixtures.EmailFixtures;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.email.DissolutionEmailMapper;
 import uk.gov.companieshouse.mapper.email.EmailMapper;
 import uk.gov.companieshouse.model.db.dissolution.CreatedBy;
@@ -66,6 +67,9 @@ public class DissolutionEmailServiceTest {
 
     @Mock
     private DissolutionDeadlineDateCalculator deadlineDateCalculator;
+
+    @Mock
+    private Logger logger;
 
     @Test
     void sendSuccessfulPaymentEmail_shouldGenerateAndSendASuccessfulPaymentEmail() {
