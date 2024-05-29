@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import uk.gov.companieshouse.config.PaymentsConfig;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.model.dto.payment.RefundRequest;
 import uk.gov.companieshouse.model.dto.payment.RefundResponse;
 
@@ -37,6 +38,9 @@ public class PaymentsClientTest {
 
     @Mock
     private PaymentsConfig config;
+
+    @Mock
+    private Logger logger;
 
     @BeforeAll
     public static void setUp() throws IOException {

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import uk.gov.companieshouse.config.PaymentsConfig;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.model.dto.payment.PaymentDetailsResponse;
 import uk.gov.companieshouse.model.dto.payment.RefundRequest;
 import uk.gov.companieshouse.model.dto.payment.RefundResponse;
@@ -22,13 +23,16 @@ public class PaymentsClient {
 
     private final PaymentsConfig config;
 
+    private final Logger logger;
+
     @Autowired
-    public PaymentsClient(PaymentsConfig config) {
+    public PaymentsClient(PaymentsConfig config, Logger logger) {
         this.config = config;
+        this.logger = logger;
     }
 
     public RefundResponse refundPayment(RefundRequest data, String paymentReference) {
-        return WebClient
+        RefundResponse response = WebClient
             .create(config.getPaymentsHost())
             .post()
             .uri(REFUNDS_URI, paymentReference)
@@ -39,11 +43,15 @@ public class PaymentsClient {
             .retrieve()
             .bodyToMono(RefundResponse.class)
             .block();
+
+        logger.info("RefundResponse: " + response.toString());
+
+        return response;
     }
 
     public PaymentDetailsResponse getPaymentDetails(String paymentReference) {
         try {
-            return WebClient
+            PaymentDetailsResponse response = WebClient
                     .create(config.getPaymentsHost())
                     .get()
                     .uri(PAYMENT_DETAILS_URI, paymentReference)
@@ -55,6 +63,10 @@ public class PaymentsClient {
                     })
                     .bodyToMono(PaymentDetailsResponse.class)
                     .block();
+
+            logger.info("PaymentDetailsResponse: " + response.toString());
+
+            return response;
         } catch (PaymentDetailsException ex) {
             return null;
         }

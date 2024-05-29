@@ -3,7 +3,9 @@ package uk.gov.companieshouse.service.dissolution;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentGetResponse;
 import uk.gov.companieshouse.model.enums.ApplicationType;
@@ -19,6 +21,9 @@ public class PaymentServiceTest {
 
     @InjectMocks
     private PaymentService service;
+
+    @Mock
+    private Logger logger;
 
     @Test
     public void get_getsPaymentUIData_returnsGetResponse() {

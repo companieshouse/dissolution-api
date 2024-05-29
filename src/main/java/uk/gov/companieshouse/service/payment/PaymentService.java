@@ -2,6 +2,7 @@ package uk.gov.companieshouse.service.payment;
 
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.client.PaymentsClient;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentDescriptionValues;
 import uk.gov.companieshouse.model.dto.payment.PaymentDetailsResponse;
@@ -17,10 +18,13 @@ import static uk.gov.companieshouse.model.Constants.*;
 public class PaymentService {
     private final PaymentsClient paymentsClient;
 
+    private final Logger logger;
+
     public PaymentService(
-            PaymentsClient paymentsClient
+            PaymentsClient paymentsClient, Logger logger
     ) {
         this.paymentsClient = paymentsClient;
+        this.logger = logger;
     }
 
     public PaymentGetResponse get(DissolutionGetResponse dissolutionInfo) {
@@ -41,6 +45,8 @@ public class PaymentService {
     }
     public String getPaymentStatus(String paymentReference) {
         PaymentDetailsResponse paymentDetailsResponse = paymentsClient.getPaymentDetails(paymentReference);
+
+        logger.info("PaymentDetailsResponse: " + paymentDetailsResponse.toString());
 
         if (paymentDetailsResponse != null) {
             return paymentDetailsResponse.getPaymentStatus();
