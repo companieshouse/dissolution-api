@@ -137,10 +137,16 @@ public class DissolutionController {
         DissolutionGetResponse dissolutionGetResponse = dissolutionService
                 .getByCompanyNumber(companyNumber)
                 .orElseThrow(NotFoundException::new);
+
+        logger.info("DissolutionGetResponse: " + dissolutionGetResponse.toString());
+
         String paymentRef = dissolutionGetResponse.getPaymentReference();
         if ( paymentRef != null && !paymentRef.equals("") && dissolutionGetResponse.getApplicationStatus().equals(ApplicationStatus.PENDING_PAYMENT)) {
             // payment could be complete, we need to get up-to-date status to be sure
             String paymentStatus = paymentService.getPaymentStatus(dissolutionGetResponse.getPaymentReference());
+
+            logger.info("PaymentStatus: " + paymentStatus);
+
             if (paymentStatus == null) {
                 logger.info(String.format("Error getting payment status for paymentRef: [%s], resetting payment ref", paymentRef));
                 // error retrieving payment status, so reset payment reference to allow user to restart payment
@@ -150,9 +156,12 @@ public class DissolutionController {
                     throw new NotFoundException();
                 }
             } else if (paymentStatus.equals("accepted")) {
+                logger.info("PaymentAccepted");
                 dissolutionGetResponse.setApplicationStatus(ApplicationStatus.PAID);
             }
         }
+
+        logger.info(dissolutionGetResponse.toString());
 
         return dissolutionGetResponse;
     }
