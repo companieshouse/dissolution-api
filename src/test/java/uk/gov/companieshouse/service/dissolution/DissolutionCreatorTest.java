@@ -50,10 +50,6 @@ public class DissolutionCreatorTest {
 
     @Mock
     private DissolutionResponseMapper responseMapper;
-
-    @Mock
-    private Logger logger;
-
     @Mock
     private DissolutionEmailService emailService;
 

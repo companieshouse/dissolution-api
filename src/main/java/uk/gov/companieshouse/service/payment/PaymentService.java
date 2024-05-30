@@ -17,14 +17,10 @@ import static uk.gov.companieshouse.model.Constants.*;
 @Service
 public class PaymentService {
     private final PaymentsClient paymentsClient;
-
-    private final Logger logger;
-
     public PaymentService(
-            PaymentsClient paymentsClient, Logger logger
+            PaymentsClient paymentsClient
     ) {
         this.paymentsClient = paymentsClient;
-        this.logger = logger;
     }
 
     public PaymentGetResponse get(DissolutionGetResponse dissolutionInfo) {
@@ -45,9 +41,6 @@ public class PaymentService {
     }
     public String getPaymentStatus(String paymentReference) {
         PaymentDetailsResponse paymentDetailsResponse = paymentsClient.getPaymentDetails(paymentReference);
-
-        logger.info("PaymentDetailsResponse: " + paymentDetailsResponse.toString());
-
         if (paymentDetailsResponse != null) {
             return paymentDetailsResponse.getPaymentStatus();
         }

@@ -33,7 +33,6 @@ public class DissolutionEmailService {
     private final EmailService emailService;
     private final DissolutionDeadlineDateCalculator deadlineDateCalculator;
     private final EnvironmentConfig environmentConfig;
-    private final Logger logger;
 
     @Autowired
     public DissolutionEmailService(
@@ -42,7 +41,7 @@ public class DissolutionEmailService {
             EmailMapper emailMapper,
             EmailService emailService,
             DissolutionDeadlineDateCalculator deadlineDateCalculator,
-            EnvironmentConfig environmentConfig, Logger logger
+            EnvironmentConfig environmentConfig
     ) {
         this.dissolutionEmailMapper = dissolutionEmailMapper;
         this.messageTypeCalculator = messageTypeCalculator;
@@ -50,7 +49,6 @@ public class DissolutionEmailService {
         this.emailService = emailService;
         this.deadlineDateCalculator = deadlineDateCalculator;
         this.environmentConfig = environmentConfig;
-        this.logger = logger;
     }
 
     public void sendSuccessfulPaymentEmail(Dissolution dissolution) {
@@ -100,19 +98,13 @@ public class DissolutionEmailService {
     public void notifySignatoriesToSign(Dissolution dissolution) {
         final MessageType messageType = messageTypeCalculator.getForSignatoriesToSign(dissolution);
 
-        logger.info("Message type calc:" + messageType);
-
         final String deadlineDate = deadlineDateCalculator.calculateSignatoryDeadlineDate(dissolution.getCreatedBy().getDateTime());
-
-        logger.info("Deadline date calc: " + deadlineDate);
 
         getUniqueSignatories(dissolution)
                 .stream()
                 .filter(signatoryEmail -> !signatoryEmail.equals(dissolution.getCreatedBy().getEmail()))
                 .map(signatoryEmail -> mapToSignatoryToSignEmail(dissolution, signatoryEmail, messageType, deadlineDate))
                 .forEach(this::sendEmail);
-
-        logger.info("notifySignatoriesToSign complete");
     }
 
     public void notifySignatoryToSign(Dissolution dissolution, String email) {
@@ -171,8 +163,6 @@ public class DissolutionEmailService {
     private EmailDocument<SignatoryToSignEmailData> mapToSignatoryToSignEmail(Dissolution dissolution, String signatoryEmail, MessageType messageType, String deadlineDate) {
         final SignatoryToSignEmailData emailData = dissolutionEmailMapper.mapToSignatoryToSignEmailData(dissolution, signatoryEmail, deadlineDate);
 
-        logger.info("Dissolution Email mapper complete:" + emailData);
-
         return this.emailMapper.mapToEmailDocument(emailData, signatoryEmail, messageType);
     }
 
@@ -183,7 +173,5 @@ public class DissolutionEmailService {
 
     private <T> void sendEmail(EmailDocument<T> emailDocument) {
         emailService.sendMessage(emailDocument);
-
-        logger.info("Email Service complete");
     }
 }

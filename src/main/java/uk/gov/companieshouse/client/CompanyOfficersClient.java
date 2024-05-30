@@ -26,17 +26,13 @@ public class CompanyOfficersClient {
     private static final UriTemplate GET_OFFICERS_URI = new UriTemplate("/company/{companyNumber}/officers");
 
     private final CompanyOfficersConfig config;
-
-    private final Logger logger;
-
     @Autowired
-    public CompanyOfficersClient(CompanyOfficersConfig config, Logger logger) {
+    public CompanyOfficersClient(CompanyOfficersConfig config) {
         this.config = config;
-        this.logger = logger;
     }
 
     public List<CompanyOfficer> getCompanyOfficers(String companyNumber) {
-        List<CompanyOfficer> companyOfficerList = Optional
+        return Optional
                 .ofNullable(
                     WebClient
                         .create(config.getApiUrl())
@@ -52,9 +48,5 @@ public class CompanyOfficersClient {
                 )
                 .map(CompanyOfficersResponse::getItems)
                 .orElse(Collections.emptyList());
-
-        logger.info("List of CompanyOfficers: " + companyOfficerList);
-
-        return companyOfficerList;
     }
 }

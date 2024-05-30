@@ -27,7 +27,6 @@ public class DissolutionCreator {
     private final DissolutionResponseMapper responseMapper;
     private final DissolutionEmailService emailService;
     private final DissolutionUserDataMapper userDataMapper;
-    private final Logger logger;
 
     @Autowired
     public DissolutionCreator(
@@ -37,7 +36,7 @@ public class DissolutionCreator {
             DissolutionRepository repository,
             DissolutionResponseMapper responseMapper,
             DissolutionEmailService emailService,
-            DissolutionUserDataMapper userDataMapper, Logger logger) {
+            DissolutionUserDataMapper userDataMapper) {
         this.referenceGenerator = referenceGenerator;
         this.barcodeGenerator = barcodeGenerator;
         this.requestMapper = requestMapper;
@@ -45,34 +44,16 @@ public class DissolutionCreator {
         this.responseMapper = responseMapper;
         this.emailService = emailService;
         this.userDataMapper = userDataMapper;
-        this.logger = logger;
     }
 
     public DissolutionCreateResponse create(DissolutionCreateRequest body, CompanyProfile companyProfile, Map<String, CompanyOfficer> directors, String userId, String ip, String email) {
         final String reference = referenceGenerator.generateApplicationReference();
-
-        logger.info("Reference Generator: " + reference);
-
         final String barcode = barcodeGenerator.generateBarcode();
-
-        logger.info("Barcode Generator: " + barcode);
-
         final DissolutionUserData userData = userDataMapper.mapToUserData(userId, ip, email);
-
-        logger.info("User data mapper: " + userData);
-
         final Dissolution dissolution = requestMapper.mapToDissolution(body, companyProfile, directors, userData, reference, barcode);
-
-        logger.info("Request Mapper: " + dissolution);
-
         repository.insert(dissolution);
 
-        logger.info("Insert complete");
-
         emailService.notifySignatoriesToSign(dissolution);
-
-        logger.info("Email sent");
-
         return responseMapper.mapToDissolutionCreateResponse(dissolution);
     }
 }

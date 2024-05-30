@@ -22,9 +22,6 @@ public class PaymentServiceTest {
     @InjectMocks
     private PaymentService service;
 
-    @Mock
-    private Logger logger;
-
     @Test
     public void get_getsPaymentUIData_returnsGetResponse() {
         String companyNumber = "12345678";

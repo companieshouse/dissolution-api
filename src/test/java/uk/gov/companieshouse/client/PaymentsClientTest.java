@@ -39,9 +39,6 @@ public class PaymentsClientTest {
     @Mock
     private PaymentsConfig config;
 
-    @Mock
-    private Logger logger;
-
     @BeforeAll
     public static void setUp() throws IOException {
         mockBackEnd = new MockWebServer();

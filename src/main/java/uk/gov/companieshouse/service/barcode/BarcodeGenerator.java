@@ -16,21 +16,16 @@ public class BarcodeGenerator {
     private final BarcodeMapper mapper;
     private final BarcodeGeneratorClient client;
 
-    private final Logger logger;
-
     @Autowired
-    public BarcodeGenerator(BarcodeMapper mapper, BarcodeGeneratorClient client, Logger logger) {
+    public BarcodeGenerator(BarcodeMapper mapper, BarcodeGeneratorClient client) {
         this.mapper = mapper;
         this.client = client;
-        this.logger = logger;
     }
 
     public String generateBarcode() {
         final BarcodeRequest request = mapper.mapToBarcodeRequest(generateCurrentDateTime());
 
         final BarcodeResponse response = client.generateBarcode(request);
-
-        logger.info("Barcode Generator client response: " + response);
 
         return response.getBarcode();
     }

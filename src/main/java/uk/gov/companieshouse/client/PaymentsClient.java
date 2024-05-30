@@ -23,16 +23,13 @@ public class PaymentsClient {
 
     private final PaymentsConfig config;
 
-    private final Logger logger;
-
     @Autowired
-    public PaymentsClient(PaymentsConfig config, Logger logger) {
+    public PaymentsClient(PaymentsConfig config) {
         this.config = config;
-        this.logger = logger;
     }
 
     public RefundResponse refundPayment(RefundRequest data, String paymentReference) {
-        RefundResponse response = WebClient
+        return WebClient
             .create(config.getPaymentsHost())
             .post()
             .uri(REFUNDS_URI, paymentReference)
@@ -43,15 +40,11 @@ public class PaymentsClient {
             .retrieve()
             .bodyToMono(RefundResponse.class)
             .block();
-
-        logger.info("RefundResponse: " + response.toString());
-
-        return response;
     }
 
     public PaymentDetailsResponse getPaymentDetails(String paymentReference) {
         try {
-            PaymentDetailsResponse response = WebClient
+            return WebClient
                     .create(config.getPaymentsHost())
                     .get()
                     .uri(PAYMENT_DETAILS_URI, paymentReference)
@@ -63,10 +56,6 @@ public class PaymentsClient {
                     })
                     .bodyToMono(PaymentDetailsResponse.class)
                     .block();
-
-            logger.info("PaymentDetailsResponse: " + response.toString());
-
-            return response;
         } catch (PaymentDetailsException ex) {
             return null;
         }

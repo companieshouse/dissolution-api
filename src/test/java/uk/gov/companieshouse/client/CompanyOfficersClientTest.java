@@ -44,9 +44,6 @@ public class CompanyOfficersClientTest {
     @Mock
     private CompanyOfficersConfig config;
 
-    @Mock
-    private Logger logger;
-
     @BeforeAll
     public static void setUp() throws IOException {
         mockBackEnd = new MockWebServer();

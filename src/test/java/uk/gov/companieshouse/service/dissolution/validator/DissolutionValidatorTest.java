@@ -36,9 +36,6 @@ public class DissolutionValidatorTest {
     @Mock
     private CompanyOfficerService companyOfficerService;
 
-    @Mock
-    private Logger logger;
-
     private final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
     private final Map<String, CompanyOfficer> companyDirectors = Map.of("abc123", generateCompanyOfficer());
     private final List<DirectorRequest> selectedDirectors = Collections.singletonList(generateDirectorRequest());
