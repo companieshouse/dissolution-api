@@ -68,9 +68,6 @@ public class DissolutionEmailServiceTest {
     @Mock
     private DissolutionDeadlineDateCalculator deadlineDateCalculator;
 
-    @Mock
-    private Logger logger;
-
     @Test
     void sendSuccessfulPaymentEmail_shouldGenerateAndSendASuccessfulPaymentEmail() {
         final Dissolution dissolution = generateDissolution();

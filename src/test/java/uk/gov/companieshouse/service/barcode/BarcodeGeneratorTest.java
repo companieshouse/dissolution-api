@@ -32,9 +32,6 @@ public class BarcodeGeneratorTest {
     @Mock
     private BarcodeGeneratorClient client;
 
-    @Mock
-    private Logger logger;
-
     @Test
     public void generateBarcode_createsABarcodeRequest_retrivesBarcode() {
         final BarcodeRequest request = generateBarcodeRequest();

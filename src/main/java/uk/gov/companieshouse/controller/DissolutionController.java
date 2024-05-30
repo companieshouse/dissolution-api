@@ -105,25 +105,13 @@ public class DissolutionController {
 
         final Map<String, CompanyOfficer> directors = companyOfficerService.getActiveDirectorsForCompany(companyNumber);
 
-        logger.info("Directors found and mapped: " + directors.values());
-
         dissolutionValidator
                 .checkBusinessRules(company, directors, body.getDirectors())
                 .ifPresent(error -> {
                     throw new BadRequestException(error);
                 });
 
-        logger.info("Validation passed");
-
-        String email = getEmail(authorisedUser);
-
-        logger.info("Email for authorised used" + email);
-
-        DissolutionCreateResponse dissolutionCreateResponse = dissolutionService.create(body, company, directors, userId, request.getRemoteAddr(), email);
-
-        logger.info("DissolutionCreateRepsponse: " + dissolutionCreateResponse);
-
-        return dissolutionCreateResponse;
+        return dissolutionService.create(body, company, directors, userId, request.getRemoteAddr(), getEmail(authorisedUser));
     }
 
     @Operation(summary = "Get Dissolution Application", tags = "Dissolution")
@@ -137,16 +125,10 @@ public class DissolutionController {
         DissolutionGetResponse dissolutionGetResponse = dissolutionService
                 .getByCompanyNumber(companyNumber)
                 .orElseThrow(NotFoundException::new);
-
-        logger.info("DissolutionGetResponse: " + dissolutionGetResponse.toString());
-
         String paymentRef = dissolutionGetResponse.getPaymentReference();
         if ( paymentRef != null && !paymentRef.equals("") && dissolutionGetResponse.getApplicationStatus().equals(ApplicationStatus.PENDING_PAYMENT)) {
             // payment could be complete, we need to get up-to-date status to be sure
             String paymentStatus = paymentService.getPaymentStatus(dissolutionGetResponse.getPaymentReference());
-
-            logger.info("PaymentStatus: " + paymentStatus);
-
             if (paymentStatus == null) {
                 logger.info(String.format("Error getting payment status for paymentRef: [%s], resetting payment ref", paymentRef));
                 // error retrieving payment status, so reset payment reference to allow user to restart payment
@@ -156,13 +138,9 @@ public class DissolutionController {
                     throw new NotFoundException();
                 }
             } else if (paymentStatus.equals("accepted")) {
-                logger.info("PaymentAccepted");
                 dissolutionGetResponse.setApplicationStatus(ApplicationStatus.PAID);
             }
         }
-
-        logger.info(dissolutionGetResponse.toString());
-
         return dissolutionGetResponse;
     }
 

@@ -47,9 +47,6 @@ class DissolutionServiceTest {
     @Mock
     private DissolutionRepository repository;
 
-    @Mock
-    private Logger logger;
-
     public static final String COMPANY_NUMBER = "12345678";
     public static final String APPLICATION_REFERENCE = "XYZ456";
     public static final String USER_ID = "123";
@@ -68,7 +65,7 @@ class DissolutionServiceTest {
 
         final DissolutionCreateResponse result = service.create(body, company, companyDirectors, USER_ID, IP, EMAIL);
 
-//        verify(creator).create(body, company, companyDirectors, USER_ID, IP, EMAIL);
+        verify(creator).create(body, company, companyDirectors, USER_ID, IP, EMAIL);
 
         assertEquals(response, result);
     }
