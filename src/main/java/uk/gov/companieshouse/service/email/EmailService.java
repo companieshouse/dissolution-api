@@ -3,8 +3,8 @@ package uk.gov.companieshouse.service.email;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.exception.EmailSendException;
+import uk.gov.companieshouse.kafka.ChdKafkaProducer;
 import uk.gov.companieshouse.kafka.message.Message;
-import uk.gov.companieshouse.kafka.producer.CHKafkaProducer;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.email.EmailMapper;
 import uk.gov.companieshouse.model.dto.email.EmailDocument;
@@ -16,14 +16,14 @@ public class EmailService {
 
     private final EmailSerialiser emailSerialiser;
     private final EmailMapper emailMapper;
-    private final CHKafkaProducer kafkaProducer;
+    private final ChdKafkaProducer kafkaProducer;
     private final Logger logger;
 
     @Autowired
     public EmailService(
             EmailSerialiser emailSerialiser,
             EmailMapper emailMapper,
-            CHKafkaProducer kafkaProducer,
+            ChdKafkaProducer kafkaProducer,
             Logger logger
     ) {
         this.emailSerialiser = emailSerialiser;
