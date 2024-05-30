@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import uk.gov.companieshouse.client.KafkaClient;
+import uk.gov.companieshouse.kafka.ChdKafkaProducer;
 import uk.gov.companieshouse.kafka.producer.Acks;
-import uk.gov.companieshouse.kafka.producer.CHKafkaProducer;
 import uk.gov.companieshouse.kafka.producer.ProducerConfig;
 
 /**
@@ -36,8 +36,8 @@ public class KafkaConfig {
     private String emailSchemaUri;
 
     @Bean
-    CHKafkaProducer producer(ProducerConfig producerConfig) {
-        return new CHKafkaProducer(producerConfig);
+    ChdKafkaProducer producer(ProducerConfig producerConfig) {
+        return new ChdKafkaProducer(producerConfig);
     }
 
     @Bean

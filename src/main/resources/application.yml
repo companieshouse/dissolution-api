@@ -64,12 +64,6 @@ spring:
   data:
     mongodb:
       uri: ${DISSOLUTIONS_API_MONGODB_URL}
-  kafka:
-    properties:
-      enable:
-        idempotence: false
-
-
 
 management:
   endpoints:

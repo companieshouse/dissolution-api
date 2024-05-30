@@ -8,8 +8,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.exception.EmailSendException;
 import uk.gov.companieshouse.fixtures.EmailFixtures;
+import uk.gov.companieshouse.kafka.ChdKafkaProducer;
 import uk.gov.companieshouse.kafka.message.Message;
-import uk.gov.companieshouse.kafka.producer.CHKafkaProducer;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.email.EmailMapper;
 import uk.gov.companieshouse.model.dto.email.EmailDocument;
@@ -32,7 +32,7 @@ public class EmailServiceTest {
     private EmailMapper emailMapper;
 
     @Mock
-    private CHKafkaProducer kafkaProducer;
+    private ChdKafkaProducer kafkaProducer;
 
     @Mock
     private Logger logger;
