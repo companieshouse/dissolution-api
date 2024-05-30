@@ -9,10 +9,10 @@ import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.service.dissolution.validator.CompanyClosableValidator;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 
 @ExtendWith(MockitoExtension.class)
 public class CompanyProfileServiceTest {

@@ -6,7 +6,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
-import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;

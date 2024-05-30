@@ -8,21 +8,19 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
-import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
+import uk.gov.companieshouse.model.dto.dissolution.*;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
 import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;

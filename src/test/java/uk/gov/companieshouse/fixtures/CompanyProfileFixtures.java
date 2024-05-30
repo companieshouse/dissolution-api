@@ -6,13 +6,11 @@ import uk.gov.companieshouse.model.enums.CompanyType;
 
 public class CompanyProfileFixtures {
     public static CompanyProfile generateCompanyProfile() {
-        final CompanyProfile companyProfile = new CompanyProfile();
-
-        companyProfile.setCompanyName("My Company");
-        companyProfile.setType(CompanyType.LTD.getValue());
-        companyProfile.setCompanyNumber("10001");
-        companyProfile.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
-
-        return companyProfile;
+        return new CompanyProfile.Builder()
+                .withCompanyName("My Company")
+                .withType(CompanyType.LTD.getValue())
+                .withCompanyNumber("10001")
+                .withCompanyStatus(CompanyStatus.ACTIVE.getValue())
+                .build();
     }
 }

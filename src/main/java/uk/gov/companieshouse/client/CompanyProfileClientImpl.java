@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.service;
+package uk.gov.companieshouse.client;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -9,19 +9,18 @@ import uk.gov.companieshouse.api.sdk.ApiClientService;
 import uk.gov.companieshouse.exception.CompanyProfileServiceException;
 import uk.gov.companieshouse.exception.ServiceUnavailableException;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.service.dissolution.validator.CompanyClosableValidator;
 
 import java.io.IOException;
 
 @Service
-public class CompanyServiceProfileAImpl implements CompanyProfileServiceA {
+public class CompanyProfileClientImpl implements CompanyProfileClient {
 
     private final CompanyClosableValidator validator;
     private final ApiClientService apiClientService;
     private final Logger logger;
 
-    public CompanyServiceProfileAImpl(ApiClientService apiClientService, Logger logger, CompanyClosableValidator validator) {
+    public CompanyProfileClientImpl(ApiClientService apiClientService, Logger logger, CompanyClosableValidator validator) {
         this.apiClientService = apiClientService;
         this.logger = logger;
         this.validator = validator;
@@ -59,9 +58,4 @@ public class CompanyServiceProfileAImpl implements CompanyProfileServiceA {
             throw new CompanyProfileServiceException("Error Retrieving company profile " + companyNumber, e);
         }
     }
-
-    public boolean isCompanyClosable(CompanyProfile company) {
-        return this.validator.isCompanyClosable(company);
-    }
-
 }

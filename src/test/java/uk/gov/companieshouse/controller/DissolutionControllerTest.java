@@ -11,9 +11,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.HttpClientErrorException;
+import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.Permission;
-import uk.gov.companieshouse.client.CompanyProfileClient;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
@@ -24,6 +24,7 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.service.CompanyOfficerService;
+import uk.gov.companieshouse.client.CompanyProfileClientImpl;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import uk.gov.companieshouse.service.dissolution.validator.DissolutionValidator;
 
@@ -40,6 +41,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
+import static uk.gov.companieshouse.fixtures.CompanyProfileApiFixtures.generateCompanyProfileApi;
 import static uk.gov.companieshouse.fixtures.CompanyProfileFixtures.generateCompanyProfile;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.*;
 
@@ -56,6 +58,7 @@ public class DissolutionControllerTest {
     private static final String OFFICER_ID = "abc123";
     private static final String EMAIL = "user@mail.com";
     private static final String IP_ADDRESS = "127.0.0.1";
+    private static final String PASSTHROUGH_HEADER = "passthrough";
 
     @MockBean
     private DissolutionService service;
@@ -64,7 +67,7 @@ public class DissolutionControllerTest {
     private DissolutionValidator dissolutionValidator;
 
     @MockBean
-    private CompanyProfileClient companyProfileClient;
+    private CompanyProfileClientImpl companyProfileClient;
 
     @MockBean
     private CompanyOfficerService companyOfficerService;
@@ -169,7 +172,7 @@ public class DissolutionControllerTest {
 
     @Test
     public void submitDissolutionRequest_returnsNotFound_ifCompanyNotFound() throws Exception {
-        when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER)).thenReturn(null);
+        when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(null);
 
         mockMvc
                 .perform(
@@ -182,7 +185,7 @@ public class DissolutionControllerTest {
 
     @Test
     public void submitDissolutionRequest_returnsConflict_ifDissolutionAlreadyExistsForCompany() throws Exception {
-        when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER)).thenReturn(generateCompanyProfile());
+        when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(generateCompanyProfileApi());
         when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(true);
 
         mockMvc
@@ -197,10 +200,11 @@ public class DissolutionControllerTest {
     @Test
     public void submitDissolutionRequest_returnsBadRequest_ifValidationFails() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
+        final CompanyProfileApi companyProfileApi = generateCompanyProfileApi();
         final CompanyProfile company = generateCompanyProfile();
         final Map<String, CompanyOfficer> companyDirectors = Map.of(OFFICER_ID, generateCompanyOfficer());
 
-        when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER)).thenReturn(company);
+        when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfileApi);
         when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(false);
         when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(companyDirectors);
         when(dissolutionValidator.checkBusinessRules(eq(company), eq(companyDirectors), isA(List.class))).thenReturn(Optional.of("Some dissolution error"));
@@ -219,10 +223,11 @@ public class DissolutionControllerTest {
     @Test
     public void submitDissolutionRequest_returnsInternalServerError_ifExceptionOccursWhenCreatingDissolution() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
+        final CompanyProfileApi companyProfileApi = generateCompanyProfileApi();
         final CompanyProfile company = generateCompanyProfile();
         final Map<String, CompanyOfficer> companyDirectors = Map.of(OFFICER_ID, generateCompanyOfficer());
 
-        when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER)).thenReturn(company);
+        when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfileApi);
         when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(false);
         when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(companyDirectors);
         when(dissolutionValidator.checkBusinessRules(eq(company), eq(companyDirectors), isA(List.class))).thenReturn(Optional.empty());
@@ -243,10 +248,11 @@ public class DissolutionControllerTest {
     public void submitDissolutionRequest_returnsCreated_andCreateResponse_ifDissolutionIsCreatedSuccessfully() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
         final DissolutionCreateResponse response = generateDissolutionCreateResponse();
+        final CompanyProfileApi companyProfileApi = generateCompanyProfileApi();
         final CompanyProfile company = generateCompanyProfile();
         final Map<String, CompanyOfficer> companyDirectors = Map.of(OFFICER_ID, generateCompanyOfficer());
 
-        when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER)).thenReturn(company);
+        when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfileApi);
         when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(false);
         when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(companyDirectors);
         when(dissolutionValidator.checkBusinessRules(eq(company), eq(companyDirectors), isA(List.class))).thenReturn(Optional.empty());
