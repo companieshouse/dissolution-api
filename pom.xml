@@ -47,6 +47,7 @@
         <squareup.version>4.12.0</squareup.version>
         <fasterxml-jackson.version>2.17.0</fasterxml-jackson.version>
         <slf4j.version>2.0.12</slf4j.version>
+        <commons-io.version>2.8.0</commons-io.version>
         <spring-core.version>6.1.4</spring-core.version>
         <org-json.version>20240303</org-json.version>
     </properties>
@@ -244,6 +245,11 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>${fasterxml-jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io.version}</version>
         </dependency>
 
         <!-- Swagger documentation -->
