@@ -1,35 +1,33 @@
 package uk.gov.companieshouse.service.aws;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.core.sync.ResponseTransformer;
+import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import uk.gov.companieshouse.exception.S3FileDownloadException;
 import uk.gov.companieshouse.logging.Logger;
 
-import java.util.Arrays;
+import java.io.IOException;
+
 
 @Service
 public class S3Service {
 
     private final S3Client s3;
 
-    private final Logger logger;
-
-    public S3Service(S3Client s3, Logger logger) {
+    public S3Service(S3Client s3) {
         this.s3 = s3;
-        this.logger = logger;
     }
 
     public byte[] downloadFile(String bucket, String key) {
-        byte[] downloadFileResponse = s3
-                .getObject(
-                        GetObjectRequest.builder().bucket(bucket).key(key).build(),
-                        ResponseTransformer.toBytes()
-                )
-                .asByteArray();
 
-        logger.info("S3Service downloadFile response: " + Arrays.toString(downloadFileResponse));
-
-        return downloadFileResponse;
+        try {
+            return IOUtils.toByteArray(s3.getObject(GetObjectRequest.builder().bucket(bucket).key(key).build()));
+        } catch (IOException exception) {
+            throw new S3FileDownloadException("Failed to convert file to byteArray", exception);
+        } catch (SdkException se) {
+            throw new S3FileDownloadException("Failed to download file", se);
+        }
     }
 }
