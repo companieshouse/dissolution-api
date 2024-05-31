@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
 import uk.gov.companieshouse.service.aws.S3Service;
@@ -23,6 +24,9 @@ public class DissolutionCertificateDownloaderTest {
 
     @Mock
     private S3Service s3;
+
+    @Mock
+    private Logger logger;
 
     @Test
     public void downloadDissolutionCertificate_downloadsFromS3UsingDissolutionCertificateKeyAndBucket() {
