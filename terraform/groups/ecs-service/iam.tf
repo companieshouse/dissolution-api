@@ -46,6 +46,19 @@ data "aws_iam_policy_document" "task_policy" {
       "arn:aws:s3:::${local.dissolutions_bucket_name}/*"
     ]
   }
+
+  statement {
+    sid       = "AllowS3WriteObjects"
+    effect    = "Allow"
+    actions   = [
+      "s3:PutObject",
+      "s3:PutObjectAcl",
+      "s3:PutObjectVersionAcl"
+    ]
+    resources = [
+      "arn:aws:s3:::${local.dissolutions_bucket_name}/*"
+    ]
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "task_role_attachment" {
