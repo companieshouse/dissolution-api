@@ -6,10 +6,8 @@ import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import uk.gov.companieshouse.exception.S3FileDownloadException;
-import uk.gov.companieshouse.logging.Logger;
 
 import java.io.IOException;
-
 
 @Service
 public class S3Service {
