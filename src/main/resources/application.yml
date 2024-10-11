@@ -59,7 +59,6 @@ payments:
 
 server:
   port: 3001
-  max-http-request-header-size: 10240
 
 spring:
   data:
