@@ -31,7 +31,7 @@
         <avro.version>1.11.4</avro.version>
         <ch-kafka.version>3.0.1</ch-kafka.version>
         <kafka-models.version>3.0.7</kafka-models.version>
-        <kafka-clients.version>3.7.0</kafka-clients.version>
+        <kafka-clients.version>3.9.0</kafka-clients.version>
         <aws.java.sdk.version>2.25.61</aws.java.sdk.version>
         <version.netty>4.1.109.Final</version.netty>
         <reactor-netty-core.version>1.1.18</reactor-netty-core.version>
