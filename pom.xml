@@ -32,7 +32,7 @@
         <ch-kafka.version>3.0.1</ch-kafka.version>
         <kafka-models.version>3.0.7</kafka-models.version>
         <kafka-clients.version>3.7.0</kafka-clients.version>
-        <aws.java.sdk.version>2.25.61</aws.java.sdk.version>
+        <aws.java.sdk.version>2.29.21</aws.java.sdk.version>
         <version.netty>4.1.109.Final</version.netty>
         <reactor-netty-core.version>1.1.18</reactor-netty-core.version>
         <jib-maven-plugin.version>3.4.1</jib-maven-plugin.version>
