@@ -49,6 +49,9 @@ kafka:
     uri:
       email-send: ${EMAIL_SCHEMA_URI}
 
+logging:
+  namespace: dissolution-api
+
 payments:
   url: ${PAYMENTS_API_URL}
 
