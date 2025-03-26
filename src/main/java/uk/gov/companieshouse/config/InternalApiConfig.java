@@ -21,10 +21,10 @@ public class InternalApiConfig {
 
     @Bean
     public InternalApiClient kafkaApiClientSupplier() {
-        ApiKeyHttpClient apiKeyHttpClient = new ApiKeyHttpClient(apiKey);
+        var apiKeyHttpClient = new ApiKeyHttpClient(apiKey);
         apiKeyHttpClient.setRequestId(EMAIL_APP_ID);
 
-        InternalApiClient internalApiClient = new InternalApiClient(apiKeyHttpClient);
+        var internalApiClient = new InternalApiClient(apiKeyHttpClient);
         internalApiClient.setBasePath(kafkaApiUrl);
 
         return internalApiClient;

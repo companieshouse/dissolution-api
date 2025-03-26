@@ -32,9 +32,9 @@ public class EmailClient {
 
     public <T> ApiResponse<Void> sendEmail(final EmailDocument<T> emailDocument) throws EmailSendException {
         try {
-            String jsonData = objectMapper.writeValueAsString(emailDocument.getData());
+            var jsonData = objectMapper.writeValueAsString(emailDocument.getData());
 
-            SendEmail sendEmail = new SendEmail();
+            var sendEmail = new SendEmail();
             sendEmail.setAppId(emailDocument.getAppId());
             sendEmail.setMessageId(emailDocument.getMessageId());
             sendEmail.setMessageType(emailDocument.getMessageType());
