@@ -85,8 +85,10 @@ public class DissolutionController {
             @Valid @RequestBody final DissolutionCreateRequest body,
             HttpServletRequest request) {
 
+        String tokenHeader = request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
+
         final CompanyProfileApi companyProfileApi = Optional
-                .ofNullable(companyProfileClient.getCompanyProfile(companyNumber, request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())))
+                .ofNullable(companyProfileClient.getCompanyProfile(companyNumber, tokenHeader))
                 .orElseThrow(NotFoundException::new);
 
         CompanyProfile company = new CompanyProfile.Builder()
@@ -124,7 +126,7 @@ public class DissolutionController {
                 .getByCompanyNumber(companyNumber)
                 .orElseThrow(NotFoundException::new);
         String paymentRef = dissolutionGetResponse.getPaymentReference();
-        if ( paymentRef != null && !paymentRef.equals("") && dissolutionGetResponse.getApplicationStatus().equals(ApplicationStatus.PENDING_PAYMENT)) {
+        if ( paymentRef != null && !paymentRef.isEmpty() && dissolutionGetResponse.getApplicationStatus().equals(ApplicationStatus.PENDING_PAYMENT)) {
             // payment could be complete, we need to get up-to-date status to be sure
             String paymentStatus = paymentService.getPaymentStatus(dissolutionGetResponse.getPaymentReference());
             if (paymentStatus == null) {

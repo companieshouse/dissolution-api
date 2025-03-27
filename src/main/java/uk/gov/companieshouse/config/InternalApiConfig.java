@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Configuration;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.http.ApiKeyHttpClient;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 import static uk.gov.companieshouse.model.Constants.EMAIL_APP_ID;
 
 @Configuration
@@ -28,5 +30,10 @@ public class InternalApiConfig {
         internalApiClient.setBasePath(kafkaApiUrl);
 
         return internalApiClient;
+    }
+
+    @Bean
+    public ConcurrentHashMap<?, ?> concurrentHashMap() {
+        return new ConcurrentHashMap<>();
     }
 }

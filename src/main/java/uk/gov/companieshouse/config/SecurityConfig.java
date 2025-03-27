@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.config;
 
-/*
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -42,8 +41,4 @@ public class SecurityConfig implements WebMvcConfigurer {
         registry.addInterceptor(dissolutionTokenPermissionsInterceptor).addPathPatterns(URI_PATTERN).excludePathPatterns(TOKEN_PERMISSION_AUTH_EXCLUDE_LIST);
         registry.addInterceptor(apiKeyPermissionsInterceptor).addPathPatterns(API_KEY_PERMISSION_AUTH_INCLUDE_LIST);
     }
-}
-*/
-public class SecurityConfig {
-
 }
