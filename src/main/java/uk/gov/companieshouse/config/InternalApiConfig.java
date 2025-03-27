@@ -33,7 +33,7 @@ public class InternalApiConfig {
     }
 
     @Bean
-    public ConcurrentHashMap<?, ?> concurrentHashMap() {
+    public <T> ConcurrentHashMap<T, T> concurrentHashMap() {
         return new ConcurrentHashMap<>();
     }
 }
