@@ -18,7 +18,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class EmailServiceTest {
+class EmailServiceTest {
 
     @InjectMocks
     private EmailService emailService;
@@ -30,7 +30,7 @@ public class EmailServiceTest {
     private Logger logger;
 
     @Test
-    public void givenValidPayload_whenSendEmail_thenReturnOk() {
+    void givenValidPayload_whenSendEmail_thenReturnOk() {
         final EmailDocument<?> emailDocument = EmailFixtures.generateEmailDocument("some-email-data");
 
         ApiResponse<Void> apiResponse = new ApiResponse<>(200, Map.of());
@@ -45,7 +45,7 @@ public class EmailServiceTest {
     }
 
     @Test
-    public void givenInvalidPayload_whenSendEmail_thenReturnBadRequest() {
+    void givenInvalidPayload_whenSendEmail_thenReturnBadRequest() {
         final EmailDocument<?> emailDocument = EmailFixtures.generateEmailDocument("some-email-data");
 
         ApiResponse<Void> apiResponse = new ApiResponse<>(400, Map.of());

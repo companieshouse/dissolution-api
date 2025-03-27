@@ -7,6 +7,7 @@ import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.http.ApiKeyHttpClient;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static uk.gov.companieshouse.model.Constants.EMAIL_APP_ID;
 
@@ -33,7 +34,7 @@ public class InternalApiConfig {
     }
 
     @Bean
-    public <T> ConcurrentHashMap<T, T> concurrentHashMap() {
+    public <T> ConcurrentMap<T, T> concurrentMap() {
         return new ConcurrentHashMap<>();
     }
 }
