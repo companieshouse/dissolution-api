@@ -9,8 +9,6 @@ import uk.gov.companieshouse.api.http.ApiKeyHttpClient;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static uk.gov.companieshouse.model.Constants.EMAIL_APP_ID;
-
 @Configuration
 public class InternalApiConfig {
 
@@ -24,10 +22,7 @@ public class InternalApiConfig {
 
     @Bean
     public InternalApiClient kafkaApiClientSupplier() {
-        var apiKeyHttpClient = new ApiKeyHttpClient(apiKey);
-        apiKeyHttpClient.setRequestId(EMAIL_APP_ID);
-
-        var internalApiClient = new InternalApiClient(apiKeyHttpClient);
+        var internalApiClient = new InternalApiClient(new ApiKeyHttpClient(apiKey));
         internalApiClient.setBasePath(kafkaApiUrl);
 
         return internalApiClient;
