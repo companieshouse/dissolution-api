@@ -14,18 +14,20 @@ import uk.gov.companieshouse.exception.EmailSendException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.model.dto.email.EmailDocument;
 
+import java.util.function.Supplier;
+
 import static java.lang.String.format;
 
 @Component
 @Qualifier("emailClient")
 public class EmailClient {
 
-    private final InternalApiClient internalApiClient;
+    private final Supplier<InternalApiClient> internalApiClientSupplier;
     private final Logger logger;
     private final ObjectMapper objectMapper;
 
-    public EmailClient(InternalApiClient internalApiClient, Logger logger, ObjectMapper objectMapper) {
-        this.internalApiClient = internalApiClient;
+    public EmailClient(Supplier<InternalApiClient> internalApiClientSupplier, Logger logger, ObjectMapper objectMapper) {
+        this.internalApiClientSupplier = internalApiClientSupplier;
         this.logger = logger;
         this.objectMapper = objectMapper;
     }
@@ -41,7 +43,7 @@ public class EmailClient {
             sendEmail.setJsonData(jsonData);
             sendEmail.setEmailAddress(emailDocument.getEmailAddress());
 
-            PrivateSendEmailHandler emailHandler = internalApiClient.sendEmailHandler();
+            PrivateSendEmailHandler emailHandler = internalApiClientSupplier.get().sendEmailHandler();
             PrivateSendEmailPost emailPost = emailHandler.postSendEmail("/send-email", sendEmail);
 
             ApiResponse<Void> response = emailPost.execute();

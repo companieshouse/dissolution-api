@@ -37,8 +37,6 @@ env:
   chsUrl: ${CHS_URL}
 
 kafka:
-  api:
-    url: ${CHS_KAFKA_API_URL:http://localhost:8888}
   broker:
     addr: ${KAFKA_BROKER_ADDR}
   config:

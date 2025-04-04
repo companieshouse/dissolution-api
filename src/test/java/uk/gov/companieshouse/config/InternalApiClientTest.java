@@ -7,32 +7,34 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.InternalApiClient;
 
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Supplier;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static uk.gov.companieshouse.model.Constants.EMAIL_APP_ID;
+import static org.hamcrest.Matchers.nullValue;
 
 @ExtendWith(MockitoExtension.class)
 class InternalApiClientTest {
 
-    private InternalApiConfig internalApiConfig;
+    private Supplier<InternalApiClient> internalApiClientSupplier;
 
     @BeforeEach
     void setup() {
-        internalApiConfig = new InternalApiConfig("test-api-key", "http://chs-kafka-api-url:8080");
+        internalApiClientSupplier = new InternalApiConfig().internalApiClientSupplier(
+                "test-api-key", "http://chs-kafka-api-url:8080");
     }
 
     @Test
     void testCreateInternalApiClient() {
-        InternalApiClient internalApiClient = internalApiConfig.kafkaApiClientSupplier();
+        InternalApiClient internalApiClient = internalApiClientSupplier.get();
 
         assertThat(internalApiClient.getBasePath(), is("http://chs-kafka-api-url:8080"));
-        assertThat(internalApiClient.getHttpClient().getRequestId(), is(EMAIL_APP_ID));
+        assertThat(internalApiClient.getHttpClient().getRequestId(), is(nullValue()));
     }
 
     @Test
     void testConcurrentMap() {
-        ConcurrentMap<Object, Object> concurrentMap = internalApiConfig.concurrentMap();
+        ConcurrentMap<Object, Object> concurrentMap = new InternalApiConfig().concurrentMap();
 
         assertThat(concurrentMap.size(), is(0));
     }

@@ -8,24 +8,17 @@ import uk.gov.companieshouse.api.http.ApiKeyHttpClient;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Supplier;
 
 @Configuration
 public class InternalApiConfig {
 
-    private final String apiKey;
-    private final String kafkaApiUrl;
-
-    public InternalApiConfig(@Value("${api.key}") String apiKey, @Value("${kafka.api.url}") String kafkaApiUrl) {
-        this.apiKey = apiKey;
-        this.kafkaApiUrl = kafkaApiUrl;
-    }
-
     @Bean
-    public InternalApiClient kafkaApiClientSupplier() {
+    public Supplier<InternalApiClient> internalApiClientSupplier(@Value("${api.key}") String apiKey, @Value("${api.url}") String apiUrl) {
         var internalApiClient = new InternalApiClient(new ApiKeyHttpClient(apiKey));
-        internalApiClient.setBasePath(kafkaApiUrl);
+        internalApiClient.setBasePath(apiUrl);
 
-        return internalApiClient;
+        return () -> internalApiClient;
     }
 
     @Bean
