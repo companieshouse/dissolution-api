@@ -7,7 +7,6 @@ import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.http.ApiKeyHttpClient;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
 
 @Configuration
@@ -22,7 +21,7 @@ public class InternalApiConfig {
     }
 
     @Bean
-    public <T> ConcurrentMap<T, T> concurrentMap() {
+    public <T> ConcurrentHashMap<T, T> concurrentMap() {
         return new ConcurrentHashMap<>();
     }
 }
