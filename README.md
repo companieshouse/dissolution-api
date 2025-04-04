@@ -18,7 +18,7 @@
 
 You must be connected to the VPN
 
-    mvn compile jib:dockerBuild -Dimage=416670754337.dkr.ecr.eu-west-2.amazonaws.com/local/dissolution-api
+    mvn compile jib:dockerBuild -Dimage=169942020521.dkr.ecr.eu-west-1.amazonaws.com/local/dissolution-api
 
 ### API Documentation (Swagger)
 
