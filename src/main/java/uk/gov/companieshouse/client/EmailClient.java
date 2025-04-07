@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.chskafka.SendEmail;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
@@ -14,6 +16,8 @@ import uk.gov.companieshouse.exception.EmailSendException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.model.dto.email.EmailDocument;
 
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 import static java.lang.String.format;
@@ -43,7 +47,10 @@ public class EmailClient {
             sendEmail.setJsonData(jsonData);
             sendEmail.setEmailAddress(emailDocument.getEmailAddress());
 
-            PrivateSendEmailHandler emailHandler = internalApiClientSupplier.get().sendEmailHandler();
+            InternalApiClient apiClient = internalApiClientSupplier.get();
+            apiClient.getHttpClient().setRequestId(getRequestId().orElse(UUID.randomUUID().toString()));
+
+            PrivateSendEmailHandler emailHandler = apiClient.sendEmailHandler();
             PrivateSendEmailPost emailPost = emailHandler.postSendEmail("/send-email", sendEmail);
 
             ApiResponse<Void> response = emailPost.execute();
@@ -61,6 +68,14 @@ public class EmailClient {
             logger.error("Error sending email", ex);
             throw new EmailSendException(ex.getMessage());
         }
+    }
+
+    private Optional<String> getRequestId() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes != null) {
+            return Optional.ofNullable(attributes.getRequest().getHeader("x-request-id"));
+        }
+        return Optional.empty();
     }
 
 }

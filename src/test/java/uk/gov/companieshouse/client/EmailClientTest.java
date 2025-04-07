@@ -16,6 +16,7 @@ import uk.gov.companieshouse.api.chskafka.SendEmail;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.chskafka.PrivateSendEmailHandler;
 import uk.gov.companieshouse.api.handler.chskafka.request.PrivateSendEmailPost;
+import uk.gov.companieshouse.api.http.HttpClient;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.exception.EmailSendException;
 import uk.gov.companieshouse.fixtures.EmailFixtures;
@@ -68,6 +69,7 @@ class EmailClientTest {
         when(privateSendEmailHandler.postSendEmail(eq("/send-email"), any(SendEmail.class))).thenReturn(privateSendEmailPost);
 
         when(internalApiClientSupplier.get()).thenReturn(internalApiClient);
+        when(internalApiClient.getHttpClient()).thenReturn(mock(HttpClient.class));
         when(internalApiClient.sendEmailHandler()).thenReturn(privateSendEmailHandler);
 
         SignatoryToSignEmailData data = EmailFixtures.generateSignatoryToSignEmailData();
@@ -96,6 +98,7 @@ class EmailClientTest {
         when(privateSendEmailHandler.postSendEmail(eq("/send-email"), any(SendEmail.class))).thenReturn(privateSendEmailPost);
 
         when(internalApiClientSupplier.get()).thenReturn(internalApiClient);
+        when(internalApiClient.getHttpClient()).thenReturn(mock(HttpClient.class));
         when(internalApiClient.sendEmailHandler()).thenReturn(privateSendEmailHandler);
 
         SupportNotificationEmailData data = EmailFixtures.generateSupportNotificationEmailData();
@@ -124,6 +127,7 @@ class EmailClientTest {
         when(privateSendEmailHandler.postSendEmail(eq("/send-email"), any(SendEmail.class))).thenReturn(privateSendEmailPost);
 
         when(internalApiClientSupplier.get()).thenReturn(internalApiClient);
+        when(internalApiClient.getHttpClient()).thenReturn(mock(HttpClient.class));
         when(internalApiClient.sendEmailHandler()).thenReturn(privateSendEmailHandler);
 
         ApplicationRejectedEmailData data = EmailFixtures.generateApplicationRejectedEmailData();
@@ -152,6 +156,7 @@ class EmailClientTest {
         when(privateSendEmailHandler.postSendEmail(eq("/send-email"), any(SendEmail.class))).thenReturn(privateSendEmailPost);
 
         when(internalApiClientSupplier.get()).thenReturn(internalApiClient);
+        when(internalApiClient.getHttpClient()).thenReturn(mock(HttpClient.class));
         when(internalApiClient.sendEmailHandler()).thenReturn(privateSendEmailHandler);
 
         ApplicationAcceptedEmailData data = EmailFixtures.generateApplicationAcceptedEmailData();
@@ -180,6 +185,7 @@ class EmailClientTest {
         when(privateSendEmailHandler.postSendEmail(eq("/send-email"), any(SendEmail.class))).thenReturn(privateSendEmailPost);
 
         when(internalApiClientSupplier.get()).thenReturn(internalApiClient);
+        when(internalApiClient.getHttpClient()).thenReturn(mock(HttpClient.class));
         when(internalApiClient.sendEmailHandler()).thenReturn(privateSendEmailHandler);
 
         SuccessfulPaymentEmailData data = EmailFixtures.generateSuccessfulPaymentEmailData();
@@ -208,6 +214,7 @@ class EmailClientTest {
         when(privateSendEmailHandler.postSendEmail(eq("/send-email"), any(SendEmail.class))).thenReturn(privateSendEmailPost);
 
         when(internalApiClientSupplier.get()).thenReturn(internalApiClient);
+        when(internalApiClient.getHttpClient()).thenReturn(mock(HttpClient.class));
         when(internalApiClient.sendEmailHandler()).thenReturn(privateSendEmailHandler);
 
         SuccessfulPaymentEmailData data = EmailFixtures.generateSuccessfulPaymentEmailDataForDirector();
@@ -236,6 +243,7 @@ class EmailClientTest {
         when(privateSendEmailHandler.postSendEmail(eq("/send-email"), any(SendEmail.class))).thenReturn(privateSendEmailPost);
 
         when(internalApiClientSupplier.get()).thenReturn(internalApiClient);
+        when(internalApiClient.getHttpClient()).thenReturn(mock(HttpClient.class));
         when(internalApiClient.sendEmailHandler()).thenReturn(privateSendEmailHandler);
 
         PendingPaymentEmailData data = EmailFixtures.generatePendingPaymentEmailData();
@@ -264,6 +272,7 @@ class EmailClientTest {
         when(privateSendEmailHandler.postSendEmail(eq("/send-email"), any(SendEmail.class))).thenReturn(privateSendEmailPost);
 
         when(internalApiClientSupplier.get()).thenReturn(internalApiClient);
+        when(internalApiClient.getHttpClient()).thenReturn(mock(HttpClient.class));
         when(internalApiClient.sendEmailHandler()).thenReturn(privateSendEmailHandler);
 
         SuccessfulPaymentEmailData data = EmailFixtures.generateSuccessfulPaymentEmailData();
@@ -292,6 +301,7 @@ class EmailClientTest {
         when(privateSendEmailHandler.postSendEmail(eq("/send-email"), any(SendEmail.class))).thenReturn(privateSendEmailPost);
 
         when(internalApiClientSupplier.get()).thenReturn(internalApiClient);
+        when(internalApiClient.getHttpClient()).thenReturn(mock(HttpClient.class));
         when(internalApiClient.sendEmailHandler()).thenReturn(privateSendEmailHandler);
 
         SuccessfulPaymentEmailData data = EmailFixtures.generateSuccessfulPaymentEmailData();
