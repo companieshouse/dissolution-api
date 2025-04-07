@@ -9,8 +9,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.chskafka.SendEmail;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
-import uk.gov.companieshouse.api.handler.chskafka.PrivateSendEmailHandler;
-import uk.gov.companieshouse.api.handler.chskafka.request.PrivateSendEmailPost;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.exception.EmailSendException;
 import uk.gov.companieshouse.logging.Logger;
@@ -47,11 +45,13 @@ public class EmailClient {
             sendEmail.setJsonData(jsonData);
             sendEmail.setEmailAddress(emailDocument.getEmailAddress());
 
-            InternalApiClient apiClient = internalApiClientSupplier.get();
-            apiClient.getHttpClient().setRequestId(getRequestId().orElse(UUID.randomUUID().toString()));
+            var requestId = getRequestId().orElse(UUID.randomUUID().toString());
 
-            PrivateSendEmailHandler emailHandler = apiClient.sendEmailHandler();
-            PrivateSendEmailPost emailPost = emailHandler.postSendEmail("/send-email", sendEmail);
+            var apiClient = internalApiClientSupplier.get();
+            apiClient.getHttpClient().setRequestId(requestId);
+
+            var emailHandler = apiClient.sendEmailHandler();
+            var emailPost = emailHandler.postSendEmail("/send-email", sendEmail);
 
             ApiResponse<Void> response = emailPost.execute();
 
@@ -72,10 +72,10 @@ public class EmailClient {
 
     private Optional<String> getRequestId() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        if (attributes != null) {
-            return Optional.ofNullable(attributes.getRequest().getHeader("x-request-id"));
+        if(attributes == null) {
+            return Optional.empty();
         }
-        return Optional.empty();
+        return Optional.ofNullable(attributes.getRequest().getHeader("x-request-id"));
     }
 
 }
