@@ -20,7 +20,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Versions -->
-        <version.spring.boot>3.3.2</version.spring.boot>
+        <version.spring.boot>3.3.5</version.spring.boot>
         <version.springdoc.openapi>1.8.0</version.springdoc.openapi>
         <api-helper-java.version>3.0.0</api-helper-java.version>
         <api-security-java.version>2.0.1</api-security-java.version>
