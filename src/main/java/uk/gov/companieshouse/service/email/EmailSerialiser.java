@@ -55,15 +55,14 @@ public class EmailSerialiser {
             encoder.flush();
 
             return stream.toByteArray();
+
         } catch (IOException e) {
             logger.error("Error serialising email", e);
             throw new EmailSendException(e.getMessage());
         }
     }
 
-    private GenericRecord buildAvroGenericRecord(
-            EmailDocument<?> document, Schema schema
-    ) throws JsonProcessingException {
+    private GenericRecord buildAvroGenericRecord(EmailDocument<?> document, Schema schema) throws JsonProcessingException {
         GenericRecord documentData = genericRecordFactory.getGenericRecord(schema);
 
         documentData.put("app_id", document.getAppId());

@@ -22,6 +22,10 @@ clean:
 build:
 	mvn compile
 
+.PHONY: docker-image
+docker-image: clean
+	mvn package -Dskip.unit.tests=true -Dskip.integration.tests=true jib:dockerBuild
+
 .PHONY: test
 test: test-unit test-integration
 
