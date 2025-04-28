@@ -3,6 +3,7 @@ package uk.gov.companieshouse.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -27,8 +28,13 @@ public class EmailClient {
     private final Supplier<InternalApiClient> internalApiClientSupplier;
     private final Logger logger;
     private final ObjectMapper objectMapper;
+    private final String chsKafkaUrl;
 
-    public EmailClient(Supplier<InternalApiClient> internalApiClientSupplier, Logger logger, ObjectMapper objectMapper) {
+    public EmailClient(@Value("${kafka.api.url}")String chsKafkaUrl,
+                       Supplier<InternalApiClient> internalApiClientSupplier,
+                       Logger logger,
+                       ObjectMapper objectMapper) {
+        this.chsKafkaUrl = chsKafkaUrl;
         this.internalApiClientSupplier = internalApiClientSupplier;
         this.logger = logger;
         this.objectMapper = objectMapper;
@@ -48,6 +54,7 @@ public class EmailClient {
             var requestId = getRequestId().orElse(UUID.randomUUID().toString());
 
             var apiClient = internalApiClientSupplier.get();
+            apiClient.setBasePath(chsKafkaUrl);
             apiClient.getHttpClient().setRequestId(requestId);
 
             var emailHandler = apiClient.sendEmailHandler();

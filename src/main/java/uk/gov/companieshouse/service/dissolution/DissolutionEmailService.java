@@ -3,7 +3,6 @@ package uk.gov.companieshouse.service.dissolution;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.config.EnvironmentConfig;
-import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.email.DissolutionEmailMapper;
 import uk.gov.companieshouse.mapper.email.EmailMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
