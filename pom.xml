@@ -44,7 +44,7 @@
         <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
         <apache-log4j-bom.version>2.23.1</apache-log4j-bom.version>
         <argLine>-Dnet.bytebuddy.experimental=true</argLine>
-        <flapdoodle.version>3.0.0</flapdoodle.version>
+        <flapdoodle.version>4.18.1</flapdoodle.version>
         <squareup.version>4.12.0</squareup.version>
         <fasterxml-jackson.version>2.17.0</fasterxml-jackson.version>
         <slf4j.version>2.0.12</slf4j.version>
