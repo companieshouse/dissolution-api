@@ -20,24 +20,23 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Versions -->
-        <version.spring.boot>3.3.4</version.spring.boot>
+        <version.spring.boot>3.3.12</version.spring.boot>
         <version.springdoc.openapi>1.8.0</version.springdoc.openapi>
-        <api-helper-java.version>3.0.0</api-helper-java.version>
-        <api-security-java.version>2.0.1</api-security-java.version>
-        <api-sdk-java.version>6.0.17</api-sdk-java.version>
+        <api-helper-java.version>3.0.1</api-helper-java.version>
+        <api-security-java.version>2.0.8</api-security-java.version>
+        <api-sdk-java.version>6.2.11</api-sdk-java.version>
         <private-api-sdk-java.version>4.0.288</private-api-sdk-java.version>
-        <api-sdk-manager-java-library.version>3.0.5</api-sdk-manager-java-library.version>
-        <structured-logging.version>3.0.3</structured-logging.version>
-        <commons-lang3.version>3.14.0</commons-lang3.version>
+        <api-sdk-manager-java-library.version>3.0.7</api-sdk-manager-java-library.version>
+        <structured-logging.version>3.0.32</structured-logging.version>
+        <commons-lang3.version>3.17.0</commons-lang3.version>
         <avro.version>1.11.4</avro.version>
-        <ch-kafka.version>3.0.1</ch-kafka.version>
-        <kafka-models.version>3.0.7</kafka-models.version>
-        <kafka-clients.version>3.7.0</kafka-clients.version>
+        <ch-kafka.version>3.0.3</ch-kafka.version>
+        <kafka-models.version>3.0.17</kafka-models.version>
+        <kafka-clients.version>3.7.2</kafka-clients.version>
         <aws.java.sdk.version>2.25.61</aws.java.sdk.version>
-        <version.netty>4.1.109.Final</version.netty>
-        <reactor-netty-core.version>1.1.18</reactor-netty-core.version>
-        <jib-maven-plugin.version>3.4.1</jib-maven-plugin.version>
-        <sonar-maven-plugin.version>3.11.0.3922</sonar-maven-plugin.version>
+        <version.netty>4.1.121.Final</version.netty>
+        <reactor-netty-core.version>1.1.30</reactor-netty-core.version>
+        <jib-maven-plugin.version>3.4.5</jib-maven-plugin.version>
         <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
         <maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
@@ -49,15 +48,20 @@
         <fasterxml-jackson.version>2.17.0</fasterxml-jackson.version>
         <slf4j.version>2.0.12</slf4j.version>
         <commons-io.version>2.17.0</commons-io.version>
-        <spring-core.version>6.1.14</spring-core.version>
+        <spring-framework.version>6.1.15</spring-framework.version>
         <org-json.version>20240303</org-json.version>
-        <spring-web.version>6.1.14</spring-web.version>
-        <spring-webflux.version>6.1.14</spring-webflux.version>
-        <spring-webmvc.version>6.1.14</spring-webmvc.version>
-        <spring-tx.version>6.1.14</spring-tx.version>
-        <swagger-ui.version>5.17.11</swagger-ui.version>
-        <jetty-http.version>12.0.14</jetty-http.version>
-        <jetty-servlet.version>11.0.24</jetty-servlet.version>
+        <swagger-ui.version>5.17.14</swagger-ui.version>
+        <jetty-http.version>12.0.21</jetty-http.version>
+        <jetty-servlet.version>12.0.21</jetty-servlet.version>
+        <sonar.projectName>dissolution-api</sonar.projectName>
+        <!--suppress UnresolvedMavenProperty -->
+        <sonar.host.url>${CODE_ANALYSIS_HOST_URL}</sonar.host.url>
+        <!--suppress UnresolvedMavenProperty -->
+        <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
+        <sonar.login></sonar.login>
+        <sonar.password></sonar.password>
+        <sonar.projectKey>uk.gov.companieshouse:dissolution-api</sonar.projectKey>
+        <sonar.java.binaries>${project.basedir}/target,${project.basedir}/target/*</sonar.java.binaries>
     </properties>
 
     <dependencyManagement>
@@ -77,27 +81,27 @@
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-core</artifactId>
-                <version>${spring-core.version}</version>
+                <version>${spring-framework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-web</artifactId>
-                <version>${spring-web.version}</version>
+                <version>${spring-framework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-webflux</artifactId>
-                <version>${spring-webflux.version}</version>
+                <version>${spring-framework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-webmvc</artifactId>
-                <version>${spring-webmvc.version}</version>
+                <version>${spring-framework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-tx</artifactId>
-                <version>${spring-tx.version}</version>
+                <version>${spring-framework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars</groupId>
@@ -167,7 +171,7 @@
             <!--Overriding spring-web version to remove vulnerability-->
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
-            <version>${spring-web.version}</version>
+            <version>${spring-framework.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -199,6 +203,12 @@
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>private-api-sdk-java</artifactId>
             <version>${private-api-sdk-java.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-beanutils</groupId>
+                    <artifactId>commons-beanutils</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
@@ -290,8 +300,8 @@
             <version>${jetty-http.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlet</artifactId>
+            <groupId>org.eclipse.jetty.ee10</groupId>
+            <artifactId>jetty-ee10-servlet</artifactId>
             <version>${jetty-servlet.version}</version>
         </dependency>
 
@@ -313,6 +323,10 @@
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.webjars</groupId>
+                    <artifactId>swagger-ui</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -454,6 +468,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco-maven-plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.sonarsource.scanner.maven</groupId>
