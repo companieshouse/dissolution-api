@@ -25,12 +25,12 @@
         <api-helper-java.version>3.0.1</api-helper-java.version>
         <api-security-java.version>2.0.8</api-security-java.version>
         <api-sdk-java.version>6.2.11</api-sdk-java.version>
-        <private-api-sdk-java.version>4.0.288</private-api-sdk-java.version>
+        <private-api-sdk-java.version>4.0.305</private-api-sdk-java.version>
         <api-sdk-manager-java-library.version>3.0.7</api-sdk-manager-java-library.version>
         <structured-logging.version>3.0.32</structured-logging.version>
         <commons-lang3.version>3.17.0</commons-lang3.version>
         <avro.version>1.11.4</avro.version>
-        <ch-kafka.version>3.0.3</ch-kafka.version>
+        <ch-kafka.version>3.0.1</ch-kafka.version>
         <kafka-models.version>3.0.17</kafka-models.version>
         <kafka-clients.version>3.7.2</kafka-clients.version>
         <aws.java.sdk.version>2.25.61</aws.java.sdk.version>
@@ -48,7 +48,7 @@
         <fasterxml-jackson.version>2.17.0</fasterxml-jackson.version>
         <slf4j.version>2.0.12</slf4j.version>
         <commons-io.version>2.17.0</commons-io.version>
-        <spring-framework.version>6.1.15</spring-framework.version>
+        <spring-framework.version>6.1.20</spring-framework.version>
         <org-json.version>20240303</org-json.version>
         <swagger-ui.version>5.17.14</swagger-ui.version>
         <jetty-http.version>12.0.21</jetty-http.version>
@@ -58,8 +58,8 @@
         <sonar.host.url>${CODE_ANALYSIS_HOST_URL}</sonar.host.url>
         <!--suppress UnresolvedMavenProperty -->
         <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
-        <sonar.login></sonar.login>
-        <sonar.password></sonar.password>
+        <sonar.login/>
+        <sonar.password/>
         <sonar.projectKey>uk.gov.companieshouse:dissolution-api</sonar.projectKey>
         <sonar.java.binaries>${project.basedir}/target,${project.basedir}/target/*</sonar.java.binaries>
     </properties>
@@ -337,6 +337,12 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <version>${version.spring.boot}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.xmlunit</groupId>
+                    <artifactId>xmlunit-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
