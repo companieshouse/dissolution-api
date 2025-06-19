@@ -1,12 +1,5 @@
 artifact_name       := dissolution-api
 
-dependency_check_base_suppressions:=common_suppressions_spring_6.xml
-dependency_check_suppressions_repo_branch:=main
-dependency_check_minimum_cvss := 4
-dependency_check_assembly_analyzer_enabled := false
-dependency_check_suppressions_repo_url:=git@github.com:companieshouse/dependency-check-suppressions.git
-suppressions_file := target/suppressions.xml
-
 .PHONY: all
 all: build
 
@@ -67,30 +60,4 @@ sonar:
 .PHONY: sonar-pr-analysis
 sonar-pr-analysis:
 	mvn sonar:sonar	-P sonar-pr-analysis
-
-.PHONY: dependency-check
-dependency-check:
-	@ if [ -n "$(DEPENDENCY_CHECK_SUPPRESSIONS_HOME)" ]; then \
-		if [ -d "$(DEPENDENCY_CHECK_SUPPRESSIONS_HOME)" ]; then \
-			suppressions_home="$${DEPENDENCY_CHECK_SUPPRESSIONS_HOME}"; \
-		else \
-			printf -- 'DEPENDENCY_CHECK_SUPPRESSIONS_HOME is set, but its value "%s" does not point to a directory\n' "$(DEPENDENCY_CHECK_SUPPRESSIONS_HOME)"; \
-			exit 1; \
-		fi; \
-	fi; \
-	if [ ! -d "$${suppressions_home}" ]; then \
-		suppressions_home_target_dir="./target/dependency-check-suppressions"; \
-		if [ -d "$${suppressions_home_target_dir}" ]; then \
-			suppressions_home="$${suppressions_home_target_dir}"; \
-		else \
-			mkdir -p "./target"; \
-			git clone git@github.com:companieshouse/dependency-check-suppressions.git "$${suppressions_home_target_dir}" && \
-				suppressions_home="$${suppressions_home_target_dir}"; \
-		fi; \
-	fi; \
-	printf -- 'suppressions_home="%s"\n' "$${suppressions_home}"; \
-	DEPENDENCY_CHECK_SUPPRESSIONS_HOME="$${suppressions_home}" "$${suppressions_home}/scripts/depcheck" --repo-name=TodoMyRepoName
-
-.PHONY: security-check
-security-check: dependency-check
 
