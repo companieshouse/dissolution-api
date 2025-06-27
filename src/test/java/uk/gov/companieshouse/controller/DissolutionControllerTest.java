@@ -5,9 +5,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.HttpClientErrorException;
@@ -60,16 +60,16 @@ public class DissolutionControllerTest {
     private static final String IP_ADDRESS = "127.0.0.1";
     private static final String PASSTHROUGH_HEADER = "passthrough";
 
-    @MockBean
+    @MockitoBean
     private DissolutionService service;
 
-    @MockBean
+    @MockitoBean
     private DissolutionValidator dissolutionValidator;
 
-    @MockBean
+    @MockitoBean
     private CompanyProfileClientImpl companyProfileClient;
 
-    @MockBean
+    @MockitoBean
     private CompanyOfficerService companyOfficerService;
 
     @Autowired

@@ -20,39 +20,41 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Versions -->
-        <version.spring.boot>3.3.12</version.spring.boot>
+        <version.spring.boot>3.5.3</version.spring.boot>
         <version.springdoc.openapi>1.8.0</version.springdoc.openapi>
         <api-helper-java.version>3.0.1</api-helper-java.version>
         <api-security-java.version>2.0.8</api-security-java.version>
-        <api-sdk-java.version>6.2.11</api-sdk-java.version>
-        <private-api-sdk-java.version>4.0.305</private-api-sdk-java.version>
+        <api-sdk-java.version>6.3.1</api-sdk-java.version>
+        <private-api-sdk-java.version>4.0.312</private-api-sdk-java.version>
         <api-sdk-manager-java-library.version>3.0.7</api-sdk-manager-java-library.version>
         <structured-logging.version>3.0.32</structured-logging.version>
         <commons-lang3.version>3.17.0</commons-lang3.version>
-        <avro.version>1.11.4</avro.version>
+        <avro.version>1.12.0</avro.version>
         <ch-kafka.version>3.0.3</ch-kafka.version>
-        <kafka-models.version>3.0.17</kafka-models.version>
-        <kafka-clients.version>3.7.2</kafka-clients.version>
-        <aws.java.sdk.version>2.25.61</aws.java.sdk.version>
-        <version.netty>4.1.121.Final</version.netty>
-        <reactor-netty-core.version>1.1.30</reactor-netty-core.version>
-        <jib-maven-plugin.version>3.4.5</jib-maven-plugin.version>
-        <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
-        <maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
+        <kafka-models.version>3.0.18</kafka-models.version>
+        <kafka-clients.version>4.0.0</kafka-clients.version>
+        <aws.java.sdk.version>2.31.51</aws.java.sdk.version>
+        <version.netty>4.2.2.Final</version.netty>
+        <reactor-netty-core.version>1.2.7</reactor-netty-core.version>
+        <jib-maven-plugin.version>3.4.6</jib-maven-plugin.version>
+        <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
+        <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
-        <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
-        <apache-log4j-bom.version>2.23.1</apache-log4j-bom.version>
+        <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
+        <apache-log4j-bom.version>2.25.0</apache-log4j-bom.version>
         <argLine>-Dnet.bytebuddy.experimental=true</argLine>
-        <flapdoodle.version>3.0.0</flapdoodle.version>
+        <flapdoodle.version>4.20.1</flapdoodle.version>
         <squareup.version>4.12.0</squareup.version>
-        <fasterxml-jackson.version>2.17.0</fasterxml-jackson.version>
-        <slf4j.version>2.0.12</slf4j.version>
-        <commons-io.version>2.17.0</commons-io.version>
-        <spring-framework.version>6.1.20</spring-framework.version>
-        <org-json.version>20240303</org-json.version>
-        <swagger-ui.version>5.17.14</swagger-ui.version>
-        <jetty-http.version>12.0.21</jetty-http.version>
-        <jetty-servlet.version>12.0.21</jetty-servlet.version>
+        <fasterxml-jackson.version>2.19.1</fasterxml-jackson.version>
+        <slf4j.version>2.0.17</slf4j.version>
+        <commons-io.version>2.19.0</commons-io.version>
+        <spring-framework.version>6.2.8</spring-framework.version>
+        <org-json.version>20250517</org-json.version>
+        <swagger-ui.version>5.25.3</swagger-ui.version>
+        <jetty.version>12.0.22</jetty.version>
+        <opentelemetry-instrumentation-bom.version>2.16.0</opentelemetry-instrumentation-bom.version>
+
+
         <sonar.projectName>dissolution-api</sonar.projectName>
         <!--suppress UnresolvedMavenProperty -->
         <sonar.host.url>${CODE_ANALYSIS_HOST_URL}</sonar.host.url>
@@ -62,10 +64,20 @@
         <sonar.password/>
         <sonar.projectKey>uk.gov.companieshouse:dissolution-api</sonar.projectKey>
         <sonar.java.binaries>${project.basedir}/target,${project.basedir}/target/*</sonar.java.binaries>
+
     </properties>
 
     <dependencyManagement>
         <dependencies>
+
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-bom</artifactId>
+                <version>${opentelemetry-instrumentation-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <dependency>
                 <groupId>software.amazon.awssdk</groupId>
                 <artifactId>bom</artifactId>
@@ -73,36 +85,43 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-core</artifactId>
                 <version>${spring-framework.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-web</artifactId>
                 <version>${spring-framework.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-webflux</artifactId>
                 <version>${spring-framework.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-webmvc</artifactId>
                 <version>${spring-framework.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-tx</artifactId>
                 <version>${spring-framework.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.webjars</groupId>
                 <artifactId>swagger-ui</artifactId>
@@ -118,11 +137,13 @@
             <artifactId>reactor-netty-core</artifactId>
             <version>${reactor-netty-core.version}</version>
         </dependency>
+
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
             <version>${version.netty}</version>
         </dependency>
+
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-codec-http2</artifactId>
@@ -148,6 +169,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
@@ -167,17 +189,25 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
         <dependency>
             <!--Overriding spring-web version to remove vulnerability-->
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
             <version>${spring-framework.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
             <version>${version.spring.boot}</version>
         </dependency>
+
+        <dependency>
+            <groupId>io.opentelemetry.instrumentation</groupId>
+            <artifactId>opentelemetry-spring-boot-starter</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>api-sdk-java</artifactId>
@@ -199,6 +229,7 @@
             </exclusion>
             </exclusions>
         </dependency>
+
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>private-api-sdk-java</artifactId>
@@ -210,6 +241,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>api-sdk-manager-java-library</artifactId>
@@ -223,16 +255,19 @@
             </exclusions>
             <optional>true</optional>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
             <version>${version.spring.boot}</version>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
             <version>${version.spring.boot}</version>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
@@ -251,11 +286,13 @@
             <artifactId>api-helper-java</artifactId>
             <version>${api-helper-java.version}</version>
         </dependency>
+
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>api-security-java</artifactId>
             <version>${api-security-java.version}</version>
         </dependency>
+
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>structured-logging</artifactId>
@@ -274,35 +311,41 @@
             <artifactId>commons-lang3</artifactId>
             <version>${commons-lang3.version}</version>
         </dependency>
+
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
             <version>${fasterxml-jackson.version}</version>
         </dependency>
+
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>${fasterxml-jackson.version}</version>
         </dependency>
+
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>${fasterxml-jackson.version}</version>
         </dependency>
+
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${commons-io.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-http</artifactId>
-            <version>${jetty-http.version}</version>
+            <version>${jetty.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.eclipse.jetty.ee10</groupId>
             <artifactId>jetty-ee10-servlet</artifactId>
-            <version>${jetty-servlet.version}</version>
+            <version>${jetty.version}</version>
         </dependency>
 
         <!-- Swagger documentation -->
@@ -344,12 +387,14 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
             <version>${squareup.version}</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>mockwebserver</artifactId>
@@ -387,6 +432,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>kafka-models</artifactId>
@@ -406,6 +452,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
@@ -424,16 +471,19 @@
             </exclusions>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>1.19.7</version>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 
     <build>
         <plugins>
+
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -446,16 +496,19 @@
                     </execution>
                 </executions>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>${maven-resources-plugin.version}</version>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -466,21 +519,25 @@
                     </includes>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>${maven-jar-plugin.version}</version>
             </plugin>
+
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>${jacoco-maven-plugin.version}</version>
             </plugin>
+
             <plugin>
                 <groupId>org.sonarsource.scanner.maven</groupId>
                 <artifactId>sonar-maven-plugin</artifactId>
                 <version>${sonar-maven-plugin.version}</version>
             </plugin>
+
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
@@ -500,6 +557,7 @@
                     </container>
                 </configuration>
             </plugin>
+
         </plugins>
     </build>
 

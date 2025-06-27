@@ -1,5 +1,0 @@
-app_name: dissolution-api
-group: api
-weight: 900
-routes:
-  1: ^/dissolution-request/.*
