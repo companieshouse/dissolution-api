@@ -4,8 +4,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.util.security.EricConstants;
@@ -29,16 +29,16 @@ public class ResendEmailControllerTest {
     private static final String USER_ID = "1234";
     private static final String AUTHORISED_USER_HEADER = "ERIC-Authorised-User";
 
-    @MockBean
+    @MockitoBean
     private DissolutionChipsService service;
 
-    @MockBean
+    @MockitoBean
     private DissolutionEmailService emailService;
 
-    @MockBean
+    @MockitoBean
     private DissolutionRepository dissolutionRepository;
 
-    @MockBean
+    @MockitoBean
     private Dissolution dissolution;
 
     @Autowired
