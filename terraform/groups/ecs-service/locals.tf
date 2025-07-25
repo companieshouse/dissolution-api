@@ -9,8 +9,8 @@ locals {
   docker_repo                = "dissolution-api"
   kms_alias                  = "alias/${var.aws_profile}/environment-services-kms"
   lb_listener_rule_priority  = 180
-  lb_listener_paths          = ["/dissolution-request/*", "/dissolution-request", "/dissolution-request/*/payment", "/dissolution-request/healthcheck"]
-  healthcheck_path           = "/dissolution-request/healthcheck" #healthcheck path for dissolution api
+  lb_listener_paths          = ["/dissolution-request/*", "/dissolution-request", "/dissolution-request/*/payment", "/dissolution-api/healthcheck"]
+  healthcheck_path           = "/dissolution-api/healthcheck" #healthcheck path for dissolution api
   healthcheck_matcher        = "200"
   vpc_name                   = local.stack_secrets["vpc_name"]
   s3_config_bucket           = data.vault_generic_secret.shared_s3.data["config_bucket_name"]
