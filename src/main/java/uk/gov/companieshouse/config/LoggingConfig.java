@@ -14,6 +14,6 @@ public class LoggingConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
-        registry.addInterceptor(loggingInterceptor).excludePathPatterns("/dissolution-request/healthcheck");
+        registry.addInterceptor(loggingInterceptor).excludePathPatterns("/dissolution-api/healthcheck");
     }
 }
