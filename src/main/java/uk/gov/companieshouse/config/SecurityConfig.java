@@ -23,7 +23,7 @@ public class SecurityConfig implements WebMvcConfigurer {
 
     private static final String[] TOKEN_PERMISSION_AUTH_EXCLUDE_LIST = ArrayUtils.addAll(
         API_KEY_PERMISSION_AUTH_INCLUDE_LIST,
-        "/dissolution-request/healthcheck"
+        "/dissolution-api/healthcheck"
     );
 
     @Autowired
