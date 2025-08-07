@@ -22,18 +22,18 @@
         <!-- Versions -->
         <version.spring.boot>3.5.3</version.spring.boot>
         <version.springdoc.openapi>1.8.0</version.springdoc.openapi>
-        <api-helper-java.version>3.0.1</api-helper-java.version>
-        <api-security-java.version>2.0.8</api-security-java.version>
-        <api-sdk-java.version>6.3.5</api-sdk-java.version>
-        <private-api-sdk-java.version>4.0.312</private-api-sdk-java.version>
-        <api-sdk-manager-java-library.version>3.0.7</api-sdk-manager-java-library.version>
-        <structured-logging.version>3.0.37</structured-logging.version>
+        <api-helper-java.version>3.0.2</api-helper-java.version>
+        <api-security-java.version>2.0.11</api-security-java.version>
+        <api-sdk-java.version>6.4.4</api-sdk-java.version>
+        <private-api-sdk-java.version>4.0.337</private-api-sdk-java.version>
+        <api-sdk-manager-java-library.version>3.0.9</api-sdk-manager-java-library.version>
+        <structured-logging.version>3.0.38</structured-logging.version>
         <commons-lang3.version>3.18.0</commons-lang3.version>
         <avro.version>1.12.0</avro.version>
-        <ch-kafka.version>3.0.5</ch-kafka.version>
-        <kafka-models.version>3.0.18</kafka-models.version>
+        <ch-kafka.version>3.0.6</ch-kafka.version>
+        <kafka-models.version>3.0.20</kafka-models.version>
         <kafka-clients.version>3.9.1</kafka-clients.version>
-        <aws.java.sdk.version>2.31.51</aws.java.sdk.version>
+        <aws.java.sdk.version>2.32.16</aws.java.sdk.version>
         <version.netty>4.2.2.Final</version.netty>
         <reactor-netty-core.version>1.2.8</reactor-netty-core.version>
         <jib-maven-plugin.version>3.4.6</jib-maven-plugin.version>
@@ -51,8 +51,10 @@
         <spring-framework.version>6.2.8</spring-framework.version>
         <org-json.version>20250517</org-json.version>
         <swagger-ui.version>5.25.3</swagger-ui.version>
-        <jetty.version>12.0.22</jetty.version>
-        <opentelemetry-instrumentation-bom.version>2.16.0</opentelemetry-instrumentation-bom.version>
+        <jetty.version>12.0.23</jetty.version>
+
+        <!--Remove once CVE is fixed in spring-starter-web package, see dependency for CVE info-->
+        <tomcat-embed-override.version>10.1.43</tomcat-embed-override.version>
 
 
         <sonar.projectName>dissolution-api</sonar.projectName>
@@ -69,14 +71,6 @@
 
     <dependencyManagement>
         <dependencies>
-
-            <dependency>
-                <groupId>io.opentelemetry.instrumentation</groupId>
-                <artifactId>opentelemetry-instrumentation-bom</artifactId>
-                <version>${opentelemetry-instrumentation-bom.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
 
             <dependency>
                 <groupId>software.amazon.awssdk</groupId>
@@ -206,11 +200,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
             <version>${version.spring.boot}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.opentelemetry.instrumentation</groupId>
-            <artifactId>opentelemetry-spring-boot-starter</artifactId>
         </dependency>
 
         <dependency>
@@ -495,7 +484,7 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>mongodb</artifactId>
-            <version>1.19.7</version>
+            <version>1.21.3</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.commons</groupId>
@@ -508,8 +497,21 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>1.19.7</version>
+            <version>1.21.3</version>
             <scope>test</scope>
+        </dependency>
+
+        <!--Added to override version from spring starter web-->
+        <!--CVE-2025-52520(7.5), CVE-2025-53506(7.5)-->
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-core</artifactId>
+            <version>${tomcat-embed-override.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-websocket</artifactId>
+            <version>${tomcat-embed-override.version}</version>
         </dependency>
 
     </dependencies>
