@@ -52,6 +52,7 @@
         <org-json.version>20250517</org-json.version>
         <swagger-ui.version>5.25.3</swagger-ui.version>
         <jetty.version>12.0.23</jetty.version>
+        <opentelemetry-instrumentation-bom.version>2.16.0</opentelemetry-instrumentation-bom.version>
 
         <!--Remove once CVE is fixed in spring-starter-web package, see dependency for CVE info-->
         <tomcat-embed-override.version>10.1.43</tomcat-embed-override.version>
@@ -71,6 +72,14 @@
 
     <dependencyManagement>
         <dependencies>
+
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-bom</artifactId>
+                <version>${opentelemetry-instrumentation-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
 
             <dependency>
                 <groupId>software.amazon.awssdk</groupId>
@@ -200,6 +209,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
             <version>${version.spring.boot}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.opentelemetry.instrumentation</groupId>
+            <artifactId>opentelemetry-spring-boot-starter</artifactId>
         </dependency>
 
         <dependency>
@@ -414,7 +428,6 @@
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
             <version>${squareup.version}</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -422,6 +435,12 @@
             <artifactId>mockwebserver</artifactId>
             <version>${squareup.version}</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>logging-interceptor</artifactId>
+            <version>${squareup.version}</version>
         </dependency>
 
         <!--Embedded MongoDB-->
