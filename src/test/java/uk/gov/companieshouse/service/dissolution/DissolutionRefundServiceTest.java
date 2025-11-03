@@ -24,7 +24,7 @@ import static uk.gov.companieshouse.fixtures.PaymentFixtures.generateRefundInfor
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generateRefundRequest;
 
 @ExtendWith(MockitoExtension.class)
-public class DissolutionRefundServiceTest {
+class DissolutionRefundServiceTest {
 
     @InjectMocks
     private DissolutionRefundService dissolutionRefundService;
