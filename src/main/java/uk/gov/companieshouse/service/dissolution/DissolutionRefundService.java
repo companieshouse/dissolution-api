@@ -2,6 +2,8 @@ package uk.gov.companieshouse.service.dissolution;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientException;
+
+import uk.gov.companieshouse.config.constant.FeeConstants;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.RefundInformationMapper;
 import uk.gov.companieshouse.mapper.RefundRequestMapper;
@@ -9,7 +11,6 @@ import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionVerdict;
 import uk.gov.companieshouse.model.db.payment.RefundInformation;
 import uk.gov.companieshouse.service.payment.RefundService;
-import uk.gov.companieshouse.util.constant.FeeConstants;
 
 @Service
 public class DissolutionRefundService {

@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.util.constant;
+package uk.gov.companieshouse.config.constant;
 
 public class FeeConstants {
     

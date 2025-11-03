@@ -6,6 +6,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+
+import uk.gov.companieshouse.config.constant.FeeConstants;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.RefundRequestMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
@@ -13,7 +15,6 @@ import uk.gov.companieshouse.model.db.dissolution.DissolutionVerdict;
 import uk.gov.companieshouse.model.db.payment.RefundInformation;
 import uk.gov.companieshouse.model.dto.payment.RefundRequest;
 import uk.gov.companieshouse.service.payment.RefundService;
-import uk.gov.companieshouse.util.constant.FeeConstants;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;

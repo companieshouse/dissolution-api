@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.fixtures;
 
+import uk.gov.companieshouse.config.constant.FeeConstants;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
 import uk.gov.companieshouse.model.db.payment.RefundInformation;
 import uk.gov.companieshouse.model.dto.payment.PaymentDescriptionValues;
@@ -13,7 +14,6 @@ import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.PaymentMethod;
 import uk.gov.companieshouse.model.enums.PaymentStatus;
 import uk.gov.companieshouse.model.enums.RefundStatus;
-import uk.gov.companieshouse.util.constant.FeeConstants;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;

@@ -1,8 +1,9 @@
 package uk.gov.companieshouse.mapper;
 
 import org.junit.jupiter.api.Test;
+
+import uk.gov.companieshouse.config.constant.FeeConstants;
 import uk.gov.companieshouse.model.dto.payment.RefundRequest;
-import uk.gov.companieshouse.util.constant.FeeConstants;
 
 import static org.junit.Assert.assertEquals;
 
