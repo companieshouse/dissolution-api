@@ -9,10 +9,11 @@ import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionVerdict;
 import uk.gov.companieshouse.model.db.payment.RefundInformation;
 import uk.gov.companieshouse.service.payment.RefundService;
+import uk.gov.companieshouse.util.constant.FeeConstants;
 
 @Service
 public class DissolutionRefundService {
-    private static final int REFUND_AMOUNT = 3300;
+    private static final int REFUND_AMOUNT = FeeConstants.DS01_REFUND_AMOUNT_PENCE;
 
     private final RefundRequestMapper refundRequestMapper;
     private final RefundInformationMapper refundInformationMapper;
