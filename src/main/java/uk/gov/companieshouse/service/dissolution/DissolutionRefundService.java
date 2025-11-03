@@ -43,7 +43,7 @@ public class DissolutionRefundService {
         try {
             RefundInformation refund = refundService.refundPayment(
                     dissolution.getPaymentInformation().getReference(),
-                    refundRequestMapper.mapToRefundRequest(feeConfig.getDS01RefundAmountPiece())
+                    refundRequestMapper.mapToRefundRequest(feeConfig.getDS01RefundAmountPence())
             );
 
             dissolution.getPaymentInformation().setRefund(refund);

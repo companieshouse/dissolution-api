@@ -7,11 +7,11 @@ import org.springframework.context.annotation.Configuration;
 public class FeeConfig {
     
     /* DS01 Refund Amount */
-    @Value("${fee.ds01RefundAmountPiece}")
-    private int ds01RefundAmountPiece;
+    @Value("${fee.ds01RefundAmountPence}")
+    private int ds01RefundAmountPence;
 
-    public int getDS01RefundAmountPiece() {
-        return ds01RefundAmountPiece;
+    public int getDS01RefundAmountPence() {
+        return ds01RefundAmountPence;
     }
 
 }

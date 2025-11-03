@@ -11,14 +11,14 @@ import org.springframework.test.context.ActiveProfiles;
 @ActiveProfiles("test")
 class FeeConfigTest {
 
-    private static final int DSO1_REFUND_AMOUNT_PIECE = 1300;
+    private static final int DSO1_REFUND_AMOUNT_PENC = 1300;
 
     @Autowired
     FeeConfig feeConfig;
 
     @Test
     void testFeeConfigValue() {
-        assertEquals(DSO1_REFUND_AMOUNT_PIECE, feeConfig.getDS01RefundAmountPiece());
+        assertEquals(DSO1_REFUND_AMOUNT_PENC, feeConfig.getDS01RefundAmountPence());
     }
 
 }
