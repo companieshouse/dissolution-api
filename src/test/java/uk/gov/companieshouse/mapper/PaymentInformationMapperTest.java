@@ -12,7 +12,6 @@ import uk.gov.companieshouse.model.enums.PaymentMethod;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 
 @ExtendWith(MockitoExtension.class)

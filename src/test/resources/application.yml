@@ -32,6 +32,9 @@ env:
   name: local
   chsUrl: http://ui
 
+fee:
+  ds01RefundAmountPence: 1300
+
 kafka:
   broker:
     addr: kafka

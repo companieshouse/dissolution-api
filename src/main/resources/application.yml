@@ -36,6 +36,9 @@ env:
   name: ${ENV_NAME}
   chsUrl: ${CHS_URL}
 
+fee:
+  ds01RefundAmountPence: ${DS01_REFUND_AMOUNT_PENCE}
+
 kafka:
   api:
     url: ${CHS_KAFKA_API_URL}
