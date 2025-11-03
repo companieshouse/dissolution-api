@@ -7,7 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import uk.gov.companieshouse.config.constant.FeeConstants;
+import uk.gov.companieshouse.config.FeeConfig;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.RefundRequestMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
@@ -42,7 +42,11 @@ class DissolutionRefundServiceTest {
     @Mock
     private Logger logger;
 
-    private static final int REFUND_AMOUNT = FeeConstants.DS01_REFUND_AMOUNT_PENCE;
+    @Mock
+    private FeeConfig feeConfig;
+
+    private static final int REFUND_AMOUNT = 1300;
+
 
     @Test
     void handleRefund_refundPaidDissolution() {
@@ -55,6 +59,7 @@ class DissolutionRefundServiceTest {
 
         when(refundRequestMapper.mapToRefundRequest(REFUND_AMOUNT)).thenReturn(refundRequest);
         when(refundService.refundPayment(paymentReference, refundRequest)).thenReturn(refundInformation);
+        when(feeConfig.getDS01RefundAmountPiece()).thenReturn(REFUND_AMOUNT);
 
         dissolutionRefundService.handleRefund(dissolution, dissolutionVerdict);
 
@@ -72,6 +77,7 @@ class DissolutionRefundServiceTest {
         when(refundRequestMapper.mapToRefundRequest(REFUND_AMOUNT)).thenReturn(refundRequest);
         when(refundService.refundPayment(paymentReference, refundRequest))
                 .thenThrow(new WebClientResponseException(400, "Bad Request", null, null, null));
+        when(feeConfig.getDS01RefundAmountPiece()).thenReturn(REFUND_AMOUNT);
 
         dissolutionRefundService.handleRefund(dissolution, dissolutionVerdict);
 
