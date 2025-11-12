@@ -34,6 +34,7 @@ env:
 
 fee:
   ds01RefundAmountPence: 1300
+  paymentAmount: 13
 
 kafka:
   broker:

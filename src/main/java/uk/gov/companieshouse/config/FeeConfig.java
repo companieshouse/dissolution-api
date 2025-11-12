@@ -10,8 +10,14 @@ public class FeeConfig {
     @Value("${fee.ds01RefundAmountPence}")
     private int ds01RefundAmountPence;
 
+    @Value("${fee.paymentAmount}")
+    private String paymentAmount;
+
     public int getDS01RefundAmountPence() {
         return ds01RefundAmountPence;
     }
 
+    public String getPaymentAmount() {
+        return paymentAmount;
+    }
 }

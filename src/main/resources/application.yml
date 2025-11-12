@@ -38,6 +38,7 @@ env:
 
 fee:
   ds01RefundAmountPence: ${DS01_REFUND_AMOUNT_PENCE}
+  paymentAmount: ${PAYMENT_AMOUNT}
 
 kafka:
   api:

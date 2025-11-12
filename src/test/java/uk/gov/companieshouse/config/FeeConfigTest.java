@@ -13,12 +13,19 @@ class FeeConfigTest {
 
     private static final int DSO1_REFUND_AMOUNT_PENC = 1300;
 
+    private static final String PAYMENT_AMOUNT = "13";
+
     @Autowired
     FeeConfig feeConfig;
 
     @Test
-    void testFeeConfigValue() {
+    void testFeeConfigValueForDS01Refund() {
         assertEquals(DSO1_REFUND_AMOUNT_PENC, feeConfig.getDS01RefundAmountPence());
+    }
+
+    @Test
+    void testFeeConfigValueForPaymentAmount() {
+        assertEquals(PAYMENT_AMOUNT, feeConfig.getPaymentAmount());
     }
 
 }
