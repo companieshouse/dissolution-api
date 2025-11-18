@@ -59,7 +59,7 @@ class DissolutionRefundServiceTest {
 
         when(refundRequestMapper.mapToRefundRequest(REFUND_AMOUNT)).thenReturn(refundRequest);
         when(refundService.refundPayment(paymentReference, refundRequest)).thenReturn(refundInformation);
-        when(feeConfig.getDS01RefundAmountPence()).thenReturn(REFUND_AMOUNT);
+        when(feeConfig.getRefundAmountPence()).thenReturn(REFUND_AMOUNT);
 
         dissolutionRefundService.handleRefund(dissolution, dissolutionVerdict);
 
@@ -77,7 +77,7 @@ class DissolutionRefundServiceTest {
         when(refundRequestMapper.mapToRefundRequest(REFUND_AMOUNT)).thenReturn(refundRequest);
         when(refundService.refundPayment(paymentReference, refundRequest))
                 .thenThrow(new WebClientResponseException(400, "Bad Request", null, null, null));
-        when(feeConfig.getDS01RefundAmountPence()).thenReturn(REFUND_AMOUNT);
+        when(feeConfig.getRefundAmountPence()).thenReturn(REFUND_AMOUNT);
 
         dissolutionRefundService.handleRefund(dissolution, dissolutionVerdict);
 

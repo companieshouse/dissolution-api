@@ -5,7 +5,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.companieshouse.logging.Logger;
+
+import uk.gov.companieshouse.config.FeeConfig;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentGetResponse;
 import uk.gov.companieshouse.model.enums.ApplicationType;
@@ -13,11 +14,21 @@ import uk.gov.companieshouse.service.payment.PaymentService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionGetResponse;
-import static uk.gov.companieshouse.model.Constants.*;
+import static uk.gov.companieshouse.model.Constants.PAYMENT_AVAILABLE_PAYMENT_METHOD;
+import static uk.gov.companieshouse.model.Constants.PAYMENT_CLASS_OF_PAYMENT;
+import static uk.gov.companieshouse.model.Constants.PAYMENT_DESCRIPTION_IDENTIFIER;
+import static uk.gov.companieshouse.model.Constants.PAYMENT_ITEM_KIND;
+import static uk.gov.companieshouse.model.Constants.PAYMENT_KIND;
+import static uk.gov.companieshouse.model.Constants.PAYMENT_RESOURCE_KIND;
+
 
 @ExtendWith(MockitoExtension.class)
 public class PaymentServiceTest {
+
+    @Mock
+    private FeeConfig feeConfig;
 
     @InjectMocks
     private PaymentService service;
@@ -27,6 +38,7 @@ public class PaymentServiceTest {
         String companyNumber = "12345678";
         String applicationReference = "ABC123";
         String companyName = "Some company name";
+        final String PAYMENT_AMOUNT = "13";
 
         DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
         dissolutionGetResponse.setCompanyNumber(companyNumber);
@@ -34,6 +46,8 @@ public class PaymentServiceTest {
         dissolutionGetResponse.setETag("WATERMELONSAREGREAT12345678THEYREALLYARE");
         dissolutionGetResponse.setApplicationType(ApplicationType.DS01);
         dissolutionGetResponse.setCompanyName(companyName);
+
+        when(feeConfig.getClosingPounds()).thenReturn(PAYMENT_AMOUNT);
 
         final PaymentGetResponse result = service.get(dissolutionGetResponse);
 
