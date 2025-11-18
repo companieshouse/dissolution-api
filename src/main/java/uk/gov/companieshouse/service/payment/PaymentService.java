@@ -2,7 +2,7 @@ package uk.gov.companieshouse.service.payment;
 
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.client.PaymentsClient;
-import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.config.FeeConfig;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentDescriptionValues;
 import uk.gov.companieshouse.model.dto.payment.PaymentDetailsResponse;
@@ -17,10 +17,14 @@ import static uk.gov.companieshouse.model.Constants.*;
 @Service
 public class PaymentService {
     private final PaymentsClient paymentsClient;
+    private final FeeConfig feeConfig;
+
     public PaymentService(
-            PaymentsClient paymentsClient
+            PaymentsClient paymentsClient,
+            FeeConfig feeConfig
     ) {
         this.paymentsClient = paymentsClient;
+        this.feeConfig = feeConfig;
     }
 
     public PaymentGetResponse get(DissolutionGetResponse dissolutionInfo) {
@@ -54,7 +58,7 @@ public class PaymentService {
         item.setDescriptionIdentifier(PAYMENT_DESCRIPTION_IDENTIFIER);
         item.setDescriptionValues(new PaymentDescriptionValues());
         item.setProductType(dissolutionInfo.getApplicationType());
-        item.setAmount(PAYMENT_AMOUNT);
+        item.setAmount(feeConfig.getClosingPounds());
         item.setAvailablePaymentMethods(List.of(PAYMENT_AVAILABLE_PAYMENT_METHOD));
         item.setClassOfPayment(List.of(PAYMENT_CLASS_OF_PAYMENT));
         item.setKind(PAYMENT_ITEM_KIND);

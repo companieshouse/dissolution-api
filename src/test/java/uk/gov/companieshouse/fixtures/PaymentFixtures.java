@@ -19,6 +19,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class PaymentFixtures {
+
+    private static final int DS01_REFUND_AMOUNT_PENCE = 1300;
+
     public static PaymentGetResponse generatePaymentGetResponse(String eTag, String companyNumber) {
         PaymentGetResponse response = new PaymentGetResponse();
 
@@ -68,7 +71,7 @@ public class PaymentFixtures {
     public static RefundRequest generateRefundRequest() {
         final RefundRequest request = new RefundRequest();
 
-        request.setAmount(3300);
+        request.setAmount(DS01_REFUND_AMOUNT_PENCE);
 
         return request;
     }
@@ -76,7 +79,7 @@ public class PaymentFixtures {
     public static RefundResponse generateRefundResponse() {
         final RefundResponse response = new RefundResponse();
 
-        response.setAmount(3300);
+        response.setAmount(DS01_REFUND_AMOUNT_PENCE);
         response.setRefundId("REF123");
         response.setCreatedDateTime(LocalDateTime.now().toString());
         response.setStatus(RefundStatus.SUCCESS);
@@ -87,7 +90,7 @@ public class PaymentFixtures {
     public static RefundInformation generateRefundInformation() {
         final RefundInformation refundInformation = new RefundInformation();
 
-        refundInformation.setAmount(3300);
+        refundInformation.setAmount(DS01_REFUND_AMOUNT_PENCE);
         refundInformation.setCreatedDateTime(LocalDateTime.now().toString());
         refundInformation.setRefundId("GTY890");
 

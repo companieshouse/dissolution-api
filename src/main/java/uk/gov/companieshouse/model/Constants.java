@@ -14,7 +14,6 @@ public final class Constants {
    public static final String PAYMENT_RESOURCE_KIND = "dissolution-request#dissolution-request";
    public static final String PAYMENT_DESCRIPTION = "Apply to strike off and dissolve a company: %s (%s)";
    public static final String PAYMENT_DESCRIPTION_IDENTIFIER = "Dissolution application";
-   public static final String PAYMENT_AMOUNT = "33";
    public static final String PAYMENT_AVAILABLE_PAYMENT_METHOD = "credit-card";
    public static final String PAYMENT_CLASS_OF_PAYMENT = "data-maintenance";
 
