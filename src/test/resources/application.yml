@@ -33,8 +33,8 @@ env:
   chsUrl: http://ui
 
 fee:
-  ds01RefundAmountPence: 1300
-  paymentAmount: 13
+  llds01AndDs01RefundAmountPence: 1300
+  llds01AndDs01ClosingCostPounds: 13
 
 kafka:
   broker:

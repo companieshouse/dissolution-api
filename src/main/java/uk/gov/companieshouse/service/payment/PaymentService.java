@@ -58,7 +58,7 @@ public class PaymentService {
         item.setDescriptionIdentifier(PAYMENT_DESCRIPTION_IDENTIFIER);
         item.setDescriptionValues(new PaymentDescriptionValues());
         item.setProductType(dissolutionInfo.getApplicationType());
-        item.setAmount(feeConfig.getPaymentAmount());
+        item.setAmount(feeConfig.getClosingPounds());
         item.setAvailablePaymentMethods(List.of(PAYMENT_AVAILABLE_PAYMENT_METHOD));
         item.setClassOfPayment(List.of(PAYMENT_CLASS_OF_PAYMENT));
         item.setKind(PAYMENT_ITEM_KIND);

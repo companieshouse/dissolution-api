@@ -37,8 +37,8 @@ env:
   chsUrl: ${CHS_URL}
 
 fee:
-  ds01RefundAmountPence: ${DS01_REFUND_AMOUNT_PENCE}
-  paymentAmount: ${PAYMENT_AMOUNT}
+  llds01Andds01RefundAmountPence: ${LLDS01_AND_DS01_REFUND_AMOUNT_PENCE}
+  llds01AndDs01ClosingCostPounds: ${LLDS01_AND_DS01_CLOSING_COST_POUNDS}
 
 kafka:
   api:

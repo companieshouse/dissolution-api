@@ -6,18 +6,17 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class FeeConfig {
     
-    /* DS01 Refund Amount */
-    @Value("${fee.ds01RefundAmountPence}")
-    private int ds01RefundAmountPence;
+    @Value("${fee.llds01AndDs01RefundAmountPence}")
+    private int refundAmountPence;
 
-    @Value("${fee.paymentAmount}")
-    private String paymentAmount;
+    @Value("${fee.llds01AndDs01ClosingCostPounds}")
+    private String closingPounds;
 
-    public int getDS01RefundAmountPence() {
-        return ds01RefundAmountPence;
+    public int getRefundAmountPence() {
+        return refundAmountPence;
     }
 
-    public String getPaymentAmount() {
-        return paymentAmount;
+    public String getClosingPounds() {
+        return closingPounds;
     }
 }

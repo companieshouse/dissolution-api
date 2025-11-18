@@ -11,7 +11,7 @@ import org.springframework.test.context.ActiveProfiles;
 @ActiveProfiles("test")
 class FeeConfigTest {
 
-    private static final int DSO1_REFUND_AMOUNT_PENC = 1300;
+    private static final int REFUND_AMOUNT_PENCE = 1300;
 
     private static final String PAYMENT_AMOUNT = "13";
 
@@ -19,13 +19,13 @@ class FeeConfigTest {
     FeeConfig feeConfig;
 
     @Test
-    void testFeeConfigValueForDS01Refund() {
-        assertEquals(DSO1_REFUND_AMOUNT_PENC, feeConfig.getDS01RefundAmountPence());
+    void testFeeConfigValueForRefundAmountPence() {
+        assertEquals(REFUND_AMOUNT_PENCE, feeConfig.getRefundAmountPence());
     }
 
     @Test
-    void testFeeConfigValueForPaymentAmount() {
-        assertEquals(PAYMENT_AMOUNT, feeConfig.getPaymentAmount());
+    void testFeeConfigValueForClosingCostPounds() {
+        assertEquals(PAYMENT_AMOUNT, feeConfig.getClosingPounds());
     }
 
 }

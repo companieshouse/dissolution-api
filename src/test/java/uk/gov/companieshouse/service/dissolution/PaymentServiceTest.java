@@ -47,7 +47,7 @@ public class PaymentServiceTest {
         dissolutionGetResponse.setApplicationType(ApplicationType.DS01);
         dissolutionGetResponse.setCompanyName(companyName);
 
-        when(feeConfig.getPaymentAmount()).thenReturn(PAYMENT_AMOUNT);
+        when(feeConfig.getClosingPounds()).thenReturn(PAYMENT_AMOUNT);
 
         final PaymentGetResponse result = service.get(dissolutionGetResponse);
 
