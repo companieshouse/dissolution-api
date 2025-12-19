@@ -45,8 +45,9 @@ public class DissolutionRefundService {
                     dissolution.getPaymentInformation().getReference(),
                     refundRequestMapper.mapToRefundRequest(feeConfig.getRefundAmountPence())
             );
-
             dissolution.getPaymentInformation().setRefund(refund);
+            logger.info("Refund set for dissolution with company number: "
+                    + dissolution.getCompany().getNumber());
         } catch (WebClientException e) {
             logger.error("Automatic refund failed, sending rejection email to finance", e);
 

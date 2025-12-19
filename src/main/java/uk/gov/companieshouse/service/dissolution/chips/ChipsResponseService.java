@@ -45,7 +45,9 @@ public class ChipsResponseService {
         dissolution.setActive(false);
 
         if (canRefundDissolution(dissolutionVerdict, dissolution)) {
-                dissolutionRefundService.handleRefund(dissolution, dissolutionVerdict);
+            logger.info("Processing refund for rejected dissolution with company number: "
+                    + dissolution.getCompany().getNumber());
+            dissolutionRefundService.handleRefund(dissolution, dissolutionVerdict);
         }
 
         logger.info(String.format("Received CHIPS verdict for company %s - %s", dissolution.getCompany().getNumber(), dissolutionVerdict.getResult().toString()));
