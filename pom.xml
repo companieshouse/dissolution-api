@@ -30,7 +30,7 @@
         <api-sdk-manager-java-library.version>3.0.15</api-sdk-manager-java-library.version>
         <structured-logging.version>3.0.46</structured-logging.version>
         <commons-lang3.version>3.19.0</commons-lang3.version>
-        <avro.version>1.12.0</avro.version>
+        <avro.version>1.12.1</avro.version>
         <ch-kafka.version>3.0.6</ch-kafka.version>
         <kafka-models.version>3.0.20</kafka-models.version>
         <kafka-clients.version>3.9.1</kafka-clients.version>
@@ -117,6 +117,13 @@
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-to-slf4j</artifactId>
                 <version>${log4j.version}</version>
+            </dependency>
+            <!-- CVE-2026-24400 -->
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>3.27.7</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
 
@@ -473,6 +480,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot-maven-plugin.version}</version>
                 <executions>
                     <execution>
                         <goals>
