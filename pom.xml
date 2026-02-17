@@ -29,6 +29,8 @@
         <private-api-sdk-java.version>4.0.454</private-api-sdk-java.version>
         <api-sdk-manager-java-library.version>3.0.15</api-sdk-manager-java-library.version>
         <structured-logging.version>3.0.46</structured-logging.version>
+        <environment-reader-library.version>3.0.5</environment-reader-library.version>
+        <java-session-handler.version>4.1.15</java-session-handler.version>
         <commons-lang3.version>3.19.0</commons-lang3.version>
         <avro.version>1.12.1</avro.version>
         <ch-kafka.version>3.0.6</ch-kafka.version>
@@ -78,6 +80,21 @@
                 <scope>import</scope>
             </dependency>
 
+            <dependency>
+                <groupId>uk.gov.companieshouse</groupId>
+                <artifactId>structured-logging</artifactId>
+                <version>${structured-logging.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>uk.gov.companieshouse</groupId>
+                <artifactId>java-session-handler</artifactId>
+                <version>${java-session-handler.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>uk.gov.companieshouse</groupId>
+                <artifactId>environment-reader-library</artifactId>
+                <version>${environment-reader-library.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
@@ -125,6 +142,14 @@
                 <version>3.27.7</version>
                 <scope>test</scope>
             </dependency>
+
+            <!-- CVE-2025-66566 -->
+            <dependency>
+                <groupId>org.lz4</groupId>
+                <artifactId>lz4-java</artifactId>
+                <version>1.8.1</version>
+            </dependency>
+
         </dependencies>
 
     </dependencyManagement>
