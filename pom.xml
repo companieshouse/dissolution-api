@@ -7,7 +7,7 @@
     <parent>
         <groupId>uk.gov.companieshouse</groupId>
         <artifactId>companies-house-parent</artifactId>
-        <version>2.1.12</version>
+        <version>2.1.13</version>
         <relativePath/>
     </parent>
 
@@ -56,7 +56,7 @@
         <org-json.version>20250517</org-json.version>
         <swagger-ui.version>5.25.3</swagger-ui.version>
         <jetty.version>12.0.23</jetty.version>
-        <opentelemetry-instrumentation-bom.version>2.16.0</opentelemetry-instrumentation-bom.version>
+        <opentelemetry-instrumentation-bom.version>2.25.0</opentelemetry-instrumentation-bom.version>
 
         <sonar.projectName>dissolution-api</sonar.projectName>
         <!--suppress UnresolvedMavenProperty -->
