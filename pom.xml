@@ -91,6 +91,8 @@
         <micrometer.version>1.16.4</micrometer.version>
         <!-- Source: https://mvnrepository.com/artifact/com.google.guava/guava -->
         <guava.version>33.5.0-jre</guava.version>
+        <!-- Source: https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-bom -->
+        <kotlin.version>2.2.21</kotlin.version>
 
         <!-- Sonar Properties -->
         <sonar.projectName>dissolution-api</sonar.projectName>
@@ -158,6 +160,15 @@
                 <scope>import</scope>
             </dependency>
 
+            <!-- Source: https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-bom -->
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-bom</artifactId>
+                <version>${log4j-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <!-- Source: https://mvnrepository.com/artifact/io.netty/netty-bom -->
             <dependency>
                 <groupId>io.netty</groupId>
@@ -201,6 +212,15 @@
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
+            </dependency>
+
+            <!-- Source: https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-bom -->
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-bom</artifactId>
+                <version>${kotlin.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <dependency>
