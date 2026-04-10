@@ -1,18 +1,15 @@
 package uk.gov.companieshouse.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.SecurityConstants;
-import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
@@ -35,9 +32,8 @@ import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolu
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentGetResponse;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 
-@RunWith(SpringRunner.class)
 @WebMvcTest(PaymentController.class)
-public class PaymentControllerTest {
+class PaymentControllerTest {
 
     private static final String PAYMENT_URI = "/dissolution-request/{application-reference}/payment";
     private static final String APPLICATION_REFERENCE = "12345678";
@@ -59,7 +55,7 @@ public class PaymentControllerTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    public void getPaymentUIDataRequest_returnsUnauthorised_ifEricIdentityIsNotProvided() throws Exception {
+    void getPaymentUIDataRequest_returnsUnauthorised_ifEricIdentityIsNotProvided() throws Exception {
         HttpHeaders headers = createHttpHeaders();
         headers.remove(EricConstants.ERIC_IDENTITY);
 
@@ -73,7 +69,7 @@ public class PaymentControllerTest {
     }
 
     @Test
-    public void getPaymentUIDataRequest_returnsForbidden_ifEricIdentityTypeIsNotCorrect() throws Exception {
+    void getPaymentUIDataRequest_returnsForbidden_ifEricIdentityTypeIsNotCorrect() throws Exception {
         HttpHeaders headers = createHttpHeaders();
         headers.set(EricConstants.ERIC_IDENTITY_TYPE, "some-incorrect-identity-type");
 
@@ -87,7 +83,7 @@ public class PaymentControllerTest {
     }
 
     @Test
-    public void getPaymentUIDataRequest_returnsForbidden_ifEricAuthorisedKeyRolesIsNotCorrect() throws Exception {
+    void getPaymentUIDataRequest_returnsForbidden_ifEricAuthorisedKeyRolesIsNotCorrect() throws Exception {
         HttpHeaders headers = createHttpHeaders();
         headers.set(EricConstants.ERIC_AUTHORISED_KEY_ROLES, "some-incorrect-authorised-key-roles-value");
 
@@ -101,7 +97,7 @@ public class PaymentControllerTest {
     }
 
     @Test
-    public void getPaymentUIDataRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
+    void getPaymentUIDataRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
         when(dissolutionService.getByApplicationReference(APPLICATION_REFERENCE)).thenReturn(Optional.empty());
 
         mockMvc
@@ -114,7 +110,7 @@ public class PaymentControllerTest {
     }
 
     @Test
-    public void getPaymentUIDataRequest_returnsPaymentUIData_ifRequestIsValid() throws Exception {
+    void getPaymentUIDataRequest_returnsPaymentUIData_ifRequestIsValid() throws Exception {
         final DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
         final PaymentGetResponse paymentGetResponse = generatePaymentGetResponse(dissolutionGetResponse.getETag(), APPLICATION_REFERENCE);
 
@@ -132,7 +128,7 @@ public class PaymentControllerTest {
     }
 
     @Test
-    public void patchPaymentDataRequest_returnsUnauthorised_ifEricIdentityIsNotProvided() throws Exception {
+    void patchPaymentDataRequest_returnsUnauthorised_ifEricIdentityIsNotProvided() throws Exception {
         HttpHeaders headers = createHttpHeaders();
         headers.remove(EricConstants.ERIC_IDENTITY);
 
@@ -146,7 +142,7 @@ public class PaymentControllerTest {
     }
 
     @Test
-    public void patchPaymentDataRequest_returnsForbidden_ifEricIdentityTypeIsNotCorrect() throws Exception {
+    void patchPaymentDataRequest_returnsForbidden_ifEricIdentityTypeIsNotCorrect() throws Exception {
         HttpHeaders headers = createHttpHeaders();
         headers.set(EricConstants.ERIC_IDENTITY_TYPE, "some-incorrect-identity-type");
 
@@ -160,7 +156,7 @@ public class PaymentControllerTest {
     }
 
     @Test
-    public void patchPaymentDataRequest_returnsForbidden_ifEricAuthorisedKeyRolesIsNotCorrect() throws Exception {
+    void patchPaymentDataRequest_returnsForbidden_ifEricAuthorisedKeyRolesIsNotCorrect() throws Exception {
         HttpHeaders headers = createHttpHeaders();
         headers.set(EricConstants.ERIC_AUTHORISED_KEY_ROLES, "some-incorrect-authorised-key-roles-value");
 
@@ -174,7 +170,7 @@ public class PaymentControllerTest {
     }
 
     @Test
-    public void patchPaymentDataRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
+    void patchPaymentDataRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
         final PaymentPatchRequest body = generatePaymentPatchRequest();
 
         when(dissolutionService.getByApplicationReference(APPLICATION_REFERENCE)).thenReturn(Optional.empty());
@@ -190,7 +186,7 @@ public class PaymentControllerTest {
     }
 
     @Test
-    public void patchPaymentDataRequest_returnsBadRequest_ifDissolutionStatusIsNotPendingPayment() throws Exception {
+    void patchPaymentDataRequest_returnsBadRequest_ifDissolutionStatusIsNotPendingPayment() throws Exception {
         final DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
         dissolutionGetResponse.setApplicationStatus(ApplicationStatus.PENDING_APPROVAL);
 
@@ -209,7 +205,7 @@ public class PaymentControllerTest {
     }
 
     @Test
-    public void patchPaymentDataRequest_returnsBadRequest_ifRequestFailsValidation() throws Exception {
+    void patchPaymentDataRequest_returnsBadRequest_ifRequestFailsValidation() throws Exception {
         final DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
 
         final PaymentPatchRequest body = generatePaymentPatchRequest();
@@ -228,7 +224,7 @@ public class PaymentControllerTest {
     }
 
     @Test
-    public void patchPaymentDataRequest_returnsNoContent_updatesPaymentInfo_PaidPaymentIsProvided() throws Exception, DissolutionNotFoundException {
+    void patchPaymentDataRequest_returnsNoContent_updatesPaymentInfo_PaidPaymentIsProvided() throws Exception {
         final DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
         dissolutionGetResponse.setApplicationStatus(ApplicationStatus.PENDING_PAYMENT);
 
@@ -250,7 +246,7 @@ public class PaymentControllerTest {
     }
 
     @Test
-    public void patchPaymentDataRequest_returnsNoContent_doesNotUpdatePaymentInfo_ifFailedPaymentIsProvided() throws Exception, DissolutionNotFoundException {
+    void patchPaymentDataRequest_returnsNoContent_doesNotUpdatePaymentInfo_ifFailedPaymentIsProvided() throws Exception {
         final DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
         dissolutionGetResponse.setApplicationStatus(ApplicationStatus.PENDING_PAYMENT);
 
@@ -272,7 +268,7 @@ public class PaymentControllerTest {
     }
 
     @Test
-    public void patchPaymentDataRequest_returnsNoContent_doesNotUpdatePaymentInfo_ifCancelledPaymentIsProvided() throws Exception, DissolutionNotFoundException {
+    void patchPaymentDataRequest_returnsNoContent_doesNotUpdatePaymentInfo_ifCancelledPaymentIsProvided() throws Exception {
         final DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
         dissolutionGetResponse.setApplicationStatus(ApplicationStatus.PENDING_PAYMENT);
 

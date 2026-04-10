@@ -2,12 +2,18 @@ package uk.gov.companieshouse.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jspecify.annotations.NonNull;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import uk.gov.companieshouse.api.delta.Person;
 import uk.gov.companieshouse.config.DocumentRenderConfig;
 import uk.gov.companieshouse.exception.DocumentRenderException;
 import uk.gov.companieshouse.model.dto.documentrender.DissolutionCertificateData;
+
+import java.util.Objects;
 
 import static uk.gov.companieshouse.model.Constants.*;
 
@@ -39,14 +45,14 @@ public class DocumentRenderClient {
                 .header(HEADER_ACCEPT, CONTENT_TYPE_PDF)
                 .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_HTML)
                 .header(HEADER_LOCATION, location)
-                .body(Mono.just(asJsonString(data)), String.class)
-                .exchange()
-                .block()
-                .headers()
-                .header(HEADER_LOCATION)
-                .stream()
-                .findAny()
-                .orElseThrow(() -> new RuntimeException("No location header returned from Document Render Service"));
+                .bodyValue(asJsonString(data))
+                .exchangeToMono(response -> {
+                    String headerValue = response.headers().header(HEADER_LOCATION).stream()
+                            .findAny()
+                            .orElseThrow(() -> new RuntimeException("No location header returned from Document Render Service"));
+                    return Mono.just(headerValue);
+                })
+                .block();
     }
 
     private String asJsonString(DissolutionCertificateData data) {

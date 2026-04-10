@@ -1,20 +1,17 @@
 package uk.gov.companieshouse.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.client.HttpClientErrorException;
 import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.Permission;
-import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
@@ -27,6 +24,7 @@ import uk.gov.companieshouse.service.CompanyOfficerService;
 import uk.gov.companieshouse.client.CompanyProfileClientImpl;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import uk.gov.companieshouse.service.dissolution.validator.DissolutionValidator;
+import uk.gov.companieshouse.service.payment.PaymentService;
 
 import java.util.Collections;
 import java.util.List;
@@ -45,13 +43,14 @@ import static uk.gov.companieshouse.fixtures.CompanyProfileApiFixtures.generateC
 import static uk.gov.companieshouse.fixtures.CompanyProfileFixtures.generateCompanyProfile;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.*;
 
-@RunWith(SpringRunner.class)
+@SuppressWarnings("unchecked")
 @WebMvcTest(DissolutionController.class)
-public class DissolutionControllerTest {
+class DissolutionControllerTest {
 
     private static final String DISSOLUTION_URI = "/dissolution-request/{company-number}";
 
     private static final String AUTHORISED_USER_HEADER = "ERIC-Authorised-User";
+    private static final String ERIC_ACCESS_TOKEN_HEADER = "ERIC-Access-Token";
 
     private static final String COMPANY_NUMBER = "12345678";
     private static final String USER_ID = "1234";
@@ -72,13 +71,16 @@ public class DissolutionControllerTest {
     @MockitoBean
     private CompanyOfficerService companyOfficerService;
 
+    @MockitoBean
+    private PaymentService paymentService;
+
     @Autowired
     private MockMvc mockMvc;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    public void submitDissolutionRequest_returnsUnauthorised_ifNoTokenPermissionsAreProvided() throws Exception {
+    void submitDissolutionRequest_returnsUnauthorised_ifNoTokenPermissionsAreProvided() throws Exception {
         final HttpHeaders headers = new HttpHeaders();
         headers.add(EricConstants.ERIC_IDENTITY, USER_ID);
         headers.add(AUTHORISED_USER_HEADER, EMAIL);
@@ -94,13 +96,13 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void submitDissolutionRequest_returnsUnauthorised_ifCompanyNumberTokenPermissionDoesNotMatchUri() throws Exception {
+    void submitDissolutionRequest_returnsUnauthorised_ifCompanyNumberTokenPermissionDoesNotMatchUri() throws Exception {
         final HttpHeaders headers = new HttpHeaders();
         headers.add(EricConstants.ERIC_IDENTITY, USER_ID);
         headers.add(AUTHORISED_USER_HEADER, EMAIL);
         headers.add(EricConstants.ERIC_AUTHORISED_TOKEN_PERMISSIONS, String.format(
                 "%s=%s %s=%s",
-                Permission.Key.COMPANY_NUMBER.toString(), "1234",
+                Permission.Key.COMPANY_NUMBER, "1234",
                 Permission.Key.COMPANY_TRANSACTIONS, Permission.Value.UPDATE
         ));
 
@@ -115,7 +117,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void submitDissolutionRequest_returnsUnprocessableEntity_ifNoDirectorsAreProvided() throws Exception {
+    void submitDissolutionRequest_returnsUnprocessableEntity_ifNoDirectorsAreProvided() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
         body.setDirectors(Collections.emptyList());
 
@@ -123,7 +125,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void submitDissolutionRequest_returnsUnprocessableEntity_ifAnOfficerIdIsNotProvided() throws Exception {
+    void submitDissolutionRequest_returnsUnprocessableEntity_ifAnOfficerIdIsNotProvided() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
 
         final DirectorRequest director = generateDirectorRequest();
@@ -135,7 +137,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void submitDissolutionRequest_returnsUnprocessableEntity_ifAnEmailIsNotProvided() throws Exception {
+    void submitDissolutionRequest_returnsUnprocessableEntity_ifAnEmailIsNotProvided() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
 
         final DirectorRequest director = generateDirectorRequest();
@@ -147,7 +149,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void submitDissolutionRequest_returnsUnprocessableEntity_ifAnInvalidEmailIsProvided() throws Exception {
+    void submitDissolutionRequest_returnsUnprocessableEntity_ifAnInvalidEmailIsProvided() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
 
         final DirectorRequest director = generateDirectorRequest();
@@ -159,7 +161,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void submitDissolutionRequest_returnsUnprocessableEntity_ifAnInvalidOnBehalfNameIsProvided() throws Exception {
+    void submitDissolutionRequest_returnsUnprocessableEntity_ifAnInvalidOnBehalfNameIsProvided() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
 
         final DirectorRequest director = generateDirectorRequest();
@@ -171,7 +173,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void submitDissolutionRequest_returnsNotFound_ifCompanyNotFound() throws Exception {
+    void submitDissolutionRequest_returnsNotFound_ifCompanyNotFound() throws Exception {
         when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(null);
 
         mockMvc
@@ -184,7 +186,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void submitDissolutionRequest_returnsConflict_ifDissolutionAlreadyExistsForCompany() throws Exception {
+    void submitDissolutionRequest_returnsConflict_ifDissolutionAlreadyExistsForCompany() throws Exception {
         when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(generateCompanyProfileApi());
         when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(true);
 
@@ -198,7 +200,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void submitDissolutionRequest_returnsBadRequest_ifValidationFails() throws Exception {
+    void submitDissolutionRequest_returnsBadRequest_ifValidationFails() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
         final CompanyProfileApi companyProfileApi = generateCompanyProfileApi();
         final CompanyProfile company = generateCompanyProfile();
@@ -221,7 +223,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void submitDissolutionRequest_returnsInternalServerError_ifExceptionOccursWhenCreatingDissolution() throws Exception {
+    void submitDissolutionRequest_returnsInternalServerError_ifExceptionOccursWhenCreatingDissolution() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
         final CompanyProfileApi companyProfileApi = generateCompanyProfileApi();
         final CompanyProfile company = generateCompanyProfile();
@@ -231,7 +233,8 @@ public class DissolutionControllerTest {
         when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(false);
         when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(companyDirectors);
         when(dissolutionValidator.checkBusinessRules(eq(company), eq(companyDirectors), isA(List.class))).thenReturn(Optional.empty());
-        when(service.create(isA(DissolutionCreateRequest.class), eq(company), eq(companyDirectors), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenThrow(new RuntimeException());
+        when(service.create(isA(DissolutionCreateRequest.class), eq(company), eq(companyDirectors), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL)))
+                .thenThrow(new RuntimeException("Some error occurred while creating dissolution"));
 
         mockMvc
                 .perform(
@@ -245,7 +248,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void submitDissolutionRequest_returnsCreated_andCreateResponse_ifDissolutionIsCreatedSuccessfully() throws Exception {
+    void submitDissolutionRequest_returnsCreated_andCreateResponse_ifDissolutionIsCreatedSuccessfully() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
         final DissolutionCreateResponse response = generateDissolutionCreateResponse();
         final CompanyProfileApi companyProfileApi = generateCompanyProfileApi();
@@ -271,7 +274,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void getDissolutionRequest_returnsUnauthorised_ifNoTokenPermissionsAreProvided() throws Exception {
+    void getDissolutionRequest_returnsUnauthorised_ifNoTokenPermissionsAreProvided() throws Exception {
         final HttpHeaders headers = new HttpHeaders();
         headers.add(EricConstants.ERIC_IDENTITY, USER_ID);
         headers.add(AUTHORISED_USER_HEADER, EMAIL);
@@ -285,13 +288,13 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void getDissolutionRequest_returnsUnauthorised_ifCompanyNumberTokenPermissionDoesNotMatchUri() throws Exception {
+    void getDissolutionRequest_returnsUnauthorised_ifCompanyNumberTokenPermissionDoesNotMatchUri() throws Exception {
         final HttpHeaders headers = new HttpHeaders();
         headers.add(EricConstants.ERIC_IDENTITY, USER_ID);
         headers.add(AUTHORISED_USER_HEADER, EMAIL);
         headers.add(EricConstants.ERIC_AUTHORISED_TOKEN_PERMISSIONS, String.format(
                 "%s=%s %s=%s",
-                Permission.Key.COMPANY_NUMBER.toString(), "1234",
+                Permission.Key.COMPANY_NUMBER, "1234",
                 Permission.Key.COMPANY_TRANSACTIONS, Permission.Value.UPDATE
         ));
 
@@ -304,7 +307,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void getDissolutionRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
+    void getDissolutionRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
         when(service.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
 
         mockMvc
@@ -316,7 +319,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void getDissolutionRequest_returnsDissolutionInfo_ifDissolutionExists() throws Exception {
+    void getDissolutionRequest_returnsDissolutionInfo_ifDissolutionExists() throws Exception {
         final DissolutionGetResponse response = generateDissolutionGetResponse();
 
         when(service.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(response));
@@ -331,7 +334,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void patchDissolutionRequest_returnsUnauthorised_ifNoTokenPermissionsAreProvided() throws Exception {
+    void patchDissolutionRequest_returnsUnauthorised_ifNoTokenPermissionsAreProvided() throws Exception {
         final HttpHeaders headers = new HttpHeaders();
         headers.add(EricConstants.ERIC_IDENTITY, USER_ID);
         headers.add(AUTHORISED_USER_HEADER, EMAIL);
@@ -347,13 +350,13 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void patchDissolutionRequest_returnsUnauthorised_ifCompanyNumberTokenPermissionDoesNotMatchUri() throws Exception {
+    void patchDissolutionRequest_returnsUnauthorised_ifCompanyNumberTokenPermissionDoesNotMatchUri() throws Exception {
         final HttpHeaders headers = new HttpHeaders();
         headers.add(EricConstants.ERIC_IDENTITY, USER_ID);
         headers.add(AUTHORISED_USER_HEADER, EMAIL);
         headers.add(EricConstants.ERIC_AUTHORISED_TOKEN_PERMISSIONS, String.format(
                 "%s=%s %s=%s",
-                Permission.Key.COMPANY_NUMBER.toString(), "1234",
+                Permission.Key.COMPANY_NUMBER, "1234",
                 Permission.Key.COMPANY_TRANSACTIONS, Permission.Value.UPDATE
         ));
 
@@ -368,7 +371,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void patchDissolutionRequest_returnsUnprocessableEntity_ifNoOfficerIdProvided() throws Exception {
+    void patchDissolutionRequest_returnsUnprocessableEntity_ifNoOfficerIdProvided() throws Exception {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setOfficerId(null);
 
@@ -376,7 +379,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void patchDissolutionRequest_returnsUnprocessableEntity_ifHasApprovedIsNotTrue() throws Exception {
+    void patchDissolutionRequest_returnsUnprocessableEntity_ifHasApprovedIsNotTrue() throws Exception {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setHasApproved(false);
 
@@ -384,7 +387,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void patchDissolutionRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
+    void patchDissolutionRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
 
         when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(false);
@@ -400,7 +403,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void patchDissolutionRequest_returnsBadRequest_ifDirectorNotPendingApproval() throws Exception {
+    void patchDissolutionRequest_returnsBadRequest_ifDirectorNotPendingApproval() throws Exception {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setOfficerId(OFFICER_ID);
 
@@ -417,7 +420,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void patchDissolutionRequest_returnsUnprocessableEntity_ifIPIsBlank() throws Exception, HttpClientErrorException.UnprocessableEntity {
+    void patchDissolutionRequest_returnsUnprocessableEntity_ifIPIsBlank() throws Exception {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(null);
 
@@ -425,7 +428,7 @@ public class DissolutionControllerTest {
     }
 
     @Test
-    public void patchDissolutionRequest_returnsOK_andPatchResponse_ifDissolutionIsPatchedSuccessfully() throws Exception, DissolutionNotFoundException {
+    void patchDissolutionRequest_returnsOK_andPatchResponse_ifDissolutionIsPatchedSuccessfully() throws Exception {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
@@ -455,7 +458,8 @@ public class DissolutionControllerTest {
                                 .headers(createHttpHeaders())
                                 .content(asJsonString(body))
                 )
-                .andExpect(status().isUnprocessableEntity())
+//                .andExpect(status().is(HttpStatus.UNPROCESSABLE_ENTITY.value()))
+                .andExpect(status().is(HttpStatus.UNPROCESSABLE_CONTENT.value()))
                 .andExpect(content().json(expectedErrorJson));
     }
 
@@ -467,7 +471,8 @@ public class DissolutionControllerTest {
                                 .headers(createHttpHeaders())
                                 .content(asJsonString(body))
                 )
-                .andExpect(status().isUnprocessableEntity())
+//                .andExpect(status().is(HttpStatus.UNPROCESSABLE_ENTITY.value()))
+                .andExpect(status().is(HttpStatus.UNPROCESSABLE_CONTENT.value()))
                 .andExpect(content().json(expectedErrorJson));
     }
 
@@ -485,9 +490,10 @@ public class DissolutionControllerTest {
         httpHeaders.add(AUTHORISED_USER_HEADER, EMAIL);
         httpHeaders.add(EricConstants.ERIC_AUTHORISED_TOKEN_PERMISSIONS, String.format(
                 "%s=%s %s=%s",
-                Permission.Key.COMPANY_NUMBER.toString(), COMPANY_NUMBER,
+                Permission.Key.COMPANY_NUMBER, COMPANY_NUMBER,
                 Permission.Key.COMPANY_STATUS, Permission.Value.UPDATE
         ));
+        httpHeaders.add(ERIC_ACCESS_TOKEN_HEADER, PASSTHROUGH_HEADER);
 
         return httpHeaders;
     }

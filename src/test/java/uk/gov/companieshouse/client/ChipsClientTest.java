@@ -99,11 +99,16 @@ public class ChipsClientTest {
         assertEquals("POST", recordedRequest.getMethod());
         assertEquals("/efilingEnablement/postForm", recordedRequest.getPath());
         assertEquals("application/json", recordedRequest.getHeader("Content-Type"));
-        assertEquals(asJsonString(request), recordedRequest.getBody().readUtf8());
+        // Compare JSON objects to avoid order issues
+        ObjectMapper mapper = new ObjectMapper();
+        assertEquals(
+            mapper.readTree(asJsonString(request)),
+            mapper.readTree(recordedRequest.getBody().readUtf8())
+        );
     }
 
     @Test
-    void sendDissolutionToChips_throwsChipsNotAvailableException_ifNotFoundIsReturned() throws Exception {
+    void sendDissolutionToChips_throwsChipsNotAvailableException_ifNotFoundIsReturned() {
         final DissolutionChipsRequest request = generateDissolutionChipsRequest();
 
         mockBackEnd.enqueue(
