@@ -154,6 +154,15 @@
                 <scope>runtime</scope>
             </dependency>
 
+            <!-- Source: https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-bom -->
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-bom</artifactId>
+                <version>12.1.8</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <dependency>
                 <groupId>software.amazon.awssdk</groupId>
                 <artifactId>bom</artifactId>
