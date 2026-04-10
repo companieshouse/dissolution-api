@@ -43,8 +43,8 @@
         <structured-logging.version>3.0.52</structured-logging.version>
         <environment-reader-library.version>3.0.5</environment-reader-library.version>
         <java-session-handler.version>4.1.15</java-session-handler.version>
-        <ch-kafka.version>3.0.8</ch-kafka.version>
-        <kafka-models.version>3.0.29</kafka-models.version>
+        <ch-kafka.version>3.0.9</ch-kafka.version>
+        <kafka-models.version>3.0.30</kafka-models.version>
 
         <!-- Dependency Versions -->
         <!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-dependencies -->
@@ -137,12 +137,21 @@
                 <version>${environment-reader-library.version}</version>
             </dependency>
 
+            <!-- Source: https://mvnrepository.com/artifact/io.opentelemetry.instrumentation/opentelemetry-instrumentation-bom -->
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-instrumentation-bom</artifactId>
                 <version>${opentelemetry.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <!-- Source: https://mvnrepository.com/artifact/io.opentelemetry.proto/opentelemetry-proto -->
+            <dependency>
+                <groupId>io.opentelemetry.proto</groupId>
+                <artifactId>opentelemetry-proto</artifactId>
+                <version>1.10.0-alpha</version>
+                <scope>runtime</scope>
             </dependency>
 
             <dependency>
