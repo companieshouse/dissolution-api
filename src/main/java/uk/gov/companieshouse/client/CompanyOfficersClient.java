@@ -37,7 +37,8 @@ public class CompanyOfficersClient {
                     WebClient
                         .create(config.getApiUrl())
                         .get()
-                        .uri(uriBuilder -> uriBuilder.path(GET_OFFICERS_URI.expand(companyNumber).toString())
+                        .uri(uriBuilder -> uriBuilder
+                                .path(GET_OFFICERS_URI.expand(companyNumber).toString())
                                 .queryParam("items_per_page", 150)
                                 .build())
                         .header(HEADER_AUTHORIZATION, config.getApiKey())
