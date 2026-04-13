@@ -72,7 +72,7 @@
         <!-- Source: https://mvnrepository.com/artifact/com.fasterxml.jackson/jackson-bom -->
         <jackson-bom.version>2.21.1</jackson-bom.version>
         <!-- Source: https://mvnrepository.com/artifact/tools.jackson.core/jackson-core -->
-        <jackson3-bom.version>3.1.1</jackson3-bom.version>
+        <jackson3.version>3.1.1</jackson3.version>
         <!-- Source: https://mvnrepository.com/artifact/commons-io/commons-io -->
         <commons-io.version>2.21.0</commons-io.version>
         <!-- Source: https://mvnrepository.com/artifact/org.json/json -->
@@ -115,7 +115,7 @@
             <dependency>
                 <groupId>tools.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
-                <version>${jackson3-bom.version}</version>
+                <version>${jackson3.version}</version>
                 <scope>compile</scope>
             </dependency>
 
@@ -169,6 +169,13 @@
                 <version>${aws-java-sdk.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <!-- Source: https://mvnrepository.com/artifact/org.apache.tomcat.embed/tomcat-embed-core -->
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-core</artifactId>
+                <version>11.0.21</version>
             </dependency>
 
             <!-- Source: https://mvnrepository.com/artifact/io.netty/netty-bom -->
