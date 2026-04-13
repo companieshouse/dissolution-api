@@ -170,10 +170,10 @@
                 <version>11.0.21</version>
             </dependency>
 
-            <!-- Source: https://mvnrepository.com/artifact/io.grpc/grpc-api -->
+            <!-- Source: https://mvnrepository.com/artifact/io.grpc/grpc-context -->
             <dependency>
                 <groupId>io.grpc</groupId>
-                <artifactId>grpc-api</artifactId>
+                <artifactId>grpc-context</artifactId>
                 <version>1.80.0</version>
                 <scope>compile</scope>
             </dependency>
