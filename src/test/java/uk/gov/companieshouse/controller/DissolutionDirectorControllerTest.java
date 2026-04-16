@@ -142,7 +142,6 @@ class DissolutionDirectorControllerTest {
                                 .headers(createHttpHeaders())
                                 .content(asJsonString(body))
                 )
-//                .andExpect(status().is(HttpStatus.UNPROCESSABLE_ENTITY.value()))
                 .andExpect(status().is(HttpStatus.UNPROCESSABLE_CONTENT.value()))
                 .andExpect(content().json(expectedErrorJson));
     }
