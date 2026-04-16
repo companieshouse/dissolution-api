@@ -80,7 +80,7 @@
         <!-- Source: https://mvnrepository.com/artifact/org.json/json -->
         <org-json.version>20251224</org-json.version>
         <!-- Source: https://mvnrepository.com/artifact/org.webjars/swagger-ui -->
-        <swagger-ui.version>5.32.1</swagger-ui.version>
+        <swagger-ui.version>5.32.2</swagger-ui.version>
         <!-- Source: https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-http -->
         <jetty.version>12.1.7</jetty.version>
         <!-- Source: https://mvnrepository.com/artifact/io.opentelemetry.instrumentation/opentelemetry-instrumentation-bom -->
