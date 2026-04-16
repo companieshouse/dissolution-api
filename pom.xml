@@ -492,10 +492,6 @@
                     <groupId>org.eclipse.jetty.http2</groupId>
                     <artifactId>http2-common</artifactId>
                 </exclusion>
-                <!--<exclusion>
-                    <groupId>org.eclipse.jetty.ee10</groupId>
-                    <artifactId>jetty-ee10-webapp</artifactId>
-                </exclusion>-->
             </exclusions>
         </dependency>
 
