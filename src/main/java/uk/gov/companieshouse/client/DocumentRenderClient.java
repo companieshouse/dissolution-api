@@ -2,20 +2,18 @@ package uk.gov.companieshouse.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.jspecify.annotations.NonNull;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-import uk.gov.companieshouse.api.delta.Person;
 import uk.gov.companieshouse.config.DocumentRenderConfig;
 import uk.gov.companieshouse.exception.DocumentRenderException;
 import uk.gov.companieshouse.model.dto.documentrender.DissolutionCertificateData;
 
-import java.util.Objects;
-
-import static uk.gov.companieshouse.model.Constants.*;
+import static uk.gov.companieshouse.model.Constants.HEADER_AUTHORIZATION;
+import static uk.gov.companieshouse.model.Constants.HEADER_ACCEPT;
+import static uk.gov.companieshouse.model.Constants.HEADER_CONTENT_TYPE;
+import static uk.gov.companieshouse.model.Constants.CONTENT_TYPE_PDF;
+import static uk.gov.companieshouse.model.Constants.CONTENT_TYPE_HTML;
 
 @Service
 public class DocumentRenderClient {
