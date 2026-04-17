@@ -35,14 +35,14 @@
         <spring-boot-maven-plugin.version>${spring-boot.version}</spring-boot-maven-plugin.version>
 
         <!-- Companies House Internal Dependencies -->
-        <api-helper-java.version>3.0.3</api-helper-java.version>
-        <api-security-java.version>2.0.25</api-security-java.version>
-        <api-sdk-java.version>6.6.13</api-sdk-java.version>
-        <private-api-sdk-java.version>4.0.492</private-api-sdk-java.version>
-        <api-sdk-manager-java-library.version>3.0.18</api-sdk-manager-java-library.version>
-        <structured-logging.version>3.0.52</structured-logging.version>
+        <api-helper-java.version>3.0.4</api-helper-java.version>
+        <api-security-java.version>2.0.26</api-security-java.version>
+        <api-sdk-java.version>6.6.15</api-sdk-java.version>
+        <private-api-sdk-java.version>4.0.494</private-api-sdk-java.version>
+        <api-sdk-manager-java-library.version>3.0.19</api-sdk-manager-java-library.version>
+        <structured-logging.version>3.0.54</structured-logging.version>
         <environment-reader-library.version>3.0.5</environment-reader-library.version>
-        <java-session-handler.version>4.1.15</java-session-handler.version>
+        <java-session-handler.version>4.1.17</java-session-handler.version>
         <ch-kafka.version>3.0.9</ch-kafka.version>
         <kafka-models.version>3.0.30</kafka-models.version>
 
