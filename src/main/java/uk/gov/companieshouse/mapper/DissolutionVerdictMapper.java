@@ -10,7 +10,6 @@ import uk.gov.companieshouse.util.DateTimeGenerator;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class DissolutionVerdictMapper {
@@ -30,7 +29,7 @@ public class DissolutionVerdictMapper {
 
     private void setRejectReasons(RejectReason[] rejectReasons, DissolutionVerdict verdict) {
         List<DissolutionRejectReason> dissolutionRejectReasons = Arrays.stream(rejectReasons)
-                .map(this::mapToDissolutionRejectReason).collect(Collectors.toList());
+                .map(this::mapToDissolutionRejectReason).toList();
 
         verdict.setRejectReasons(dissolutionRejectReasons);
     }

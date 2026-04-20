@@ -14,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import uk.gov.companieshouse.config.PaymentsConfig;
-import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.model.dto.payment.RefundRequest;
 import uk.gov.companieshouse.model.dto.payment.RefundResponse;
 
@@ -40,7 +39,7 @@ public class PaymentsClientTest {
     private PaymentsConfig config;
 
     @BeforeAll
-    public static void setUp() throws IOException {
+    static void setUp() throws IOException {
         mockBackEnd = new MockWebServer();
         mockBackEnd.start();
     }
@@ -55,7 +54,7 @@ public class PaymentsClientTest {
 
 
     @Test
-    public void refundPayment_callsCreateRefund_returnsRefundResponse() throws Exception {
+    void refundPayment_callsCreateRefund_returnsRefundResponse() throws Exception {
         final RefundRequest request = generateRefundRequest();
         final RefundResponse response = generateRefundResponse();
 
@@ -78,7 +77,7 @@ public class PaymentsClientTest {
     }
 
     @Test
-    public void refundPayment_callsCreateRefund_providesTheCorrectHeaders() throws Exception {
+    void refundPayment_callsCreateRefund_providesTheCorrectHeaders() throws Exception {
         final RefundResponse response = generateRefundResponse();
 
         mockBackEnd.enqueue(

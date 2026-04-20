@@ -14,7 +14,6 @@ import java.net.URISyntaxException;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class DissolutionCertificateMapper {
@@ -50,7 +49,7 @@ public class DissolutionCertificateMapper {
     }
 
     private List<DissolutionCertificateDirector> mapToCertificateDirectors(List<DissolutionDirector> directors) {
-        return directors.stream().map(this::mapToCertificateDirector).collect(Collectors.toList());
+        return directors.stream().map(this::mapToCertificateDirector).toList();
     }
 
     private DissolutionCertificateDirector mapToCertificateDirector(DissolutionDirector director) {

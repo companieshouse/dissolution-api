@@ -5,12 +5,12 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ReferenceGeneratorTest {
+class ReferenceGeneratorTest {
 
     private final ReferenceGenerator generator = new ReferenceGenerator();
 
     @Test
-    public void generateApplicationReference_generatesASixAlphanumericCharacterUppercaseString() throws Exception {
+    void generateApplicationReference_generatesASixAlphanumericCharacterUppercaseString() {
         final String result = generator.generateApplicationReference();
 
         assertEquals(6, result.length());

@@ -15,7 +15,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import uk.gov.companieshouse.config.CompanyOfficersConfig;
-import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficersResponse;
 
@@ -45,7 +44,7 @@ public class CompanyOfficersClientTest {
     private CompanyOfficersConfig config;
 
     @BeforeAll
-    public static void setUp() throws IOException {
+    static void setUp() throws IOException {
         mockBackEnd = new MockWebServer();
         mockBackEnd.start();
     }
@@ -106,7 +105,7 @@ public class CompanyOfficersClientTest {
     }
 
     @Test
-    void getCompanyOfficers_returnsEmptyList_ifCompanyDoesNotExist() throws Exception {
+    void getCompanyOfficers_returnsEmptyList_ifCompanyDoesNotExist() {
         final List<CompanyOfficer> officers = Collections.singletonList(generateCompanyOfficer());
         final CompanyOfficersResponse response = generateCompanyOfficersResponse();
 
@@ -125,7 +124,7 @@ public class CompanyOfficersClientTest {
     }
 
     @AfterAll
-    public static void tearDown() throws IOException {
+    static void tearDown() throws IOException {
         mockBackEnd.shutdown();
     }
 

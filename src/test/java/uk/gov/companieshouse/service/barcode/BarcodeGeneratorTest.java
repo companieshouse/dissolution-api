@@ -6,7 +6,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.client.BarcodeGeneratorClient;
-import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.barcode.BarcodeMapper;
 import uk.gov.companieshouse.model.dto.barcode.BarcodeRequest;
 import uk.gov.companieshouse.model.dto.barcode.BarcodeResponse;
@@ -19,7 +18,7 @@ import static uk.gov.companieshouse.fixtures.BarcodeFixtures.generateBarcodeRequ
 import static uk.gov.companieshouse.fixtures.BarcodeFixtures.generateBarcodeResponse;
 
 @ExtendWith(MockitoExtension.class)
-public class BarcodeGeneratorTest {
+class BarcodeGeneratorTest {
 
     private static final String BARCODE = "B4RC0D3";
 
@@ -33,7 +32,7 @@ public class BarcodeGeneratorTest {
     private BarcodeGeneratorClient client;
 
     @Test
-    public void generateBarcode_createsABarcodeRequest_retrivesBarcode() {
+    void generateBarcode_createsABarcodeRequest_retrivesBarcode() {
         final BarcodeRequest request = generateBarcodeRequest();
         final BarcodeResponse response = generateBarcodeResponse();
         response.setBarcode(BARCODE);
