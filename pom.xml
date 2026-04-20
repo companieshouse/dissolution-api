@@ -49,6 +49,8 @@
         <!-- Dependency Versions -->
         <!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-dependencies -->
         <spring-boot.version>4.0.5</spring-boot.version>
+        <!-- Source: https://mvnrepository.com/artifact/org.springframework/spring-framework-bom -->
+        <spring-framework.version>7.0.7</spring-framework.version>
         <!-- Source: https://mvnrepository.com/artifact/org.apache.tomcat.embed/tomcat-embed-core -->
         <tomcat.version>11.0.21</tomcat.version>
         <!-- Source: https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-ui -->
@@ -80,7 +82,7 @@
         <!-- Source: https://mvnrepository.com/artifact/org.json/json -->
         <org-json.version>20251224</org-json.version>
         <!-- Source: https://mvnrepository.com/artifact/org.webjars/swagger-ui -->
-        <swagger-ui.version>5.32.2</swagger-ui.version>
+        <swagger-ui.version>5.32.4</swagger-ui.version>
         <!-- Source: https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-http -->
         <jetty.version>12.1.7</jetty.version>
         <!-- Source: https://mvnrepository.com/artifact/io.opentelemetry.instrumentation/opentelemetry-instrumentation-bom -->
@@ -232,6 +234,15 @@
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-bom</artifactId>
                 <version>${kotlin.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Source: https://mvnrepository.com/artifact/org.springframework/spring-framework-bom -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-framework-bom</artifactId>
+                <version>${spring-framework.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
