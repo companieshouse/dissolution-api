@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionCertificateData;
 
 @ExtendWith(MockitoExtension.class)
-public class DocumentRenderClientTest {
+class DocumentRenderClientTest {
 
     private static final String API_KEY = "some-api-key";
 
@@ -32,7 +32,7 @@ public class DocumentRenderClientTest {
     private static final String TEMPLATE_NAME = "ds01.html";
     private static final DissolutionCertificateData CERTIFICATE_DATA = generateDissolutionCertificateData();
 
-    public static MockWebServer mockBackEnd;
+    static MockWebServer mockBackEnd;
 
     @InjectMocks
     private DocumentRenderClient client;

@@ -31,7 +31,7 @@ import static uk.gov.companieshouse.fixtures.DissolutionFixtures.*;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentInformation;
 
 @ExtendWith(MockitoExtension.class)
-public class ChipsFormDataMapperTest {
+class ChipsFormDataMapperTest {
 
     private static final String APPLICANT_EMAIL = "applicant@mail.com";
     private static final String COMPANY_NAME = "Some Company Name";
@@ -51,7 +51,7 @@ public class ChipsFormDataMapperTest {
     private ArgumentCaptor<ChipsFormData> requestCaptor;
 
     @BeforeEach
-    public void setup() throws Exception {
+    void setup() {
         dissolution = generateDissolution();
         dissolution.setPaymentInformation(generatePaymentInformation());
         dissolution.getData().setDirectors(Collections.emptyList());
@@ -62,7 +62,7 @@ public class ChipsFormDataMapperTest {
     }
 
     @Test
-    public void mapToChipsFormDataXml_writesToAnXmlString_andReturnsIt() throws Exception {
+    void mapToChipsFormDataXml_writesToAnXmlString_andReturnsIt() {
         final String result = mapper.mapToChipsFormDataXml(dissolution);
 
         verify(xmlMapper).writeValueAsString(any());
@@ -71,7 +71,7 @@ public class ChipsFormDataMapperTest {
     }
 
     @Test
-    public void mapToChipsFormDataXml_setsTheFormTypeForDs01() throws Exception {
+    void mapToChipsFormDataXml_setsTheFormTypeForDs01() {
         dissolution.getData().getApplication().setType(ApplicationType.DS01);
 
         mapper.mapToChipsFormDataXml(dissolution);
@@ -84,7 +84,7 @@ public class ChipsFormDataMapperTest {
     }
 
     @Test
-    public void mapToChipsFormDataXml_setsTheFormTypeForLlds01() throws Exception {
+    void mapToChipsFormDataXml_setsTheFormTypeForLlds01() {
         dissolution.getData().getApplication().setType(ApplicationType.LLDS01);
 
         mapper.mapToChipsFormDataXml(dissolution);
@@ -97,7 +97,7 @@ public class ChipsFormDataMapperTest {
     }
 
     @Test
-    public void mapToChipsFormDataXml_setsTheFormVersion() throws Exception {
+    void mapToChipsFormDataXml_setsTheFormVersion() {
         mapper.mapToChipsFormDataXml(dissolution);
 
         verify(xmlMapper).writeValueAsString(requestCaptor.capture());
@@ -108,7 +108,7 @@ public class ChipsFormDataMapperTest {
     }
 
     @Test
-    public void mapToChipsFormDataXml_setsTheFilingDetailsCorrectly() throws Exception {
+    void mapToChipsFormDataXml_setsTheFilingDetailsCorrectly() {
         dissolution.getData().getApplication().setReference(DISSOLUTION_REFERENCE);
         dissolution.getData().getApplication().setBarcode(DISSOLUTION_BARCODE);
         dissolution.getCreatedBy().setDateTime(LocalDateTime.of(2020, 1, 1, 0, 0));
@@ -131,7 +131,7 @@ public class ChipsFormDataMapperTest {
     }
 
     @Test
-    public void mapToChipsFormDataXml_setsTheFilingDetails_presenterDetailsCorrectly() throws Exception {
+    void mapToChipsFormDataXml_setsTheFilingDetails_presenterDetailsCorrectly() {
         dissolution.getCreatedBy().setEmail(APPLICANT_EMAIL);
 
         mapper.mapToChipsFormDataXml(dissolution);
@@ -145,7 +145,7 @@ public class ChipsFormDataMapperTest {
     }
 
     @Test
-    public void mapToChipsFormDataXml_setsTheFilingDetails_paymentDetailsCorrectly_payByAccountFeatureToggleOn() throws Exception {
+    void mapToChipsFormDataXml_setsTheFilingDetails_paymentDetailsCorrectly_payByAccountFeatureToggleOn() {
         dissolution.getPaymentInformation().setMethod(PaymentMethod.ACCOUNT);
         dissolution.getPaymentInformation().setAccountNumber(ACCOUNT_NUMBER);
 
@@ -161,7 +161,7 @@ public class ChipsFormDataMapperTest {
     }
 
     @Test
-    public void mapToChipsFormDataXml_setsTheFilingDetails_paymentDetailsCorrectly_payByAccountFeatureToggleOff() throws Exception {
+    void mapToChipsFormDataXml_setsTheFilingDetails_paymentDetailsCorrectly_payByAccountFeatureToggleOff() {
         dissolution.getPaymentInformation().setMethod(PaymentMethod.CREDIT_CARD);
         dissolution.getPaymentInformation().setReference(PAYMENT_REFERENCE);
 
@@ -177,7 +177,7 @@ public class ChipsFormDataMapperTest {
     }
 
     @Test
-    public void mapToChipsFormDataXml_setsTheCorporateBody_companyInfoCorrectly() throws Exception {
+    void mapToChipsFormDataXml_setsTheCorporateBody_companyInfoCorrectly() {
         dissolution.getCompany().setName(COMPANY_NAME);
         dissolution.getCompany().setNumber(COMPANY_NUMBER);
 
@@ -192,7 +192,7 @@ public class ChipsFormDataMapperTest {
     }
 
     @Test
-    public void mapToChipsFormDataXml_setsTheCorporateBody_officersCorrectly() throws Exception {
+    void mapToChipsFormDataXml_setsTheCorporateBody_officersCorrectly() {
         DirectorApproval approvalOne = generateDirectorApproval();
         approvalOne.setDateTime(LocalDateTime.of(2020, 1, 1, 12, 30));
         approvalOne.setIpAddress("192.168.0.2");
@@ -223,9 +223,9 @@ public class ChipsFormDataMapperTest {
 
         assertEquals(2, request.getCorporateBody().getOfficers().size());
 
-        assertEquals("John James", request.getCorporateBody().getOfficers().get(0).getPersonName().getForename());
-        assertEquals("DOE", request.getCorporateBody().getOfficers().get(0).getPersonName().getSurname());
-        assertEquals("2020-01-01", request.getCorporateBody().getOfficers().get(0).getSignDate());
+        assertEquals("John James", request.getCorporateBody().getOfficers().getFirst().getPersonName().getForename());
+        assertEquals("DOE", request.getCorporateBody().getOfficers().getFirst().getPersonName().getSurname());
+        assertEquals("2020-01-01", request.getCorporateBody().getOfficers().getFirst().getSignDate());
         assertEquals("mail1", request.getCorporateBody().getOfficers().get(0).getEmail());
         assertEquals("192.168.0.2", request.getCorporateBody().getOfficers().get(0).getIpAddress());
 
