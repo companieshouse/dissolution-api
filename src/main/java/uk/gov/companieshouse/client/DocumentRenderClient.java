@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.client;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -30,7 +31,7 @@ public class DocumentRenderClient {
 
     private final ObjectMapper objectMapper;
 
-    public DocumentRenderClient(DocumentRenderConfig config, ObjectMapper objectMapper) {
+    public DocumentRenderClient(DocumentRenderConfig config, @Qualifier("jacksonJsonMapper") ObjectMapper objectMapper) {
         this.config = config;
         this.objectMapper = objectMapper;
     }
