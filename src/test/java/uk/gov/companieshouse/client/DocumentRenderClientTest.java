@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -13,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import tools.jackson.databind.ObjectMapper;
 import uk.gov.companieshouse.config.DocumentRenderConfig;
 import uk.gov.companieshouse.model.dto.documentrender.DissolutionCertificateData;
 
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionCertificateData;
 
 @ExtendWith(MockitoExtension.class)
-public class DocumentRenderClientTest {
+class DocumentRenderClientTest {
 
     private static final String API_KEY = "some-api-key";
 
@@ -32,7 +32,7 @@ public class DocumentRenderClientTest {
     private static final String TEMPLATE_NAME = "ds01.html";
     private static final DissolutionCertificateData CERTIFICATE_DATA = generateDissolutionCertificateData();
 
-    public static MockWebServer mockBackEnd;
+    static MockWebServer mockBackEnd;
 
     @InjectMocks
     private DocumentRenderClient client;
@@ -41,13 +41,14 @@ public class DocumentRenderClientTest {
     private DocumentRenderConfig documentRenderConfig;
 
     @BeforeAll
-    public static void setUp() throws IOException {
+    static void setUp() throws IOException {
         mockBackEnd = new MockWebServer();
         mockBackEnd.start();
     }
 
     @BeforeEach
     void initialize() {
+        client = new DocumentRenderClient(documentRenderConfig, new ObjectMapper());
         String baseUrl = String.format("http://localhost:%s", mockBackEnd.getPort());
 
         when(documentRenderConfig.getDocumentRenderHost()).thenReturn(baseUrl);
@@ -95,8 +96,41 @@ public class DocumentRenderClientTest {
         assertEquals(LOCATION, recordedRequest.getHeader("Location"));
     }
 
+    @Test
+    void generateAndStoreDocument_throwsDocumentRenderException_whenJsonMappingFails() {
+        DocumentRenderClient failingClient = new DocumentRenderClient(documentRenderConfig, new ObjectMapper() {
+            @Override
+            public String writeValueAsString(Object value) {
+                throw new tools.jackson.core.JacksonException("fail") {};
+            }
+        });
+        when(documentRenderConfig.getDocumentRenderHost()).thenReturn("http://localhost:1234");
+        when(documentRenderConfig.getApiKey()).thenReturn(API_KEY);
+        uk.gov.companieshouse.exception.DocumentRenderException ex = org.junit.jupiter.api.Assertions.assertThrows(
+            uk.gov.companieshouse.exception.DocumentRenderException.class,
+            () -> failingClient.generateAndStoreDocument(CERTIFICATE_DATA, TEMPLATE_NAME, LOCATION)
+        );
+        assertEquals("Failed to write dissolution certificate data to JSON string", ex.getMessage());
+    }
+
+    @Test
+    void generateAndStoreDocument_throwsRuntimeException_whenNoLocationHeaderReturned() {
+        mockBackEnd.enqueue(
+            new MockResponse()
+                .setResponseCode(HttpStatus.CREATED.value())
+                // No Location header
+        );
+        when(documentRenderConfig.getDocumentRenderHost()).thenReturn(String.format("http://localhost:%s", mockBackEnd.getPort()));
+        when(documentRenderConfig.getApiKey()).thenReturn(API_KEY);
+        RuntimeException ex = org.junit.jupiter.api.Assertions.assertThrows(
+            RuntimeException.class,
+            () -> client.generateAndStoreDocument(CERTIFICATE_DATA, TEMPLATE_NAME, LOCATION)
+        );
+        assertEquals("No location header returned from Document Render Service", ex.getMessage());
+    }
+
     @AfterAll
-    public static void tearDown() throws IOException {
+    static void tearDown() throws IOException {
         mockBackEnd.shutdown();
     }
 }

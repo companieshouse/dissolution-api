@@ -1,7 +1,5 @@
 package uk.gov.companieshouse.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -13,6 +11,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import uk.gov.companieshouse.config.PaymentsConfig;
 import uk.gov.companieshouse.model.dto.payment.RefundRequest;
 import uk.gov.companieshouse.model.dto.payment.RefundResponse;
@@ -96,7 +96,7 @@ public class PaymentsClientTest {
         assertEquals("application/json", recordedRequest.getHeader("Content-Type"));
     }
 
-    private String asJsonString(Object obj) throws JsonProcessingException {
+    private String asJsonString(Object obj) throws JacksonException {
         return new ObjectMapper().writeValueAsString(obj);
     }
 }
