@@ -8,7 +8,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.core.JacksonException;
 import tools.jackson.dataformat.xml.XmlMapper;
+import uk.gov.companieshouse.exception.ChipsMapperException;
 import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
@@ -236,4 +238,16 @@ class ChipsFormDataMapperTest {
         assertEquals("Mr. Accountant", request.getCorporateBody().getOfficers().get(1).getOnBehalfName());
         assertEquals("192.168.0.3", request.getCorporateBody().getOfficers().get(1).getIpAddress());
     }
+
+    @Test
+    void mapToChipsFormDataXml_throwsChipsMapperException_whenXmlMappingFails() throws Exception {
+        when(xmlMapper.writeValueAsString(any())).thenThrow(new JacksonException("XML error") {});
+        dissolution.getCompany().setNumber(COMPANY_NUMBER);
+        ChipsMapperException ex = org.junit.jupiter.api.Assertions.assertThrows(
+            ChipsMapperException.class,
+            () -> mapper.mapToChipsFormDataXml(dissolution)
+        );
+        assertEquals("Failed to map to CHIPS request for company " + COMPANY_NUMBER, ex.getMessage());
+    }
+
 }

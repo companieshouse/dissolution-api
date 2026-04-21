@@ -96,6 +96,39 @@ class DocumentRenderClientTest {
         assertEquals(LOCATION, recordedRequest.getHeader("Location"));
     }
 
+    @Test
+    void generateAndStoreDocument_throwsDocumentRenderException_whenJsonMappingFails() {
+        DocumentRenderClient failingClient = new DocumentRenderClient(documentRenderConfig, new ObjectMapper() {
+            @Override
+            public String writeValueAsString(Object value) {
+                throw new tools.jackson.core.JacksonException("fail") {};
+            }
+        });
+        when(documentRenderConfig.getDocumentRenderHost()).thenReturn("http://localhost:1234");
+        when(documentRenderConfig.getApiKey()).thenReturn(API_KEY);
+        uk.gov.companieshouse.exception.DocumentRenderException ex = org.junit.jupiter.api.Assertions.assertThrows(
+            uk.gov.companieshouse.exception.DocumentRenderException.class,
+            () -> failingClient.generateAndStoreDocument(CERTIFICATE_DATA, TEMPLATE_NAME, LOCATION)
+        );
+        assertEquals("Failed to write dissolution certificate data to JSON string", ex.getMessage());
+    }
+
+    @Test
+    void generateAndStoreDocument_throwsRuntimeException_whenNoLocationHeaderReturned() {
+        mockBackEnd.enqueue(
+            new MockResponse()
+                .setResponseCode(HttpStatus.CREATED.value())
+                // No Location header
+        );
+        when(documentRenderConfig.getDocumentRenderHost()).thenReturn(String.format("http://localhost:%s", mockBackEnd.getPort()));
+        when(documentRenderConfig.getApiKey()).thenReturn(API_KEY);
+        RuntimeException ex = org.junit.jupiter.api.Assertions.assertThrows(
+            RuntimeException.class,
+            () -> client.generateAndStoreDocument(CERTIFICATE_DATA, TEMPLATE_NAME, LOCATION)
+        );
+        assertEquals("No location header returned from Document Render Service", ex.getMessage());
+    }
+
     @AfterAll
     static void tearDown() throws IOException {
         mockBackEnd.shutdown();

@@ -113,7 +113,7 @@ public class ChipsFormDataMapper {
     }
 
     private List<ChipsOfficer> mapToOfficers(Dissolution dissolution) {
-        return dissolution.getData().getDirectors().stream().map(this::mapToOfficer).collect(Collectors.toList());
+        return dissolution.getData().getDirectors().stream().map(this::mapToOfficer).toList();
     }
 
     private ChipsOfficer mapToOfficer(DissolutionDirector director) {
