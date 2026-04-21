@@ -36,7 +36,7 @@ public class ChipsClientTest {
     private ChipsConfig config;
 
     @BeforeAll
-    public static void setUp() throws IOException {
+    static void setUp() throws IOException {
         mockBackEnd = new MockWebServer();
         mockBackEnd.start();
     }
@@ -49,7 +49,7 @@ public class ChipsClientTest {
     }
 
     @Test
-    void isAvailable_callsChipsHealthcheck_returnsFalseIfNotFoundReturned() throws Exception {
+    void isAvailable_callsChipsHealthcheck_returnsFalseIfNotFoundReturned() throws InterruptedException {
         mockBackEnd.enqueue(
                 new MockResponse()
                         .setResponseCode(HttpStatus.NOT_FOUND.value())
@@ -66,7 +66,7 @@ public class ChipsClientTest {
     }
 
     @Test
-    void isAvailable_callsChipsHealthcheck_returnsTrueIfOkReturned() throws Exception {
+    void isAvailable_callsChipsHealthcheck_returnsTrueIfOkReturned() throws InterruptedException {
         mockBackEnd.enqueue(
                 new MockResponse()
                         .setResponseCode(HttpStatus.OK.value())
@@ -83,7 +83,7 @@ public class ChipsClientTest {
     }
 
     @Test
-    void sendDissolutionToChips_sendsDissolutionRequestToChips() throws Exception {
+    void sendDissolutionToChips_sendsDissolutionRequestToChips() throws InterruptedException, JsonProcessingException {
         final DissolutionChipsRequest request = generateDissolutionChipsRequest();
 
         mockBackEnd.enqueue(
@@ -99,11 +99,16 @@ public class ChipsClientTest {
         assertEquals("POST", recordedRequest.getMethod());
         assertEquals("/efilingEnablement/postForm", recordedRequest.getPath());
         assertEquals("application/json", recordedRequest.getHeader("Content-Type"));
-        assertEquals(asJsonString(request), recordedRequest.getBody().readUtf8());
+        // Compare JSON objects to avoid order issues
+        ObjectMapper mapper = new ObjectMapper();
+        assertEquals(
+            mapper.readTree(asJsonString(request)),
+            mapper.readTree(recordedRequest.getBody().readUtf8())
+        );
     }
 
     @Test
-    void sendDissolutionToChips_throwsChipsNotAvailableException_ifNotFoundIsReturned() throws Exception {
+    void sendDissolutionToChips_throwsChipsNotAvailableException_ifNotFoundIsReturned() {
         final DissolutionChipsRequest request = generateDissolutionChipsRequest();
 
         mockBackEnd.enqueue(
@@ -116,7 +121,7 @@ public class ChipsClientTest {
     }
 
     @AfterAll
-    public static void tearDown() throws IOException {
+    static void tearDown() throws IOException {
         mockBackEnd.shutdown();
     }
 

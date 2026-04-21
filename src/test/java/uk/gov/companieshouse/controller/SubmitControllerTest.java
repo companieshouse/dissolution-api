@@ -1,12 +1,10 @@
 package uk.gov.companieshouse.controller;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.SecurityConstants;
@@ -18,9 +16,8 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
 @WebMvcTest(SubmitController.class)
-public class SubmitControllerTest {
+class SubmitControllerTest {
 
     private static final String SUBMIT_URI = "/dissolution-request/submit";
 
@@ -33,7 +30,7 @@ public class SubmitControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    public void submitDissolutionsToChips_returnsUnauthorised_ifEricIdentityIsNotProvided() throws Exception {
+    void submitDissolutionToChips_returnsUnauthorised_ifEricIdentityIsNotProvided() throws Exception {
         HttpHeaders headers = createHttpHeaders();
         headers.remove(EricConstants.ERIC_IDENTITY);
 
@@ -46,7 +43,7 @@ public class SubmitControllerTest {
     }
 
     @Test
-    public void submitDissolutionsToChips_returnsForbidden_ifEricIdentityTypeIsNotCorrect() throws Exception {
+    void submitDissolutionToChips_returnsForbidden_ifEricIdentityTypeIsNotCorrect() throws Exception {
         HttpHeaders headers = createHttpHeaders();
         headers.set(EricConstants.ERIC_IDENTITY_TYPE, "some-incorrect-identity-type");
 
@@ -59,7 +56,7 @@ public class SubmitControllerTest {
     }
 
     @Test
-    public void submitDissolutionsToChips_returnsForbidden_ifEricAuthorisedKeyRolesIsNotCorrect() throws Exception {
+    void submitDissolutionToChips_returnsForbidden_ifEricAuthorisedKeyRolesIsNotCorrect() throws Exception {
         HttpHeaders headers = createHttpHeaders();
         headers.set(EricConstants.ERIC_AUTHORISED_KEY_ROLES, "some-incorrect-authorised-key-roles-value");
 
@@ -72,7 +69,7 @@ public class SubmitControllerTest {
     }
 
     @Test
-    public void submitDissolutionsToChips_returnsServiceUnavailable_ifChipsIsNotAvailable() throws Exception {
+    void submitDissolutionToChips_returnsServiceUnavailable_ifChipsIsNotAvailable() throws Exception {
         when(service.isAvailable()).thenReturn(false);
 
         mockMvc
@@ -86,7 +83,7 @@ public class SubmitControllerTest {
     }
 
     @Test
-    public void submitDissolutionsToChips_submitsDissolutions_returnsOk_ifChipsIsAvailable() throws Exception {
+    void submitDissolutionToChips_submitsDissolution_returnsOk_ifChipsIsAvailable() throws Exception {
         when(service.isAvailable()).thenReturn(true);
 
         mockMvc

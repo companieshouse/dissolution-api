@@ -7,7 +7,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.config.EnvironmentConfig;
 import uk.gov.companieshouse.fixtures.EmailFixtures;
-import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.email.DissolutionEmailMapper;
 import uk.gov.companieshouse.mapper.email.EmailMapper;
 import uk.gov.companieshouse.model.db.dissolution.CreatedBy;
@@ -29,7 +28,6 @@ import uk.gov.companieshouse.service.email.EmailService;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -39,7 +37,7 @@ import static uk.gov.companieshouse.fixtures.EmailFixtures.generateSignatoryToSi
 import static uk.gov.companieshouse.fixtures.EmailFixtures.generateSupportNotificationEmailData;
 
 @ExtendWith(MockitoExtension.class)
-public class DissolutionEmailServiceTest {
+class DissolutionEmailServiceTest {
 
     private static final String SIGNATORY_TO_SIGN_DEADLINE = "17 September 2020";
     private static final String SIGNATORY_EMAIL_ONE = "signatory1@mail.com";
@@ -135,7 +133,7 @@ public class DissolutionEmailServiceTest {
         final ApplicationRejectedEmailData emailData = EmailFixtures.generateApplicationRejectedEmailData();
         final EmailDocument<ApplicationRejectedEmailData> emailDocument = generateEmailDocument(emailData);
 
-        List<String> rejectReasonsAsStrings = dissolutionVerdict.getRejectReasons().stream().map(DissolutionRejectReason::getTextEnglish).collect(Collectors.toList());
+        List<String> rejectReasonsAsStrings = dissolutionVerdict.getRejectReasons().stream().map(DissolutionRejectReason::getTextEnglish).toList();
         when(dissolutionEmailMapper.mapToApplicationRejectedEmailData(dissolution, rejectReasonsAsStrings, dissolution.getCreatedBy().getEmail())).thenReturn(emailData);
         when(messageTypeCalculator.getForApplicationRejected(dissolution)).thenReturn(MessageType.APPLICATION_REJECTED);
         when(emailMapper.mapToEmailDocument(emailData, emailData.getTo(), MessageType.APPLICATION_REJECTED)).thenReturn(emailDocument);
@@ -157,7 +155,7 @@ public class DissolutionEmailServiceTest {
         final ApplicationRejectedEmailData emailData = EmailFixtures.generateApplicationRejectedEmailData();
         final EmailDocument<ApplicationRejectedEmailData> emailDocument = generateEmailDocument(emailData);
 
-        List<String> rejectReasonsAsStrings = dissolutionVerdict.getRejectReasons().stream().map(DissolutionRejectReason::getTextEnglish).collect(Collectors.toList());
+        List<String> rejectReasonsAsStrings = dissolutionVerdict.getRejectReasons().stream().map(DissolutionRejectReason::getTextEnglish).toList();
         when(environmentConfig.getChsFinanceEmail()).thenReturn(email);
         when(dissolutionEmailMapper.mapToApplicationRejectedEmailData(dissolution, rejectReasonsAsStrings, email)).thenReturn(emailData);
         when(messageTypeCalculator.getForApplicationRejected(dissolution)).thenReturn(MessageType.APPLICATION_REJECTED);

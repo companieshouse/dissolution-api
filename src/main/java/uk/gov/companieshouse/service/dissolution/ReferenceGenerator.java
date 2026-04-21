@@ -5,7 +5,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ReferenceGenerator {
+
     public String generateApplicationReference() {
-        return RandomStringUtils.random(6, true, true).toUpperCase();
+        return RandomStringUtils.secure().next(6, true, true).toUpperCase();
     }
+
 }

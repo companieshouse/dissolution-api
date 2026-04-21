@@ -1,18 +1,16 @@
 package uk.gov.companieshouse.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.Permission;
-import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchResponse;
 import uk.gov.companieshouse.service.dissolution.director.DissolutionDirectorService;
@@ -29,9 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static uk.gov.companieshouse.fixtures.DissolutionDirectorFixtures.generateDissolutionPatchDirectorRequest;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionDirectorPatchResponse;
 
-@RunWith(SpringRunner.class)
 @WebMvcTest(DissolutionDirectorController.class)
-public class DissolutionDirectorControllerTest {
+class DissolutionDirectorControllerTest {
 
     private static final String DIRECTOR_URI = "/dissolution-request/{company-number}/directors/{director-id}";
 
@@ -51,7 +48,7 @@ public class DissolutionDirectorControllerTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    public void patchDissolutionDirectorRequest_returnsUnprocessableEntity_ifNoEmailProvided() throws Exception {
+    void patchDissolutionDirectorRequest_returnsUnprocessableEntity_ifNoEmailProvided() throws Exception {
         final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
         body.setEmail(null);
 
@@ -59,7 +56,7 @@ public class DissolutionDirectorControllerTest {
     }
 
     @Test
-    public void patchDissolutionDirectorRequest_returnsUnprocessableEntity_ifEmailIsWrongFormat() throws Exception {
+    void patchDissolutionDirectorRequest_returnsUnprocessableEntity_ifEmailIsWrongFormat() throws Exception {
         final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
         body.setEmail("wrongemail");
 
@@ -67,7 +64,7 @@ public class DissolutionDirectorControllerTest {
     }
 
     @Test
-    public void patchDissolutionDirectorRequest_returnsNotFound_ifDirectorOrDissolutionDoesntExist() throws Exception {
+    void patchDissolutionDirectorRequest_returnsNotFound_ifDirectorOrDissolutionDoesntExist() throws Exception {
         final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
 
         when(service.doesDirectorExist(COMPANY_NUMBER, OFFICER_ID)).thenReturn(false);
@@ -83,7 +80,7 @@ public class DissolutionDirectorControllerTest {
     }
 
     @Test
-    public void patchDissolutionDirectorRequest_returnsBadRequest_ifDirectorNotPendingApproval() throws Exception {
+    void patchDissolutionDirectorRequest_returnsBadRequest_ifDirectorNotPendingApproval() throws Exception {
         final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
 
         when(service.doesDirectorExist(COMPANY_NUMBER, OFFICER_ID)).thenReturn(true);
@@ -99,7 +96,7 @@ public class DissolutionDirectorControllerTest {
     }
 
     @Test
-    public void patchDissolutionDirectorRequest_returnsBadRequest_ifPatchConstraintFail() throws Exception {
+    void patchDissolutionDirectorRequest_returnsBadRequest_ifPatchConstraintFail() throws Exception {
         final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
 
         when(service.doesDirectorExist(COMPANY_NUMBER, OFFICER_ID)).thenReturn(true);
@@ -115,7 +112,7 @@ public class DissolutionDirectorControllerTest {
     }
 
     @Test
-    public void patchDissolutionDirectorRequest_returnsOK_andPatchResponse_ifDirectorIsPatchedSuccessfully() throws Exception, DissolutionNotFoundException {
+    void patchDissolutionDirectorRequest_returnsOK_andPatchResponse_ifDirectorIsPatchedSuccessfully() throws Exception {
         final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
 
         final DissolutionDirectorPatchResponse response = generateDissolutionDirectorPatchResponse();
@@ -145,7 +142,7 @@ public class DissolutionDirectorControllerTest {
                                 .headers(createHttpHeaders())
                                 .content(asJsonString(body))
                 )
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().is(HttpStatus.UNPROCESSABLE_CONTENT.value()))
                 .andExpect(content().json(expectedErrorJson));
     }
 
@@ -163,7 +160,7 @@ public class DissolutionDirectorControllerTest {
         httpHeaders.add(AUTHORISED_USER_HEADER, EMAIL);
         httpHeaders.add(EricConstants.ERIC_AUTHORISED_TOKEN_PERMISSIONS, String.format(
                 "%s=%s %s=%s",
-                Permission.Key.COMPANY_NUMBER.toString(), COMPANY_NUMBER,
+                Permission.Key.COMPANY_NUMBER, COMPANY_NUMBER,
                 Permission.Key.COMPANY_STATUS, Permission.Value.UPDATE
         ));
 

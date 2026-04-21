@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import uk.gov.companieshouse.config.PaymentsConfig;
-import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.model.dto.payment.PaymentDetailsResponse;
 import uk.gov.companieshouse.model.dto.payment.RefundRequest;
 import uk.gov.companieshouse.model.dto.payment.RefundResponse;

@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.fixtures.PaymentFixtures;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
@@ -14,10 +13,9 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class PaymentValidatorTest {
+class PaymentValidatorTest {
 
     @InjectMocks
     private PaymentValidator paymentValidator;
@@ -25,12 +23,12 @@ public class PaymentValidatorTest {
     private PaymentPatchRequest paymentPatchRequest;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         paymentPatchRequest = PaymentFixtures.generatePaymentPatchRequest();
     }
 
     @Test
-    public void checkBusinessRules_paymentReferenceAndAccountNumberProvided_returnsValidationMessage() {
+    void checkBusinessRules_paymentReferenceAndAccountNumberProvided_returnsValidationMessage() {
         paymentPatchRequest.setPaymentReference("some payment reference");
         paymentPatchRequest.setAccountNumber("some account number");
 
@@ -40,7 +38,7 @@ public class PaymentValidatorTest {
     }
 
     @Test
-    public void checkBusinessRules_paymentReferenceNotProvidedForCardPayment_returnsValidationMessage() {
+    void checkBusinessRules_paymentReferenceNotProvidedForCardPayment_returnsValidationMessage() {
         paymentPatchRequest.setPaymentReference(null);
         paymentPatchRequest.setPaymentMethod(PaymentMethod.CREDIT_CARD);
 
@@ -50,7 +48,7 @@ public class PaymentValidatorTest {
     }
 
     @Test
-    public void checkBusinessRules_accountNumberNotProvidedForAccountPayment_returnsValidationMessage() {
+    void checkBusinessRules_accountNumberNotProvidedForAccountPayment_returnsValidationMessage() {
         paymentPatchRequest.setAccountNumber(null);
         paymentPatchRequest.setPaymentMethod(PaymentMethod.ACCOUNT);
 
@@ -60,7 +58,7 @@ public class PaymentValidatorTest {
     }
 
     @Test
-    public void checkBusinessRules_allRulesSatisfied_returnsEmptyOptional() {
+    void checkBusinessRules_allRulesSatisfied_returnsEmptyOptional() {
         paymentPatchRequest.setAccountNumber("222222");
         paymentPatchRequest.setPaymentReference(null);
         paymentPatchRequest.setPaymentMethod(PaymentMethod.ACCOUNT);

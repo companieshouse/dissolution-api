@@ -65,18 +65,34 @@ server:
   port: 3001
 
 spring:
-  data:
-    mongodb:
-      uri: ${DISSOLUTIONS_API_MONGODB_URL}
+  main:
+    web-application-type: servlet
+  mongodb:
+    uri: ${DISSOLUTIONS_API_MONGODB_URL}
 
 management:
+  opentelemetry:
+    logging:
+      export:
+        otlp:
+          endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/logs
+    tracing:
+      export:
+        otlp:
+          endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces
+  otlp:
+    metrics:
+      export:
+        url: ${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/metrics
   endpoints:
-    enabled-by-default: false
     web:
+      exposure:
+        include: health, metrics
       base-path: /
       path-mapping:
         health: /dissolution-api/healthcheck
+    access:
+      default: read_only
   endpoint:
     health:
       show-details: never
-      enabled: true

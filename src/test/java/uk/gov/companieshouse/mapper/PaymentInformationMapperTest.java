@@ -3,7 +3,6 @@ package uk.gov.companieshouse.mapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
@@ -15,7 +14,7 @@ import static org.junit.Assert.assertNull;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 
 @ExtendWith(MockitoExtension.class)
-public class PaymentInformationMapperTest {
+class PaymentInformationMapperTest {
     private static final String ACCOUNT_NUMBER = "222222";
     private static final String PAYMENT_REFERENCE = "TEST_REFERENCE";
 

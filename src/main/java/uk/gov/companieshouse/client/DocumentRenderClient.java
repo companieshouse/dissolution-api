@@ -9,7 +9,11 @@ import uk.gov.companieshouse.config.DocumentRenderConfig;
 import uk.gov.companieshouse.exception.DocumentRenderException;
 import uk.gov.companieshouse.model.dto.documentrender.DissolutionCertificateData;
 
-import static uk.gov.companieshouse.model.Constants.*;
+import static uk.gov.companieshouse.model.Constants.HEADER_AUTHORIZATION;
+import static uk.gov.companieshouse.model.Constants.HEADER_ACCEPT;
+import static uk.gov.companieshouse.model.Constants.HEADER_CONTENT_TYPE;
+import static uk.gov.companieshouse.model.Constants.CONTENT_TYPE_PDF;
+import static uk.gov.companieshouse.model.Constants.CONTENT_TYPE_HTML;
 
 @Service
 public class DocumentRenderClient {
@@ -39,14 +43,14 @@ public class DocumentRenderClient {
                 .header(HEADER_ACCEPT, CONTENT_TYPE_PDF)
                 .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_HTML)
                 .header(HEADER_LOCATION, location)
-                .body(Mono.just(asJsonString(data)), String.class)
-                .exchange()
-                .block()
-                .headers()
-                .header(HEADER_LOCATION)
-                .stream()
-                .findAny()
-                .orElseThrow(() -> new RuntimeException("No location header returned from Document Render Service"));
+                .bodyValue(asJsonString(data))
+                .exchangeToMono(response -> {
+                    String headerValue = response.headers().header(HEADER_LOCATION).stream()
+                            .findAny()
+                            .orElseThrow(() -> new RuntimeException("No location header returned from Document Render Service"));
+                    return Mono.just(headerValue);
+                })
+                .block();
     }
 
     private String asJsonString(DissolutionCertificateData data) {
