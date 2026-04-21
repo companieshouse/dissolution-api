@@ -1,7 +1,5 @@
 package uk.gov.companieshouse.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -14,6 +12,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import uk.gov.companieshouse.config.ChipsConfig;
 import uk.gov.companieshouse.exception.ChipsNotAvailableException;
 import uk.gov.companieshouse.model.dto.chips.DissolutionChipsRequest;
@@ -83,7 +83,7 @@ public class ChipsClientTest {
     }
 
     @Test
-    void sendDissolutionToChips_sendsDissolutionRequestToChips() throws InterruptedException, JsonProcessingException {
+    void sendDissolutionToChips_sendsDissolutionRequestToChips() throws InterruptedException, JacksonException {
         final DissolutionChipsRequest request = generateDissolutionChipsRequest();
 
         mockBackEnd.enqueue(
@@ -125,7 +125,7 @@ public class ChipsClientTest {
         mockBackEnd.shutdown();
     }
 
-    private String asJsonString(Object obj) throws JsonProcessingException {
+    private String asJsonString(Object obj) throws JacksonException {
         return new ObjectMapper().writeValueAsString(obj);
     }
 }

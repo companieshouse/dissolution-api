@@ -1,12 +1,12 @@
 package uk.gov.companieshouse.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.chskafka.SendEmail;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
@@ -67,7 +67,7 @@ public class EmailClient {
 
             return response;
 
-        } catch(JsonProcessingException ex) {
+        } catch(JacksonException ex) {
             logger.error("Error creating payload", ex);
             throw new EmailSendException(ex.getMessage());
 

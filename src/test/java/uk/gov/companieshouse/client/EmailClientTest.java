@@ -1,10 +1,7 @@
 package uk.gov.companieshouse.client;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +12,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.chskafka.SendEmail;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
@@ -55,11 +54,8 @@ class EmailClientTest {
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(emailClient, "objectMapper", new ObjectMapper());
+        emailClient = new EmailClient("http://kafka:9092", internalApiClientSupplier, logger, new ObjectMapper());
     }
-
-    @AfterEach
-    void tearDown() {}
 
     @Test
     void givenValidPayload_whenSignatoryToSignEmailData_thenReturnSuccess() throws ApiErrorResponseException {
@@ -325,10 +321,10 @@ class EmailClientTest {
     }
 
     @Test
-    void givenInvalidPayload_whenConfirmationEmailClientThrowsJsonException_thenReturnError() throws JsonProcessingException {
+    void givenInvalidPayload_whenConfirmationEmailClientThrowsJsonException_thenReturnError() throws JacksonException {
         // Arrange:
         ObjectMapper mockObjectMapper = mock(ObjectMapper.class);
-        when(mockObjectMapper.writeValueAsString(any())).thenThrow(JsonProcessingException.class);
+        when(mockObjectMapper.writeValueAsString(any())).thenThrow(JacksonException.class);
 
         ReflectionTestUtils.setField(emailClient, "objectMapper", mockObjectMapper);
 

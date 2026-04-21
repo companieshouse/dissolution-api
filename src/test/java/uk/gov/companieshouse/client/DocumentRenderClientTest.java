@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -13,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import tools.jackson.databind.ObjectMapper;
 import uk.gov.companieshouse.config.DocumentRenderConfig;
 import uk.gov.companieshouse.model.dto.documentrender.DissolutionCertificateData;
 
@@ -41,13 +41,14 @@ public class DocumentRenderClientTest {
     private DocumentRenderConfig documentRenderConfig;
 
     @BeforeAll
-    public static void setUp() throws IOException {
+    static void setUp() throws IOException {
         mockBackEnd = new MockWebServer();
         mockBackEnd.start();
     }
 
     @BeforeEach
     void initialize() {
+        client = new DocumentRenderClient(documentRenderConfig, new ObjectMapper());
         String baseUrl = String.format("http://localhost:%s", mockBackEnd.getPort());
 
         when(documentRenderConfig.getDocumentRenderHost()).thenReturn(baseUrl);
@@ -96,7 +97,7 @@ public class DocumentRenderClientTest {
     }
 
     @AfterAll
-    public static void tearDown() throws IOException {
+    static void tearDown() throws IOException {
         mockBackEnd.shutdown();
     }
 }

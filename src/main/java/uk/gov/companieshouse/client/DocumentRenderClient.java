@@ -1,10 +1,10 @@
 package uk.gov.companieshouse.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import uk.gov.companieshouse.config.DocumentRenderConfig;
 import uk.gov.companieshouse.exception.DocumentRenderException;
 import uk.gov.companieshouse.model.dto.documentrender.DissolutionCertificateData;
@@ -28,8 +28,11 @@ public class DocumentRenderClient {
 
     private final DocumentRenderConfig config;
 
-    public DocumentRenderClient(DocumentRenderConfig config) {
+    private final ObjectMapper objectMapper;
+
+    public DocumentRenderClient(DocumentRenderConfig config, ObjectMapper objectMapper) {
         this.config = config;
+        this.objectMapper = objectMapper;
     }
 
     public String generateAndStoreDocument(DissolutionCertificateData data, String templateName, String location) {
@@ -55,8 +58,8 @@ public class DocumentRenderClient {
 
     private String asJsonString(DissolutionCertificateData data) {
         try {
-            return new ObjectMapper().writeValueAsString(data);
-        } catch (JsonProcessingException ex) {
+            return this.objectMapper.writeValueAsString(data);
+        } catch (JacksonException ex) {
             throw new DocumentRenderException("Failed to write dissolution certificate data to JSON string");
         }
     }

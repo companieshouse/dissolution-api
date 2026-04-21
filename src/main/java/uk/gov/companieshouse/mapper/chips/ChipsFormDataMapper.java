@@ -1,10 +1,10 @@
 package uk.gov.companieshouse.mapper.chips;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.JacksonException;
+import tools.jackson.dataformat.xml.XmlMapper;
 import uk.gov.companieshouse.exception.ChipsMapperException;
 import uk.gov.companieshouse.model.db.dissolution.Company;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
@@ -150,7 +150,7 @@ public class ChipsFormDataMapper {
     private String toXml(ChipsFormData form) {
         try {
             return xmlMapper.writeValueAsString(form);
-        } catch (JsonProcessingException ex) {
+        } catch (JacksonException ex) {
             throw new ChipsMapperException(String.format("Failed to map to CHIPS request for company %s", form.getCorporateBody().getIncorporationNumber()), ex);
         }
     }
