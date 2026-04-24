@@ -138,7 +138,7 @@ public class DissolutionRequestMapperTest {
 
         assertEquals(2, dissolution.getData().getDirectors().size());
 
-        final DissolutionDirector dissolutionDirector1 = dissolution.getData().getDirectors().get(0);
+        final DissolutionDirector dissolutionDirector1 = dissolution.getData().getDirectors().getFirst();
         assertEquals(officerId1, dissolutionDirector1.getOfficerId());
         assertEquals("Director who will sign themselves", dissolutionDirector1.getName());
         assertEquals("director@mail.com", dissolutionDirector1.getEmail());

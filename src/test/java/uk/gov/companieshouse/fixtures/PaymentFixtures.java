@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.fixtures;
 
+import org.jspecify.annotations.NonNull;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
 import uk.gov.companieshouse.model.db.payment.RefundInformation;
 import uk.gov.companieshouse.model.dto.payment.PaymentDescriptionValues;
@@ -29,6 +30,17 @@ public class PaymentFixtures {
         paymentLinks.setSelf("/dissolution-request/" + companyNumber + "/payment");
         paymentLinks.setDissolutionRequest("/dissolution-request/" + companyNumber);
 
+        PaymentItem item = createPaymentItem();
+
+        response.setETag(eTag);
+        response.setKind("dissolution-request#payment");
+        response.setLinks(paymentLinks);
+        response.setItems(List.of(item));
+
+        return response;
+    }
+
+    private static @NonNull PaymentItem createPaymentItem() {
         PaymentItem item = new PaymentItem();
         item.setDescription("Dissolution application");
         item.setDescriptionIdentifier("Dissolution application");
@@ -39,13 +51,7 @@ public class PaymentFixtures {
         item.setClassOfPayment(List.of("data-maintenance"));
         item.setKind("dissolution-request#payment-details");
         item.setResourceKind("dissolution-request#dissolution-request");
-
-        response.setETag(eTag);
-        response.setKind("dissolution-request#payment");
-        response.setLinks(paymentLinks);
-        response.setItems(List.of(item));
-
-        return response;
+        return item;
     }
 
     public static PaymentPatchRequest generatePaymentPatchRequest() {

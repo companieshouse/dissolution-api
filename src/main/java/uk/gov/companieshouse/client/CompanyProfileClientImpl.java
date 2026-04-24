@@ -9,21 +9,18 @@ import uk.gov.companieshouse.api.sdk.ApiClientService;
 import uk.gov.companieshouse.exception.CompanyProfileServiceException;
 import uk.gov.companieshouse.exception.ServiceUnavailableException;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.service.dissolution.validator.CompanyClosableValidator;
 
 import java.io.IOException;
 
 @Service
 public class CompanyProfileClientImpl implements CompanyProfileClient {
 
-    private final CompanyClosableValidator validator;
     private final ApiClientService apiClientService;
     private final Logger logger;
 
-    public CompanyProfileClientImpl(ApiClientService apiClientService, Logger logger, CompanyClosableValidator validator) {
+    public CompanyProfileClientImpl(ApiClientService apiClientService, Logger logger) {
         this.apiClientService = apiClientService;
         this.logger = logger;
-        this.validator = validator;
     }
 
     /**

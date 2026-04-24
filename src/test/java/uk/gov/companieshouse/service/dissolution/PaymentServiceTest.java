@@ -25,7 +25,7 @@ import static uk.gov.companieshouse.model.Constants.PAYMENT_RESOURCE_KIND;
 
 
 @ExtendWith(MockitoExtension.class)
-public class PaymentServiceTest {
+class PaymentServiceTest {
 
     @Mock
     private FeeConfig feeConfig;
@@ -34,7 +34,7 @@ public class PaymentServiceTest {
     private PaymentService service;
 
     @Test
-    public void get_getsPaymentUIData_returnsGetResponse() {
+    void get_getsPaymentUIData_returnsGetResponse() {
         String companyNumber = "12345678";
         String applicationReference = "ABC123";
         String companyName = "Some company name";
@@ -56,18 +56,18 @@ public class PaymentServiceTest {
         assertEquals(companyNumber, result.getCompanyNumber());
         assertEquals("/dissolution-request/" + applicationReference + "/payment", result.getLinks().getSelf());
         assertEquals("/dissolution-request/" + companyNumber, result.getLinks().getDissolutionRequest());
-        assertEquals("Apply to strike off and dissolve a company: " + companyName + " (" + companyNumber + ")", result.getItems().get(0).getDescription());
-        assertEquals(PAYMENT_DESCRIPTION_IDENTIFIER, result.getItems().get(0).getDescriptionIdentifier());
-        assertNotNull(result.getItems().get(0).getDescriptionValues());
-        assertEquals(PAYMENT_AMOUNT, result.getItems().get(0).getAmount());
-        assertEquals(PAYMENT_AVAILABLE_PAYMENT_METHOD, result.getItems().get(0).getAvailablePaymentMethods().get(0));
-        assertEquals(PAYMENT_CLASS_OF_PAYMENT, result.getItems().get(0).getClassOfPayment().get(0));
-        assertEquals(PAYMENT_ITEM_KIND, result.getItems().get(0).getKind());
-        assertEquals(PAYMENT_RESOURCE_KIND, result.getItems().get(0).getResourceKind());
+        assertEquals("Apply to strike off and dissolve a company: " + companyName + " (" + companyNumber + ")", result.getItems().getFirst().getDescription());
+        assertEquals(PAYMENT_DESCRIPTION_IDENTIFIER, result.getItems().getFirst().getDescriptionIdentifier());
+        assertNotNull(result.getItems().getFirst().getDescriptionValues());
+        assertEquals(PAYMENT_AMOUNT, result.getItems().getFirst().getAmount());
+        assertEquals(PAYMENT_AVAILABLE_PAYMENT_METHOD, result.getItems().getFirst().getAvailablePaymentMethods().getFirst());
+        assertEquals(PAYMENT_CLASS_OF_PAYMENT, result.getItems().getFirst().getClassOfPayment().getFirst());
+        assertEquals(PAYMENT_ITEM_KIND, result.getItems().getFirst().getKind());
+        assertEquals(PAYMENT_RESOURCE_KIND, result.getItems().getFirst().getResourceKind());
     }
 
     @Test
-    public void get_getsPaymentUIData_returnsProperCodeForDS01() {
+    void get_getsPaymentUIData_returnsProperCodeForDS01() {
         String companyNumber = "12345678";
 
         DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
@@ -77,11 +77,11 @@ public class PaymentServiceTest {
 
         final PaymentGetResponse result = service.get(dissolutionGetResponse);
 
-        assertEquals(ApplicationType.DS01, result.getItems().get(0).getProductType());
+        assertEquals(ApplicationType.DS01, result.getItems().getFirst().getProductType());
     }
 
     @Test
-    public void get_getsPaymentUIData_returnsProperCodeForLLDS01() {
+    void get_getsPaymentUIData_returnsProperCodeForLLDS01() {
         String companyNumber = "12345678";
 
         DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
@@ -91,7 +91,7 @@ public class PaymentServiceTest {
 
         final PaymentGetResponse result = service.get(dissolutionGetResponse);
 
-        System.out.println(result.getItems().get(0).getProductType());
-        assertEquals(ApplicationType.LLDS01, result.getItems().get(0).getProductType());
+        System.out.println(result.getItems().getFirst().getProductType());
+        assertEquals(ApplicationType.LLDS01, result.getItems().getFirst().getProductType());
     }
 }

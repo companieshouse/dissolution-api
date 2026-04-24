@@ -1,9 +1,9 @@
 package uk.gov.companieshouse.model.dto.chips.xml;
 
 
-import tools.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import com.fasterxml.jackson.annotation.JsonRootName;
 
-@JacksonXmlRootElement(localName = "officer")
+@JsonRootName("officer")
 public class ChipsOfficer {
 
     private ChipsPersonName personName;

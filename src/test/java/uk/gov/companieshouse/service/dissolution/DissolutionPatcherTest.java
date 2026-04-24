@@ -15,7 +15,6 @@ import uk.gov.companieshouse.mapper.DissolutionSubmissionMapper;
 import uk.gov.companieshouse.mapper.PaymentInformationMapper;
 import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
-import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionSubmission;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
@@ -29,7 +28,9 @@ import uk.gov.companieshouse.service.dissolution.certificate.DissolutionCertific
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.*;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.*;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentInformation;
@@ -72,16 +73,14 @@ class DissolutionPatcherTest {
     private Dissolution dissolution;
     private DissolutionPatchResponse response;
     private DirectorApproval approval;
-    private DissolutionCertificate certificate;
     private ArgumentCaptor<Dissolution> dissolutionCaptor;
 
     @BeforeEach
     void init() {
         dissolution = DissolutionFixtures.generateDissolution();
-        dissolution.getData().getDirectors().get(0).setOfficerId(OFFICER_ID);
+        dissolution.getData().getDirectors().getFirst().setOfficerId(OFFICER_ID);
         response = DissolutionFixtures.generateDissolutionPatchResponse();
         approval = DissolutionFixtures.generateDirectorApproval();
-        certificate = generateDissolutionCertificate();
         dissolutionCaptor = ArgumentCaptor.forClass(Dissolution.class);
     }
 
@@ -99,7 +98,7 @@ class DissolutionPatcherTest {
 
         verify(repository).save(dissolutionCaptor.capture());
 
-        assertSame(dissolutionCaptor.getValue().getData().getDirectors().get(0).getDirectorApproval(), approval);
+        assertSame(dissolutionCaptor.getValue().getData().getDirectors().getFirst().getDirectorApproval(), approval);
     }
 
     @Test
@@ -153,25 +152,6 @@ class DissolutionPatcherTest {
                 dissolutionCaptor.getValue().getData().getApplication().getStatus()
         );
     }
-
-    /**@Test
-    void patch_generatesCertificateAndSavesInDatabase_ifAllDirectorHaveApproved() throws DissolutionNotFoundException {
-        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
-        body.setIpAddress(IP_ADDRESS);
-        body.setOfficerId(OFFICER_ID);
-
-        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
-        when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
-        when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
-        when(certificateGenerator.generateDissolutionCertificate(dissolution)).thenReturn(certificate);
-
-        patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, body);
-
-        verify(certificateGenerator).generateDissolutionCertificate(dissolution);
-        verify(repository).save(dissolutionCaptor.capture());
-
-        assertEquals(certificate, dissolutionCaptor.getValue().getCertificate());
-    }**/
 
     @Test
     void patch_doesNotUpdateStatus_ifNotAllDirectorHaveApproved() throws DissolutionNotFoundException {

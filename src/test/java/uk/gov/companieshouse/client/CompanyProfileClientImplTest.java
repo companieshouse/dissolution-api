@@ -55,7 +55,7 @@ class CompanyProfileClientImplTest {
 
     @BeforeEach
     void setUp() {
-        companyProfileClient = new CompanyProfileClientImpl(apiClientService, logger, validator);
+        companyProfileClient = new CompanyProfileClientImpl(apiClientService, logger);
     }
 
     @Test

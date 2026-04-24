@@ -44,7 +44,7 @@ class DissolutionDirectorServiceTest {
     @Test
     void checkPatchDirectorConstraints_returnsErrorString_whenDirectorIsNotPendingApproval() throws DissolutionNotFoundException {
         Dissolution dissolution = generateDissolution();
-        dissolution.getData().getDirectors().get(0).setDirectorApproval(new DirectorApproval());
+        dissolution.getData().getDirectors().getFirst().setDirectorApproval(new DirectorApproval());
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
 
@@ -56,7 +56,7 @@ class DissolutionDirectorServiceTest {
     @Test
     void checkPatchDirectorConstraints_returnsErrorString_whenDirectorIsEmailIsNotApplicant() throws DissolutionNotFoundException {
         Dissolution dissolution = generateDissolution();
-        dissolution.getData().getDirectors().get(0).setEmail(EMAIL);
+        dissolution.getData().getDirectors().getFirst().setEmail(EMAIL);
         dissolution.getCreatedBy().setEmail(EMAIL + "asd");
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
@@ -69,9 +69,9 @@ class DissolutionDirectorServiceTest {
     @Test
     void checkPatchDirectorConstraints_OptionalEmpty_ChecksPass() throws DissolutionNotFoundException {
         Dissolution dissolution = generateDissolution();
-        dissolution.getData().getDirectors().get(0).setEmail(EMAIL);
+        dissolution.getData().getDirectors().getFirst().setEmail(EMAIL);
         dissolution.getCreatedBy().setEmail(EMAIL);
-        dissolution.getData().getDirectors().get(0).setDirectorApproval(null);
+        dissolution.getData().getDirectors().getFirst().setDirectorApproval(null);
 
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
@@ -82,12 +82,13 @@ class DissolutionDirectorServiceTest {
     }
 
     @Test
-    void checkPatchDirectorConstraints_throwsException_WhenDissolutionNotFound() throws DissolutionNotFoundException {
+    void checkPatchDirectorConstraints_throwsException_WhenDissolutionNotFound() {
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
 
-        DissolutionNotFoundException thrown = assertThrows(DissolutionNotFoundException.class, () -> {
-            service.checkPatchDirectorConstraints(COMPANY_NUMBER, OFFICER_ID, EMAIL);
-        });
+        DissolutionNotFoundException thrown = assertThrows(
+                DissolutionNotFoundException.class,
+                () -> service.checkPatchDirectorConstraints(COMPANY_NUMBER, OFFICER_ID, EMAIL)
+        );
 
         assertNotNull(thrown);
     }

@@ -42,10 +42,10 @@ public class DissolutionTokenPermissionsInterceptor implements HandlerIntercepto
         return tokenPermissions.hasPermission(Permission.Key.COMPANY_NUMBER, companyNumber);
     }
 
+    @SuppressWarnings("unchecked")
     private String getCompanyNumber(HttpServletRequest request) {
-        return ((Map<String, String>) request
-                .getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE))
-                .get(PATH_VARIABLE_COMPANY_NUMBER);
+        Map<String, String> uriVariables = (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
+        return uriVariables.get(PATH_VARIABLE_COMPANY_NUMBER);
     }
 
     private boolean isAuthorisedToPerformDissolution(TokenPermissions tokenPermissions) {

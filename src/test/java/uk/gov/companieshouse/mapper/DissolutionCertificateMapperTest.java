@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.*;
 
 @ExtendWith(MockitoExtension.class)
-public class DissolutionCertificateMapperTest {
+class DissolutionCertificateMapperTest {
 
     private static final String CDN_HOST = "http://some-cdn-host";
 
@@ -34,7 +34,7 @@ public class DissolutionCertificateMapperTest {
     private DocumentRenderConfig config;
 
     @Test
-    public void mapToCertificateData_setsCdnInfo_fromConfig() {
+    void mapToCertificateData_setsCdnInfo_fromConfig() {
         final Dissolution dissolution = generateDissolution();
         dissolution.getData().setDirectors(Collections.emptyList());
 
@@ -46,7 +46,7 @@ public class DissolutionCertificateMapperTest {
     }
 
     @Test
-    public void mapToCertificateData_setsCompanyNameAndNumber_fromDissolution() {
+    void mapToCertificateData_setsCompanyNameAndNumber_fromDissolution() {
         final Dissolution dissolution = generateDissolution();
         dissolution.getCompany().setName("some company");
         dissolution.getCompany().setNumber("12345");
@@ -61,7 +61,7 @@ public class DissolutionCertificateMapperTest {
     }
 
     @Test
-    public void mapToCertificateData_setsDirectorInformation_fromDissolution() {
+    void mapToCertificateData_setsDirectorInformation_fromDissolution() {
         final Dissolution dissolution = generateDissolution();
 
         final DirectorApproval approvalOne = generateDirectorApproval();
@@ -88,7 +88,7 @@ public class DissolutionCertificateMapperTest {
 
         assertEquals(2, result.getDirectors().size());
 
-        final DissolutionCertificateDirector certificateDirector1 = result.getDirectors().get(0);
+        final DissolutionCertificateDirector certificateDirector1 = result.getDirectors().getFirst();
         assertEquals("Director One", certificateDirector1.getName());
         assertEquals("20-10-2020", certificateDirector1.getApprovalDate());
         assertNull(certificateDirector1.getOnBehalfName());
@@ -100,7 +100,7 @@ public class DissolutionCertificateMapperTest {
     }
 
     @Test
-    public void mapToDissolutionCertificate_extractsBucketAndKeyFromLocationUrl() {
+    void mapToDissolutionCertificate_extractsBucketAndKeyFromLocationUrl() {
         final String location = "s3://some-bucket/some-env/some-file.pdf";
 
         final DissolutionCertificate result = mapper.mapToDissolutionCertificate(location);

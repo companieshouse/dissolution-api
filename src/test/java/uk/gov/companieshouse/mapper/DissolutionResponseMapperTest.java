@@ -22,7 +22,7 @@ import static org.junit.Assert.assertNull;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionCertificate;
 import static uk.gov.companieshouse.model.Constants.DISSOLUTION_KIND;
 
-public class DissolutionResponseMapperTest {
+class DissolutionResponseMapperTest {
 
     private static final String COMPANY_NUMBER = "12345678";
     private static final String COMPANY_NAME = "Example Name";
@@ -36,7 +36,7 @@ public class DissolutionResponseMapperTest {
     private final DissolutionResponseMapper mapper = new DissolutionResponseMapper();
 
     @Test
-    public void mapToDissolutionCreateResponse_mapsDissolutionReference() {
+    void mapToDissolutionCreateResponse_mapsDissolutionReference() {
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
         dissolution.getData().getApplication().setReference("ABC123");
 
@@ -46,7 +46,7 @@ public class DissolutionResponseMapperTest {
     }
 
     @Test
-    public void mapToDissolutionCreateResponse_generatesLinks() {
+    void mapToDissolutionCreateResponse_generatesLinks() {
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
         dissolution.getCompany().setNumber("12345678");
         dissolution.getData().getApplication().setReference("ABC123");
@@ -58,7 +58,7 @@ public class DissolutionResponseMapperTest {
     }
 
     @Test
-    public void mapToDissolutionGetResponse_mapsToGetResponse() {
+    void mapToDissolutionGetResponse_mapsToGetResponse() {
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
 
         dissolution.getCompany().setName(COMPANY_NAME);
@@ -88,7 +88,7 @@ public class DissolutionResponseMapperTest {
     }
 
     @Test
-    public void mapToDissolutionGetResponse_mapsDirectorInDissolutionToDissolutionGetDirectors() {
+    void mapToDissolutionGetResponse_mapsDirectorInDissolutionToDissolutionGetDirectors() {
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
 
         final DissolutionDirector director1 = DissolutionFixtures.generateDissolutionDirector();
@@ -111,10 +111,10 @@ public class DissolutionResponseMapperTest {
 
         final DissolutionGetResponse result = mapper.mapToDissolutionGetResponse(dissolution);
 
-        assertEquals("abc123", result.getDirectors().get(0).getOfficerId());
-        assertEquals("Director who will sign themselves", result.getDirectors().get(0).getName());
-        assertEquals("director@mail.com", result.getDirectors().get(0).getEmail());
-        assertNull(result.getDirectors().get(0).getOnBehalfName());
+        assertEquals("abc123", result.getDirectors().getFirst().getOfficerId());
+        assertEquals("Director who will sign themselves", result.getDirectors().getFirst().getName());
+        assertEquals("director@mail.com", result.getDirectors().getFirst().getEmail());
+        assertNull(result.getDirectors().getFirst().getOnBehalfName());
         assertNotNull(result.getDirectors().get(0).getApprovedAt());
         assertEquals(expectedTimestamp1, result.getDirectors().get(0).getApprovedAt());
 
@@ -129,7 +129,7 @@ public class DissolutionResponseMapperTest {
     }
 
     @Test
-    public void mapToDissolutionGetResponse_setsCertificateFields_ifCertificateIsAvailable() {
+    void mapToDissolutionGetResponse_setsCertificateFields_ifCertificateIsAvailable() {
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
 
         final DissolutionCertificate certificate = generateDissolutionCertificate();
@@ -145,7 +145,7 @@ public class DissolutionResponseMapperTest {
     }
 
     @Test
-    public void mapToDissolutionGetResponse_doesNotSetCertificateFields_ifCertificateIsNotAvailable() {
+    void mapToDissolutionGetResponse_doesNotSetCertificateFields_ifCertificateIsNotAvailable() {
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
         dissolution.setCertificate(null);
 
@@ -156,7 +156,7 @@ public class DissolutionResponseMapperTest {
     }
 
     @Test
-    public void mapToDissolutionPatchResponse_mapsCompanyNumberAndReferenceToDissolutionLinks() {
+    void mapToDissolutionPatchResponse_mapsCompanyNumberAndReferenceToDissolutionLinks() {
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
 
         dissolution.getCompany().setNumber(COMPANY_NUMBER);

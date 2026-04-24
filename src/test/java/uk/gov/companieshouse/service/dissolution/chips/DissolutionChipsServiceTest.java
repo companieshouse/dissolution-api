@@ -16,14 +16,14 @@ import uk.gov.companieshouse.repository.DissolutionRepository;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolution;
 
 @ExtendWith(MockitoExtension.class)
-public class DissolutionChipsServiceTest {
+class DissolutionChipsServiceTest {
 
     @InjectMocks
     private DissolutionChipsService service;
@@ -40,10 +40,8 @@ public class DissolutionChipsServiceTest {
     @Mock
     private DissolutionRepository repository;
 
-    private ArgumentCaptor<Dissolution> dissolutionCaptor;
-
     @Test
-    public void isAvailable_returnsFalse_ifChipsIsNotAvailable() {
+    void isAvailable_returnsFalse_ifChipsIsNotAvailable() {
         when(client.isAvailable()).thenReturn(false);
 
         final boolean result = service.isAvailable();
@@ -52,7 +50,7 @@ public class DissolutionChipsServiceTest {
     }
 
     @Test
-    public void isAvailable_returnsTrue_ifChipsIsAvailable() {
+    void isAvailable_returnsTrue_ifChipsIsAvailable() {
         when(client.isAvailable()).thenReturn(true);
 
         final boolean result = service.isAvailable();
@@ -61,8 +59,8 @@ public class DissolutionChipsServiceTest {
     }
 
     @Test
-    public void submitDissolutionsToChips_getsDissolutionsAndSubmitsToChips() {
-        dissolutionCaptor = ArgumentCaptor.forClass(Dissolution.class);
+    void submitDissolutionsToChips_getsDissolutionsAndSubmitsToChips() {
+        ArgumentCaptor<Dissolution> dissolutionCaptor = ArgumentCaptor.forClass(Dissolution.class);
 
         PageRequest limit = PageRequest.of(0, 2, Sort.Direction.ASC, "payment.date_time");
         Dissolution dissolution1 = generateDissolution();

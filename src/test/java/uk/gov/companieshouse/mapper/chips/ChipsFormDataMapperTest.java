@@ -29,7 +29,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.fixtures.DissolutionFixtures.*;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDirectorApproval;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolution;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionDirector;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentInformation;
 
 @ExtendWith(MockitoExtension.class)
@@ -240,7 +242,7 @@ class ChipsFormDataMapperTest {
     }
 
     @Test
-    void mapToChipsFormDataXml_throwsChipsMapperException_whenXmlMappingFails() throws Exception {
+    void mapToChipsFormDataXml_throwsChipsMapperException_whenXmlMappingFails() {
         when(xmlMapper.writeValueAsString(any())).thenThrow(new JacksonException("XML error") {});
         dissolution.getCompany().setNumber(COMPANY_NUMBER);
         ChipsMapperException ex = org.junit.jupiter.api.Assertions.assertThrows(

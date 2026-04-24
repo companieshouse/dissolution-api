@@ -1,10 +1,10 @@
 package uk.gov.companieshouse.model.dto.chips.xml;
 
 
+import com.fasterxml.jackson.annotation.JsonRootName;
 import tools.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import tools.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
-@JacksonXmlRootElement(localName = "form")
+@JsonRootName("form")
 public class ChipsFormData {
 
     @JacksonXmlProperty(isAttribute = true)

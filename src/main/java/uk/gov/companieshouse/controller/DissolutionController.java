@@ -43,6 +43,7 @@ import java.util.Optional;
 
 import static uk.gov.companieshouse.util.EricHelper.getEmail;
 
+@SuppressWarnings("UastIncorrectHttpHeaderInspection")
 @RestController
 @RequestMapping("/dissolution-request/{company-number}")
 public class DissolutionController {
@@ -124,7 +125,7 @@ public class DissolutionController {
                 .getByCompanyNumber(companyNumber)
                 .orElseThrow(NotFoundException::new);
         String paymentRef = dissolutionGetResponse.getPaymentReference();
-        if ( paymentRef != null && !paymentRef.equals("") && dissolutionGetResponse.getApplicationStatus().equals(ApplicationStatus.PENDING_PAYMENT)) {
+        if ( paymentRef != null && !paymentRef.isEmpty() && dissolutionGetResponse.getApplicationStatus().equals(ApplicationStatus.PENDING_PAYMENT)) {
             // payment could be complete, we need to get up-to-date status to be sure
             String paymentStatus = paymentService.getPaymentStatus(dissolutionGetResponse.getPaymentReference());
             if (paymentStatus == null) {

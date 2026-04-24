@@ -13,8 +13,6 @@ import java.util.Optional;
 @Repository
 public interface DissolutionRepository extends MongoRepository<Dissolution, String> {
 
-    Dissolution insert(Dissolution dissolution);
-
     @Query("{'company.number': ?0, 'active' : true}")
     Optional<Dissolution> findByCompanyNumber(String companyNumber);
 
