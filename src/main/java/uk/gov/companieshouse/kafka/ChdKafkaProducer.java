@@ -11,6 +11,9 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+/**
+ * This class appears to not be used, so we could potentially remove it.
+ */
 public class ChdKafkaProducer {
 
     private final KafkaProducer<String, byte[]> kafkaProducer;
@@ -52,32 +55,30 @@ public class ChdKafkaProducer {
 
     /**
      * Send a message to a topic in Kafka.
-     *
+     * <p>
      * The data in the message is sent to Kafka in a byte array
      * to avoid unrecognised encoding characters which can occur
      * when Strings are used with Kafka.
-     *
      */
     public void send(Message msg) throws ExecutionException, InterruptedException {
 
-        ProducerRecord<String, byte[]> record = getProducerRecordFromMessage(msg);
+        ProducerRecord<String, byte[]> producerRecord = getProducerRecordFromMessage(msg);
 
-        kafkaProducer.send(record).get();
+        kafkaProducer.send(producerRecord).get();
     }
 
     /**
      * Send a message to a topic in Kafka, and return a {@link Future < RecordMetadata >} for processing manually.
-     *
+     * <p>
      * The data in the message is sent to Kafka in a byte array
      * to avoid unrecognised encoding characters which can occur
      * when Strings are used with Kafka.
-     *
      */
     public Future<RecordMetadata> sendAndReturnFuture(Message msg) {
 
-        ProducerRecord<String, byte[]> record = getProducerRecordFromMessage(msg);
+        ProducerRecord<String, byte[]> producerRecord = getProducerRecordFromMessage(msg);
 
-        return kafkaProducer.send(record);
+        return kafkaProducer.send(producerRecord);
     }
 
     private ProducerRecord<String, byte[]> getProducerRecordFromMessage(Message msg) {

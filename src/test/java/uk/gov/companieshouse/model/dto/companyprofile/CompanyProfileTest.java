@@ -68,6 +68,7 @@ class CompanyProfileTest {
         assertNotEquals(a, b);
     }
 
+    @SuppressWarnings("AssertBetweenInconvertibleTypes")
     @Test
     void equals_returnsFalseWhenComparedWithNullOrDifferentType() {
         CompanyProfile profile = new CompanyProfile.Builder().build();

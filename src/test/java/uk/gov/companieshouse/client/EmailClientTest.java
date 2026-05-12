@@ -24,7 +24,13 @@ import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.exception.EmailSendException;
 import uk.gov.companieshouse.fixtures.EmailFixtures;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.model.dto.email.*;
+import uk.gov.companieshouse.model.dto.email.ApplicationAcceptedEmailData;
+import uk.gov.companieshouse.model.dto.email.ApplicationRejectedEmailData;
+import uk.gov.companieshouse.model.dto.email.EmailDocument;
+import uk.gov.companieshouse.model.dto.email.PendingPaymentEmailData;
+import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
+import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
+import uk.gov.companieshouse.model.dto.email.SupportNotificationEmailData;
 
 import java.util.Map;
 import java.util.function.Supplier;
@@ -34,8 +40,14 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class EmailClientTest {

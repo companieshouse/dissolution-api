@@ -12,12 +12,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-public class DissolutionVerdictMapperTest {
+class DissolutionVerdictMapperTest {
 
     private final DissolutionVerdictMapper dissolutionVerdictMapper = new DissolutionVerdictMapper();
 
     @Test
-    public void mapToDissolutionVerdict_mapsToAcceptedDissolutionVerdict() {
+    void mapToDissolutionVerdict_mapsToAcceptedDissolutionVerdict() {
         ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
 
         final DissolutionVerdict dissolutionVerdict = dissolutionVerdictMapper.mapToDissolutionVerdict(chipsResponseCreateRequest);
@@ -28,7 +28,7 @@ public class DissolutionVerdictMapperTest {
     }
 
     @Test
-    public void mapToDissolutionVerdict_mapsToRejectedDissolutionVerdict() {
+    void mapToDissolutionVerdict_mapsToRejectedDissolutionVerdict() {
         ChipsResponseCreateRequest chipsResponseCreateRequest = ChipsFixtures.generateChipsResponseCreateRequest();
         chipsResponseCreateRequest.setStatus(VerdictResult.REJECTED);
         chipsResponseCreateRequest.setRejectReasons(Arrays.array(ChipsFixtures.generateChipsRejectReason()));
@@ -36,9 +36,9 @@ public class DissolutionVerdictMapperTest {
         final DissolutionVerdict dissolutionVerdict = dissolutionVerdictMapper.mapToDissolutionVerdict(chipsResponseCreateRequest);
 
         assertEquals(VerdictResult.REJECTED, dissolutionVerdict.getResult());
-        assertEquals(DissolutionFixtures.generateDissolutionRejectReason().getId(), dissolutionVerdict.getRejectReasons().get(0).getId());
-        assertEquals(DissolutionFixtures.generateDissolutionRejectReason().getDescription(), dissolutionVerdict.getRejectReasons().get(0).getDescription());
-        assertEquals(DissolutionFixtures.generateDissolutionRejectReason().getTextEnglish(), dissolutionVerdict.getRejectReasons().get(0).getTextEnglish());
+        assertEquals(DissolutionFixtures.generateDissolutionRejectReason().getId(), dissolutionVerdict.getRejectReasons().getFirst().getId());
+        assertEquals(DissolutionFixtures.generateDissolutionRejectReason().getDescription(), dissolutionVerdict.getRejectReasons().getFirst().getDescription());
+        assertEquals(DissolutionFixtures.generateDissolutionRejectReason().getTextEnglish(), dissolutionVerdict.getRejectReasons().getFirst().getTextEnglish());
         assertNotNull(dissolutionVerdict.getDateTime());
     }
 }

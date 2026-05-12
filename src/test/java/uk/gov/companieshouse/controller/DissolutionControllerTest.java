@@ -43,7 +43,7 @@ import static uk.gov.companieshouse.fixtures.CompanyProfileApiFixtures.generateC
 import static uk.gov.companieshouse.fixtures.CompanyProfileFixtures.generateCompanyProfile;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.*;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "UastIncorrectHttpHeaderInspection"})
 @WebMvcTest(DissolutionController.class)
 class DissolutionControllerTest {
 

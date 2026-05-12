@@ -6,7 +6,6 @@ import org.springframework.web.reactive.function.client.WebClientException;
 
 import uk.gov.companieshouse.config.FeeConfig;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.mapper.RefundInformationMapper;
 import uk.gov.companieshouse.mapper.RefundRequestMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionVerdict;
@@ -15,8 +14,8 @@ import uk.gov.companieshouse.service.payment.RefundService;
 
 @Service
 public class DissolutionRefundService {
+
     private final RefundRequestMapper refundRequestMapper;
-    private final RefundInformationMapper refundInformationMapper;
     private final RefundService refundService;
     private final DissolutionEmailService emailService;
     private final Logger logger;
@@ -25,14 +24,12 @@ public class DissolutionRefundService {
     @Autowired
     public DissolutionRefundService(
             RefundRequestMapper refundRequestMapper,
-            RefundInformationMapper refundInformationMapper,
             RefundService refundService,
             DissolutionEmailService emailService,
             Logger logger,
             FeeConfig feeConfig
     ) {
         this.refundRequestMapper = refundRequestMapper;
-        this.refundInformationMapper = refundInformationMapper;
         this.refundService = refundService;
         this.emailService = emailService;
         this.logger = logger;

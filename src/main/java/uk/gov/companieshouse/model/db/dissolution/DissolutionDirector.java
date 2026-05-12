@@ -48,6 +48,7 @@ public class DissolutionDirector {
         this.onBehalfName = onBehalfName;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean hasDirectorApproval() {
         return approval != null;
     }

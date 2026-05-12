@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
         this.logger = logger;
     }
 
-    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_CONTENT)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Map<String, String> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpServletRequest request) {
         final Map<String, String> validationErrors = ex

@@ -58,18 +58,18 @@ public class DissolutionChipsMapperTest {
         verify(formDataMapper).mapToChipsFormDataXml(dissolution);
 
         assertEquals(1, request.getForms().size());
-        assertEquals(DISSOLUTION_BARCODE, request.getForms().get(0).getBarcode());
-        assertEquals("some xml", decode(request.getForms().get(0).getXml()));
+        assertEquals(DISSOLUTION_BARCODE, request.getForms().getFirst().getBarcode());
+        assertEquals("some xml", decode(request.getForms().getFirst().getXml()));
     }
 
     @Test
     public void mapToDissolutionChipsRequest_generatesTheFormAttachmentsCorrectly() {
         final DissolutionChipsRequest request = mapper.mapToDissolutionChipsRequest(dissolution, CERTIFICATE_CONTENTS);
 
-        assertEquals(1, request.getForms().get(0).getAttachments().size());
-        assertEquals("application/pdf", request.getForms().get(0).getAttachments().get(0).getMimeType());
-        assertEquals("FORM IMAGE PDF", request.getForms().get(0).getAttachments().get(0).getCategory());
-        assertEquals(new String(CERTIFICATE_CONTENTS), decode(request.getForms().get(0).getAttachments().get(0).getData()));
+        assertEquals(1, request.getForms().getFirst().getAttachments().size());
+        assertEquals("application/pdf", request.getForms().getFirst().getAttachments().getFirst().getMimeType());
+        assertEquals("FORM IMAGE PDF", request.getForms().getFirst().getAttachments().getFirst().getCategory());
+        assertEquals(new String(CERTIFICATE_CONTENTS), decode(request.getForms().getFirst().getAttachments().getFirst().getData()));
     }
 
     private String decode(String encoded) {

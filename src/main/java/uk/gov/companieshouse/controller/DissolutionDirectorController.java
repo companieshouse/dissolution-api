@@ -20,6 +20,7 @@ import java.util.Optional;
 
 import static uk.gov.companieshouse.util.EricHelper.getEmail;
 
+@SuppressWarnings("UastIncorrectHttpHeaderInspection")
 @RestController
 @RequestMapping("/dissolution-request/{company-number}/directors/{director-id}")
 public class DissolutionDirectorController {

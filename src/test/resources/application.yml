@@ -1,3 +1,4 @@
+#file: noinspection GrazieInspectionRunner,GrazieInspectionRunner,GrazieInspectionRunner,GrazieInspectionRunner
 api:
   key: some-api-key
   url: http://api

@@ -27,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static uk.gov.companieshouse.fixtures.DissolutionDirectorFixtures.generateDissolutionPatchDirectorRequest;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionDirectorPatchResponse;
 
+@SuppressWarnings("UastIncorrectHttpHeaderInspection")
 @WebMvcTest(DissolutionDirectorController.class)
 class DissolutionDirectorControllerTest {
 
