@@ -54,7 +54,7 @@ public class DissolutionDirectorPatcher {
 
         if (hasDataChanged(director, body)) {
 
-            director.setEmail(body.getEmail());
+            director.setEmail(body.getEmail().trim().toLowerCase());
             director.setOnBehalfName(body.getOnBehalfName());
 
             this.repository.save(dissolution);
