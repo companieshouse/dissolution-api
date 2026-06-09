@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.fixtures;
 
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
+import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 
 public class DissolutionDirectorTestDataBuilder {
 
@@ -8,6 +9,7 @@ public class DissolutionDirectorTestDataBuilder {
     private String name = "DOE, John James";
     private String email = "john@doe.com";
     private String onBehalfName = null;
+    private DirectorApproval directorApproval = null;
 
     public static DissolutionDirectorTestDataBuilder aDissolutionDirector() {
         return new DissolutionDirectorTestDataBuilder();
@@ -33,12 +35,18 @@ public class DissolutionDirectorTestDataBuilder {
         return this;
     }
 
+    public DissolutionDirectorTestDataBuilder withDirectorApproval(DirectorApproval directorApproval) {
+        this.directorApproval = directorApproval;
+        return this;
+    }
+
     public DissolutionDirector build() {
         final DissolutionDirector director = new DissolutionDirector();
         director.setOfficerId(officerId);
         director.setName(name);
         director.setEmail(email);
         director.setOnBehalfName(onBehalfName);
+        director.setDirectorApproval(directorApproval);
         return director;
     }
 }

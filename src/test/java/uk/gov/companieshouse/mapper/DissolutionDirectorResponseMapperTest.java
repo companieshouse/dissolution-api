@@ -1,12 +1,12 @@
 package uk.gov.companieshouse.mapper;
 
 import org.junit.jupiter.api.Test;
-import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionLinks;
 
 import static org.junit.Assert.assertEquals;
+import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 
 class DissolutionDirectorResponseMapperTest {
 
@@ -17,10 +17,10 @@ class DissolutionDirectorResponseMapperTest {
 
     @Test
     void mapToDissolutionDirectorPatchResponse_mapsCompanyNumberAndReferenceToDissolutionLinks() {
-        final Dissolution dissolution = DissolutionFixtures.generateDissolution();
-
-        dissolution.getCompany().setNumber(COMPANY_NUMBER);
-        dissolution.getData().getApplication().setReference(REFERENCE);
+        final Dissolution dissolution = aDissolution()
+                .withCompanyNumber(COMPANY_NUMBER)
+                .withApplicationReference(REFERENCE)
+                .build();
 
         final DissolutionDirectorPatchResponse result = directorMapper.mapToDissolutionDirectorPatchResponse(dissolution);
 

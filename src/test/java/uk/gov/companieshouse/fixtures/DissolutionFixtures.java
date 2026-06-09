@@ -11,7 +11,6 @@ import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionRejectReason;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionSubmission;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionVerdict;
-import uk.gov.companieshouse.model.db.payment.PaymentInformation;
 import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
@@ -78,18 +77,7 @@ public class DissolutionFixtures {
     }
 
     public static Dissolution generateDissolution() {
-        final Dissolution dissolution = new Dissolution();
-
-        dissolution.setModifiedDateTime(LocalDateTime.now());
-        dissolution.setData(generateDissolutionData());
-        dissolution.setCompany(generateCompany());
-        dissolution.setCreatedBy(generateCreatedBy());
-        dissolution.setSubmission(new DissolutionSubmission());
-        dissolution.setPaymentInformation(new PaymentInformation());
-        dissolution.setVerdict(new DissolutionVerdict());
-        dissolution.setActive(true);
-
-        return dissolution;
+        return DissolutionTestDataBuilder.aDissolution().build();
     }
 
     public static DissolutionData generateDissolutionData() {
@@ -113,13 +101,7 @@ public class DissolutionFixtures {
     }
 
     public static DissolutionDirector generateDissolutionDirector() {
-        final DissolutionDirector director = new DissolutionDirector();
-
-        director.setOfficerId("abc123");
-        director.setName("DOE, John James");
-        director.setEmail("john@doe.com");
-
-        return director;
+        return DissolutionDirectorTestDataBuilder.aDissolutionDirector().build();
     }
 
     public static List<DissolutionDirector> generateDissolutionDirectorList() {

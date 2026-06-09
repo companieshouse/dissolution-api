@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.gov.companieshouse.fixtures.DissolutionDirectorFixtures.generateDissolutionPatchDirectorRequest;
+import static uk.gov.companieshouse.fixtures.DissolutionDirectorPatchRequestTestDataBuilder.aDissolutionDirectorPatchRequest;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionDirectorPatchResponse;
 
 @SuppressWarnings("UastIncorrectHttpHeaderInspection")
@@ -50,7 +50,7 @@ class DissolutionDirectorControllerTest {
 
     @Test
     void patchDissolutionDirectorRequest_returnsUnprocessableEntity_ifNoEmailProvided() throws Exception {
-        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
+        final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
         body.setEmail(null);
 
         assertPatchDirectorBodyValidation(body, "{'email':'must not be blank'}");
@@ -58,7 +58,7 @@ class DissolutionDirectorControllerTest {
 
     @Test
     void patchDissolutionDirectorRequest_returnsUnprocessableEntity_ifEmailIsWrongFormat() throws Exception {
-        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
+        final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
         body.setEmail("wrongemail");
 
         assertPatchDirectorBodyValidation(body, "{'email':'must be a well-formed email address'}");
@@ -66,7 +66,7 @@ class DissolutionDirectorControllerTest {
 
     @Test
     void patchDissolutionDirectorRequest_returnsNotFound_ifDirectorOrDissolutionDoesntExist() throws Exception {
-        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
+        final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
 
         when(service.doesDirectorExist(COMPANY_NUMBER, OFFICER_ID)).thenReturn(false);
 
@@ -82,7 +82,7 @@ class DissolutionDirectorControllerTest {
 
     @Test
     void patchDissolutionDirectorRequest_returnsBadRequest_ifDirectorNotPendingApproval() throws Exception {
-        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
+        final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
 
         when(service.doesDirectorExist(COMPANY_NUMBER, OFFICER_ID)).thenReturn(true);
         when(service.checkPatchDirectorConstraints(COMPANY_NUMBER, OFFICER_ID, EMAIL)).thenReturn(Optional.of("Director is not pending approval"));
@@ -98,7 +98,7 @@ class DissolutionDirectorControllerTest {
 
     @Test
     void patchDissolutionDirectorRequest_returnsBadRequest_ifPatchConstraintFail() throws Exception {
-        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
+        final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
 
         when(service.doesDirectorExist(COMPANY_NUMBER, OFFICER_ID)).thenReturn(true);
         when(service.checkPatchDirectorConstraints(COMPANY_NUMBER, OFFICER_ID, EMAIL)).thenReturn(Optional.of("Only the applicant can update signatory"));
@@ -114,7 +114,7 @@ class DissolutionDirectorControllerTest {
 
     @Test
     void patchDissolutionDirectorRequest_returnsOK_andPatchResponse_ifDirectorIsPatchedSuccessfully() throws Exception {
-        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
+        final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
 
         final DissolutionDirectorPatchResponse response = generateDissolutionDirectorPatchResponse();
 

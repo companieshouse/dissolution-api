@@ -32,9 +32,9 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.fixtures.DissolutionDirectorFixtures.generateDissolutionPatchDirectorRequest;
 import static uk.gov.companieshouse.fixtures.DissolutionDirectorPatchRequestTestDataBuilder.aDissolutionDirectorPatchRequest;
 import static uk.gov.companieshouse.fixtures.DissolutionDirectorTestDataBuilder.aDissolutionDirector;
+import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 
 @ExtendWith(MockitoExtension.class)
 class DissolutionDirectorPatcherTest {
@@ -62,15 +62,16 @@ class DissolutionDirectorPatcherTest {
 
     @BeforeEach
     void init() {
-        dissolution = DissolutionFixtures.generateDissolution();
-        dissolution.getData().getDirectors().getFirst().setOfficerId(OFFICER_ID);
+        dissolution = aDissolution()
+                .withOnlyDirector(aDissolutionDirector().withOfficerId(OFFICER_ID))
+                .build();
         directorResponse = DissolutionFixtures.generateDissolutionDirectorPatchResponse();
         dissolutionCaptor = ArgumentCaptor.forClass(Dissolution.class);
     }
 
     @Test
     void patch_updateSignatory_updatesSignatoryWithEmail_SavesInDatabaseAndSendsEmail() throws DissolutionNotFoundException {
-        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
+        final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
 
         body.setEmail(EMAIL);
         body.setOnBehalfName(null);
@@ -88,7 +89,7 @@ class DissolutionDirectorPatcherTest {
 
     @Test
     void patch_updateSignatory_updatesSignatoryWithEmailAndOnBehalfName_SavesInDatabaseAndSendsEmail() throws DissolutionNotFoundException {
-        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
+        final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
         dissolution.getData().getDirectors().getFirst().setEmail(EMAIL + "asd");
 
         body.setEmail(EMAIL);
@@ -107,7 +108,7 @@ class DissolutionDirectorPatcherTest {
 
     @Test
     void patch_updateSignatory_updatesSignatoryWithTheSameEmailButDifferentName_SavesInDatabaseAndSendsEmail() throws DissolutionNotFoundException {
-        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
+        final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
         dissolution.getData().getDirectors().getFirst().setEmail(EMAIL);
         dissolution.getData().getDirectors().getFirst().setOnBehalfName(null);
 
@@ -130,7 +131,7 @@ class DissolutionDirectorPatcherTest {
 
     @Test
     void patch_updateSignatory_updatesSignatoryWithTheSameEmailAndOnBehalfName_DoesNotSaveInDatabaseAndDoesNotSendEmail() throws DissolutionNotFoundException {
-        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
+        final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
         dissolution.getData().getDirectors().getFirst().setEmail(EMAIL);
         dissolution.getData().getDirectors().getFirst().setOnBehalfName(ON_BEHALF_NAME);
 
@@ -147,7 +148,7 @@ class DissolutionDirectorPatcherTest {
 
     @Test
     void patch_updateSignatory_updatesSignatoryWithTheSameEmailAndBothNullOnBehalfName_DoesNotSaveInDatabaseAndDoesNotSendEmail() throws DissolutionNotFoundException {
-        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
+        final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
         dissolution.getData().getDirectors().getFirst().setEmail(EMAIL);
         dissolution.getData().getDirectors().getFirst().setOnBehalfName(null);
 
@@ -164,7 +165,7 @@ class DissolutionDirectorPatcherTest {
 
     @Test
     void patch_updateSignatory_throwsExceptionWhenDirectorNotFound_DoesNotSaveInDatabaseAndDoesNotSendEmail() {
-        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
+        final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
         setExistingDirector(dissolution, aDissolutionDirector().withOfficerId("random"));
 
         body.setEmail(EMAIL);
