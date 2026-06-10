@@ -1,17 +1,20 @@
 package uk.gov.companieshouse.service.dissolution.director;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
+import uk.gov.companieshouse.fixtures.DissolutionDirectorTestDataBuilder;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.mapper.DissolutionDirectorResponseMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
-import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchResponse;
 import uk.gov.companieshouse.repository.DissolutionRepository;
@@ -20,10 +23,18 @@ import uk.gov.companieshouse.service.dissolution.DissolutionEmailService;
 import java.util.Collections;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-import static uk.gov.companieshouse.fixtures.DissolutionDirectorFixtures.generateDissolutionPatchDirectorRequest;
-import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionDirector;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.fixtures.DissolutionDirectorPatchRequestTestDataBuilder.aDissolutionDirectorPatchRequest;
+import static uk.gov.companieshouse.fixtures.DissolutionDirectorTestDataBuilder.aDissolutionDirector;
+import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 
 @ExtendWith(MockitoExtension.class)
 class DissolutionDirectorPatcherTest {
@@ -51,15 +62,16 @@ class DissolutionDirectorPatcherTest {
 
     @BeforeEach
     void init() {
-        dissolution = DissolutionFixtures.generateDissolution();
-        dissolution.getData().getDirectors().getFirst().setOfficerId(OFFICER_ID);
+        dissolution = aDissolution()
+                .withOnlyDirector(aDissolutionDirector().withOfficerId(OFFICER_ID))
+                .build();
         directorResponse = DissolutionFixtures.generateDissolutionDirectorPatchResponse();
         dissolutionCaptor = ArgumentCaptor.forClass(Dissolution.class);
     }
 
     @Test
     void patch_updateSignatory_updatesSignatoryWithEmail_SavesInDatabaseAndSendsEmail() throws DissolutionNotFoundException {
-        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
+        final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
 
         body.setEmail(EMAIL);
         body.setOnBehalfName(null);
@@ -77,7 +89,7 @@ class DissolutionDirectorPatcherTest {
 
     @Test
     void patch_updateSignatory_updatesSignatoryWithEmailAndOnBehalfName_SavesInDatabaseAndSendsEmail() throws DissolutionNotFoundException {
-        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
+        final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
         dissolution.getData().getDirectors().getFirst().setEmail(EMAIL + "asd");
 
         body.setEmail(EMAIL);
@@ -96,7 +108,7 @@ class DissolutionDirectorPatcherTest {
 
     @Test
     void patch_updateSignatory_updatesSignatoryWithTheSameEmailButDifferentName_SavesInDatabaseAndSendsEmail() throws DissolutionNotFoundException {
-        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
+        final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
         dissolution.getData().getDirectors().getFirst().setEmail(EMAIL);
         dissolution.getData().getDirectors().getFirst().setOnBehalfName(null);
 
@@ -119,7 +131,7 @@ class DissolutionDirectorPatcherTest {
 
     @Test
     void patch_updateSignatory_updatesSignatoryWithTheSameEmailAndOnBehalfName_DoesNotSaveInDatabaseAndDoesNotSendEmail() throws DissolutionNotFoundException {
-        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
+        final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
         dissolution.getData().getDirectors().getFirst().setEmail(EMAIL);
         dissolution.getData().getDirectors().getFirst().setOnBehalfName(ON_BEHALF_NAME);
 
@@ -136,7 +148,7 @@ class DissolutionDirectorPatcherTest {
 
     @Test
     void patch_updateSignatory_updatesSignatoryWithTheSameEmailAndBothNullOnBehalfName_DoesNotSaveInDatabaseAndDoesNotSendEmail() throws DissolutionNotFoundException {
-        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
+        final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
         dissolution.getData().getDirectors().getFirst().setEmail(EMAIL);
         dissolution.getData().getDirectors().getFirst().setOnBehalfName(null);
 
@@ -153,10 +165,8 @@ class DissolutionDirectorPatcherTest {
 
     @Test
     void patch_updateSignatory_throwsExceptionWhenDirectorNotFound_DoesNotSaveInDatabaseAndDoesNotSendEmail() {
-        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
-        DissolutionDirector director = generateDissolutionDirector();
-        director.setOfficerId("random");
-        dissolution.getData().setDirectors(Collections.singletonList(director));
+        final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
+        setExistingDirector(dissolution, aDissolutionDirector().withOfficerId("random"));
 
         body.setEmail(EMAIL);
         body.setOnBehalfName(null);
@@ -172,5 +182,46 @@ class DissolutionDirectorPatcherTest {
         verify(repository, times(0)).save(any());
 
         assertNotNull(exception);
+    }
+
+    @DisplayName("Normalizes fields:")
+    @ParameterizedTest(name = "{index} => {0}")
+    @CsvSource(
+            delimiter = '|',
+            quoteCharacter = '\'',
+            value = {
+                    "'email is trimmed'    | ' mail@mail.com '  | 'mail@mail.com'",
+                    "'email is lowercased' | 'MAIL@MAIL.COM'    | 'mail@mail.com'",
+            }
+    )
+    void update_data_normalization_test(
+            String description,
+            String requestEmail,
+            String expectedStoredEmail
+    ) throws DissolutionNotFoundException {
+        final var dissolutionDirectorPatchRequest = aDissolutionDirectorPatchRequest()
+                .withEmail(requestEmail)
+                .build();
+
+        final var existingDirector = aDissolutionDirector()
+                .withOfficerId(OFFICER_ID)
+                .withEmail("old@mail.com")
+                .withOnBehalfName("Existing Name");
+
+        setExistingDirector(dissolution, existingDirector);
+
+        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
+
+        patcher.updateSignatory(COMPANY_NUMBER, dissolutionDirectorPatchRequest, OFFICER_ID);
+
+        verify(repository).save(dissolutionCaptor.capture());
+
+        final var savedDirector = dissolutionCaptor.getValue().getData().getDirectors().getFirst();
+        assertEquals(expectedStoredEmail, savedDirector.getEmail());
+    }
+
+    private void setExistingDirector(Dissolution dissolution,
+                                     DissolutionDirectorTestDataBuilder directorBuilder) {
+        dissolution.getData().setDirectors(Collections.singletonList(directorBuilder.build()));
     }
 }

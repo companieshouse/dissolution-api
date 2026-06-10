@@ -18,8 +18,9 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.fixtures.DissolutionDirectorFixtures.generateDissolutionPatchDirectorRequest;
-import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolution;
+import static uk.gov.companieshouse.fixtures.DissolutionDirectorPatchRequestTestDataBuilder.aDissolutionDirectorPatchRequest;
+import static uk.gov.companieshouse.fixtures.DissolutionDirectorTestDataBuilder.aDissolutionDirector;
+import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 
 @ExtendWith(MockitoExtension.class)
 class DissolutionDirectorServiceTest {
@@ -43,8 +44,9 @@ class DissolutionDirectorServiceTest {
 
     @Test
     void checkPatchDirectorConstraints_returnsErrorString_whenDirectorIsNotPendingApproval() throws DissolutionNotFoundException {
-        Dissolution dissolution = generateDissolution();
-        dissolution.getData().getDirectors().getFirst().setDirectorApproval(new DirectorApproval());
+        Dissolution dissolution = aDissolution()
+                .withOnlyDirector(aDissolutionDirector().withDirectorApproval(new DirectorApproval()))
+                .build();
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
 
@@ -55,9 +57,10 @@ class DissolutionDirectorServiceTest {
 
     @Test
     void checkPatchDirectorConstraints_returnsErrorString_whenDirectorIsEmailIsNotApplicant() throws DissolutionNotFoundException {
-        Dissolution dissolution = generateDissolution();
-        dissolution.getData().getDirectors().getFirst().setEmail(EMAIL);
-        dissolution.getCreatedBy().setEmail(EMAIL + "asd");
+        Dissolution dissolution = aDissolution()
+                .withCreatedByEmail(EMAIL + "asd")
+                .withOnlyDirector(aDissolutionDirector().withEmail(EMAIL))
+                .build();
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
 
@@ -68,10 +71,10 @@ class DissolutionDirectorServiceTest {
 
     @Test
     void checkPatchDirectorConstraints_OptionalEmpty_ChecksPass() throws DissolutionNotFoundException {
-        Dissolution dissolution = generateDissolution();
-        dissolution.getData().getDirectors().getFirst().setEmail(EMAIL);
-        dissolution.getCreatedBy().setEmail(EMAIL);
-        dissolution.getData().getDirectors().getFirst().setDirectorApproval(null);
+        Dissolution dissolution = aDissolution()
+                .withCreatedByEmail(EMAIL)
+                .withOnlyDirector(aDissolutionDirector().withEmail(EMAIL).withDirectorApproval(null))
+                .build();
 
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
@@ -109,7 +112,7 @@ class DissolutionDirectorServiceTest {
 
     @Test
     void updateSignatory_updatesSignatory_returnsPatchResponse() throws DissolutionNotFoundException {
-        final DissolutionDirectorPatchRequest body = generateDissolutionPatchDirectorRequest();
+        final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
         body.setEmail(EMAIL);
         body.setOnBehalfName(ON_BEHALF_NAME);
 

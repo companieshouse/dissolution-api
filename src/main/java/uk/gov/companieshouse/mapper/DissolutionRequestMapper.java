@@ -16,7 +16,6 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.CompanyType;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -67,7 +66,7 @@ public class DissolutionRequestMapper {
         final DissolutionDirector director = new DissolutionDirector();
 
         director.setOfficerId(selectedDirector.getOfficerId());
-        director.setEmail(selectedDirector.getEmail().toLowerCase());
+        director.setEmail(selectedDirector.getEmail().trim().toLowerCase());
         director.setOnBehalfName(selectedDirector.getOnBehalfName());
         director.setName(getSelectedDirectorName(selectedDirector, companyDirectors));
 
