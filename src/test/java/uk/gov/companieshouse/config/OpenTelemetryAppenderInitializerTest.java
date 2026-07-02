@@ -8,7 +8,9 @@ import io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppen
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
+@ConditionalOnProperty(prefix = "management.opentelemetry", name = "enabled", havingValue = "true")
 class OpenTelemetryAppenderInitializerTest {
 
     private OpenTelemetry openTelemetry;

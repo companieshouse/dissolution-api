@@ -72,6 +72,7 @@ spring:
 
 management:
   opentelemetry:
+    enabled: ${OTEL_LOG_ENABLED:false}
     logging:
       export:
         otlp:

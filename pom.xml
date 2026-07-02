@@ -35,20 +35,30 @@
         <spring-boot-maven-plugin.version>${spring-boot.version}</spring-boot-maven-plugin.version>
 
         <!-- Companies House Internal Dependencies -->
+        <!-- Source: https://github.com/companieshouse/api-helper-java/releases -->
         <api-helper-java.version>3.0.4</api-helper-java.version>
+        <!-- Source: https://github.com/companieshouse/api-security-java/releases -->
         <api-security-java.version>2.0.27</api-security-java.version>
-        <api-sdk-java.version>6.6.23</api-sdk-java.version>
-        <private-api-sdk-java.version>6.0.23</private-api-sdk-java.version>
-        <api-sdk-manager-java-library.version>3.0.23</api-sdk-manager-java-library.version>
+        <!-- Source: https://github.com/companieshouse/api-sdk-java/releases -->
+        <api-sdk-java.version>7.0.5</api-sdk-java.version>
+        <!-- Source: https://github.com/companieshouse/private-api-sdk-java/releases -->
+        <private-api-sdk-java.version>7.0.4</private-api-sdk-java.version>
+        <!-- Source: https://github.com/companieshouse/api-sdk-manager-java-library/releases -->
+        <api-sdk-manager-java-library.version>3.0.24</api-sdk-manager-java-library.version>
+        <!-- Source: https://github.com/companieshouse/structured-logging/releases -->
         <structured-logging.version>3.0.57</structured-logging.version>
+        <!-- Source: https://github.com/companieshouse/environment-reader-library/releases -->
         <environment-reader-library.version>3.0.5</environment-reader-library.version>
-        <java-session-handler.version>4.1.20</java-session-handler.version>
+        <!-- Source: https://github.com/companieshouse/java-session-handler/releases -->
+        <java-session-handler.version>4.1.22</java-session-handler.version>
+        <!-- Source: https://github.com/companieshouse/ch-kafka/releases -->
         <ch-kafka.version>3.0.15</ch-kafka.version>
-        <kafka-models.version>3.0.33</kafka-models.version>
+        <!-- Source: https://github.com/companieshouse/kafka-models/releases -->
+        <kafka-models.version>3.0.35</kafka-models.version>
 
         <!-- Dependency Versions -->
         <!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-dependencies -->
-        <spring-boot.version>4.0.6</spring-boot.version>
+        <spring-boot.version>4.1.0</spring-boot.version>
         <!-- Source: https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-ui -->
         <springdoc-openapi.version>1.8.0</springdoc-openapi.version>
         <!-- Source: https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
@@ -57,9 +67,9 @@
         <avro.version>1.12.1</avro.version>
         <!-- Source: https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients -->
         <!-- This (latest) version is vulnerable, but no fix available as yet https://www.cve.org/CVERecord?id=CVE-2026-41115       -->
-        <kafka-clients.version>4.3.0</kafka-clients.version>
+        <kafka-clients.version>4.3.1</kafka-clients.version>
         <!-- Source: https://mvnrepository.com/artifact/software.amazon.awssdk/bom -->
-        <aws-java-sdk.version>2.46.6</aws-java-sdk.version>
+        <aws-java-sdk.version>2.46.17</aws-java-sdk.version>
         <!-- Source: https://mvnrepository.com/artifact/io.netty/netty-all -->
         <netty.version>4.2.15.Final</netty.version>
         <!-- Source: https://mvnrepository.com/artifact/io.projectreactor.netty/reactor-netty-core -->
@@ -75,11 +85,11 @@
         <!-- Source: https://mvnrepository.com/artifact/org.json/json -->
         <org-json.version>20260522</org-json.version>
         <!-- Source: https://mvnrepository.com/artifact/org.webjars/swagger-ui -->
-        <swagger-ui.version>5.32.6</swagger-ui.version>
+        <swagger-ui.version>5.32.8</swagger-ui.version>
         <!-- Source: https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-http -->
         <jetty.version>12.1.10</jetty.version>
         <!-- Source: https://mvnrepository.com/artifact/io.opentelemetry.instrumentation/opentelemetry-instrumentation-bom -->
-        <opentelemetry.version>2.28.1</opentelemetry.version>
+        <opentelemetry.version>2.29.0</opentelemetry.version>
         <!-- Source: https://mvnrepository.com/artifact/com.google.guava/guava -->
         <guava.version>33.6.0-jre</guava.version>
         <!-- Source: https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-bom -->
@@ -149,7 +159,7 @@
             <dependency>
                 <groupId>io.grpc</groupId>
                 <artifactId>grpc-context</artifactId>
-                <version>1.81.0</version>
+                <version>1.82.1</version>
                 <scope>compile</scope>
             </dependency>
 
@@ -157,7 +167,7 @@
             <dependency>
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java</artifactId>
-                <version>4.35.0</version>
+                <version>4.35.1</version>
                 <scope>compile</scope>
             </dependency>
 
@@ -189,11 +199,11 @@
             </dependency>
 
             <!-- Source: https://mvnrepository.com/artifact/org.eclipse.jetty.ee10/jetty-ee10-webapp -->
-            <dependency> <!-- Fix for CVE CVE-2026-1605 https://github.com/jetty/jetty.project/security/advisories/GHSA-xxh7-fcf3-rj7f -->
-                <groupId>org.eclipse.jetty.ee10</groupId>
-                <artifactId>jetty-ee10-webapp</artifactId>
-                <version>12.0.36</version>
-            </dependency>
+<!--            <dependency> &lt;!&ndash; Fix for CVE CVE-2026-1605 https://github.com/jetty/jetty.project/security/advisories/GHSA-xxh7-fcf3-rj7f &ndash;&gt;-->
+<!--                <groupId>org.eclipse.jetty.ee10</groupId>-->
+<!--                <artifactId>jetty-ee10-webapp</artifactId>-->
+<!--                <version>12.0.36</version>-->
+<!--            </dependency>-->
 
             <!-- Source: https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-bom -->
             <dependency>
@@ -203,22 +213,6 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
-            <!-- Source: https://mvnrepository.com/artifact/org.apache.tomcat.embed/tomcat-embed-core -->
-            <!-- Addresses https://www.cve.org/CVERecord?id=CVE-2026-41284          -->
-            <dependency>
-                <groupId>org.apache.tomcat.embed</groupId>
-                <artifactId>tomcat-embed-core</artifactId>
-                <version>11.0.22</version>
-                <scope>compile</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.tomcat.embed</groupId>
-                <artifactId>tomcat-embed-websocket</artifactId>
-                <version>11.0.22</version>
-                <scope>compile</scope>
-            </dependency>
-            <!-- END CVE           -->
 
             <dependency>
                 <groupId>org.springframework.boot</groupId>
