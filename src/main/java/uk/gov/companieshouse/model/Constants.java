@@ -22,7 +22,7 @@ public final class Constants {
    public static final String EMAIL_TOPIC = "email-send";
 
    public static final String SUCCESSFUL_PAYMENT_EMAIL_SUBJECT = "Your application to strike off and dissolve a company has been submitted";
-   public static final String APPLICATION_ACCEPTED_EMAIL_SUBJECT = "Your application to strike off and dissolve a company has been accepted";
+   public static final String APPLICATION_ACCEPTED_EMAIL_SUBJECT = "Strike off and dissolve a company - application accepted";
    public static final String APPLICATION_REJECTED_EMAIL_SUBJECT = "Your application to strike off and dissolve a company has been rejected";
    public static final String SIGNATORY_TO_SIGN_EMAIL_SUBJECT = "You need to sign the application to strike off and dissolve a company";
    public static final String PENDING_PAYMENT_EMAIL_SUBJECT = "Pay for your application to strike off and dissolve a company";
