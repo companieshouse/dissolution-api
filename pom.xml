@@ -32,6 +32,8 @@
         <maven-resources-plugin.version>3.5.0</maven-resources-plugin.version>
         <!-- Source: https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-jar-plugin -->
         <maven-jar-plugin.version>3.5.0</maven-jar-plugin.version>
+        <!-- Source: https://mvnrepository.com/artifact/org.jacoco/jacoco-maven-plugin -->
+        <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
         <spring-boot-maven-plugin.version>${spring-boot.version}</spring-boot-maven-plugin.version>
 
         <!-- Companies House Internal Dependencies -->
