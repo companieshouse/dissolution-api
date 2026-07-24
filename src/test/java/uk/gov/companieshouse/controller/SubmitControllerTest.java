@@ -8,6 +8,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.SecurityConstants;
+import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.chips.DissolutionChipsService;
 
 import static org.mockito.Mockito.never;
@@ -25,6 +26,9 @@ class SubmitControllerTest {
 
     @MockitoBean
     private DissolutionChipsService service;
+
+    @MockitoBean
+    private TransactionService transactionService;
 
     @Autowired
     private MockMvc mockMvc;

@@ -8,6 +8,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import uk.gov.companieshouse.api.interceptor.InternalUserInterceptor;
 import uk.gov.companieshouse.api.interceptor.TokenPermissionsInterceptor;
 import uk.gov.companieshouse.interceptor.DissolutionTokenPermissionsInterceptor;
+import uk.gov.companieshouse.interceptor.TransactionInterceptor;
 
 @Configuration
 public class SecurityConfig implements WebMvcConfigurer {
@@ -26,6 +27,11 @@ public class SecurityConfig implements WebMvcConfigurer {
         "/dissolution-api/healthcheck"
     );
 
+    private static final String[] TRANSACTIONS_INCLUDE_LIST = {
+            "/transactions/**",
+            "/private/transactions/**",
+    };
+
     @Autowired
     private TokenPermissionsInterceptor tokenPermissionsInterceptor;
 
@@ -35,10 +41,14 @@ public class SecurityConfig implements WebMvcConfigurer {
     @Autowired
     private InternalUserInterceptor apiKeyPermissionsInterceptor;
 
+    @Autowired
+    private TransactionInterceptor transactionInterceptor;
+
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
         registry.addInterceptor(tokenPermissionsInterceptor).addPathPatterns(URI_PATTERN).excludePathPatterns(TOKEN_PERMISSION_AUTH_EXCLUDE_LIST);
         registry.addInterceptor(dissolutionTokenPermissionsInterceptor).addPathPatterns(URI_PATTERN).excludePathPatterns(TOKEN_PERMISSION_AUTH_EXCLUDE_LIST);
         registry.addInterceptor(apiKeyPermissionsInterceptor).addPathPatterns(API_KEY_PERMISSION_AUTH_INCLUDE_LIST);
+        registry.addInterceptor(transactionInterceptor).addPathPatterns(TRANSACTIONS_INCLUDE_LIST);
     }
 }

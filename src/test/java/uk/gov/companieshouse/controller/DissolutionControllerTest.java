@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.controller;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.HttpHeaders;
@@ -22,6 +23,7 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.service.CompanyOfficerService;
 import uk.gov.companieshouse.client.CompanyProfileClientImpl;
+import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import uk.gov.companieshouse.service.dissolution.validator.DissolutionValidator;
 import uk.gov.companieshouse.service.payment.PaymentService;
@@ -70,6 +72,9 @@ class DissolutionControllerTest {
 
     @MockitoBean
     private CompanyOfficerService companyOfficerService;
+
+    @MockitoBean
+    private TransactionService transactionService;
 
     @MockitoBean
     private PaymentService paymentService;

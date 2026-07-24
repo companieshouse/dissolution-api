@@ -36,4 +36,12 @@ public final class Constants {
    public static final String CONTENT_TYPE_HTML = "text/html";
    public static final String CONTENT_TYPE_JSON = "application/json";
    public static final String CONTENT_TYPE_PDF = "application/pdf";
+
+   public static final String ERIC_REQUEST_ID_KEY = "X-Request-Id";
+
+   /* Path attributes */
+   public static final String TRANSACTION_ID_KEY = "transaction_id";
+
+    /* Request attributes */
+   public static final String TRANSACTION_KEY = "transaction";
 }

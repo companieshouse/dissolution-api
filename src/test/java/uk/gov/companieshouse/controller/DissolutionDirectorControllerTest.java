@@ -13,6 +13,7 @@ import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchResponse;
+import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.director.DissolutionDirectorService;
 
 import java.util.Optional;
@@ -42,6 +43,9 @@ class DissolutionDirectorControllerTest {
 
     @MockitoBean
     private DissolutionDirectorService service;
+
+    @MockitoBean
+    private TransactionService transactionService;
 
     @Autowired
     private MockMvc mockMvc;
