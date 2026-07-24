@@ -182,7 +182,7 @@ class DissolutionServiceTest {
 
         final Optional<DissolutionGetResponse> result = service.getById(id);
 
-        verify(getter).getById(APPLICATION_REFERENCE);
+        verify(getter).getById(id);
         assertNotNull(result);
     }
 }
