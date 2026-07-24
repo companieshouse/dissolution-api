@@ -4,9 +4,7 @@ api:
   url: http://api
 
 aws:
-  accessKeyId: some-access-key
   region: eu-west-2
-  secretAccessKey: some-secret-key
 
 barcodeGenerator:
   host: http://barcode-generator

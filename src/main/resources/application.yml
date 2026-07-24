@@ -3,9 +3,7 @@ api:
   url: ${API_URL}
 
 aws:
-  accessKeyId: ${AWS_ACCESS_KEY_ID}
   region: ${ENV_REGION_AWS}
-  secretAccessKey: ${AWS_SECRET_ACCESS_KEY}
 
 barcodeGenerator:
   host: ${BARCODE_SERVICE_URL}
