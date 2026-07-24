@@ -16,7 +16,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CostController.class)
-public class CostControllerTest {
+class CostControllerTest {
     private static final String COST_URI = "/transactions/{transaction_id}/dissolution/{dissolution_id}/costs";
     private static final String TRANSACTION_ID = "123456789";
     private static final String DISSOLUTION_ID = "987654321";

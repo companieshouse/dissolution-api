@@ -1,9 +1,6 @@
 package uk.gov.companieshouse.service.cost;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.api.model.transaction.Transaction;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -14,7 +11,12 @@ import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 
-import static uk.gov.companieshouse.model.Constants.*;
+import static uk.gov.companieshouse.model.Constants.PAYMENT_AVAILABLE_PAYMENT_METHOD;
+import static uk.gov.companieshouse.model.Constants.PAYMENT_CLASS_OF_PAYMENT;
+import static uk.gov.companieshouse.model.Constants.PAYMENT_DESCRIPTION;
+import static uk.gov.companieshouse.model.Constants.PAYMENT_DESCRIPTION_IDENTIFIER;
+import static uk.gov.companieshouse.model.Constants.PAYMENT_ITEM_KIND;
+import static uk.gov.companieshouse.model.Constants.PAYMENT_RESOURCE_KIND;
 
 @Service
 public class CostService {

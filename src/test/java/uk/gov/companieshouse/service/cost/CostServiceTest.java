@@ -28,7 +28,7 @@ import static uk.gov.companieshouse.model.Constants.PAYMENT_ITEM_KIND;
 import static uk.gov.companieshouse.model.Constants.PAYMENT_RESOURCE_KIND;
 
 @ExtendWith(MockitoExtension.class)
-public class CostServiceTest {
+class CostServiceTest {
     @Mock
     private DissolutionService dissolutionService;
 
