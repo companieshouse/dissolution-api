@@ -172,4 +172,17 @@ class DissolutionServiceTest {
 
         verify(patcher).handlePayment(data, APPLICATION_REFERENCE);
     }
+
+    @Test
+    void givenGetByIdCalled_whenValidId_returnsDissolutionGetResponse(){
+        final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse();
+
+        String id = "123456788";
+        when(getter.getById(id)).thenReturn(Optional.of(response));
+
+        final Optional<DissolutionGetResponse> result = service.getById(id);
+
+        verify(getter).getById(APPLICATION_REFERENCE);
+        assertNotNull(result);
+    }
 }

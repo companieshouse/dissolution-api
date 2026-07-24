@@ -3,6 +3,9 @@ package uk.gov.companieshouse.service.dissolution;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
+import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
+import uk.gov.companieshouse.mapper.ResponseMapper;
+import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
@@ -23,13 +26,15 @@ public class DissolutionService {
     private final DissolutionGetter getter;
     private final DissolutionPatcher patcher;
     private final DissolutionRepository repository;
+    private final ResponseMapper responseMapper;
 
     @Autowired
-    public DissolutionService(DissolutionCreator creator, DissolutionGetter getter, DissolutionPatcher patcher, DissolutionRepository repository) {
+    public DissolutionService(DissolutionCreator creator, DissolutionGetter getter, DissolutionPatcher patcher, DissolutionRepository repository, ResponseMapper responseMapper) {
         this.creator = creator;
         this.getter = getter;
         this.patcher = patcher;
         this.repository = repository;
+        this.responseMapper = responseMapper;
     }
 
     public DissolutionCreateResponse create(DissolutionCreateRequest body, CompanyProfile companyProfile, Map<String, CompanyOfficer> directors, String userId, String ip, String email) {
@@ -62,6 +67,10 @@ public class DissolutionService {
 
     public Optional<DissolutionGetResponse> getByApplicationReference(String applicationReference) {
         return getter.getByApplicationReference(applicationReference);
+    }
+
+    public Optional<DissolutionGetResponse> getById(String id) {
+        return getter.getById(id);
     }
 
     public boolean isDirectorPendingApproval(String companyNumber, String officerId) {
