@@ -12,6 +12,7 @@ import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.SecurityConstants;
 import uk.gov.companieshouse.fixtures.ChipsFixtures;
 import uk.gov.companieshouse.model.dto.chips.ChipsResponseCreateRequest;
+import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import uk.gov.companieshouse.service.dissolution.chips.ChipsResponseService;
 
@@ -31,6 +32,9 @@ class ResponseControllerTest {
 
     @MockitoBean
     private ChipsResponseService chipsResponseService;
+
+    @MockitoBean
+    private TransactionService transactionService;
 
     @Autowired
     private MockMvc mockMvc;

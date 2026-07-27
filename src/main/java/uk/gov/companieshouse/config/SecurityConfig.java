@@ -1,13 +1,13 @@
 package uk.gov.companieshouse.config;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import uk.gov.companieshouse.api.interceptor.InternalUserInterceptor;
 import uk.gov.companieshouse.api.interceptor.TokenPermissionsInterceptor;
 import uk.gov.companieshouse.interceptor.DissolutionTokenPermissionsInterceptor;
+import uk.gov.companieshouse.interceptor.TransactionInterceptor;
 
 @Configuration
 public class SecurityConfig implements WebMvcConfigurer {
@@ -26,19 +26,32 @@ public class SecurityConfig implements WebMvcConfigurer {
         "/dissolution-api/healthcheck"
     );
 
-    @Autowired
-    private TokenPermissionsInterceptor tokenPermissionsInterceptor;
+    private static final String[] TRANSACTIONS_INCLUDE_LIST = {
+            "/transactions/**",
+            "/private/transactions/**",
+    };
 
-    @Autowired
-    private DissolutionTokenPermissionsInterceptor dissolutionTokenPermissionsInterceptor;
+    private final TokenPermissionsInterceptor tokenPermissionsInterceptor;
+    private final DissolutionTokenPermissionsInterceptor dissolutionTokenPermissionsInterceptor;
+    private final InternalUserInterceptor apiKeyPermissionsInterceptor;
+    private final TransactionInterceptor transactionInterceptor;
 
-    @Autowired
-    private InternalUserInterceptor apiKeyPermissionsInterceptor;
+    public SecurityConfig(
+            TokenPermissionsInterceptor tokenPermissionsInterceptor,
+            DissolutionTokenPermissionsInterceptor dissolutionTokenPermissionsInterceptor,
+            InternalUserInterceptor apiKeyPermissionsInterceptor,
+            TransactionInterceptor transactionInterceptor) {
+        this.tokenPermissionsInterceptor = tokenPermissionsInterceptor;
+        this.dissolutionTokenPermissionsInterceptor = dissolutionTokenPermissionsInterceptor;
+        this.apiKeyPermissionsInterceptor = apiKeyPermissionsInterceptor;
+        this.transactionInterceptor = transactionInterceptor;
+    }
 
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
         registry.addInterceptor(tokenPermissionsInterceptor).addPathPatterns(URI_PATTERN).excludePathPatterns(TOKEN_PERMISSION_AUTH_EXCLUDE_LIST);
         registry.addInterceptor(dissolutionTokenPermissionsInterceptor).addPathPatterns(URI_PATTERN).excludePathPatterns(TOKEN_PERMISSION_AUTH_EXCLUDE_LIST);
         registry.addInterceptor(apiKeyPermissionsInterceptor).addPathPatterns(API_KEY_PERMISSION_AUTH_INCLUDE_LIST);
+        registry.addInterceptor(transactionInterceptor).addPathPatterns(TRANSACTIONS_INCLUDE_LIST);
     }
 }

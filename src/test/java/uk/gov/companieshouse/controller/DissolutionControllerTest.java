@@ -22,6 +22,7 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.service.CompanyOfficerService;
 import uk.gov.companieshouse.client.CompanyProfileClientImpl;
+import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import uk.gov.companieshouse.service.dissolution.validator.DissolutionValidator;
 import uk.gov.companieshouse.service.payment.PaymentService;
@@ -70,6 +71,9 @@ class DissolutionControllerTest {
 
     @MockitoBean
     private CompanyOfficerService companyOfficerService;
+
+    @MockitoBean
+    private TransactionService transactionService;
 
     @MockitoBean
     private PaymentService paymentService;

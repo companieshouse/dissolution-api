@@ -11,6 +11,7 @@ import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.api.util.security.SecurityConstants;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.repository.DissolutionRepository;
+import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.DissolutionEmailService;
 import uk.gov.companieshouse.service.dissolution.chips.DissolutionChipsService;
 
@@ -30,6 +31,9 @@ class ResendEmailControllerTest {
 
     @MockitoBean
     private DissolutionChipsService service;
+
+    @MockitoBean
+    private TransactionService transactionService;
 
     @MockitoBean
     private DissolutionEmailService emailService;
