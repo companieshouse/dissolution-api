@@ -2,7 +2,9 @@ package uk.gov.companieshouse.service.dissolution;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
+import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
@@ -66,5 +68,21 @@ public class DissolutionService {
 
     public boolean isDirectorPendingApproval(String companyNumber, String officerId) {
         return getter.isDirectorPendingApproval(companyNumber, officerId);
+    }
+
+    public Optional<Dissolution> getByTransactionId(String transactionId) {
+        return repository.findByTransactionId(transactionId);
+    }
+
+    public Optional<Dissolution> getSavedOverseasEntity(Transaction transaction, String submissionId) throws SubmissionNotLinkedToTransactionException {
+
+        final String submissionUri = getSubmissionUri(transaction.getId(), submissionId);
+
+        if (!transactionUtils.isTransactionLinkedToOverseasEntitySubmission(transaction, submissionUri)) {
+            throw new SubmissionNotLinkedToTransactionException(String.format(
+                    "Transaction id: %s does not have a resource that matches Overseas Entity submission id: %s", transaction.getId(), submissionId));
+        }
+
+        return getOverseasEntitySubmission(submissionId);
     }
 }

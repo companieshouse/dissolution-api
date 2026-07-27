@@ -32,6 +32,7 @@ public final class Constants {
    public static final String HEADER_AUTHORIZATION = "Authorization";
    public static final String HEADER_ACCEPT = "Accept";
    public static final String HEADER_CONTENT_TYPE = "Content-Type";
+   public static final String HEADER_ERIC_REQUEST_ID = "X-Request-Id";
 
    public static final String CONTENT_TYPE_HTML = "text/html";
    public static final String CONTENT_TYPE_JSON = "application/json";
@@ -41,7 +42,16 @@ public final class Constants {
 
    /* Path attributes */
    public static final String TRANSACTION_ID_KEY = "transaction_id";
+   public static final String COMPANY_NUMBER_KEY = "company_number";
 
-    /* Request attributes */
+   /* Request attributes */
    public static final String TRANSACTION_KEY = "transaction";
+
+   /* Filings */
+   public static final String FILING_KIND_DS01 = "dissolution#ds01";
+   public static final String FILING_KIND_LLDS01 = "dissolution#llds01";
+
+   /* Transactions */
+   public static final String SUBMISSION_URI_PATTERN = "/transactions/%s/dissolution/%s";
+   public static final String LINK_RESOURCE = "resource";
 }
