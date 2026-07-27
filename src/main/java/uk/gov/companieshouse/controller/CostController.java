@@ -57,6 +57,5 @@ public class CostController {
             logger.error("Failed to get dissolution submission costs", e);
             return ResponseEntity.notFound().build();
         }
-
     }
 }
