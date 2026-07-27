@@ -47,7 +47,7 @@ class TransactionServiceTest {
     private TransactionService transactionService;
 
     @Test
-    void testGettingATransactionIsSuccessful() throws IOException, URIValidationException {
+    void getTransaction_returnsTransactionData_ifTransactionExists() throws IOException, URIValidationException {
         Transaction transaction = new Transaction();
         transaction.setId(TRANSACTION_ID);
 
@@ -63,7 +63,7 @@ class TransactionServiceTest {
     }
 
     @Test
-    void testServiceExceptionThrownWhenTransactionSdkThrowsURIValidationException() throws IOException, URIValidationException {
+    void getTransaction_throwsServiceException_ifUriValidationExceptionOccurs() throws IOException, URIValidationException {
         when(apiClientService.getApiClient(PASSTHROUGH_HEADER)).thenReturn(apiClient);
         when(apiClient.transactions()).thenReturn(transactionsResourceHandler);
         when(transactionsResourceHandler.get(TRANSACTIONS_URL + TRANSACTION_ID)).thenReturn(transactionsGet);
@@ -73,7 +73,7 @@ class TransactionServiceTest {
     }
 
     @Test
-    void testServiceExceptionThrownWhenTransactionSdkThrowsIOException() throws IOException, URIValidationException {
+    void getTransaction_throwsServiceException_ifIOExceptionOccurs() throws IOException, URIValidationException {
         when(apiClientService.getApiClient(PASSTHROUGH_HEADER)).thenReturn(apiClient);
         when(apiClient.transactions()).thenReturn(transactionsResourceHandler);
         when(transactionsResourceHandler.get(TRANSACTIONS_URL + TRANSACTION_ID)).thenReturn(transactionsGet);

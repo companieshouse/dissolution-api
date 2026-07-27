@@ -41,7 +41,7 @@ class TransactionInterceptorTest {
     private TransactionInterceptor transactionInterceptor;
 
     @Test
-    void testPreHandleIsSuccessful() throws Exception {
+    void interceptor_returnsTrue_ifTransactionExists() {
         MockHttpServletResponse mockHttpServletResponse = new MockHttpServletResponse();
         Object mockHandler = new Object();
         Transaction dummyTransaction = new Transaction();
@@ -50,7 +50,7 @@ class TransactionInterceptorTest {
         var pathParams = new HashMap<String, String>();
         pathParams.put(TRANSACTION_ID_KEY, TX_ID);
 
-        when(transactionService.getTransaction(eq(TX_ID), eq(PASSTHROUGH_HEADER))).thenReturn(dummyTransaction);
+        when(transactionService.getTransaction(TX_ID, PASSTHROUGH_HEADER)).thenReturn(dummyTransaction);
         when(mockHttpServletRequest.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)).thenReturn(pathParams);
         when(mockHttpServletRequest.getHeader("ERIC-Access-Token")).thenReturn(PASSTHROUGH_HEADER);
 
@@ -59,7 +59,7 @@ class TransactionInterceptorTest {
     }
 
     @Test
-    void testPreHandleIsUnsuccessfulWhenServiceExceptionCaught() throws Exception {
+    void interceptor_returnsFalse_ifServiceExceptionOccurs() {
         MockHttpServletResponse mockHttpServletResponse = new MockHttpServletResponse();
         Object mockHandler = new Object();
 
@@ -68,14 +68,14 @@ class TransactionInterceptorTest {
 
         when(mockHttpServletRequest.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)).thenReturn(pathParams);
         when(mockHttpServletRequest.getHeader("ERIC-Access-Token")).thenReturn(PASSTHROUGH_HEADER);
-        when(transactionService.getTransaction(eq(TX_ID), eq(PASSTHROUGH_HEADER))).thenThrow(ServiceException.class);
+        when(transactionService.getTransaction(TX_ID, PASSTHROUGH_HEADER)).thenThrow(ServiceException.class);
 
         assertFalse(transactionInterceptor.preHandle(mockHttpServletRequest, mockHttpServletResponse, mockHandler));
         assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, mockHttpServletResponse.getStatus());
     }
 
     @Test
-    void testPreHandleIsUnsuccessfulWhenTransactionIdIsMissing() throws Exception {
+    void interceptor_throwsAnUnauthorisedError_ifTransactionIdIsMissing() {
         MockHttpServletResponse mockHttpServletResponse = new MockHttpServletResponse();
         Object mockHandler = new Object();
 
@@ -84,6 +84,6 @@ class TransactionInterceptorTest {
 
         assertFalse(transactionInterceptor.preHandle(mockHttpServletRequest, mockHttpServletResponse, mockHandler));
         assertEquals(HttpServletResponse.SC_BAD_REQUEST, mockHttpServletResponse.getStatus());
-        verify(transactionService, never()).getTransaction(eq(TX_ID), eq(PASSTHROUGH_HEADER));
+        verify(transactionService, never()).getTransaction(TX_ID, PASSTHROUGH_HEADER);
     }
 }
