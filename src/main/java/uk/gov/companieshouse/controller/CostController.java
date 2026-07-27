@@ -7,23 +7,32 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.model.payment.Cost;
+import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.service.cost.CostService;
 
 import java.util.Collections;
+import java.util.List;
+
+import static uk.gov.companieshouse.model.Constants.ERIC_REQUEST_ID_KEY;
 
 
 @RestController
 @RequestMapping("/transactions/{transaction_id}/dissolution/{dissolution_id}/costs")
 public class CostController {
     private final CostService costService;
+    private final Logger logger;
 
-    public CostController(CostService costService) {
+    public CostController(CostService costService, Logger logger) {
         this.costService = costService;
+        this.logger = logger;
     }
 
     @Operation(summary = "Get Dissolution Costs", tags = "Dissolution")
@@ -33,11 +42,21 @@ public class CostController {
     })
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Object> getCosts(
+    public ResponseEntity<List<Cost>> getCosts(
+            @RequestAttribute("transaction") Transaction transaction,
             @PathVariable("transaction_id") String transactionId,
-            @PathVariable("dissolution_id") String dissolutionId) throws DissolutionNotFoundException {
-        // transaction_id is authorised upstream by the Transaction API.
-        Cost cost = costService.getCosts(dissolutionId);
-        return ResponseEntity.ok(Collections.singletonList(cost));
+            @PathVariable("dissolution_id") String dissolutionId,
+            @RequestHeader(value = ERIC_REQUEST_ID_KEY) String requestId) throws DissolutionNotFoundException {
+
+        logger.info("Getting costs for transaction: " + transactionId + ", dissolution: " + dissolutionId + ", requestId: " + requestId);
+
+        try{
+            var cost = costService.getCosts(dissolutionId);
+            return ResponseEntity.ok(Collections.singletonList(cost));
+        } catch(DissolutionNotFoundException e){
+            logger.error("Failed to get dissolution submission costs", e);
+            return ResponseEntity.notFound().build();
+        }
+
     }
 }

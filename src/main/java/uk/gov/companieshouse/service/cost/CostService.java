@@ -29,7 +29,6 @@ public class CostService {
         this.feeConfig = feeConfig;
     }
 
-
     public Cost getCosts(String dissolutionId) throws ServiceException, DissolutionNotFoundException {
         DissolutionGetResponse dissolutionInfo  = dissolutionService.getById(dissolutionId).orElseThrow(DissolutionNotFoundException::new);
 
@@ -46,6 +45,4 @@ public class CostService {
 
         return cost;
     }
-
-
 }

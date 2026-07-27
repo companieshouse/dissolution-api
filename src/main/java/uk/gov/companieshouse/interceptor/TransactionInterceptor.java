@@ -7,6 +7,7 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.HandlerMapping;
+import uk.gov.companieshouse.exception.UnauthorisedException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 import uk.gov.companieshouse.service.TransactionService;
@@ -45,7 +46,12 @@ public class TransactionInterceptor implements HandlerInterceptor {
             logger.info("Retrieved transaction details for: " + transactionId);
             request.setAttribute(TRANSACTION_KEY, transaction);
             return true;
-        } catch (Exception e) {
+        } catch (UnauthorisedException e) {
+            logger.error("Unauthorised access for transaction: " + transactionId, e);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return false;
+        }
+        catch (Exception e) {
             logger.error("Failed to retrieve transaction details for: " + transactionId, e);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return false;

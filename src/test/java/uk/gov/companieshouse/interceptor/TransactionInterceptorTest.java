@@ -11,6 +11,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.servlet.HandlerMapping;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.exception.ServiceException;
+import uk.gov.companieshouse.exception.UnauthorisedException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.service.TransactionService;
 
@@ -85,5 +86,21 @@ class TransactionInterceptorTest {
         assertFalse(transactionInterceptor.preHandle(mockHttpServletRequest, mockHttpServletResponse, mockHandler));
         assertEquals(HttpServletResponse.SC_BAD_REQUEST, mockHttpServletResponse.getStatus());
         verify(transactionService, never()).getTransaction(TX_ID, PASSTHROUGH_HEADER);
+    }
+
+    @Test
+    void interceptor_throwsAnUnAuthorisedError_whenTransactionLookUpIsUnauthorised(){
+        MockHttpServletResponse mockHttpServletResponse = new MockHttpServletResponse();
+        Object mockHandler = new Object();
+
+        var pathParams = new HashMap<String, String>();
+        pathParams.put(TRANSACTION_ID_KEY, TX_ID);
+
+        when(mockHttpServletRequest.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)).thenReturn(pathParams);
+        when(mockHttpServletRequest.getHeader("ERIC-Access-Token")).thenReturn(PASSTHROUGH_HEADER);
+        when(transactionService.getTransaction(TX_ID, PASSTHROUGH_HEADER)).thenThrow(UnauthorisedException.class);
+
+        assertFalse(transactionInterceptor.preHandle(mockHttpServletRequest, mockHttpServletResponse, mockHandler));
+        assertEquals(HttpServletResponse.SC_UNAUTHORIZED, mockHttpServletResponse.getStatus());
     }
 }

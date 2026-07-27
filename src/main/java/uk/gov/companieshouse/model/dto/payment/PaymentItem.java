@@ -3,7 +3,6 @@ package uk.gov.companieshouse.model.dto.payment;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 
-
 import java.util.List;
 
 public class PaymentItem {
