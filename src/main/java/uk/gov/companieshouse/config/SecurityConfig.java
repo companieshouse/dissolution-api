@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.config;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -14,8 +13,6 @@ import uk.gov.companieshouse.interceptor.TransactionInterceptor;
 public class SecurityConfig implements WebMvcConfigurer {
 
     private static final String URI_PATTERN = "/dissolution-request/**";
-    private static final String COSTS_URI = "/transactions/{transaction_id}/dissolution/{dissolution_id}/costs";
-
     private static final String[] API_KEY_PERMISSION_AUTH_INCLUDE_LIST = {
             "/dissolution-request/{application-reference}/payment",
             "/dissolution-request/submit",
