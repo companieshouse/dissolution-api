@@ -7,6 +7,10 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.HandlerMapping;
+import uk.gov.companieshouse.exception.BadRequestException;
+import uk.gov.companieshouse.exception.InternalServerErrorException;
+import uk.gov.companieshouse.exception.NotFoundException;
+import uk.gov.companieshouse.exception.TransactionNotFoundException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 import uk.gov.companieshouse.service.TransactionService;
@@ -36,8 +40,7 @@ public class TransactionInterceptor implements HandlerInterceptor {
 
         if (StringUtils.isBlank(transactionId)) {
             logger.info("Transaction ID missing from request");
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return false;
+            throw new BadRequestException("Transaction ID missing from request");
         }
 
         try {
@@ -45,10 +48,12 @@ public class TransactionInterceptor implements HandlerInterceptor {
             logger.info("Retrieved transaction details for: " + transactionId);
             request.setAttribute(TRANSACTION_KEY, transaction);
             return true;
+        } catch (TransactionNotFoundException e) {
+            logger.info("Transaction not found for: " + transactionId);
+            throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to retrieve transaction details for: " + transactionId, e);
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            return false;
+            throw new InternalServerErrorException(e.getMessage());
         }
     }
 

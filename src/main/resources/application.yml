@@ -22,6 +22,7 @@ companyProfile:
 
 dissolution:
   pdfBucket: ${DISSOLUTION_PDF_BUCKET}
+  filingDescription: ${DISSOLUTION_FILING_DESCRIPTION}
 
 documentRender:
   host: ${DOCUMENT_RENDER_SERVICE_HOST}

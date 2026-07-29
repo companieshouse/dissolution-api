@@ -38,11 +38,9 @@ public final class Constants {
    public static final String CONTENT_TYPE_JSON = "application/json";
    public static final String CONTENT_TYPE_PDF = "application/pdf";
 
-   public static final String ERIC_REQUEST_ID_KEY = "X-Request-Id";
-
    /* Path attributes */
    public static final String TRANSACTION_ID_KEY = "transaction_id";
-   public static final String COMPANY_NUMBER_KEY = "company_number";
+   public static final String DISSOLUTION_ID_KEY = "dissolution_id";
 
    /* Request attributes */
    public static final String TRANSACTION_KEY = "transaction";

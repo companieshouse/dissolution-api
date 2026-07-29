@@ -5,29 +5,28 @@ import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 
 import java.util.Objects;
-import java.util.UUID;
+import java.util.Set;
 
-import static uk.gov.companieshouse.model.Constants.LINK_RESOURCE;
-import static uk.gov.companieshouse.model.Constants.SUBMISSION_URI_PATTERN;
+import static uk.gov.companieshouse.model.Constants.*;
 
 @Component
 public class TransactionHelper {
 
-    public boolean isTransactionLinkedToDissolution(Transaction transaction, String submissionSelfLink) {
-        if (StringUtils.isBlank(submissionSelfLink)) {
-            return false;
-        }
+    private static final Set<String> DISSOLUTION_FILING_KINDS = Set.of(FILING_KIND_DS01, FILING_KIND_LLDS01);
 
+    public boolean isTransactionLinkedToDissolution(Transaction transaction, String submissionId) {
         if (Objects.isNull(transaction) || Objects.isNull(transaction.getResources())) {
             return false;
         }
 
-        return transaction.getResources().entrySet().stream()
-                .filter(resource -> FILING_KIND_OVERSEAS_ENTITY.equals(resource.getValue().getKind()))
-                .anyMatch(resource -> submissionSelfLink.equals(resource.getValue().getLinks().get(LINK_RESOURCE)));
-    }
+        String submissionSelfLink = String.format(SUBMISSION_URI_PATTERN, transaction.getId(), submissionId);
 
-    public String getSubmissionUri(String transactionId, String submissionId) {
-        return String.format(SUBMISSION_URI_PATTERN, transactionId, submissionId);
+        if (StringUtils.isBlank(submissionSelfLink)) {
+            return false;
+        }
+
+        return transaction.getResources().entrySet().stream()
+                .filter(resource -> DISSOLUTION_FILING_KINDS.contains(resource.getValue().getKind()))
+                .anyMatch(resource -> submissionSelfLink.equals(resource.getValue().getLinks().get(LINK_RESOURCE)));
     }
 }

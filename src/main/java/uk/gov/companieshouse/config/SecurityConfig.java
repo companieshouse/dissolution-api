@@ -13,12 +13,14 @@ import uk.gov.companieshouse.interceptor.TransactionInterceptor;
 public class SecurityConfig implements WebMvcConfigurer {
 
     private static final String URI_PATTERN = "/dissolution-request/**";
+    private static final String FILINGS = "/private/transactions/**/filings";
 
     private static final String[] API_KEY_PERMISSION_AUTH_INCLUDE_LIST = {
             "/dissolution-request/{application-reference}/payment",
             "/dissolution-request/submit",
             "/dissolution-request/response",
-            "/dissolution-request/{company-number}/resend-email/{email-address}"
+            "/dissolution-request/{company-number}/resend-email/{email-address}",
+            FILINGS
     };
 
     private static final String[] TOKEN_PERMISSION_AUTH_EXCLUDE_LIST = ArrayUtils.addAll(
@@ -28,7 +30,7 @@ public class SecurityConfig implements WebMvcConfigurer {
 
     private static final String[] TRANSACTIONS_INCLUDE_LIST = {
             "/transactions/**",
-            "/private/transactions/**",
+            FILINGS
     };
 
     private final TokenPermissionsInterceptor tokenPermissionsInterceptor;
