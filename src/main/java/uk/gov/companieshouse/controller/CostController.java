@@ -54,7 +54,7 @@ public class CostController {
             var cost = costService.getCosts(dissolutionId);
             return ResponseEntity.ok(Collections.singletonList(cost));
         } catch(DissolutionNotFoundException e){
-            logger.error("Failed to get dissolution submission costs", e);
+            logger.error("Failed to get costs for dissolution for id " + dissolutionId + " for transaction " + transactionId + ", requestId: " + requestId, e);
             return ResponseEntity.notFound().build();
         }
     }
