@@ -55,11 +55,12 @@ class CostServiceTest {
         assertEquals("Apply to strike off and dissolve a company: Test Company (12345678)", actualCost.getDescription());
         assertEquals(PAYMENT_DESCRIPTION_IDENTIFIER, actualCost.getDescriptionIdentifier());
         assertNotNull(actualCost.getDescriptionValues());
-        assertTrue(actualCost.getDescriptionValues().isEmpty());
+        assertTrue(actualCost.getDescriptionValues().containsKey("Key"));
+        assertEquals("Value", actualCost.getDescriptionValues().get("Key"));
         assertEquals(PAYMENT_AVAILABLE_PAYMENT_METHOD, actualCost.getAvailablePaymentMethods().getFirst());
         assertEquals(PAYMENT_CLASS_OF_PAYMENT, actualCost.getClassOfPayment().getFirst());
-        assertEquals(PAYMENT_ITEM_KIND, actualCost.getKind());
-        assertEquals(PAYMENT_RESOURCE_KIND, actualCost.getResourceKind());
+        assertEquals("dissolution", actualCost.getKind());
+        assertEquals( "payment-session#payment-session", actualCost.getResourceKind());
         assertEquals(ApplicationType.DS01.getValue(), actualCost.getProductType());
     }
 

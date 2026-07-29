@@ -37,7 +37,7 @@ public class CostController {
 
     @Operation(summary = "Get Dissolution Costs", tags = "Dissolution")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Costs Retrieved"),
+            @ApiResponse(responseCode = "200", description = "Costs found"),
             @ApiResponse(responseCode = "404", description = "Dissolution Application not found")
     })
     @GetMapping

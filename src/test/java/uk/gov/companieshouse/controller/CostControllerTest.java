@@ -75,6 +75,15 @@ class CostControllerTest {
                 .andExpect(status().isInternalServerError());
     }
 
+    @Test
+    void givenERICIdentityNotProvided_whenGetCostCalled_thenReturnUnauthorized() throws Exception {
+        HttpHeaders headers = createHttpHeaders();
+        headers.remove(EricConstants.ERIC_IDENTITY);
+
+        mockMvc.perform(get(COST_URI, TRANSACTION_ID, DISSOLUTION_ID).headers(headers))
+                .andExpect(status().isUnauthorized());
+    }
+
     private HttpHeaders createHttpHeaders() {
         HttpHeaders headers = new HttpHeaders();
 

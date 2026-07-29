@@ -46,12 +46,7 @@ public class TransactionInterceptor implements HandlerInterceptor {
             logger.info("Retrieved transaction details for: " + transactionId);
             request.setAttribute(TRANSACTION_KEY, transaction);
             return true;
-        } catch (UnauthorisedException e) {
-            logger.error("Unauthorised access for transaction: " + transactionId, e);
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return false;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Failed to retrieve transaction details for: " + transactionId, e);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return false;

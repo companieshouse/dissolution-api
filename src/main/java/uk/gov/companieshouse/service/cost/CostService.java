@@ -15,14 +15,14 @@ import static uk.gov.companieshouse.model.Constants.PAYMENT_AVAILABLE_PAYMENT_ME
 import static uk.gov.companieshouse.model.Constants.PAYMENT_CLASS_OF_PAYMENT;
 import static uk.gov.companieshouse.model.Constants.PAYMENT_DESCRIPTION;
 import static uk.gov.companieshouse.model.Constants.PAYMENT_DESCRIPTION_IDENTIFIER;
-import static uk.gov.companieshouse.model.Constants.PAYMENT_ITEM_KIND;
-import static uk.gov.companieshouse.model.Constants.PAYMENT_RESOURCE_KIND;
 
 @Service
 public class CostService {
 
     private final DissolutionService dissolutionService;
     private final FeeConfig feeConfig;
+    private static final String PAYMENT_SESSION = "payment-session#payment-session";
+    private static final String RESOURCE_KIND = "dissolution";
 
     public CostService(DissolutionService dissolutionService, FeeConfig feeConfig) {
         this.dissolutionService = dissolutionService;
@@ -38,9 +38,9 @@ public class CostService {
         cost.setAvailablePaymentMethods(List.of(PAYMENT_AVAILABLE_PAYMENT_METHOD));
         cost.setDescription(String.format(PAYMENT_DESCRIPTION, dissolutionInfo.getCompanyName(), dissolutionInfo.getCompanyNumber()));
         cost.setDescriptionIdentifier(PAYMENT_DESCRIPTION_IDENTIFIER);
-        cost.setDescriptionValues(Collections.emptyMap());
-        cost.setKind(PAYMENT_ITEM_KIND);
-        cost.setResourceKind(PAYMENT_RESOURCE_KIND);
+        cost.setDescriptionValues(Collections.singletonMap("Key", "Value"));
+        cost.setKind(RESOURCE_KIND);
+        cost.setResourceKind(PAYMENT_SESSION);
         cost.setProductType(dissolutionInfo.getApplicationType().getValue());
 
         return cost;
