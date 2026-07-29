@@ -7,7 +7,6 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.HandlerMapping;
-import uk.gov.companieshouse.exception.UnauthorisedException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 import uk.gov.companieshouse.service.TransactionService;

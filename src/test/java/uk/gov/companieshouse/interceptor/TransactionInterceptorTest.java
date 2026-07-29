@@ -11,7 +11,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.servlet.HandlerMapping;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.exception.ServiceException;
-import uk.gov.companieshouse.exception.UnauthorisedException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.service.TransactionService;
 

@@ -24,8 +24,6 @@ import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.model.Constants.PAYMENT_AVAILABLE_PAYMENT_METHOD;
 import static uk.gov.companieshouse.model.Constants.PAYMENT_CLASS_OF_PAYMENT;
 import static uk.gov.companieshouse.model.Constants.PAYMENT_DESCRIPTION_IDENTIFIER;
-import static uk.gov.companieshouse.model.Constants.PAYMENT_ITEM_KIND;
-import static uk.gov.companieshouse.model.Constants.PAYMENT_RESOURCE_KIND;
 
 @ExtendWith(MockitoExtension.class)
 class CostServiceTest {
