@@ -48,4 +48,10 @@ public class DissolutionGetter {
                 .stream()
                 .anyMatch(director -> director.getOfficerId().equals(officerId) && !director.hasDirectorApproval());
     }
+
+    public Optional<DissolutionGetResponse> getById(String id) {
+        return repository
+                .findById(id)
+                .map(responseMapper::mapToDissolutionGetResponse);
+    }
 }
