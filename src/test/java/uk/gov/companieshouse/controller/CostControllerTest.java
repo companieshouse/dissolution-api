@@ -10,17 +10,17 @@ import uk.gov.companieshouse.api.model.payment.Cost;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.SecurityConstants;
+import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.cost.CostService;
-import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.gov.companieshouse.model.Constants.ERIC_REQUEST_ID_KEY;
+import static uk.gov.companieshouse.model.Constants.HEADER_ERIC_REQUEST_ID;
 
 @WebMvcTest(CostController.class)
 class CostControllerTest {
@@ -90,7 +90,7 @@ class CostControllerTest {
         headers.add(EricConstants.ERIC_IDENTITY, IDENTITY_HEADER_VALUE);
         headers.add(EricConstants.ERIC_IDENTITY_TYPE, SecurityConstants.API_KEY_IDENTITY_TYPE);
         headers.add(EricConstants.ERIC_AUTHORISED_KEY_ROLES, SecurityConstants.INTERNAL_USER_ROLE);
-        headers.add(ERIC_REQUEST_ID_KEY, REQUEST_ID_HEADER_VALUE);
+        headers.add(HEADER_ERIC_REQUEST_ID, REQUEST_ID_HEADER_VALUE);
 
         return headers;
     }
