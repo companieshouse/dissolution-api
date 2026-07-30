@@ -21,6 +21,12 @@ public class FilingData {
     @JsonProperty("payment_method")
     private String paymentMethod;
 
+    @JsonProperty("links")
+    private List<FilingAttachmentLink> links;
+
+    @JsonProperty("sign_date")
+    private String signDate;
+
     public String getCompanyName() {
         return companyName;
     }
@@ -59,5 +65,21 @@ public class FilingData {
 
     public void setPaymentMethod(String paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public List<FilingAttachmentLink> getLinks() {
+        return links;
+    }
+
+    public void setLinks(List<FilingAttachmentLink> links) {
+        this.links = links;
+    }
+
+    public String getSignDate() {
+        return signDate;
+    }
+
+    public void setSignDate(String signDate) {
+        this.signDate = signDate;
     }
 }

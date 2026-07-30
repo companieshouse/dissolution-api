@@ -22,8 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDirectorApproval;
-import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionDirector;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.*;
 
 @ExtendWith(MockitoExtension.class)
 class FilingDataMapperTest {
@@ -58,14 +57,17 @@ class FilingDataMapperTest {
         directorOne.setDirectorApproval(approvalOne);
 
         dissolution.getData().setDirectors(List.of(directorOne));
+        dissolution.setCertificate(generateDissolutionCertificate());
     }
 
     @Test
     @SuppressWarnings("unchecked")
     void mapToFilingData_setsTheFilingDataCorrectly() {
         var expectedCompany = dissolution.getCompany();
+        var expectedSignDate = dissolution.getCreatedBy().getDateTime().format(DATE_FORMATTER);
         var expectedDissolutionDirector = dissolution.getData().getDirectors().getFirst();
-        var expectedSignDate = expectedDissolutionDirector.getDirectorApproval().getDateTime().format(DATE_FORMATTER);
+        var expectedDirectorSignDate = expectedDissolutionDirector.getDirectorApproval().getDateTime().format(DATE_FORMATTER);
+        var expectedAttachmentUri = String.format("s3://%s/%s", dissolution.getCertificate().getBucket(), dissolution.getCertificate().getKey());
 
         final Map<String, Object> result = mapper.mapToFilingData(dissolution, PAYMENT_REFERENCE, PAYMENT_METHOD);
 
@@ -74,18 +76,26 @@ class FilingDataMapperTest {
         assertEquals(PAYMENT_REFERENCE, result.get("payment_reference"));
         assertEquals(PAYMENT_METHOD, result.get("payment_method"));
 
+        assertEquals(expectedSignDate, result.get("sign_date"));
+
         List<Map<String, Object>> officers = (List<Map<String, Object>>) result.get("officers");
         assertEquals(1, officers.size());
 
         Map<String, Object> officerMap = officers.getFirst();
         assertEquals(expectedDissolutionDirector.getEmail(), officerMap.get("email"));
         assertEquals(expectedDissolutionDirector.getDirectorApproval().getIpAddress(), officerMap.get("ip_address"));
-        assertEquals(expectedSignDate, officerMap.get("sign_date"));
+        assertEquals(expectedDirectorSignDate, officerMap.get("sign_date"));
         assertFalse(officerMap.containsKey("on_behalf_name"));
 
         Map<String, Object> personNameMap = (Map<String, Object>) officerMap.get("person_name");
         assertEquals(DEFAULT_FORENAME, personNameMap.get("forename"));
         assertEquals(DEFAULT_SURNAME, personNameMap.get("surname"));
+
+        List<Map<String, Object>> links = (List<Map<String, Object>>) result.get("links");
+        assertEquals(1, links.size());
+        Map<String, Object> linkMap = links.getFirst();
+        assertEquals("dissolution", linkMap.get("rel"));
+        assertEquals(expectedAttachmentUri, linkMap.get("href"));
     }
 
     @Test

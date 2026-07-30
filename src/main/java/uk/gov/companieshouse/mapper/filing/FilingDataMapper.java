@@ -4,12 +4,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.PropertyNamingStrategies;
-import tools.jackson.databind.json.JsonMapper;
 import uk.gov.companieshouse.exception.FilingDataMapperException;
 import uk.gov.companieshouse.model.db.dissolution.Company;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
+import uk.gov.companieshouse.model.dto.filing.FilingAttachmentLink;
 import uk.gov.companieshouse.model.dto.filing.FilingData;
 import uk.gov.companieshouse.model.dto.filing.FilingOfficer;
 import uk.gov.companieshouse.model.dto.filing.FilingPersonName;
@@ -24,6 +23,7 @@ public class FilingDataMapper {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final String ERROR_MESSAGE = "Failed to map to filing data for company %s with dissolution %s";
+    private static final String CERTIFICATE_URI = "s3://%s/%s";
     private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<>() {
     };
 
@@ -42,6 +42,8 @@ public class FilingDataMapper {
         data.setOfficers(mapToOfficers(dissolution));
         data.setPaymentReference(paymentReference);
         data.setPaymentMethod(paymentMethod);
+        data.setLinks(List.of(mapToAttachmentLink(dissolution)));
+        data.setSignDate(dissolution.getCreatedBy().getDateTime().format(DATE_FORMATTER));
 
         try {
             return objectMapper.convertValue(data, MAP_TYPE);
@@ -80,9 +82,10 @@ public class FilingDataMapper {
         return personName;
     }
 
-    private static ObjectMapper buildMapper() {
-        return JsonMapper.builder()
-                .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
-                .build();
+    private FilingAttachmentLink mapToAttachmentLink(Dissolution dissolution) {
+        final FilingAttachmentLink attachmentLink = new FilingAttachmentLink();
+        attachmentLink.setHref(String.format(CERTIFICATE_URI, dissolution.getCertificate().getBucket(), dissolution.getCertificate().getKey()));
+        attachmentLink.setRelationship("dissolution");
+        return attachmentLink;
     }
 }

@@ -62,13 +62,10 @@ public class FilingController {
             FilingApi filing = filingService.generateDissolutionFiling(transaction, dissolutionId, passThroughHeader);
             return new FilingApi[] { filing };
         } catch (DissolutionNotLinkedToTransactionException e) {
-            logger.errorContext(requestId, e.getMessage(), e, logCtx);
             throw new BadRequestException(e.getMessage());
         } catch (DissolutionNotFoundException e) {
-            logger.errorContext(requestId, e.getMessage(), e, logCtx);
-            throw new NotFoundException();
+            throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
-            logger.errorContext(requestId, e.getMessage(), e, logCtx);
             throw new InternalServerErrorException(e.getMessage());
         }
     }
