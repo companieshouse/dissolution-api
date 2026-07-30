@@ -46,12 +46,12 @@ public class CostController {
             @RequestAttribute("transaction") Transaction transaction,
             @PathVariable("transaction_id") String transactionId,
             @PathVariable("dissolution_id") String dissolutionId,
-            @RequestHeader(value = ERIC_REQUEST_ID_KEY) String requestId)  {
+            @RequestHeader(value = ERIC_REQUEST_ID_KEY) String requestId) {
         logger.info("Getting costs for transaction: " + transactionId + ", dissolution: " + dissolutionId + ", requestId: " + requestId);
-        try{
+        try {
             var cost = costService.getCosts(dissolutionId);
             return Collections.singletonList(cost);
-        } catch( DissolutionNotFoundException e){
+        } catch (DissolutionNotFoundException e) {
             throw new NotFoundException();
         }
     }
