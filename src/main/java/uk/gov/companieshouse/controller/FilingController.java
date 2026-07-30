@@ -5,21 +5,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.exception.*;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.logging.util.LogContext;
-import uk.gov.companieshouse.logging.util.LogHelper;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
-import uk.gov.companieshouse.service.dissolution.chips.DissolutionChipsService;
 import uk.gov.companieshouse.service.transaction.FilingService;
 
 import java.util.HashMap;
-import java.util.Objects;
 
 import static uk.gov.companieshouse.model.Constants.*;
 
@@ -45,7 +40,7 @@ public class FilingController {
     })
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<FilingApi[]> getFiling(
+    public FilingApi[] getFiling(
             @RequestAttribute(TRANSACTION_KEY) Transaction transaction,
             @RequestHeader(HEADER_ERIC_REQUEST_ID) String requestId,
             @PathVariable(TRANSACTION_ID_KEY) String transactionId,
@@ -65,7 +60,7 @@ public class FilingController {
 
         try {
             FilingApi filing = filingService.generateDissolutionFiling(transaction, dissolutionId, passThroughHeader);
-            return ResponseEntity.ok(new FilingApi[] { filing });
+            return new FilingApi[] { filing };
         } catch (DissolutionNotLinkedToTransactionException e) {
             logger.errorContext(requestId, e.getMessage(), e, logCtx);
             throw new BadRequestException(e.getMessage());

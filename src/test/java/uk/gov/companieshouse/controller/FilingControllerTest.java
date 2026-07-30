@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.controller;
 
-import com.google.api.client.http.HttpResponseException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +8,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
-import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
@@ -20,8 +18,6 @@ import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionExceptio
 import uk.gov.companieshouse.exception.TransactionNotFoundException;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.transaction.FilingService;
-
-import java.io.IOException;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -55,7 +51,7 @@ class FilingControllerTest {
     private Transaction transaction;
 
     @BeforeEach
-    void init() {
+    void setup() {
         transaction = new Transaction();
         transaction.setId(TRANSACTION_ID);
         transaction.setStatus(TransactionStatus.CLOSED);

@@ -16,7 +16,9 @@ import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
 import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
+import uk.gov.companieshouse.fixtures.TransactionFixtures;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.mapper.filing.FilingDataMapper;
 import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
@@ -25,11 +27,7 @@ import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -62,6 +60,9 @@ class FilingServiceTest {
     @Mock
     private Logger logger;
 
+    @Mock
+    private FilingDataMapper mapper;
+
     @InjectMocks
     private FilingService filingService;
 
@@ -71,7 +72,7 @@ class FilingServiceTest {
     private PaymentApi paymentDetails;
 
     @BeforeEach
-    void init() {
+    void setup() {
         transaction = new Transaction();
         transaction.setId(TRANSACTION_ID);
         transaction.setStatus(TransactionStatus.CLOSED);
@@ -103,23 +104,24 @@ class FilingServiceTest {
 
     @Test
     void generateDissolutionFiling_returnsFilingData() throws DissolutionNotFoundException, DissolutionNotLinkedToTransactionException {
-        var expectedFilingData = generateFilingData(dissolution, transactionPayment, paymentDetails);
         var expectedDescription = String.format(FILING_DESCRIPTION, dissolution.getCompany().getName(), dissolution.getCompany().getNumber());
+        var expectedFilingData = TransactionFixtures.generateFilingData(dissolution);
 
         when(dissolutionService.getDissolutionForTransaction(transaction, DISSOLUTION_ID)).thenReturn(dissolution);
         when(transactionService.getPayment(PAYMENT_URI, PASSTHROUGH_HEADER)).thenReturn(transactionPayment);
         when(paymentService.getPaymentSession(PAYMENT_REFERENCE, PASSTHROUGH_HEADER)).thenReturn(paymentDetails);
+        when(mapper.mapToFilingData(dissolution, PAYMENT_REFERENCE, PAYMENT_METHOD)).thenReturn(expectedFilingData);
 
         var response = filingService.generateDissolutionFiling(transaction, DISSOLUTION_ID, PASSTHROUGH_HEADER);
 
         assertEquals(expectedDescription, response.getDescription());
         assertEquals(FILING_KIND_DS01, response.getKind());
-//        assertEquals(response.getCost(), response);
         assertEquals(expectedFilingData, response.getData());
 
         verify(dissolutionService, times(1)).getDissolutionForTransaction(transaction, DISSOLUTION_ID);
         verify(transactionService, times(1)).getPayment(PAYMENT_URI, PASSTHROUGH_HEADER);
         verify(paymentService, times(1)).getPaymentSession(PAYMENT_REFERENCE, PASSTHROUGH_HEADER);
+        verify(mapper, times(1)).mapToFilingData(dissolution, PAYMENT_REFERENCE, PAYMENT_METHOD);
     }
 
     @Test
@@ -133,58 +135,6 @@ class FilingServiceTest {
         var response = filingService.generateDissolutionFiling(transaction, DISSOLUTION_ID, PASSTHROUGH_HEADER);
 
         assertEquals(FILING_KIND_LLDS01, response.getKind());
-    }
-
-    @Test
-    void generateDissolutionFiling_splitsDirectorName_intoSurnameAndForename_whenNameContainsComma() throws DissolutionNotFoundException, DissolutionNotLinkedToTransactionException {
-        dissolution.getData().getDirectors().get(0).setName("DOE, John James");
-        var expectedData = generateFilingData(dissolution, transactionPayment, paymentDetails);
-
-        when(dissolutionService.getDissolutionForTransaction(transaction, DISSOLUTION_ID)).thenReturn(dissolution);
-        when(transactionService.getPayment(PAYMENT_URI, PASSTHROUGH_HEADER)).thenReturn(transactionPayment);
-        when(paymentService.getPaymentSession(PAYMENT_REFERENCE, PASSTHROUGH_HEADER)).thenReturn(paymentDetails);
-
-        var response = filingService.generateDissolutionFiling(transaction, DISSOLUTION_ID, PASSTHROUGH_HEADER);
-
-        assertEquals(expectedData, response.getData());
-    }
-
-    @Test
-    void generateDissolutionFiling_includesOnBehalfName_whenDirectorIsSigningOnBehalf() throws DissolutionNotFoundException, DissolutionNotLinkedToTransactionException {
-        dissolution.getData().getDirectors().get(0).setOnBehalfName("Some Company Ltd");
-        var expectedData = generateFilingData(dissolution, transactionPayment, paymentDetails);
-
-        when(dissolutionService.getDissolutionForTransaction(transaction, DISSOLUTION_ID)).thenReturn(dissolution);
-        when(transactionService.getPayment(PAYMENT_URI, PASSTHROUGH_HEADER)).thenReturn(transactionPayment);
-        when(paymentService.getPaymentSession(PAYMENT_REFERENCE, PASSTHROUGH_HEADER)).thenReturn(paymentDetails);
-
-        var response = filingService.generateDissolutionFiling(transaction, DISSOLUTION_ID, PASSTHROUGH_HEADER);
-
-        assertEquals(expectedData, response.getData());
-    }
-
-    @Test
-    void generateDissolutionFiling_mapsAllDirectors_whenMultipleDirectors() throws DissolutionNotFoundException, DissolutionNotLinkedToTransactionException {
-        var approvalTwo = generateDirectorApproval();
-        approvalTwo.setDateTime(LocalDateTime.of(2021, 5, 10, 0, 0));
-
-        var directorTwo = generateDissolutionDirector();
-        directorTwo.setName("SMITH, Jane");
-        directorTwo.setEmail("jane@smith.com");
-        directorTwo.setOnBehalfName(null);
-        directorTwo.setDirectorApproval(approvalTwo);
-
-        dissolution.getData().setDirectors(List.of(dissolution.getData().getDirectors().get(0), directorTwo));
-        var expectedData = generateFilingData(dissolution, transactionPayment, paymentDetails);
-
-        when(dissolutionService.getDissolutionForTransaction(transaction, DISSOLUTION_ID)).thenReturn(dissolution);
-        when(transactionService.getPayment(PAYMENT_URI, PASSTHROUGH_HEADER)).thenReturn(transactionPayment);
-        when(paymentService.getPaymentSession(PAYMENT_REFERENCE, PASSTHROUGH_HEADER)).thenReturn(paymentDetails);
-
-        var response = filingService.generateDissolutionFiling(transaction, DISSOLUTION_ID, PASSTHROUGH_HEADER);
-
-        assertEquals(expectedData, response.getData());
-        assertEquals(2, ((List<?>) response.getData().get("officers")).size());
     }
 
     @Test
@@ -213,37 +163,5 @@ class FilingServiceTest {
 
         assertThrows(ServiceException.class,
                 () -> filingService.generateDissolutionFiling(transaction, DISSOLUTION_ID, PASSTHROUGH_HEADER));
-    }
-
-    private Map<String, Object> generateFilingData(Dissolution dissolution, TransactionPayment transactionPayment, PaymentApi paymentDetails) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("company_name", dissolution.getCompany().getName());
-        data.put("company_number", dissolution.getCompany().getNumber());
-        data.put("officers", dissolution.getData().getDirectors().stream().map(this::mapToExpectedOfficer).toList());
-        data.put("payment_reference", transactionPayment.getPaymentReference());
-        data.put("payment_method", paymentDetails.getPaymentMethod());
-        return data;
-    }
-
-    private Map<String, Object> mapToExpectedOfficer(DissolutionDirector director) {
-        Map<String, Object> officer = new HashMap<>();
-        officer.put("person_name", mapToExpectedPersonName(director.getName()));
-        officer.put("sign_date", director.getDirectorApproval().getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-        officer.put("email", director.getEmail());
-        officer.put("ip_address", director.getDirectorApproval().getIpAddress());
-        Optional.ofNullable(director.getOnBehalfName()).ifPresent(name -> officer.put("on_behalf_name", name));
-        return officer;
-    }
-
-    private Map<String, String> mapToExpectedPersonName(String name) {
-        Map<String, String> personName = new HashMap<>();
-        int separatorIndex = name.indexOf(',');
-        if (separatorIndex == -1) {
-            personName.put("surname", name.trim());
-        } else {
-            personName.put("forename", name.substring(separatorIndex + 1).trim());
-            personName.put("surname", name.substring(0, separatorIndex).trim());
-        }
-        return personName;
     }
 }
