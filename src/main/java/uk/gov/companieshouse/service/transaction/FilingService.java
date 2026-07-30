@@ -61,7 +61,6 @@ public class FilingService {
         filing.setKind(applicationType == ApplicationType.LLDS01 ? FILING_KIND_LLDS01 : FILING_KIND_DS01);
         filing.setDescription(String.format(filingDescription, company.getName(), company.getNumber()));
         filing.setData(buildFilingData(ctx));
-//        data.put("sign_date", dissolution.getCreatedBy().getDateTime().format(DATE_FORMATTER));
     }
 
     private Map<String, Object> buildFilingData(Context ctx) {
