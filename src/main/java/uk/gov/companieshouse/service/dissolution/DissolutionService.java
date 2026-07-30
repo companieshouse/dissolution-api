@@ -66,6 +66,10 @@ public class DissolutionService {
         return getter.getByApplicationReference(applicationReference);
     }
 
+    public Optional<DissolutionGetResponse> getById(String id) {
+        return getter.getById(id);
+    }
+
     public boolean isDirectorPendingApproval(String companyNumber, String officerId) {
         return getter.isDirectorPendingApproval(companyNumber, officerId);
     }

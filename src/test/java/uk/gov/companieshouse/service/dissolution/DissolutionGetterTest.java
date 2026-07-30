@@ -145,4 +145,21 @@ class DissolutionGetterTest {
 
         assertTrue(result);
     }
+
+    @Test
+    void getById_returnsDissolutionGetResponse() {
+        final Dissolution dissolution = DissolutionFixtures.generateDissolution();
+        final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse();
+
+        String id = "123456788";
+        when(repository.findById(id)).thenReturn(Optional.of(dissolution));
+        when(responseMapper.mapToDissolutionGetResponse(dissolution)).thenReturn(response);
+
+        final Optional<DissolutionGetResponse> result = getter.getById(id);
+
+        verify(repository).findById(id);
+        verify(responseMapper).mapToDissolutionGetResponse(dissolution);
+        assertTrue(result.isPresent());
+        assertEquals(response, result.get());
+    }
 }
