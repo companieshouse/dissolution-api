@@ -18,7 +18,7 @@ public class SecurityConfig implements WebMvcConfigurer {
             "/dissolution-request/submit",
             "/dissolution-request/response",
             "/dissolution-request/{company-number}/resend-email/{email-address}",
-            "/transactions/{transaction_id}/dissolution/{dissolution_id}/costs"
+            "/transactions/{transaction_id}/**/costs"
     };
 
     private static final String[] TOKEN_PERMISSION_AUTH_EXCLUDE_LIST = ArrayUtils.addAll(

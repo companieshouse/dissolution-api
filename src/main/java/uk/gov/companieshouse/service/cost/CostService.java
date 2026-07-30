@@ -7,7 +7,6 @@ import java.util.List;
 import uk.gov.companieshouse.api.model.payment.Cost;
 import uk.gov.companieshouse.config.FeeConfig;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
-import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 
@@ -29,7 +28,7 @@ public class CostService {
         this.feeConfig = feeConfig;
     }
 
-    public Cost getCosts(String dissolutionId) throws ServiceException, DissolutionNotFoundException {
+    public Cost getCosts(String dissolutionId) throws DissolutionNotFoundException {
         DissolutionGetResponse dissolutionInfo  = dissolutionService.getById(dissolutionId).orElseThrow(DissolutionNotFoundException::new);
 
         Cost cost = new Cost();

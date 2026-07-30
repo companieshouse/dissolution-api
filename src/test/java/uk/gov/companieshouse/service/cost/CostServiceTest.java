@@ -27,6 +27,10 @@ import static uk.gov.companieshouse.model.Constants.PAYMENT_DESCRIPTION_IDENTIFI
 
 @ExtendWith(MockitoExtension.class)
 class CostServiceTest {
+
+    private static final String DESCRIPTION_KEY = "Key";
+    private static final String DESCRIPTION_VALUE = "Value";
+
     @Mock
     private DissolutionService dissolutionService;
 
@@ -53,8 +57,8 @@ class CostServiceTest {
         assertEquals("Apply to strike off and dissolve a company: Test Company (12345678)", actualCost.getDescription());
         assertEquals(PAYMENT_DESCRIPTION_IDENTIFIER, actualCost.getDescriptionIdentifier());
         assertNotNull(actualCost.getDescriptionValues());
-        assertTrue(actualCost.getDescriptionValues().containsKey("Key"));
-        assertEquals("Value", actualCost.getDescriptionValues().get("Key"));
+        assertTrue(actualCost.getDescriptionValues().containsKey(DESCRIPTION_KEY));
+        assertEquals(DESCRIPTION_VALUE, actualCost.getDescriptionValues().get(DESCRIPTION_KEY));
         assertEquals(PAYMENT_AVAILABLE_PAYMENT_METHOD, actualCost.getAvailablePaymentMethods().getFirst());
         assertEquals(PAYMENT_CLASS_OF_PAYMENT, actualCost.getClassOfPayment().getFirst());
         assertEquals("dissolution", actualCost.getKind());

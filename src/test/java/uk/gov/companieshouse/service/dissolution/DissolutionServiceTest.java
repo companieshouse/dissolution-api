@@ -183,6 +183,7 @@ class DissolutionServiceTest {
         final Optional<DissolutionGetResponse> result = service.getById(id);
 
         verify(getter).getById(id);
-        assertNotNull(result);
+        assertTrue(result.isPresent());
+        assertEquals(response, result.get());
     }
 }
