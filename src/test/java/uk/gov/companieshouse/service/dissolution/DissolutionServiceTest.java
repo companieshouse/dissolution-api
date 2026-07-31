@@ -5,24 +5,24 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
+import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
+import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.*;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.repository.DissolutionRepository;
+import uk.gov.companieshouse.util.TransactionHelper;
 
 import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionPatchRequest;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
@@ -45,12 +45,17 @@ class DissolutionServiceTest {
     @Mock
     private DissolutionRepository repository;
 
+    @Mock
+    private TransactionHelper transactionHelper;
+
     public static final String COMPANY_NUMBER = "12345678";
     public static final String APPLICATION_REFERENCE = "XYZ456";
     public static final String USER_ID = "123";
     public static final String IP = "192.168.0.1";
     public static final String EMAIL = "user@mail.com";
     public static final String OFFICER_ID = "abc123";
+    private static final String DISSOLUTION_ID = "12345678";
+    private static final String TRANSACTION_ID = "tx-id-123";
 
     @Test
     void create_createsADissolutionRequest_returnsCreateResponse() {
@@ -174,16 +179,71 @@ class DissolutionServiceTest {
     }
 
     @Test
-    void givenGetByIdCalled_whenValidId_returnsDissolutionGetResponse(){
-        final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse();
+    void givenGetDissolutionByIdCalled_whenValidId_returnsDissolution() {
+        var dissolution = DissolutionFixtures.generateDissolution();
+        dissolution.setId(DISSOLUTION_ID);
 
-        String id = "123456788";
-        when(getter.getById(id)).thenReturn(Optional.of(response));
+        when(repository.findById(DISSOLUTION_ID)).thenReturn(Optional.of(dissolution));
 
-        final Optional<DissolutionGetResponse> result = service.getById(id);
+        final Optional<Dissolution> result = service.getDissolutionById(DISSOLUTION_ID);
 
-        verify(getter).getById(id);
+        verify(repository).findById(DISSOLUTION_ID);
         assertTrue(result.isPresent());
-        assertEquals(response, result.get());
+        assertEquals(dissolution, result.get());
+    }
+
+    @Test
+    void givenGetDissolutionByIdCalled_whenInvalidId_returnsEmptyOptional() {
+        when(repository.findById(DISSOLUTION_ID)).thenReturn(Optional.empty());
+
+        final Optional<Dissolution> result = service.getDissolutionById(DISSOLUTION_ID);
+
+        verify(repository).findById(DISSOLUTION_ID);
+        assertFalse(result.isPresent());
+    }
+
+    @Test
+    void givenGetDissolutionForTransactionCalled_whenLinkedDissolutionExists_returnsDissolution() throws DissolutionNotFoundException, DissolutionNotLinkedToTransactionException {
+        var dissolution = DissolutionFixtures.generateDissolution();
+        dissolution.setId(DISSOLUTION_ID);
+        var transaction = new Transaction();
+        transaction.setId(TRANSACTION_ID);
+
+        when(transactionHelper.isTransactionLinkedToDissolution(transaction, DISSOLUTION_ID)).thenReturn(true);
+        when(repository.findById(DISSOLUTION_ID)).thenReturn(Optional.of(dissolution));
+
+        final Dissolution result = service.getDissolutionForTransaction(transaction, DISSOLUTION_ID);
+
+        verify(repository).findById(DISSOLUTION_ID);
+        assertEquals(dissolution, result);
+    }
+
+    @Test
+    void givenGetDissolutionForTransactionCalled_whenDissolutionNotLinkedToTransaction_throwsException() {
+        var dissolution = DissolutionFixtures.generateDissolution();
+        dissolution.setId(DISSOLUTION_ID);
+        var transaction = new Transaction();
+        transaction.setId(TRANSACTION_ID);
+
+        when(transactionHelper.isTransactionLinkedToDissolution(transaction, DISSOLUTION_ID)).thenReturn(false);
+
+        assertThrows(DissolutionNotLinkedToTransactionException.class,
+                () -> service.getDissolutionForTransaction(transaction, DISSOLUTION_ID));
+        verify(repository, never()).findById(DISSOLUTION_ID);
+    }
+
+    @Test
+    void givenGetDissolutionForTransactionCalled_whenDissolutionDoesNotExist_throwsException() {
+        var dissolution = DissolutionFixtures.generateDissolution();
+        dissolution.setId(DISSOLUTION_ID);
+        var transaction = new Transaction();
+        transaction.setId(TRANSACTION_ID);
+
+        when(transactionHelper.isTransactionLinkedToDissolution(transaction, DISSOLUTION_ID)).thenReturn(true);
+        when(repository.findById(DISSOLUTION_ID)).thenReturn(Optional.empty());
+
+        assertThrows(DissolutionNotFoundException.class,
+                () -> service.getDissolutionForTransaction(transaction, DISSOLUTION_ID));
+        verify(repository, times(1)).findById(DISSOLUTION_ID);
     }
 }

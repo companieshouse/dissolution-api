@@ -7,7 +7,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import uk.gov.companieshouse.api.model.payment.Cost;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
+import uk.gov.companieshouse.exception.BadRequestException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
+import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.service.cost.CostService;
@@ -30,7 +32,8 @@ public class CostController {
     @Operation(summary = "Get Dissolution Costs", tags = "Dissolution")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Costs found"),
-            @ApiResponse(responseCode = "404", description = "Dissolution Application not found")
+            @ApiResponse(responseCode = "400", description = "Dissolution not linked to transaction"),
+            @ApiResponse(responseCode = "404", description = "Dissolution not found")
     })
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -41,9 +44,11 @@ public class CostController {
             @RequestHeader(HEADER_ERIC_REQUEST_ID) String requestId) {
         logger.info("Getting costs for transaction: " + transactionId + ", dissolution: " + dissolutionId + ", requestId: " + requestId);
         try {
-            return List.of(costService.getCosts(dissolutionId));
+            return List.of(costService.getCosts(transaction, dissolutionId));
         } catch (DissolutionNotFoundException e) {
             throw new NotFoundException();
+        } catch (DissolutionNotLinkedToTransactionException e) {
+            throw new BadRequestException(e.getMessage());
         }
     }
 }

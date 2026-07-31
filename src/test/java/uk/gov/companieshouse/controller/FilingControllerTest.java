@@ -31,7 +31,7 @@ class FilingControllerTest {
 
     private static final String FILING_URI = "/private/transactions/{transaction_id}/dissolution/{dissolution_id}/filings";
     private static final String DISSOLUTION_ID = "12345678";
-    private static final String TRANSACTION_ID = "def456";
+    private static final String TRANSACTION_ID = "tx-id-123";
     private static final String ERIC_REQUEST_ID = "XaBcDeF12345";
     private static final String PASS_THROUGH_HEADER = "545345345";
     private static final String ERIC_ACCESS_TOKEN_HEADER = "ERIC-Access-Token";
@@ -198,7 +198,6 @@ class FilingControllerTest {
 
         headers.add(EricConstants.ERIC_IDENTITY, IDENTITY_HEADER_VALUE);
         headers.add(EricConstants.ERIC_IDENTITY_TYPE, SecurityConstants.API_KEY_IDENTITY_TYPE);
-        headers.add(EricConstants.ERIC_AUTHORISED_KEY_ROLES, SecurityConstants.INTERNAL_USER_ROLE);
         headers.add(EricConstants.ERIC_AUTHORISED_KEY_ROLES, SecurityConstants.INTERNAL_USER_ROLE);
         headers.add(ERIC_ACCESS_TOKEN_HEADER, PASS_THROUGH_HEADER);
         headers.add(HEADER_ERIC_REQUEST_ID, ERIC_REQUEST_ID);

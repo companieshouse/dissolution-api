@@ -33,7 +33,7 @@ public class FilingController {
     @Operation(summary = "Get Dissolution filing", tags = "Dissolution")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Dissolution filing generated successfully"),
-            @ApiResponse(responseCode = "400", description = "Dissolution filing cannot be generated"),
+            @ApiResponse(responseCode = "400", description = "Dissolution not linked to transaction"),
             @ApiResponse(responseCode = "404", description = "Dissolution not found"),
             @ApiResponse(responseCode = "409", description = "Invalid transaction status"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
@@ -53,10 +53,10 @@ public class FilingController {
         logCtx.put(DISSOLUTION_ID_KEY, dissolutionId);
 
         if (!transaction.getStatus().equals(TransactionStatus.CLOSED)) {
-            throw new ConflictException("Rejecting filings request due to invalid transaction status");
+            logCtx.put("transaction_status", transaction.getStatus());
+            logger.infoContext(requestId, "Failed to generate dissolution filing as transaction is not CLOSED", logCtx);
+            throw new ConflictException("Rejected filings request due to invalid transaction status");
         }
-
-        logger.infoContext(requestId, "Generating dissolution filing", logCtx);
 
         try {
             FilingApi filing = filingService.generateDissolutionFiling(transaction, dissolutionId, passThroughHeader);

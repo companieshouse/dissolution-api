@@ -41,7 +41,7 @@ import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
 class FilingServiceTest {
 
     private static final String DISSOLUTION_ID = "12345678";
-    private static final String TRANSACTION_ID = "def456";
+    private static final String TRANSACTION_ID = "tx-id-123";
     private static final String PASSTHROUGH_HEADER = "passthrough";
     private static final String PAYMENT_URI = String.format("/transactions/%s/payment", TRANSACTION_ID);
     private static final String PAYMENT_REFERENCE = "somePaymentRef";

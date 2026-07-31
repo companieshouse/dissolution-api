@@ -66,10 +66,6 @@ public class DissolutionService {
         return getter.getByApplicationReference(applicationReference);
     }
 
-    public Optional<DissolutionGetResponse> getById(String id) {
-        return getter.getById(id);
-    }
-
     public boolean isDirectorPendingApproval(String companyNumber, String officerId) {
         return getter.isDirectorPendingApproval(companyNumber, officerId);
     }
@@ -80,12 +76,8 @@ public class DissolutionService {
 
     public Dissolution getDissolutionForTransaction(Transaction transaction, String dissolutionId) throws DissolutionNotLinkedToTransactionException, DissolutionNotFoundException {
         if (!transactionHelper.isTransactionLinkedToDissolution(transaction, dissolutionId)) {
-            throw new DissolutionNotLinkedToTransactionException(String.format(
-                    "Transaction id: %s does not have a resource that matches Dissolution id: %s", transaction.getId(), dissolutionId));
+            throw new DissolutionNotLinkedToTransactionException("Transaction not linked to dissolution");
         }
-
-        return getDissolutionById(dissolutionId).orElseThrow(() -> new DissolutionNotFoundException(
-                String.format("Empty submission returned when generating filing for %s", dissolutionId)
-        ));
+        return getDissolutionById(dissolutionId).orElseThrow(DissolutionNotFoundException::new);
     }
 }
