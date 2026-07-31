@@ -31,15 +31,15 @@ public class FilingService {
 
     private final DissolutionService dissolutionService;
     private final TransactionService transactionService;
-    private final PaymentService paymentService;
+    private final TransactionPaymentService transactionPaymentService;
     private final FilingDataMapper mapper;
     private final Logger logger;
     private final FeeConfig feeConfig;
 
-    public FilingService(DissolutionService dissolutionService, TransactionService transactionService, PaymentService paymentService, FilingDataMapper mapper, Logger logger, FeeConfig feeConfig) {
+    public FilingService(DissolutionService dissolutionService, TransactionService transactionService, TransactionPaymentService transactionPaymentService, FilingDataMapper mapper, Logger logger, FeeConfig feeConfig) {
         this.dissolutionService = dissolutionService;
         this.transactionService = transactionService;
-        this.paymentService = paymentService;
+        this.transactionPaymentService = transactionPaymentService;
         this.mapper = mapper;
         this.logger = logger;
         this.feeConfig = feeConfig;
@@ -70,7 +70,7 @@ public class FilingService {
     private Map<String, Object> buildFilingData(Context ctx) {
         final var paymentDetails = transactionService.getPayment(
                 ctx.transaction().getLinks().getPayment(), ctx.passThroughTokenHeader());
-        final var paymentSession = paymentService.getPaymentSession(
+        final var paymentSession = transactionPaymentService.getPaymentSession(
                 paymentDetails.getPaymentReference(), ctx.passThroughTokenHeader());
 
         return mapper.mapToFilingData(

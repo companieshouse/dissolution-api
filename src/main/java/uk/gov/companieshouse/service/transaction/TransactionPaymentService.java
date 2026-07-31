@@ -9,11 +9,11 @@ import uk.gov.companieshouse.exception.ServiceException;
 import java.io.IOException;
 
 @Service
-public class PaymentService {
+public class TransactionPaymentService {
 
     private final ApiClientService apiClientService;
 
-    public PaymentService(ApiClientService apiClientService) {
+    public TransactionPaymentService(ApiClientService apiClientService) {
         this.apiClientService = apiClientService;
     }
 

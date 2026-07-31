@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PaymentServiceTest {
+class TransactionPaymentServiceTest {
 
     private static final String PASSTHROUGH_HEADER = "passthrough";
     private static final String PAYMENT_METHOD = "credit-card";
@@ -46,7 +46,7 @@ class PaymentServiceTest {
     private ApiResponse<PaymentApi> apiGetResponse;
 
     @InjectMocks
-    private PaymentService service;
+    private TransactionPaymentService service;
 
     @BeforeEach
     void initialize() throws IOException {

@@ -47,7 +47,7 @@ class FilingServiceTest {
     private static final String PAYMENT_URI = String.format("/transactions/%s/payment", TRANSACTION_ID);
     private static final String PAYMENT_REFERENCE = "somePaymentRef";
     private static final String PAYMENT_METHOD = "credit-card";
-    private static final String FILING_DESCRIPTION = "Apply to strike off and dissolve a company: %s (%s)";
+    private static final String FILING_DESCRIPTION = "Dissolution application to strike off and dissolve a company %s (%s)";
 
     @Mock
     private DissolutionService dissolutionService;
@@ -56,7 +56,7 @@ class FilingServiceTest {
     private TransactionService transactionService;
 
     @Mock
-    private PaymentService paymentService;
+    private TransactionPaymentService transactionPaymentService;
 
     @Mock
     private FeeConfig feeConfig;
@@ -113,7 +113,7 @@ class FilingServiceTest {
 
         when(dissolutionService.getDissolutionForTransaction(transaction, DISSOLUTION_ID)).thenReturn(dissolution);
         when(transactionService.getPayment(PAYMENT_URI, PASSTHROUGH_HEADER)).thenReturn(transactionPayment);
-        when(paymentService.getPaymentSession(PAYMENT_REFERENCE, PASSTHROUGH_HEADER)).thenReturn(paymentDetails);
+        when(transactionPaymentService.getPaymentSession(PAYMENT_REFERENCE, PASSTHROUGH_HEADER)).thenReturn(paymentDetails);
         when(mapper.mapToFilingData(dissolution, PAYMENT_REFERENCE, PAYMENT_METHOD)).thenReturn(expectedFilingData);
         when(feeConfig.getClosingPounds()).thenReturn("10.00");
 
@@ -126,7 +126,7 @@ class FilingServiceTest {
 
         verify(dissolutionService, times(1)).getDissolutionForTransaction(transaction, DISSOLUTION_ID);
         verify(transactionService, times(1)).getPayment(PAYMENT_URI, PASSTHROUGH_HEADER);
-        verify(paymentService, times(1)).getPaymentSession(PAYMENT_REFERENCE, PASSTHROUGH_HEADER);
+        verify(transactionPaymentService, times(1)).getPaymentSession(PAYMENT_REFERENCE, PASSTHROUGH_HEADER);
         verify(mapper, times(1)).mapToFilingData(dissolution, PAYMENT_REFERENCE, PAYMENT_METHOD);
         verify(feeConfig, times(1)).getClosingPounds();
     }
@@ -137,7 +137,7 @@ class FilingServiceTest {
 
         when(dissolutionService.getDissolutionForTransaction(transaction, DISSOLUTION_ID)).thenReturn(dissolution);
         when(transactionService.getPayment(PAYMENT_URI, PASSTHROUGH_HEADER)).thenReturn(transactionPayment);
-        when(paymentService.getPaymentSession(PAYMENT_REFERENCE, PASSTHROUGH_HEADER)).thenReturn(paymentDetails);
+        when(transactionPaymentService.getPaymentSession(PAYMENT_REFERENCE, PASSTHROUGH_HEADER)).thenReturn(paymentDetails);
 
         var response = filingService.generateDissolutionFiling(transaction, DISSOLUTION_ID, PASSTHROUGH_HEADER);
 
