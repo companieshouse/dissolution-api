@@ -1,7 +1,7 @@
 package uk.gov.companieshouse.exception;
 
 /**
- * Company profile not found or external query failed.
+ * Transaction service query failed.
  */
 public class TransactionServiceException extends RuntimeException {
     public TransactionServiceException(final String s, final Exception e) {

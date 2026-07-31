@@ -32,7 +32,7 @@ public class TransactionService {
                     .getData();
         } catch (ApiErrorResponseException e) {
             final var status = e.getStatusCode();
-            if (HttpStatus.valueOf(status).equals(HttpStatus.NOT_FOUND)) {
+            if (status == HttpStatus.NOT_FOUND.value()) {
                 throw new TransactionNotFoundException(String.format("No transaction found with id %s", transactionId));
             }
             throw new TransactionServiceException(String.format("Failed to retrieve transaction details for %s, received http status code %s", transactionId, status), e);

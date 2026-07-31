@@ -133,7 +133,7 @@ class TransactionServiceTest {
         }
 
         @Test
-        void getPayment_throwsNotFoundException_ifApiErrorResponseExceptionOccurs() throws IOException, URIValidationException {
+        void getPayment_throwsServiceException_ifApiErrorResponseExceptionOccurs() throws IOException, URIValidationException {
             when(transactionsPaymentGet.execute()).thenThrow(TransactionFixtures.generateApiErrorResponseException(404, "Payment Not Found"));
             assertThrows(TransactionServiceException.class, () -> transactionService.getPayment(PAYMENT_URI, PASSTHROUGH_HEADER));
         }
