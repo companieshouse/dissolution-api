@@ -7,12 +7,10 @@ import uk.gov.companieshouse.api.handler.exception.URIValidationException;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionPayment;
 import uk.gov.companieshouse.api.sdk.ApiClientService;
-import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.exception.TransactionNotFoundException;
 import uk.gov.companieshouse.exception.TransactionServiceException;
 
 import java.io.IOException;
-import java.util.Objects;
 
 @Service
 public class TransactionService {
