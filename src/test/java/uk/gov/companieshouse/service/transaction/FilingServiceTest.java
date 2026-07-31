@@ -12,6 +12,7 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionLinks;
 import uk.gov.companieshouse.api.model.transaction.TransactionPayment;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
+import uk.gov.companieshouse.config.FeeConfig;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
 import uk.gov.companieshouse.exception.ServiceException;
@@ -56,6 +57,9 @@ class FilingServiceTest {
 
     @Mock
     private PaymentService paymentService;
+
+    @Mock
+    private FeeConfig feeConfig;
 
     @Mock
     private Logger logger;
@@ -111,17 +115,20 @@ class FilingServiceTest {
         when(transactionService.getPayment(PAYMENT_URI, PASSTHROUGH_HEADER)).thenReturn(transactionPayment);
         when(paymentService.getPaymentSession(PAYMENT_REFERENCE, PASSTHROUGH_HEADER)).thenReturn(paymentDetails);
         when(mapper.mapToFilingData(dissolution, PAYMENT_REFERENCE, PAYMENT_METHOD)).thenReturn(expectedFilingData);
+        when(feeConfig.getClosingPounds()).thenReturn("10.00");
 
         var response = filingService.generateDissolutionFiling(transaction, DISSOLUTION_ID, PASSTHROUGH_HEADER);
 
         assertEquals(expectedDescription, response.getDescription());
         assertEquals(FILING_KIND_DS01, response.getKind());
         assertEquals(expectedFilingData, response.getData());
+        assertEquals("10.00", response.getCost());
 
         verify(dissolutionService, times(1)).getDissolutionForTransaction(transaction, DISSOLUTION_ID);
         verify(transactionService, times(1)).getPayment(PAYMENT_URI, PASSTHROUGH_HEADER);
         verify(paymentService, times(1)).getPaymentSession(PAYMENT_REFERENCE, PASSTHROUGH_HEADER);
         verify(mapper, times(1)).mapToFilingData(dissolution, PAYMENT_REFERENCE, PAYMENT_METHOD);
+        verify(feeConfig, times(1)).getClosingPounds();
     }
 
     @Test

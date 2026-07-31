@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
+import uk.gov.companieshouse.config.FeeConfig;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
 import uk.gov.companieshouse.exception.ServiceException;
@@ -33,13 +34,15 @@ public class FilingService {
     private final PaymentService paymentService;
     private final FilingDataMapper mapper;
     private final Logger logger;
+    private final FeeConfig feeConfig;
 
-    public FilingService(DissolutionService dissolutionService, TransactionService transactionService, PaymentService paymentService, FilingDataMapper mapper, Logger logger) {
+    public FilingService(DissolutionService dissolutionService, TransactionService transactionService, PaymentService paymentService, FilingDataMapper mapper, Logger logger, FeeConfig feeConfig) {
         this.dissolutionService = dissolutionService;
         this.transactionService = transactionService;
         this.paymentService = paymentService;
         this.mapper = mapper;
         this.logger = logger;
+        this.feeConfig = feeConfig;
     }
 
     public FilingApi generateDissolutionFiling(Transaction transaction, String dissolutionId, String passThroughTokenHeader) throws DissolutionNotFoundException, ServiceException, DissolutionNotLinkedToTransactionException {
@@ -60,6 +63,7 @@ public class FilingService {
 
         filing.setKind(applicationType == ApplicationType.LLDS01 ? FILING_KIND_LLDS01 : FILING_KIND_DS01);
         filing.setDescription(String.format(filingDescription, company.getName(), company.getNumber()));
+        filing.setCost(feeConfig.getClosingPounds());
         filing.setData(buildFilingData(ctx));
     }
 
