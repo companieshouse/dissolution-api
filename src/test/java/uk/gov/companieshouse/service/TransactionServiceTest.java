@@ -18,8 +18,8 @@ import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionPayment;
 import uk.gov.companieshouse.api.sdk.ApiClientService;
+import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.exception.TransactionNotFoundException;
-import uk.gov.companieshouse.exception.TransactionServiceException;
 import uk.gov.companieshouse.fixtures.TransactionFixtures;
 
 import java.io.IOException;
@@ -93,19 +93,19 @@ class TransactionServiceTest {
         @Test
         void getTransaction_throwsServiceException_ifApiErrorResponseExceptionOccurs() throws IOException, URIValidationException {
             when(transactionsGet.execute()).thenThrow(TransactionFixtures.generateApiErrorResponseException(400, "400 Bad Request"));
-            assertThrows(TransactionServiceException.class, () -> transactionService.getTransaction(TRANSACTION_ID, PASSTHROUGH_HEADER));
+            assertThrows(ServiceException.class, () -> transactionService.getTransaction(TRANSACTION_ID, PASSTHROUGH_HEADER));
         }
 
         @Test
         void getTransaction_throwsServiceException_ifUriValidationExceptionOccurs() throws IOException, URIValidationException {
             when(transactionsGet.execute()).thenThrow(new URIValidationException("ERROR"));
-            assertThrows(TransactionServiceException.class, () -> transactionService.getTransaction(TRANSACTION_ID, PASSTHROUGH_HEADER));
+            assertThrows(ServiceException.class, () -> transactionService.getTransaction(TRANSACTION_ID, PASSTHROUGH_HEADER));
         }
 
         @Test
         void getTransaction_throwsServiceException_ifIOExceptionOccurs() throws IOException, URIValidationException {
             when(transactionsGet.execute()).thenThrow(ApiErrorResponseException.fromIOException(new IOException("ERROR")));
-            assertThrows(TransactionServiceException.class, () -> transactionService.getTransaction(TRANSACTION_ID, PASSTHROUGH_HEADER));
+            assertThrows(ServiceException.class, () -> transactionService.getTransaction(TRANSACTION_ID, PASSTHROUGH_HEADER));
         }
     }
 
@@ -135,19 +135,19 @@ class TransactionServiceTest {
         @Test
         void getPayment_throwsServiceException_ifApiErrorResponseExceptionOccurs() throws IOException, URIValidationException {
             when(transactionsPaymentGet.execute()).thenThrow(TransactionFixtures.generateApiErrorResponseException(404, "Payment Not Found"));
-            assertThrows(TransactionServiceException.class, () -> transactionService.getPayment(PAYMENT_URI, PASSTHROUGH_HEADER));
+            assertThrows(ServiceException.class, () -> transactionService.getPayment(PAYMENT_URI, PASSTHROUGH_HEADER));
         }
 
         @Test
         void getPayment_throwsServiceException_ifUriValidationExceptionOccurs() throws IOException, URIValidationException {
             when(transactionsPaymentGet.execute()).thenThrow(new URIValidationException("ERROR"));
-            assertThrows(TransactionServiceException.class, () -> transactionService.getPayment(PAYMENT_URI, PASSTHROUGH_HEADER));
+            assertThrows(ServiceException.class, () -> transactionService.getPayment(PAYMENT_URI, PASSTHROUGH_HEADER));
         }
 
         @Test
         void getPayment_throwsServiceException_ifIOExceptionOccurs() throws IOException, URIValidationException {
             when(transactionsPaymentGet.execute()).thenThrow(ApiErrorResponseException.fromIOException(new IOException("ERROR")));
-            assertThrows(TransactionServiceException.class, () -> transactionService.getPayment(PAYMENT_URI, PASSTHROUGH_HEADER));
+            assertThrows(ServiceException.class, () -> transactionService.getPayment(PAYMENT_URI, PASSTHROUGH_HEADER));
         }
     }
 }
