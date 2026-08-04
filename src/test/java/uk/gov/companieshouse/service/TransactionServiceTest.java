@@ -24,6 +24,8 @@ import uk.gov.companieshouse.fixtures.TransactionFixtures;
 
 import java.io.IOException;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
@@ -85,7 +87,9 @@ class TransactionServiceTest {
         @Test
         void getTransaction_throwsNotFoundException_ifApiErrorResponseExceptionOccurs() throws IOException, URIValidationException {
             when(transactionsGet.execute()).thenThrow(TransactionFixtures.generateApiErrorResponseException(404, "404 Not Found"));
-            assertThrows(TransactionNotFoundException.class, () -> transactionService.getTransaction(TRANSACTION_ID, PASSTHROUGH_HEADER));
+            final var exception = assertThrows(TransactionNotFoundException.class, () -> transactionService.getTransaction(TRANSACTION_ID, PASSTHROUGH_HEADER));
+            assertThat(exception.getMessage(),
+                    is("No transaction found with id " + TRANSACTION_ID));
         }
 
         @Test
