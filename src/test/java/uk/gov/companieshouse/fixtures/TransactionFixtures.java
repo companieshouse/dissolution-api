@@ -2,14 +2,15 @@ package uk.gov.companieshouse.fixtures;
 
 import com.google.api.client.http.HttpResponseException;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
-import uk.gov.companieshouse.api.model.transaction.Resource;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
+import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static uk.gov.companieshouse.model.Constants.LINK_RESOURCE;
+import static uk.gov.companieshouse.model.Constants.SUBMISSION_URI_PATTERN;
 
 public class TransactionFixtures {
 
@@ -26,17 +27,19 @@ public class TransactionFixtures {
         return data;
     }
 
-    public static Transaction buildTransaction(Map<String, Resource> resources) {
-        var transaction = new Transaction();
-        transaction.setId(TRANSACTION_ID);
-        transaction.setResources(resources);
-        return transaction;
+    public static Transaction generateTransaction() {
+        return TransactionTestDataBuilder.aTransaction().build();
     }
 
-    public static Resource buildResource(String kind, String resourceLink) {
-        var resource = new Resource();
-        resource.setKind(kind);
-        resource.setLinks(Map.of(LINK_RESOURCE, resourceLink));
-        return resource;
+    public static Transaction generateClosedTransaction() {
+        return TransactionTestDataBuilder.aTransaction().withStatus(TransactionStatus.CLOSED).build();
+    }
+
+    public static TransactionResourceTestDataBuilder generateTransactionResource(String kind, String dissolutionId) {
+        var link = new TransactionResourceTestDataBuilder.Link(LINK_RESOURCE, String.format(SUBMISSION_URI_PATTERN, TRANSACTION_ID, dissolutionId));
+        return TransactionResourceTestDataBuilder.aTransactionResource()
+                .withResourceKey(String.format(SUBMISSION_URI_PATTERN, TRANSACTION_ID, dissolutionId))
+                .withKind(kind)
+                .withLinks(link);
     }
 }
