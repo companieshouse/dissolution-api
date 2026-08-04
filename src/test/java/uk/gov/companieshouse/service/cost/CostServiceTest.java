@@ -14,10 +14,15 @@ import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionExceptio
 import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
-import static uk.gov.companieshouse.model.Constants.*;
+import static uk.gov.companieshouse.model.Constants.PAYMENT_AVAILABLE_PAYMENT_METHOD;
+import static uk.gov.companieshouse.model.Constants.PAYMENT_CLASS_OF_PAYMENT;
+import static uk.gov.companieshouse.model.Constants.PAYMENT_DESCRIPTION_IDENTIFIER;
 
 @ExtendWith(MockitoExtension.class)
 class CostServiceTest {

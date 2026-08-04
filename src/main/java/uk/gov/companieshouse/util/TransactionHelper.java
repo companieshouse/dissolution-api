@@ -7,7 +7,10 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import java.util.Objects;
 import java.util.Set;
 
-import static uk.gov.companieshouse.model.Constants.*;
+import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
+import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
+import static uk.gov.companieshouse.model.Constants.LINK_RESOURCE;
+import static uk.gov.companieshouse.model.Constants.SUBMISSION_URI_PATTERN;
 
 @Component
 public class TransactionHelper {

@@ -11,7 +11,10 @@ import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import java.util.Collections;
 import java.util.List;
 
-import static uk.gov.companieshouse.model.Constants.*;
+import static uk.gov.companieshouse.model.Constants.PAYMENT_AVAILABLE_PAYMENT_METHOD;
+import static uk.gov.companieshouse.model.Constants.PAYMENT_CLASS_OF_PAYMENT;
+import static uk.gov.companieshouse.model.Constants.PAYMENT_DESCRIPTION;
+import static uk.gov.companieshouse.model.Constants.PAYMENT_DESCRIPTION_IDENTIFIER;
 
 @Service
 public class CostService {

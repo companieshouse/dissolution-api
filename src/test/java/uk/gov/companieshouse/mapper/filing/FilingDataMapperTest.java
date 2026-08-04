@@ -18,11 +18,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.fixtures.DissolutionFixtures.*;
 
 @ExtendWith(MockitoExtension.class)
 class FilingDataMapperTest {
@@ -48,16 +49,16 @@ class FilingDataMapperTest {
         dissolution = DissolutionFixtures.generateDissolution();
         dissolution.setId(DISSOLUTION_ID);
 
-        final DirectorApproval approvalOne = generateDirectorApproval();
+        final DirectorApproval approvalOne = DissolutionFixtures.generateDirectorApproval();
         approvalOne.setDateTime(LocalDateTime.of(2020, 10, 20, 0, 0));
 
-        final DissolutionDirector directorOne = generateDissolutionDirector();
+        final DissolutionDirector directorOne = DissolutionFixtures.generateDissolutionDirector();
         directorOne.setName(DEFAULT_SURNAME + ", " + DEFAULT_FORENAME);
         directorOne.setOnBehalfName(null);
         directorOne.setDirectorApproval(approvalOne);
 
         dissolution.getData().setDirectors(List.of(directorOne));
-        dissolution.setCertificate(generateDissolutionCertificate());
+        dissolution.setCertificate(DissolutionFixtures.generateDissolutionCertificate());
     }
 
     @Test
@@ -119,12 +120,12 @@ class FilingDataMapperTest {
     @Test
     @SuppressWarnings("unchecked")
     void mapToFilingData_mapsAllDirectors_whenMultipleDirectors() {
-        var approvalTwo = generateDirectorApproval();
+        var approvalTwo = DissolutionFixtures.generateDirectorApproval();
         approvalTwo.setDateTime(LocalDateTime.of(2021, 5, 10, 0, 0));
 
         var expectedForename = "Jane";
         var expectedSurname = "SMITH";
-        var directorTwo = generateDissolutionDirector();
+        var directorTwo = DissolutionFixtures.generateDissolutionDirector();
         directorTwo.setName(expectedSurname + ", " + expectedForename);
         directorTwo.setEmail("jane@smith.com");
         directorTwo.setOnBehalfName(null);

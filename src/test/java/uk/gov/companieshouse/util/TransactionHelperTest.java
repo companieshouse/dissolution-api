@@ -11,7 +11,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.companieshouse.fixtures.TransactionFixtures.buildResource;
 import static uk.gov.companieshouse.fixtures.TransactionFixtures.buildTransaction;
-import static uk.gov.companieshouse.model.Constants.*;
+import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
+import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
+import static uk.gov.companieshouse.model.Constants.SUBMISSION_URI_PATTERN;
 
 class TransactionHelperTest {
 
