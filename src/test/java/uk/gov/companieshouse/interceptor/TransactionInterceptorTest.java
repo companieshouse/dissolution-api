@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.interceptor;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -10,14 +9,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.servlet.HandlerMapping;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
-import uk.gov.companieshouse.exception.ServiceException;
+import uk.gov.companieshouse.exception.BadRequestException;
+import uk.gov.companieshouse.exception.InternalServerErrorException;
+import uk.gov.companieshouse.exception.NotFoundException;
+import uk.gov.companieshouse.exception.TransactionNotFoundException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.service.TransactionService;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 import static uk.gov.companieshouse.model.Constants.TRANSACTION_ID_KEY;
 import static uk.gov.companieshouse.model.Constants.TRANSACTION_KEY;
@@ -59,7 +62,7 @@ class TransactionInterceptorTest {
     }
 
     @Test
-    void interceptor_returnsFalse_ifServiceExceptionOccurs() {
+    void interceptor_throwsNotFoundError_ifTransactionNotFound() {
         MockHttpServletResponse mockHttpServletResponse = new MockHttpServletResponse();
         Object mockHandler = new Object();
 
@@ -68,22 +71,35 @@ class TransactionInterceptorTest {
 
         when(mockHttpServletRequest.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)).thenReturn(pathParams);
         when(mockHttpServletRequest.getHeader("ERIC-Access-Token")).thenReturn(PASSTHROUGH_HEADER);
-        when(transactionService.getTransaction(TX_ID, PASSTHROUGH_HEADER)).thenThrow(ServiceException.class);
+        when(transactionService.getTransaction(TX_ID, PASSTHROUGH_HEADER)).thenThrow(TransactionNotFoundException.class);
 
-        assertFalse(transactionInterceptor.preHandle(mockHttpServletRequest, mockHttpServletResponse, mockHandler));
-        assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, mockHttpServletResponse.getStatus());
+        assertThrows(NotFoundException.class, () -> transactionInterceptor.preHandle(mockHttpServletRequest, mockHttpServletResponse, mockHandler));
     }
 
     @Test
-    void interceptor_throwsAnUnauthorisedError_ifTransactionIdIsMissing() {
+    void interceptor_throwsInternalServerError_ifTransactionServiceFails() {
+        MockHttpServletResponse mockHttpServletResponse = new MockHttpServletResponse();
+        Object mockHandler = new Object();
+
+        var pathParams = new HashMap<String, String>();
+        pathParams.put(TRANSACTION_ID_KEY, TX_ID);
+
+        when(mockHttpServletRequest.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)).thenReturn(pathParams);
+        when(mockHttpServletRequest.getHeader("ERIC-Access-Token")).thenReturn(PASSTHROUGH_HEADER);
+        when(transactionService.getTransaction(TX_ID, PASSTHROUGH_HEADER)).thenThrow(RuntimeException.class);
+
+        assertThrows(InternalServerErrorException.class, () -> transactionInterceptor.preHandle(mockHttpServletRequest, mockHttpServletResponse, mockHandler));
+    }
+
+    @Test
+    void interceptor_throwsBadRequestError_ifTransactionIdIsMissing() {
         MockHttpServletResponse mockHttpServletResponse = new MockHttpServletResponse();
         Object mockHandler = new Object();
 
         when(mockHttpServletRequest.getHeader("ERIC-Access-Token")).thenReturn(PASSTHROUGH_HEADER);
         when(mockHttpServletRequest.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)).thenReturn(Map.of());
 
-        assertFalse(transactionInterceptor.preHandle(mockHttpServletRequest, mockHttpServletResponse, mockHandler));
-        assertEquals(HttpServletResponse.SC_BAD_REQUEST, mockHttpServletResponse.getStatus());
+        assertThrows(BadRequestException.class, () -> transactionInterceptor.preHandle(mockHttpServletRequest, mockHttpServletResponse, mockHandler));
         verify(transactionService, never()).getTransaction(TX_ID, PASSTHROUGH_HEADER);
     }
 }

@@ -53,6 +53,14 @@ public class DissolutionTestDataBuilder {
         return this;
     }
 
+    public DissolutionTestDataBuilder withCompanyName(String companyName) {
+        if (company == null) {
+            company = new Company();
+        }
+        company.setName(companyName);
+        return this;
+    }
+
     public DissolutionTestDataBuilder withCreatedBy(CreatedBy createdBy) {
         this.createdBy = createdBy;
         return this;
