@@ -18,7 +18,7 @@ public class TransactionResourceTestDataBuilder {
 
     private String resourceKey = "";
     private String kind = FILING_KIND_DS01;
-    private Map<String, String> links = null;
+    private Map<String, String> links = Map.of();
 
     public static TransactionResourceTestDataBuilder aTransactionResource() {
         return new TransactionResourceTestDataBuilder();

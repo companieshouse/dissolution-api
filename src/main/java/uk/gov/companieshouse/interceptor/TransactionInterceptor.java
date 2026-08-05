@@ -50,7 +50,7 @@ public class TransactionInterceptor implements HandlerInterceptor {
         } catch (TransactionNotFoundException e) {
             throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
-            throw new InternalServerErrorException(e.getMessage());
+            throw new InternalServerErrorException("Error retrieving transaction data", e);
         }
     }
 

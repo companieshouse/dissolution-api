@@ -80,7 +80,7 @@ public class FilingController {
         } catch (DissolutionNotFoundException e) {
             throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
-            throw new InternalServerErrorException(e.getMessage());
+            throw new InternalServerErrorException("Failed to generate dissolution filing", e);
         }
     }
 }

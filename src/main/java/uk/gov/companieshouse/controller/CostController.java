@@ -52,7 +52,7 @@ public class CostController {
         try {
             return List.of(costService.getCosts(transaction, dissolutionId));
         } catch (DissolutionNotFoundException e) {
-            throw new NotFoundException();
+            throw new NotFoundException(e.getMessage());
         } catch (DissolutionNotLinkedToTransactionException e) {
             throw new BadRequestException(e.getMessage());
         }
