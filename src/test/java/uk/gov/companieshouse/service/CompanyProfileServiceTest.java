@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
 import uk.gov.companieshouse.client.CompanyProfileClientImpl;
 import uk.gov.companieshouse.exception.CompanyProfileServiceException;
+import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.exception.ServiceUnavailableException;
 import uk.gov.companieshouse.fixtures.CompanyProfileApiFixtures;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
@@ -86,7 +87,7 @@ public class CompanyProfileServiceTest {
     void getCompanyProfile_throwsNotFound_whenCompanyProfileIsEmpty() {
         when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(Optional.empty());
 
-        final var exception = assertThrows(CompanyProfileServiceException.class,
+        final var exception = assertThrows(NotFoundException.class,
                 () -> companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER));
         assertThat(exception.getMessage(),
                 is("Company profile not found for company number " + COMPANY_NUMBER));
