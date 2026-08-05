@@ -16,6 +16,7 @@ import uk.gov.companieshouse.api.util.security.SecurityConstants;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
 import uk.gov.companieshouse.exception.TransactionNotFoundException;
+import uk.gov.companieshouse.fixtures.TransactionFixtures;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.transaction.FilingService;
 
@@ -23,6 +24,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
 import static uk.gov.companieshouse.model.Constants.HEADER_ERIC_REQUEST_ID;
 import static uk.gov.companieshouse.model.Constants.TRANSACTION_KEY;
 
@@ -31,7 +33,6 @@ class FilingControllerTest {
 
     private static final String FILING_URI = "/private/transactions/{transaction_id}/dissolution/{dissolution_id}/filings";
     private static final String DISSOLUTION_ID = "12345678";
-    private static final String TRANSACTION_ID = "tx-id-123";
     private static final String ERIC_REQUEST_ID = "XaBcDeF12345";
     private static final String PASS_THROUGH_HEADER = "545345345";
     private static final String ERIC_ACCESS_TOKEN_HEADER = "ERIC-Access-Token";
@@ -52,10 +53,7 @@ class FilingControllerTest {
 
     @BeforeEach
     void setup() {
-        transaction = new Transaction();
-        transaction.setId(TRANSACTION_ID);
-        transaction.setStatus(TransactionStatus.CLOSED);
-
+        transaction = TransactionFixtures.generateClosedTransaction();
         when(transactionService.getTransaction(TRANSACTION_ID, PASS_THROUGH_HEADER)).thenReturn(transaction);
     }
 

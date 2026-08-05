@@ -82,6 +82,6 @@ public class DissolutionService {
         if (!transactionHelper.isTransactionLinkedToDissolution(transaction, dissolutionId)) {
             throw new DissolutionNotLinkedToTransactionException("Transaction not linked to dissolution");
         }
-        return getDissolutionById(dissolutionId).orElseThrow(DissolutionNotFoundException::new);
+        return getDissolutionById(dissolutionId).orElseThrow(() -> new DissolutionNotFoundException("No dissolution found with id " + dissolutionId));
     }
 }

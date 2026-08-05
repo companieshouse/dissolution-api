@@ -25,6 +25,8 @@ import uk.gov.companieshouse.util.TransactionHelper;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -253,8 +255,11 @@ class DissolutionServiceTest {
         when(transactionHelper.isTransactionLinkedToDissolution(transaction, DISSOLUTION_ID)).thenReturn(true);
         when(repository.findById(DISSOLUTION_ID)).thenReturn(Optional.empty());
 
-        assertThrows(DissolutionNotFoundException.class,
+        final var exception = assertThrows(DissolutionNotFoundException.class,
                 () -> service.getDissolutionForTransaction(transaction, DISSOLUTION_ID));
+
+        assertThat(exception.getMessage(),
+                is("No dissolution found with id " + DISSOLUTION_ID));
         verify(repository, times(1)).findById(DISSOLUTION_ID);
     }
 }
