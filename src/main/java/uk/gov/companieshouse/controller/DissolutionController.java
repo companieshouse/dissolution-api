@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
 import uk.gov.companieshouse.exception.BadRequestException;
 import uk.gov.companieshouse.exception.ConflictException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
@@ -31,7 +30,7 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 import uk.gov.companieshouse.service.CompanyOfficerService;
-import uk.gov.companieshouse.client.CompanyProfileClient;
+import uk.gov.companieshouse.service.CompanyProfileService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import uk.gov.companieshouse.service.dissolution.validator.DissolutionValidator;
 import uk.gov.companieshouse.service.payment.PaymentService;
@@ -39,7 +38,6 @@ import uk.gov.companieshouse.service.payment.PaymentService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.Map;
-import java.util.Optional;
 
 import static uk.gov.companieshouse.util.EricHelper.getEmail;
 
@@ -50,7 +48,7 @@ public class DissolutionController {
 
     private final DissolutionService dissolutionService;
     private final DissolutionValidator dissolutionValidator;
-    private final CompanyProfileClient companyProfileClient;
+    private final CompanyProfileService companyProfileService;
     private final CompanyOfficerService companyOfficerService;
     private final PaymentService paymentService;
     private final Logger logger;
@@ -58,13 +56,13 @@ public class DissolutionController {
     public DissolutionController(
             DissolutionService dissolutionService,
             DissolutionValidator dissolutionValidator,
-            CompanyProfileClient companyProfileClient,
+            CompanyProfileService companyProfileService,
             CompanyOfficerService companyOfficerService,
             PaymentService paymentService,
             Logger logger) {
         this.dissolutionService = dissolutionService;
         this.dissolutionValidator = dissolutionValidator;
-        this.companyProfileClient = companyProfileClient;
+        this.companyProfileService = companyProfileService;
         this.companyOfficerService = companyOfficerService;
         this.paymentService = paymentService;
         this.logger = logger;
@@ -86,17 +84,7 @@ public class DissolutionController {
             @Valid @RequestBody final DissolutionCreateRequest body,
             HttpServletRequest request) {
 
-        final CompanyProfileApi companyProfileApi = Optional
-                .ofNullable(companyProfileClient.getCompanyProfile(companyNumber, request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())))
-                .orElseThrow(NotFoundException::new);
-
-        CompanyProfile company = new CompanyProfile.Builder()
-                .withCompanyName(companyProfileApi.getCompanyName())
-                .withType(companyProfileApi.getType())
-                .withCompanyNumber(companyProfileApi.getCompanyNumber())
-                .withCompanyStatus(companyProfileApi.getCompanyStatus())
-                .build();
-
+        final CompanyProfile company = companyProfileService.getCompanyProfile(companyNumber, request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader()));
 
         if (dissolutionService.doesDissolutionRequestExistForCompanyByCompanyNumber(companyNumber)) {
             throw new ConflictException("Dissolution already exists");
@@ -125,7 +113,7 @@ public class DissolutionController {
                 .getByCompanyNumber(companyNumber)
                 .orElseThrow(NotFoundException::new);
         String paymentRef = dissolutionGetResponse.getPaymentReference();
-        if ( paymentRef != null && !paymentRef.isEmpty() && dissolutionGetResponse.getApplicationStatus().equals(ApplicationStatus.PENDING_PAYMENT)) {
+        if (paymentRef != null && !paymentRef.isEmpty() && dissolutionGetResponse.getApplicationStatus().equals(ApplicationStatus.PENDING_PAYMENT)) {
             // payment could be complete, we need to get up-to-date status to be sure
             String paymentStatus = paymentService.getPaymentStatus(dissolutionGetResponse.getPaymentReference());
             if (paymentStatus == null) {

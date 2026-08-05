@@ -11,6 +11,7 @@ import uk.gov.companieshouse.exception.ServiceUnavailableException;
 import uk.gov.companieshouse.logging.Logger;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Service
 public class CompanyProfileClientImpl implements CompanyProfileClient {
@@ -28,13 +29,13 @@ public class CompanyProfileClientImpl implements CompanyProfileClient {
      *
      * @param companyNumber the Company Number
      * @param ericPassThroughHeader includes authorisation details
-     * @return the company profile if found
-     * @throws CompanyProfileServiceException if not found or an error occurred
+     * @return an Optional containing the company profile, or empty if the company is not found
+     * @throws CompanyProfileServiceException if an error occurred
      * @throws ServiceUnavailableException if public API is unavailable
      */
     @Override
-    public CompanyProfileApi getCompanyProfile(final String companyNumber, final String ericPassThroughHeader)
-            throws CompanyProfileServiceException {
+    public Optional<CompanyProfileApi> getCompanyProfile(final String companyNumber, final String ericPassThroughHeader)
+            throws CompanyProfileServiceException, ServiceUnavailableException {
         try {
             final String uri = "/company/" + companyNumber;
             final CompanyProfileApi companyProfile = apiClientService.getInternalApiClient(ericPassThroughHeader)
@@ -43,11 +44,11 @@ public class CompanyProfileClientImpl implements CompanyProfileClient {
                     .execute()
                     .getData();
             logger.info("Retrieved company profile details: " + companyNumber);
-            return companyProfile;
+            return Optional.ofNullable(companyProfile);
         }
         catch (final ApiErrorResponseException e) {
             if (HttpStatus.NOT_FOUND.value() == e.getStatusCode()) {
-                throw new CompanyProfileServiceException("Error Retrieving company profile " + companyNumber, e);
+                return Optional.empty();
             }
             throw new ServiceUnavailableException("The service is down. Try again later");
         }

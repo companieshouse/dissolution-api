@@ -9,9 +9,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
-import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.Permission;
+import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
@@ -21,7 +21,7 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.service.CompanyOfficerService;
-import uk.gov.companieshouse.client.CompanyProfileClientImpl;
+import uk.gov.companieshouse.service.CompanyProfileService;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import uk.gov.companieshouse.service.dissolution.validator.DissolutionValidator;
@@ -36,13 +36,19 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
-import static uk.gov.companieshouse.fixtures.CompanyProfileApiFixtures.generateCompanyProfileApi;
 import static uk.gov.companieshouse.fixtures.CompanyProfileFixtures.generateCompanyProfile;
-import static uk.gov.companieshouse.fixtures.DissolutionFixtures.*;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDirectorRequest;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionCreateRequest;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionCreateResponse;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionGetResponse;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionPatchRequest;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionPatchResponse;
 
 @SuppressWarnings({"unchecked", "UastIncorrectHttpHeaderInspection"})
 @WebMvcTest(DissolutionController.class)
@@ -67,7 +73,7 @@ class DissolutionControllerTest {
     private DissolutionValidator dissolutionValidator;
 
     @MockitoBean
-    private CompanyProfileClientImpl companyProfileClient;
+    private CompanyProfileService companyProfileService;
 
     @MockitoBean
     private CompanyOfficerService companyOfficerService;
@@ -178,7 +184,7 @@ class DissolutionControllerTest {
 
     @Test
     void submitDissolutionRequest_returnsNotFound_ifCompanyNotFound() throws Exception {
-        when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(null);
+        when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenThrow(NotFoundException.class);
 
         mockMvc
                 .perform(
@@ -191,7 +197,7 @@ class DissolutionControllerTest {
 
     @Test
     void submitDissolutionRequest_returnsConflict_ifDissolutionAlreadyExistsForCompany() throws Exception {
-        when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(generateCompanyProfileApi());
+        when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(generateCompanyProfile());
         when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(true);
 
         mockMvc
@@ -206,11 +212,11 @@ class DissolutionControllerTest {
     @Test
     void submitDissolutionRequest_returnsBadRequest_ifValidationFails() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
-        final CompanyProfileApi companyProfileApi = generateCompanyProfileApi();
+        final CompanyProfile companyProfile = generateCompanyProfile();
         final CompanyProfile company = generateCompanyProfile();
         final Map<String, CompanyOfficer> companyDirectors = Map.of(OFFICER_ID, generateCompanyOfficer());
 
-        when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfileApi);
+        when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
         when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(false);
         when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(companyDirectors);
         when(dissolutionValidator.checkBusinessRules(eq(company), eq(companyDirectors), isA(List.class))).thenReturn(Optional.of("Some dissolution error"));
@@ -229,11 +235,11 @@ class DissolutionControllerTest {
     @Test
     void submitDissolutionRequest_returnsInternalServerError_ifExceptionOccursWhenCreatingDissolution() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
-        final CompanyProfileApi companyProfileApi = generateCompanyProfileApi();
+        final CompanyProfile companyProfile = generateCompanyProfile();
         final CompanyProfile company = generateCompanyProfile();
         final Map<String, CompanyOfficer> companyDirectors = Map.of(OFFICER_ID, generateCompanyOfficer());
 
-        when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfileApi);
+        when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
         when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(false);
         when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(companyDirectors);
         when(dissolutionValidator.checkBusinessRules(eq(company), eq(companyDirectors), isA(List.class))).thenReturn(Optional.empty());
@@ -255,11 +261,11 @@ class DissolutionControllerTest {
     void submitDissolutionRequest_returnsCreated_andCreateResponse_ifDissolutionIsCreatedSuccessfully() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
         final DissolutionCreateResponse response = generateDissolutionCreateResponse();
-        final CompanyProfileApi companyProfileApi = generateCompanyProfileApi();
+        final CompanyProfile companyProfile = generateCompanyProfile();
         final CompanyProfile company = generateCompanyProfile();
         final Map<String, CompanyOfficer> companyDirectors = Map.of(OFFICER_ID, generateCompanyOfficer());
 
-        when(companyProfileClient.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfileApi);
+        when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
         when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(false);
         when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(companyDirectors);
         when(dissolutionValidator.checkBusinessRules(eq(company), eq(companyDirectors), isA(List.class))).thenReturn(Optional.empty());
