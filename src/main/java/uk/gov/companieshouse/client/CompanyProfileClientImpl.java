@@ -50,8 +50,7 @@ public class CompanyProfileClientImpl implements CompanyProfileClient {
             if (HttpStatus.NOT_FOUND.value() == e.getStatusCode()) {
                 return Optional.empty();
             }
-            logger.error(String.format("Failed to retrieve company profile for %s (status %d), service maybe down", companyNumber, e.getStatusCode()), e);
-            throw new ServiceUnavailableException("The service is down. Try again later");
+            throw new ServiceUnavailableException("The company profile service is down. Try again later", e);
         }
         catch (final URIValidationException | IOException e) {
             throw new CompanyProfileServiceException("Error Retrieving company profile " + companyNumber, e);
