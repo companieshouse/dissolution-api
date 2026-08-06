@@ -24,14 +24,16 @@ import uk.gov.companieshouse.fixtures.TransactionFixtures;
 
 import java.io.IOException;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
 
 @ExtendWith(MockitoExtension.class)
 class TransactionServiceTest {
 
-    private static final String TRANSACTION_ID = "tx-id-123";
     private static final String PASSTHROUGH_HEADER = "passthrough";
     private static final String TRANSACTIONS_URL = "/transactions/";
     private static final String PAYMENT_REFERENCE = "somePaymentRef";
@@ -61,7 +63,6 @@ class TransactionServiceTest {
     @InjectMocks
     private TransactionService transactionService;
 
-
     @Nested
     @DisplayName("GET /transactions/{transaction_id}")
     class GetTransactionDetails {
@@ -74,8 +75,7 @@ class TransactionServiceTest {
 
         @Test
         void getTransaction_returnsTransactionData_ifTransactionExists() throws IOException, URIValidationException {
-            Transaction transaction = new Transaction();
-            transaction.setId(TRANSACTION_ID);
+            final var transaction = TransactionFixtures.generateTransaction();
 
             when(transactionsGet.execute()).thenReturn(apiGetResponse);
             when(apiGetResponse.getData()).thenReturn(transaction);
@@ -87,7 +87,9 @@ class TransactionServiceTest {
         @Test
         void getTransaction_throwsNotFoundException_ifApiErrorResponseExceptionOccurs() throws IOException, URIValidationException {
             when(transactionsGet.execute()).thenThrow(TransactionFixtures.generateApiErrorResponseException(404, "404 Not Found"));
-            assertThrows(TransactionNotFoundException.class, () -> transactionService.getTransaction(TRANSACTION_ID, PASSTHROUGH_HEADER));
+            final var exception = assertThrows(TransactionNotFoundException.class, () -> transactionService.getTransaction(TRANSACTION_ID, PASSTHROUGH_HEADER));
+            assertThat(exception.getMessage(),
+                    is("No transaction found with id " + TRANSACTION_ID));
         }
 
         @Test

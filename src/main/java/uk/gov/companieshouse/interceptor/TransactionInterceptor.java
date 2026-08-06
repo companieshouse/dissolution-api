@@ -39,7 +39,6 @@ public class TransactionInterceptor implements HandlerInterceptor {
         final var transactionId = getTransactionId(request);
 
         if (StringUtils.isBlank(transactionId)) {
-            logger.info("Transaction ID missing from request");
             throw new BadRequestException("Transaction ID missing from request");
         }
 
@@ -49,11 +48,9 @@ public class TransactionInterceptor implements HandlerInterceptor {
             request.setAttribute(TRANSACTION_KEY, transaction);
             return true;
         } catch (TransactionNotFoundException e) {
-            logger.info("Transaction not found for: " + transactionId);
             throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
-            logger.error("Failed to retrieve transaction details for: " + transactionId, e);
-            throw new InternalServerErrorException(e.getMessage());
+            throw new InternalServerErrorException("Error retrieving transaction data", e);
         }
     }
 

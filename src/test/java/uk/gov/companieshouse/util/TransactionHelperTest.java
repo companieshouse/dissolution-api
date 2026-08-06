@@ -2,28 +2,20 @@ package uk.gov.companieshouse.util;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.fixtures.TransactionFixtures;
+import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.companieshouse.fixtures.TransactionFixtures.buildResource;
-import static uk.gov.companieshouse.fixtures.TransactionFixtures.buildTransaction;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
-import static uk.gov.companieshouse.model.Constants.SUBMISSION_URI_PATTERN;
+import static uk.gov.companieshouse.model.Constants.LINK_RESOURCE;
 
 class TransactionHelperTest {
 
-    private static final String TRANSACTION_ID = TransactionFixtures.TRANSACTION_ID;
     private static final String DISSOLUTION_ID = "sub-456";
-    private static final String DISSOLUTION_SELF_LINK =
-            String.format(SUBMISSION_URI_PATTERN, TRANSACTION_ID, DISSOLUTION_ID);
-
-    private static final String DISSOLUTION_RESOURCE_KEY =
-            String.format("/transactions/%s/dissolution/%s", TRANSACTION_ID, DISSOLUTION_ID);
 
     private TransactionHelper helper;
 
@@ -39,66 +31,63 @@ class TransactionHelperTest {
 
     @Test
     void isTransactionLinkedToDissolution_returnsFalse_whenDissolutionIdIsEmpty() {
-        var resource = buildResource(FILING_KIND_DS01, DISSOLUTION_SELF_LINK);
-        var transaction = buildTransaction(Map.of("resource-key", resource));
+        var transaction = TransactionTestDataBuilder.aTransaction()
+                .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
+                .build();
         assertFalse(helper.isTransactionLinkedToDissolution(transaction, ""));
     }
 
     @Test
     void isTransactionLinkedToDissolution_returnsFalse_whenResourcesIsNull() {
-        var transaction = new Transaction();
-        transaction.setId(TRANSACTION_ID);
-
+        var transaction = TransactionFixtures.generateTransaction();
         assertFalse(helper.isTransactionLinkedToDissolution(transaction, DISSOLUTION_ID));
     }
 
     @Test
     void isTransactionLinkedToDissolution_returnsFalse_whenResourcesIsEmpty() {
-        var transaction = buildTransaction(Map.of());
-
+        var transaction = TransactionTestDataBuilder.aTransaction().withResources(Map.of()).build();
         assertFalse(helper.isTransactionLinkedToDissolution(transaction, DISSOLUTION_ID));
     }
 
     @Test
     void isTransactionLinkedToDissolution_returnsFalse_whenResourceKindIsNotADissolutionKind() {
-        var resource = buildResource("some-other-kind", DISSOLUTION_SELF_LINK);
-        var transaction = buildTransaction(Map.of(DISSOLUTION_RESOURCE_KEY, resource));
-
+        var transaction = TransactionTestDataBuilder.aTransaction()
+                .withResources(TransactionFixtures.generateTransactionResource("some-other-kind", DISSOLUTION_ID))
+                .build();
         assertFalse(helper.isTransactionLinkedToDissolution(transaction, DISSOLUTION_ID));
     }
 
     @Test
     void isTransactionLinkedToDissolution_returnsFalse_whenResourceHasDissolutionKindButLinkDoesNotMatch() {
-        var resource = buildResource(FILING_KIND_DS01, "/transactions/other-tx/dissolution/other-sub");
-        var transaction = buildTransaction(Map.of(DISSOLUTION_RESOURCE_KEY, resource));
-
+        var resourceBuilder = TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID)
+                .withSingleLink(LINK_RESOURCE, "/transactions/other-tx/dissolution/other-sub");
+        var transaction = TransactionTestDataBuilder.aTransaction().withResources(resourceBuilder).build();
         assertFalse(helper.isTransactionLinkedToDissolution(transaction, DISSOLUTION_ID));
     }
 
     @Test
     void isTransactionLinkedToDissolution_returnsTrue_whenDs01ResourceLinkMatchesSubmissionUri() {
-        var resource = buildResource(FILING_KIND_DS01, DISSOLUTION_SELF_LINK);
-        var transaction = buildTransaction(Map.of(DISSOLUTION_RESOURCE_KEY, resource));
-
+        var transaction = TransactionTestDataBuilder.aTransaction()
+                .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
+                .build();
         assertTrue(helper.isTransactionLinkedToDissolution(transaction, DISSOLUTION_ID));
     }
 
     @Test
     void isTransactionLinkedToDissolution_returnsTrue_whenLlds01ResourceLinkMatchesSubmissionUri() {
-        var resource = buildResource(FILING_KIND_LLDS01, DISSOLUTION_SELF_LINK);
-        var transaction = buildTransaction(Map.of(DISSOLUTION_RESOURCE_KEY, resource));
-
+        var transaction = TransactionTestDataBuilder.aTransaction()
+                .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_LLDS01, DISSOLUTION_ID))
+                .build();
         assertTrue(helper.isTransactionLinkedToDissolution(transaction, DISSOLUTION_ID));
     }
 
     @Test
     void isTransactionLinkedToDissolution_returnsTrue_whenOneOfMultipleResourcesMatches() {
-        var nonMatchingResource = buildResource("some-other-kind", "/wrong/link");
-        var matchingResource = buildResource(FILING_KIND_DS01, DISSOLUTION_SELF_LINK);
-        var transaction = buildTransaction(Map.of(
-                "other-resource-key", nonMatchingResource,
-                DISSOLUTION_RESOURCE_KEY, matchingResource
-        ));
+        var nonMatchingResource = TransactionFixtures.generateTransactionResource("some-other-kind", DISSOLUTION_ID)
+                .withResourceKey("other-resource-key")
+                .withSingleLink(LINK_RESOURCE, "/some-other/link");
+        var matchingResource = TransactionFixtures.generateTransactionResource(FILING_KIND_LLDS01, DISSOLUTION_ID);
+        var transaction = TransactionTestDataBuilder.aTransaction().withResources(nonMatchingResource, matchingResource).build();
 
         assertTrue(helper.isTransactionLinkedToDissolution(transaction, DISSOLUTION_ID));
     }
