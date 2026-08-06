@@ -102,7 +102,8 @@ class CompanyProfileClientImplTest {
 
     @Test
     void exceptionIsThrownWhenCompanyProfileServiceUnavailable() throws IOException, URIValidationException {
-        when(companyGet.execute()).thenThrow(ApiErrorResponseException.class);
+        ApiErrorResponseException apiErrorResponseException = new ApiErrorResponseException(new HttpResponseException.Builder(500, "500 Internal Server Error", new HttpHeaders()));
+        when(companyGet.execute()).thenThrow(apiErrorResponseException);
         when(companyResourceHandler.get(URI)).thenReturn(companyGet);
         when(internalApiClient.company()).thenReturn(companyResourceHandler);
         when(apiClientService.getInternalApiClient(PASSTHROUGH_HEADER)).thenReturn(internalApiClient);
@@ -110,6 +111,6 @@ class CompanyProfileClientImplTest {
         final var exception = assertThrows(ServiceUnavailableException.class,
                 () -> companyProfileClient.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER));
         assertThat(exception.getMessage(),
-                is("The service is down. Try again later"));
+                is("The company profile service is down. Try again later"));
     }
 }

@@ -9,11 +9,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.model.payment.Cost;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
-import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.SecurityConstants;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
+import uk.gov.companieshouse.fixtures.TransactionFixtures;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.cost.CostService;
@@ -23,13 +23,13 @@ import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
 import static uk.gov.companieshouse.model.Constants.HEADER_ERIC_REQUEST_ID;
 import static uk.gov.companieshouse.model.Constants.TRANSACTION_KEY;
 
 @WebMvcTest(CostController.class)
 class CostControllerTest {
     private static final String COST_URI = "/transactions/{transaction_id}/dissolution/{dissolution_id}/costs";
-    private static final String TRANSACTION_ID = "tx-id-123";
     private static final String DISSOLUTION_ID = "987654321";
     private static final String IDENTITY_HEADER_VALUE = "identity";
     private static final String REQUEST_ID_HEADER_VALUE = "request-123";
@@ -52,10 +52,7 @@ class CostControllerTest {
 
     @BeforeEach
     void setup() {
-        transaction = new Transaction();
-        transaction.setId(TRANSACTION_ID);
-        transaction.setStatus(TransactionStatus.CLOSED);
-
+        transaction = TransactionFixtures.generateClosedTransaction();
         when(transactionService.getTransaction(TRANSACTION_ID, PASS_THROUGH_HEADER)).thenReturn(transaction);
     }
 

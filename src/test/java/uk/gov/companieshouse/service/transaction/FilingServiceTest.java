@@ -9,7 +9,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.companieshouse.api.model.payment.PaymentApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
-import uk.gov.companieshouse.api.model.transaction.TransactionLinks;
 import uk.gov.companieshouse.api.model.transaction.TransactionPayment;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.config.FeeConfig;
@@ -18,6 +17,7 @@ import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionExceptio
 import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.fixtures.TransactionFixtures;
+import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.filing.FilingDataMapper;
 import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
@@ -79,12 +79,11 @@ class FilingServiceTest {
 
     @BeforeEach
     void setup() {
-        transaction = new Transaction();
-        transaction.setId(TRANSACTION_ID);
-        transaction.setStatus(TransactionStatus.CLOSED);
-        var transactionLinks = new TransactionLinks();
-        transactionLinks.setPayment(PAYMENT_URI);
-        transaction.setLinks(transactionLinks);
+        transaction = TransactionTestDataBuilder.aTransaction()
+                .withId(TRANSACTION_ID)
+                .withStatus(TransactionStatus.CLOSED)
+                .withPaymentLink(PAYMENT_URI)
+                .build();
 
         dissolution = DissolutionFixtures.generateDissolution();
         dissolution.setId(DISSOLUTION_ID);

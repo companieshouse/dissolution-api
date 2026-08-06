@@ -44,7 +44,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(ConflictException.class)
     public void handleConflict(ConflictException ex, HttpServletRequest request) {
-        logger.info(String.format("[Conflict] - %s", request.getRequestURL().toString()));
+        logger.info(String.format("[Conflict] - %s - %s", request.getRequestURL().toString(), ex.getMessage()));
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -55,14 +55,14 @@ public class GlobalExceptionHandler {
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(NotFoundException.class)
-    public void handleNotFound(RuntimeException ex, HttpServletRequest request) {
-        logger.info(String.format("[Not Found] - %s", request.getRequestURL().toString()));
+    public void handleNotFound(NotFoundException ex, HttpServletRequest request) {
+        logger.info(String.format("[Not Found] - %s - %s", request.getRequestURL().toString(), ex.getMessage()));
     }
 
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     @ExceptionHandler(ServiceUnavailableException.class)
-    public void handleServiceUnavailable(RuntimeException ex, HttpServletRequest request) {
-        logger.info(String.format("[Service unavailable] - %s", request.getRequestURL().toString()));
+    public void handleServiceUnavailable(ServiceUnavailableException ex, HttpServletRequest request) {
+        logger.info(String.format("[Service unavailable] - %s - %s", request.getRequestURL().toString(), ex.getMessage()));
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)

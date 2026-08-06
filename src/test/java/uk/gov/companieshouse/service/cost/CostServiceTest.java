@@ -11,6 +11,7 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.config.FeeConfig;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
+import uk.gov.companieshouse.fixtures.TransactionFixtures;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 
@@ -47,8 +48,7 @@ class CostServiceTest {
 
     @BeforeEach
     void setup() {
-        transaction = new Transaction();
-        transaction.setId(TRANSACTION_ID);
+        transaction = TransactionFixtures.generateTransaction();
     }
 
     @Test
