@@ -6,7 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
-import uk.gov.companieshouse.client.CompanyProfileClientImpl;
+import uk.gov.companieshouse.client.CompanyProfileClient;
 import uk.gov.companieshouse.exception.CompanyProfileServiceException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.exception.ServiceUnavailableException;
@@ -37,7 +37,7 @@ public class CompanyProfileServiceTest {
     private CompanyClosableValidator companyClosableValidator;
 
     @Mock
-    private CompanyProfileClientImpl companyProfileClient;
+    private CompanyProfileClient companyProfileClient;
 
     private static final String COMPANY_NUMBER = "12345678";
     private static final String PASSTHROUGH_HEADER = "passthrough";
