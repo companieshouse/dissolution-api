@@ -49,9 +49,10 @@ public class DissolutionGetter {
                 .anyMatch(director -> director.getOfficerId().equals(officerId) && !director.hasDirectorApproval());
     }
 
-    public Optional<DissolutionGetResponse> getById(String id) {
+    public Optional<DissolutionGetResponse> getPendingOrDraftDissolution(String userId, String companyNumber) {
         return repository
-                .findById(id)
+                .findPendingDissolutionByCompanyNumber(companyNumber)
+                .or(() -> repository.findDraftDissolutionForUserAndCompany(userId, companyNumber))
                 .map(responseMapper::mapToDissolutionGetResponse);
     }
 }

@@ -4,6 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
+import uk.gov.companieshouse.model.enums.DissolutionStatus;
 
 import java.time.LocalDateTime;
 
@@ -32,6 +33,10 @@ public class Dissolution {
     private DissolutionVerdict verdict;
 
     boolean active;
+
+    private DissolutionStatus status;
+
+    private String transactionId;
     
     public boolean getActive() {
         return active;
@@ -111,5 +116,21 @@ public class Dissolution {
 
     public void setVerdict(DissolutionVerdict verdict) {
         this.verdict = verdict;
+    }
+
+    public DissolutionStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(DissolutionStatus status) {
+        this.status = status;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
     }
 }

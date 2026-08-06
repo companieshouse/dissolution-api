@@ -11,6 +11,7 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionLinks;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;
+import uk.gov.companieshouse.model.enums.DissolutionStatus;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -20,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionCertificate;
+import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
 import static uk.gov.companieshouse.model.Constants.DISSOLUTION_KIND;
 
 class DissolutionResponseMapperTest {
@@ -168,5 +170,23 @@ class DissolutionResponseMapperTest {
 
         assertEquals(String.format("/dissolution-request/%s", COMPANY_NUMBER), links.getSelf());
         assertEquals(String.format("/dissolution-request/%s/payment", REFERENCE), links.getPayment());
+    }
+
+    @Test
+    void mapToDissolutionGetResponse_setsTransactionIdAndStatus_ifTransactionIdExists() {
+        final Dissolution dissolution = DissolutionFixtures.generateDraftDissolution(TRANSACTION_ID);
+        final DissolutionGetResponse result = mapper.mapToDissolutionGetResponse(dissolution);
+
+        assertEquals(TRANSACTION_ID, result.getTransactionId());
+        assertEquals(DissolutionStatus.DRAFT, result.getDissolutionStatus());
+    }
+
+    @Test
+    void mapToDissolutionGetResponse_doesNotSetTransactionIdAndStatus_ifTransactionIdDoesNotExist() {
+        final Dissolution dissolution = DissolutionFixtures.generateDissolution();
+        final DissolutionGetResponse result = mapper.mapToDissolutionGetResponse(dissolution);
+
+        assertNull(result.getTransactionId());
+        assertNull(result.getDissolutionStatus());
     }
 }

@@ -23,6 +23,7 @@ import uk.gov.companieshouse.model.dto.documentrender.DissolutionCertificateData
 import uk.gov.companieshouse.model.dto.documentrender.DissolutionCertificateDirector;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;
+import uk.gov.companieshouse.model.enums.DissolutionStatus;
 import uk.gov.companieshouse.model.enums.SubmissionStatus;
 import uk.gov.companieshouse.model.enums.VerdictResult;
 
@@ -74,6 +75,21 @@ public class DissolutionFixtures {
 
     public static DissolutionGetResponse generateDissolutionGetResponse() {
         return new DissolutionGetResponse();
+    }
+
+    public static DissolutionGetResponse generateDissolutionGetResponse(String transactionId, DissolutionStatus status) {
+        var foo = new DissolutionGetResponse();
+        foo.setTransactionId(transactionId);
+        foo.setDissolutionStatus(status);
+        return foo;
+    }
+
+    public static Dissolution generateDraftDissolution(String transactionId) {
+        return DissolutionTestDataBuilder.aDissolution().withTransactionId(transactionId).withStatus(DissolutionStatus.DRAFT).build();
+    }
+
+    public static Dissolution generatePendingDissolution(String transactionId) {
+        return DissolutionTestDataBuilder.aDissolution().withTransactionId(transactionId).withStatus(DissolutionStatus.PENDING).build();
     }
 
     public static Dissolution generateDissolution() {

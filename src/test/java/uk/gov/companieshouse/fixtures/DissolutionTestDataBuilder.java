@@ -8,6 +8,7 @@ import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionSubmission;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionVerdict;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
+import uk.gov.companieshouse.model.enums.DissolutionStatus;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -25,6 +26,8 @@ public class DissolutionTestDataBuilder {
     private PaymentInformation paymentInformation = new PaymentInformation();
     private DissolutionVerdict verdict = new DissolutionVerdict();
     private boolean active = true;
+    private String transactionId = "";
+    private DissolutionStatus status = DissolutionStatus.DRAFT;
 
     public static DissolutionTestDataBuilder aDissolution() {
         return new DissolutionTestDataBuilder();
@@ -128,6 +131,16 @@ public class DissolutionTestDataBuilder {
         return this;
     }
 
+    public DissolutionTestDataBuilder withTransactionId(String id) {
+        this.transactionId = id;
+        return this;
+    }
+
+    public DissolutionTestDataBuilder withStatus(DissolutionStatus status) {
+        this.status = status;
+        return this;
+    }
+
     public Dissolution build() {
         final Dissolution dissolution = new Dissolution();
         dissolution.setModifiedDateTime(modifiedDateTime);
@@ -138,6 +151,11 @@ public class DissolutionTestDataBuilder {
         dissolution.setPaymentInformation(paymentInformation);
         dissolution.setVerdict(verdict);
         dissolution.setActive(active);
+
+        if (transactionId != null && !transactionId.isEmpty()) {
+            dissolution.setTransactionId(transactionId);
+            dissolution.setStatus(status);
+        }
         return dissolution;
     }
 }

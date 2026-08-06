@@ -257,4 +257,17 @@ class DissolutionServiceTest {
                 () -> service.getDissolutionForTransaction(transaction, DISSOLUTION_ID));
         verify(repository, times(1)).findById(DISSOLUTION_ID);
     }
+
+    @Test
+    void getPendingOrDraftDissolution_callsDissolutionGetter_getPendingOrDraftDissolution() {
+        final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse();
+        when(getter.getPendingOrDraftDissolution(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.of(response));
+
+        final Optional<DissolutionGetResponse> result = service.getPendingOrDraftDissolution(USER_ID, COMPANY_NUMBER);
+
+        verify(getter).getPendingOrDraftDissolution(USER_ID, COMPANY_NUMBER);
+
+        assertTrue(result.isPresent());
+        assertEquals(response, result.get());
+    }
 }
