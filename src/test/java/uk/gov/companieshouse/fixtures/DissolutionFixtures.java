@@ -78,10 +78,10 @@ public class DissolutionFixtures {
     }
 
     public static DissolutionGetResponse generateDissolutionGetResponse(String transactionId, DissolutionStatus status) {
-        var foo = new DissolutionGetResponse();
-        foo.setTransactionId(transactionId);
-        foo.setDissolutionStatus(status);
-        return foo;
+        var response = new DissolutionGetResponse();
+        response.setTransactionId(transactionId);
+        response.setDissolutionStatus(status);
+        return response;
     }
 
     public static Dissolution generateDraftDissolution(String transactionId) {

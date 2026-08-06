@@ -20,6 +20,7 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
+import uk.gov.companieshouse.model.enums.DissolutionStatus;
 import uk.gov.companieshouse.service.CompanyOfficerService;
 import uk.gov.companieshouse.service.CompanyProfileService;
 import uk.gov.companieshouse.service.TransactionService;
@@ -34,6 +35,8 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -49,6 +52,7 @@ import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolu
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionGetResponse;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionPatchRequest;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionPatchResponse;
+import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
 
 @SuppressWarnings({"unchecked", "UastIncorrectHttpHeaderInspection"})
 @WebMvcTest(DissolutionController.class)
@@ -319,6 +323,7 @@ class DissolutionControllerTest {
     @Test
     void getDissolutionRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
         when(service.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
+        when(service.getPendingOrDraftDissolution(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
 
         mockMvc
                 .perform(
@@ -326,6 +331,9 @@ class DissolutionControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .headers(createHttpHeaders()))
                 .andExpect(status().isNotFound());
+
+        verify(service, times(1)).getByCompanyNumber(COMPANY_NUMBER);
+        verify(service, times(1)).getPendingOrDraftDissolution(USER_ID, COMPANY_NUMBER);
     }
 
     @Test
@@ -341,6 +349,28 @@ class DissolutionControllerTest {
                                 .headers(createHttpHeaders()))
                 .andExpect(status().isOk())
                 .andExpect(content().json(asJsonString(response)));
+
+        verify(service, times(1)).getByCompanyNumber(COMPANY_NUMBER);
+        verify(service, never()).getPendingOrDraftDissolution(USER_ID, COMPANY_NUMBER);
+    }
+
+    @Test
+    void getDissolutionRequest_returnsDraftOrPendingDissolutionInfo_ifTransactionModelDissolutionExists() throws Exception {
+        final DissolutionGetResponse response = generateDissolutionGetResponse(TRANSACTION_ID, DissolutionStatus.DRAFT);
+
+        when(service.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
+        when(service.getPendingOrDraftDissolution(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.of(response));
+
+        mockMvc
+                .perform(
+                        get(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(createHttpHeaders()))
+                .andExpect(status().isOk())
+                .andExpect(content().json(asJsonString(response)));
+
+        verify(service, times(1)).getPendingOrDraftDissolution(USER_ID, COMPANY_NUMBER);
+        verify(service, times(1)).getByCompanyNumber(COMPANY_NUMBER);
     }
 
     @Test
