@@ -36,7 +36,6 @@ import java.util.Optional;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -323,7 +322,8 @@ class DissolutionControllerTest {
     @Test
     void getDissolutionRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
         when(service.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
-        when(service.getPendingOrDraftDissolution(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
+        when(service.getPendingDissolution(COMPANY_NUMBER)).thenReturn(Optional.empty());
+        when(service.getDraftDissolution(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
 
         mockMvc
                 .perform(
@@ -331,9 +331,6 @@ class DissolutionControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .headers(createHttpHeaders()))
                 .andExpect(status().isNotFound());
-
-        verify(service, times(1)).getByCompanyNumber(COMPANY_NUMBER);
-        verify(service, times(1)).getPendingOrDraftDissolution(USER_ID, COMPANY_NUMBER);
     }
 
     @Test
@@ -350,8 +347,8 @@ class DissolutionControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(asJsonString(response)));
 
-        verify(service, times(1)).getByCompanyNumber(COMPANY_NUMBER);
-        verify(service, never()).getPendingOrDraftDissolution(USER_ID, COMPANY_NUMBER);
+        verify(service, never()).getPendingDissolution(COMPANY_NUMBER);
+        verify(service, never()).getDraftDissolution(USER_ID, COMPANY_NUMBER);
     }
 
     @Test
@@ -359,7 +356,8 @@ class DissolutionControllerTest {
         final DissolutionGetResponse response = generateDissolutionGetResponse(TRANSACTION_ID, DissolutionStatus.DRAFT);
 
         when(service.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
-        when(service.getPendingOrDraftDissolution(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.of(response));
+        when(service.getPendingDissolution(COMPANY_NUMBER)).thenReturn(Optional.of(response));
+
 
         mockMvc
                 .perform(
@@ -369,8 +367,7 @@ class DissolutionControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(asJsonString(response)));
 
-        verify(service, times(1)).getPendingOrDraftDissolution(USER_ID, COMPANY_NUMBER);
-        verify(service, times(1)).getByCompanyNumber(COMPANY_NUMBER);
+        verify(service, never()).getDraftDissolution(USER_ID, COMPANY_NUMBER);
     }
 
     @Test

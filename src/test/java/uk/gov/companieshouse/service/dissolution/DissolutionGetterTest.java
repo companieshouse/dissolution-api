@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
+import uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
@@ -19,9 +20,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDirectorApproval;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionDirector;
@@ -55,9 +53,6 @@ class DissolutionGetterTest {
 
         final Optional<DissolutionGetResponse> result = getter.getByCompanyNumber(COMPANY_NUMBER);
 
-        verify(repository).findByCompanyNumber(COMPANY_NUMBER);
-        verify(responseMapper).mapToDissolutionGetResponse(dissolution);
-
         assertTrue(result.isPresent());
         assertEquals(response, result.get());
     }
@@ -67,8 +62,6 @@ class DissolutionGetterTest {
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
 
         final Optional<DissolutionGetResponse> result = getter.getByCompanyNumber(COMPANY_NUMBER);
-
-        verify(repository).findByCompanyNumber(COMPANY_NUMBER);
 
         assertTrue(result.isEmpty());
     }
@@ -83,9 +76,6 @@ class DissolutionGetterTest {
 
         final Optional<DissolutionGetResponse> result = getter.getByApplicationReference(APPLICATION_REFERENCE);
 
-        verify(repository).findByDataApplicationReference(APPLICATION_REFERENCE);
-        verify(responseMapper).mapToDissolutionGetResponse(dissolution);
-
         assertTrue(result.isPresent());
         assertEquals(response, result.get());
     }
@@ -95,8 +85,6 @@ class DissolutionGetterTest {
         when(repository.findByDataApplicationReference(APPLICATION_REFERENCE)).thenReturn(Optional.empty());
 
         final Optional<DissolutionGetResponse> result = getter.getByApplicationReference(APPLICATION_REFERENCE);
-
-        verify(repository).findByDataApplicationReference(APPLICATION_REFERENCE);
 
         assertTrue(result.isEmpty());
     }
@@ -152,48 +140,48 @@ class DissolutionGetterTest {
     }
 
     @Test
-    void getPendingOrDraftDissolution_findsDissolution_mapsToDissolutionResponse_returnsGetResponse() {
-        final Dissolution dissolution = DissolutionFixtures.generateDraftDissolution(TRANSACTION_ID);
+    void getPendingDissolution_findsDissolution_mapsToDissolutionResponse_returnsGetResponse() {
+        final Dissolution dissolution = DissolutionTestDataBuilder.aDissolution().withTransactionId(TRANSACTION_ID).withStatus(DissolutionStatus.DRAFT).build();
         final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse(TRANSACTION_ID, DissolutionStatus.DRAFT);
 
-        when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
+        when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
         when(responseMapper.mapToDissolutionGetResponse(dissolution)).thenReturn(response);
 
-        final Optional<DissolutionGetResponse> result = getter.getPendingOrDraftDissolution(USER_ID, COMPANY_NUMBER);
-
-        verify(repository).findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER);
-        verify(responseMapper).mapToDissolutionGetResponse(dissolution);
+        final Optional<DissolutionGetResponse> result = getter.getPendingDissolution(COMPANY_NUMBER);
 
         assertTrue(result.isPresent());
         assertEquals(response, result.get());
     }
 
     @Test
-    void getPendingOrDraftDissolution_doesNotFindDissolution_returnsOptionalEmpty() {
-        when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
+    void getPendingDissolution_doesNotFindDissolution_returnsOptionalEmpty() {
+        when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
 
-        final Optional<DissolutionGetResponse> result = getter.getPendingOrDraftDissolution(USER_ID, COMPANY_NUMBER);
-
-        verify(repository).findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER);
+        final Optional<DissolutionGetResponse> result = getter.getPendingDissolution(COMPANY_NUMBER);
 
         assertTrue(result.isEmpty());
     }
 
     @Test
-    void getPendingOrDraftDissolution_findsPendingDissolution_skipsDraftDissolutionLookupAndReturnsPendingDissolution_() {
-        final Dissolution dissolution = DissolutionFixtures.generatePendingDissolution(TRANSACTION_ID);
-        final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse(TRANSACTION_ID, DissolutionStatus.PENDING);
+    void getDraftDissolution_findsDissolution_mapsToDissolutionResponse_returnsGetResponse() {
+        final Dissolution dissolution = DissolutionTestDataBuilder.aDissolution().withTransactionId(TRANSACTION_ID).withStatus(DissolutionStatus.DRAFT).build();
+        final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse(TRANSACTION_ID, DissolutionStatus.DRAFT);
 
-        when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
+        when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
         when(responseMapper.mapToDissolutionGetResponse(dissolution)).thenReturn(response);
 
-        final Optional<DissolutionGetResponse> result = getter.getPendingOrDraftDissolution(USER_ID, COMPANY_NUMBER);
-
-        verify(repository, times(1)).findPendingDissolutionByCompanyNumber(COMPANY_NUMBER);
-        verify(repository, never()).findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER);
-        verify(responseMapper).mapToDissolutionGetResponse(dissolution);
+        final Optional<DissolutionGetResponse> result = getter.getDraftDissolution(USER_ID, COMPANY_NUMBER);
 
         assertTrue(result.isPresent());
         assertEquals(response, result.get());
+    }
+
+    @Test
+    void getDraftDissolution_doesNotFindDissolution_returnsOptionalEmpty() {
+        when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
+
+        final Optional<DissolutionGetResponse> result = getter.getDraftDissolution(USER_ID, COMPANY_NUMBER);
+
+        assertTrue(result.isEmpty());
     }
 }

@@ -84,14 +84,6 @@ public class DissolutionFixtures {
         return response;
     }
 
-    public static Dissolution generateDraftDissolution(String transactionId) {
-        return DissolutionTestDataBuilder.aDissolution().withTransactionId(transactionId).withStatus(DissolutionStatus.DRAFT).build();
-    }
-
-    public static Dissolution generatePendingDissolution(String transactionId) {
-        return DissolutionTestDataBuilder.aDissolution().withTransactionId(transactionId).withStatus(DissolutionStatus.PENDING).build();
-    }
-
     public static Dissolution generateDissolution() {
         return DissolutionTestDataBuilder.aDissolution().build();
     }

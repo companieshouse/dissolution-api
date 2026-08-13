@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.mapper;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
@@ -58,10 +57,9 @@ public class DissolutionResponseMapper extends ResponseMapper {
                     .ifPresent(paymentReference -> setPaymentReference(response, paymentReference));
         }
 
-        if (!StringUtils.isEmpty(dissolution.getTransactionId())) {
-            response.setTransactionId(dissolution.getTransactionId());
-            response.setDissolutionStatus(dissolution.getStatus());
-        }
+        response.setTransactionId(dissolution.getTransactionId());
+        response.setDissolutionStatus(dissolution.getStatus());
+
         return response;
     }
 

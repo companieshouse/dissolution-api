@@ -2,6 +2,7 @@ package uk.gov.companieshouse.mapper;
 
 import org.junit.jupiter.api.Test;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
+import uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
@@ -17,9 +18,9 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionCertificate;
 import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
 import static uk.gov.companieshouse.model.Constants.DISSOLUTION_KIND;
@@ -174,7 +175,7 @@ class DissolutionResponseMapperTest {
 
     @Test
     void mapToDissolutionGetResponse_setsTransactionIdAndStatus_ifTransactionIdExists() {
-        final Dissolution dissolution = DissolutionFixtures.generateDraftDissolution(TRANSACTION_ID);
+        final Dissolution dissolution = DissolutionTestDataBuilder.aDissolution().withTransactionId(TRANSACTION_ID).withStatus(DissolutionStatus.DRAFT).build();
         final DissolutionGetResponse result = mapper.mapToDissolutionGetResponse(dissolution);
 
         assertEquals(TRANSACTION_ID, result.getTransactionId());

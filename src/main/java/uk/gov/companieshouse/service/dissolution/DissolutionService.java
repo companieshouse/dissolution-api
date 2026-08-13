@@ -74,8 +74,12 @@ public class DissolutionService {
         return getter.isDirectorPendingApproval(companyNumber, officerId);
     }
 
-    public Optional<DissolutionGetResponse> getPendingOrDraftDissolution(String userId, String companyNumber) {
-        return getter.getPendingOrDraftDissolution(userId, companyNumber);
+    public Optional<DissolutionGetResponse> getPendingDissolution(String companyNumber) {
+        return getter.getPendingDissolution(companyNumber);
+    }
+
+    public Optional<DissolutionGetResponse> getDraftDissolution(String userId, String companyNumber) {
+        return getter.getDraftDissolution(userId, companyNumber);
     }
 
     public Optional<Dissolution> getDissolutionById(String dissolutionId) {

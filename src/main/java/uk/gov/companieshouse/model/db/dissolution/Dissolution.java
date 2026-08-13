@@ -36,6 +36,7 @@ public class Dissolution {
 
     private DissolutionStatus status;
 
+    @Field("transaction_id")
     private String transactionId;
     
     public boolean getActive() {

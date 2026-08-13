@@ -112,7 +112,8 @@ public class DissolutionController {
                                                             @PathVariable("company-number") final String companyNumber) {
         DissolutionGetResponse dissolutionGetResponse = dissolutionService
                 .getByCompanyNumber(companyNumber)
-                .or(() -> dissolutionService.getPendingOrDraftDissolution(userId, companyNumber))
+                .or(() -> dissolutionService.getPendingDissolution(companyNumber))
+                .or(() -> dissolutionService.getDraftDissolution(userId, companyNumber))
                 .orElseThrow(NotFoundException::new);
 
         String paymentRef = dissolutionGetResponse.getPaymentReference();

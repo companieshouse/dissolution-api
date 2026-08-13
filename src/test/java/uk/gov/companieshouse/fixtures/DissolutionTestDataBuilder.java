@@ -26,8 +26,8 @@ public class DissolutionTestDataBuilder {
     private PaymentInformation paymentInformation = new PaymentInformation();
     private DissolutionVerdict verdict = new DissolutionVerdict();
     private boolean active = true;
-    private String transactionId = "";
-    private DissolutionStatus status = DissolutionStatus.DRAFT;
+    private String transactionId = null;
+    private DissolutionStatus status = null;
 
     public static DissolutionTestDataBuilder aDissolution() {
         return new DissolutionTestDataBuilder();
@@ -151,11 +151,8 @@ public class DissolutionTestDataBuilder {
         dissolution.setPaymentInformation(paymentInformation);
         dissolution.setVerdict(verdict);
         dissolution.setActive(active);
-
-        if (transactionId != null && !transactionId.isEmpty()) {
-            dissolution.setTransactionId(transactionId);
-            dissolution.setStatus(status);
-        }
+        dissolution.setTransactionId(transactionId);
+        dissolution.setStatus(status);
         return dissolution;
     }
 }
