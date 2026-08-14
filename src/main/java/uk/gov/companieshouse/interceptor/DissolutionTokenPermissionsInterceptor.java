@@ -13,10 +13,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;
 
+import static uk.gov.companieshouse.model.Constants.COMPANY_NUMBER_KEY;
+
 @Component
 public class DissolutionTokenPermissionsInterceptor implements HandlerInterceptor {
-
-    private static final String PATH_VARIABLE_COMPANY_NUMBER = "company-number";
 
     @Override
     public boolean preHandle(@NotNull HttpServletRequest request,
@@ -45,7 +45,7 @@ public class DissolutionTokenPermissionsInterceptor implements HandlerIntercepto
     @SuppressWarnings("unchecked")
     private String getCompanyNumber(HttpServletRequest request) {
         Map<String, String> uriVariables = (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
-        return uriVariables.get(PATH_VARIABLE_COMPANY_NUMBER);
+        return uriVariables.get(COMPANY_NUMBER_KEY);
     }
 
     private boolean isAuthorisedToPerformDissolution(TokenPermissions tokenPermissions) {

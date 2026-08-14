@@ -42,6 +42,10 @@ public final class Constants {
    public static final String TRANSACTION_ID_KEY = "transaction_id";
    public static final String DISSOLUTION_ID_KEY = "dissolution_id";
 
+   // COMPANY_NUMBER_KEY has to use kebab-case to remain backward compatible with
+   // the pre-migration dissolution controller and DissolutionTokenPermissionsInterceptor
+   public static final String COMPANY_NUMBER_KEY = "company-number";
+
    /* Request attributes */
    public static final String TRANSACTION_KEY = "transaction";
 

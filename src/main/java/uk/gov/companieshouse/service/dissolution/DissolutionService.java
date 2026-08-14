@@ -8,6 +8,7 @@ import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionExceptio
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
@@ -91,5 +92,13 @@ public class DissolutionService {
             throw new DissolutionNotLinkedToTransactionException("Transaction not linked to dissolution");
         }
         return getDissolutionById(dissolutionId).orElseThrow(() -> new DissolutionNotFoundException("No dissolution found with id " + dissolutionId));
+    }
+
+    public boolean doesDraftDissolutionExistForUserAndCompany(String userId, String companyNumber) {
+        return repository.findDraftDissolutionForUserAndCompany(userId, companyNumber).isPresent();
+    }
+
+    public DissolutionCreateDraftResponse createDraft(Transaction transaction, CompanyProfile companyProfile, String userId, String ip, String email) {
+        return creator.createDraft(transaction, companyProfile, userId, ip, email);
     }
 }

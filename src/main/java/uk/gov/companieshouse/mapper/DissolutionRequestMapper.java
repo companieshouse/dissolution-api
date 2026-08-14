@@ -2,6 +2,7 @@ package uk.gov.companieshouse.mapper;
 
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.GenerateEtagUtil;
+import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.model.db.dissolution.Company;
 import uk.gov.companieshouse.model.db.dissolution.CreatedBy;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
@@ -16,6 +17,8 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.CompanyType;
+import uk.gov.companieshouse.model.enums.DissolutionStatus;
+
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -33,6 +36,29 @@ public class DissolutionRequestMapper {
         dissolution.setCompany(mapToCompany(company.getCompanyNumber(), company.getCompanyName()));
         dissolution.setCreatedBy(mapToCreatedBy(userData.getUserId(), userData.getEmail(), userData.getIpAddress()));
         dissolution.setActive(true);
+
+        return dissolution;
+    }
+
+    public Dissolution mapToDraftDissolution(Transaction transaction, CompanyProfile company, DissolutionUserData userData) {
+        final DissolutionApplication application = new DissolutionApplication();
+        application.setType(company.getType().equals(CompanyType.LLP.getValue()) ? ApplicationType.LLDS01 : ApplicationType.DS01);
+
+        final DissolutionData data = new DissolutionData();
+        data.setETag(GenerateEtagUtil.generateEtag());
+        data.setApplication(application);
+
+        final Dissolution dissolution = new Dissolution();
+        dissolution.setModifiedDateTime(generateCurrentDateTime());
+        dissolution.setData(data);
+        dissolution.setCompany(mapToCompany(company.getCompanyNumber(), company.getCompanyName()));
+        dissolution.setCreatedBy(mapToCreatedBy(userData.getUserId(), userData.getEmail(), userData.getIpAddress()));
+        // The active flag must be false so that transaction model dissolution applications
+        // do not get picked up by the pre-migration dissolution process.
+        dissolution.setActive(false);
+
+        dissolution.setStatus(DissolutionStatus.DRAFT);
+        dissolution.setTransactionId(transaction.getId());
 
         return dissolution;
     }

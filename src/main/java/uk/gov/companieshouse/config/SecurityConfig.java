@@ -15,6 +15,7 @@ public class SecurityConfig implements WebMvcConfigurer {
     private static final String URI_PATTERN = "/dissolution-request/**";
     private static final String FILINGS = "/private/transactions/**/filings";
     private static final String COSTS = "/transactions/**/costs";
+    private static final String DISSOLUTION = "/company/**/transaction/**/dissolution";
 
     private static final String[] API_KEY_PERMISSION_AUTH_INCLUDE_LIST = {
             "/dissolution-request/{application-reference}/payment",
@@ -32,7 +33,8 @@ public class SecurityConfig implements WebMvcConfigurer {
 
     private static final String[] TRANSACTIONS_INCLUDE_LIST = {
             "/transactions/**",
-            FILINGS
+            FILINGS,
+            DISSOLUTION
     };
 
     private final TokenPermissionsInterceptor tokenPermissionsInterceptor;
@@ -53,8 +55,8 @@ public class SecurityConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
-        registry.addInterceptor(tokenPermissionsInterceptor).addPathPatterns(URI_PATTERN).excludePathPatterns(TOKEN_PERMISSION_AUTH_EXCLUDE_LIST);
-        registry.addInterceptor(dissolutionTokenPermissionsInterceptor).addPathPatterns(URI_PATTERN).excludePathPatterns(TOKEN_PERMISSION_AUTH_EXCLUDE_LIST);
+        registry.addInterceptor(tokenPermissionsInterceptor).addPathPatterns(URI_PATTERN, DISSOLUTION).excludePathPatterns(TOKEN_PERMISSION_AUTH_EXCLUDE_LIST);
+        registry.addInterceptor(dissolutionTokenPermissionsInterceptor).addPathPatterns(URI_PATTERN, DISSOLUTION).excludePathPatterns(TOKEN_PERMISSION_AUTH_EXCLUDE_LIST);
         registry.addInterceptor(apiKeyPermissionsInterceptor).addPathPatterns(API_KEY_PERMISSION_AUTH_INCLUDE_LIST);
         registry.addInterceptor(transactionInterceptor).addPathPatterns(TRANSACTIONS_INCLUDE_LIST);
     }
