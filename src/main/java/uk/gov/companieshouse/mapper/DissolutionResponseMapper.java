@@ -56,6 +56,10 @@ public class DissolutionResponseMapper extends ResponseMapper {
                     .ofNullable(dissolution.getPaymentInformation().getReference())
                     .ifPresent(paymentReference -> setPaymentReference(response, paymentReference));
         }
+
+        response.setTransactionId(dissolution.getTransactionId());
+        response.setDissolutionStatus(dissolution.getStatus());
+
         return response;
     }
 

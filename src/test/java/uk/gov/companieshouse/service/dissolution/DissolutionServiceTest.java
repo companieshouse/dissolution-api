@@ -262,4 +262,26 @@ class DissolutionServiceTest {
                 is("No dissolution found with id " + DISSOLUTION_ID));
         verify(repository, times(1)).findById(DISSOLUTION_ID);
     }
+
+    @Test
+    void getPendingDissolution_callsDissolutionGetter_getPendingDissolution() {
+        final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse();
+        when(getter.getPendingDissolution(COMPANY_NUMBER)).thenReturn(Optional.of(response));
+
+        final Optional<DissolutionGetResponse> result = service.getPendingDissolution(COMPANY_NUMBER);
+
+        assertTrue(result.isPresent());
+        assertEquals(response, result.get());
+    }
+
+    @Test
+    void getDraftDissolution_callsDissolutionGetter_getDraftDissolution() {
+        final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse();
+        when(getter.getDraftDissolution(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.of(response));
+
+        final Optional<DissolutionGetResponse> result = service.getDraftDissolution(USER_ID, COMPANY_NUMBER);
+
+        assertTrue(result.isPresent());
+        assertEquals(response, result.get());
+    }
 }

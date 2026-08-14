@@ -108,10 +108,14 @@ public class DissolutionController {
     })
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public DissolutionGetResponse getDissolutionApplication(@PathVariable("company-number") final String companyNumber) {
+    public DissolutionGetResponse getDissolutionApplication(@RequestHeader("ERIC-identity") String userId,
+                                                            @PathVariable("company-number") final String companyNumber) {
         DissolutionGetResponse dissolutionGetResponse = dissolutionService
                 .getByCompanyNumber(companyNumber)
+                .or(() -> dissolutionService.getPendingDissolution(companyNumber))
+                .or(() -> dissolutionService.getDraftDissolution(userId, companyNumber))
                 .orElseThrow(NotFoundException::new);
+
         String paymentRef = dissolutionGetResponse.getPaymentReference();
         if (paymentRef != null && !paymentRef.isEmpty() && dissolutionGetResponse.getApplicationStatus().equals(ApplicationStatus.PENDING_PAYMENT)) {
             // payment could be complete, we need to get up-to-date status to be sure

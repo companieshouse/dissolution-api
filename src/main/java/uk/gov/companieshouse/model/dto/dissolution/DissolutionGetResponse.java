@@ -3,6 +3,7 @@ package uk.gov.companieshouse.model.dto.dissolution;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;
+import uk.gov.companieshouse.model.enums.DissolutionStatus;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -17,6 +18,12 @@ public class DissolutionGetResponse {
 
     @JsonProperty("application_status")
     private ApplicationStatus applicationStatus;
+
+    @JsonProperty("dissolution_status")
+    private DissolutionStatus dissolutionStatus;
+
+    @JsonProperty("transaction_id")
+    private String transactionId;
 
     @JsonProperty("application_reference")
     private String applicationReference;
@@ -158,5 +165,21 @@ public class DissolutionGetResponse {
 
     public void setPaymentReference(String paymentReference) {
         this.paymentReference = paymentReference;
+    }
+
+    public DissolutionStatus getDissolutionStatus() {
+        return dissolutionStatus;
+    }
+
+    public void setDissolutionStatus(DissolutionStatus dissolutionStatus) {
+        this.dissolutionStatus = dissolutionStatus;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
     }
 }
