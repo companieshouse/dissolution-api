@@ -1,16 +1,6 @@
 package uk.gov.companieshouse.fixtures;
 
-import uk.gov.companieshouse.model.db.dissolution.Company;
-import uk.gov.companieshouse.model.db.dissolution.CreatedBy;
-import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
-import uk.gov.companieshouse.model.db.dissolution.Dissolution;
-import uk.gov.companieshouse.model.db.dissolution.DissolutionApplication;
-import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
-import uk.gov.companieshouse.model.db.dissolution.DissolutionData;
-import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
-import uk.gov.companieshouse.model.db.dissolution.DissolutionRejectReason;
-import uk.gov.companieshouse.model.db.dissolution.DissolutionSubmission;
-import uk.gov.companieshouse.model.db.dissolution.DissolutionVerdict;
+import uk.gov.companieshouse.model.db.dissolution.*;
 import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;

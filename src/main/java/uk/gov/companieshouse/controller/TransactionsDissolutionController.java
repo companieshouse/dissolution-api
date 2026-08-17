@@ -49,7 +49,7 @@ public class TransactionsDissolutionController {
             @ApiResponse(responseCode = "201", description = "Draft Dissolution created"),
             @ApiResponse(responseCode = "400", description = "Company Cannot Be Closed"),
             @ApiResponse(responseCode = "404", description = "Company not found"),
-            @ApiResponse(responseCode = "409", description = "Transaction is not open or draft Dissolution already exists", content = @Content)
+            @ApiResponse(responseCode = "409", description = "Transaction is not open, is not associated with the company or draft Dissolution already exists", content = @Content)
     })
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -60,8 +60,12 @@ public class TransactionsDissolutionController {
             @RequestAttribute(TRANSACTION_KEY) Transaction transaction,
             HttpServletRequest request) {
 
-        if (!transaction.getStatus().equals(TransactionStatus.OPEN)) {
+        if (!TransactionStatus.OPEN.equals(transaction.getStatus())) {
             throw new ConflictException("Transaction is already closed or closed pending payment");
+        }
+
+        if (transaction.getCompanyNumber() != null && !transaction.getCompanyNumber().equals(companyNumber)) {
+            throw new ConflictException("Transaction does not belong to company " + companyNumber);
         }
 
         if (dissolutionService.doesDraftDissolutionExistForUserAndCompany(userId, companyNumber)) {

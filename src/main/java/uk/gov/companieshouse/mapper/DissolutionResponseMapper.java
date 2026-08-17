@@ -36,7 +36,7 @@ public class DissolutionResponseMapper extends ResponseMapper {
         final DissolutionCreateDraftResponse response = new DissolutionCreateDraftResponse();
 
         response.setDissolutionId(dissolution.getId());
-        response.setLinks(generateDissolutionLinks(transaction.getCompanyNumber(), transaction.getId()));
+        response.setLinks(generateDissolutionLinks(dissolution.getCompany().getNumber(), transaction.getId()));
 
         return response;
     }

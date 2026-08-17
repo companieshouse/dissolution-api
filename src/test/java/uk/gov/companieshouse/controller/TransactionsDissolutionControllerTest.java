@@ -17,15 +17,20 @@ import uk.gov.companieshouse.exception.TransactionNotFoundException;
 import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionLinks;
 import uk.gov.companieshouse.service.CompanyProfileService;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.companieshouse.fixtures.CompanyProfileFixtures.generateCompanyProfile;
 import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
@@ -103,6 +108,8 @@ class TransactionsDissolutionControllerTest {
                         .headers(createHttpHeaders())
                         .requestAttr(TRANSACTION_KEY, transaction))
                 .andExpect(status().isNotFound());
+
+        verify(dissolutionService, never()).createDraft(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -114,6 +121,8 @@ class TransactionsDissolutionControllerTest {
                         .headers(createHttpHeaders())
                         .requestAttr(TRANSACTION_KEY, transaction))
                 .andExpect(status().isNotFound());
+
+        verify(dissolutionService, never()).createDraft(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -126,6 +135,8 @@ class TransactionsDissolutionControllerTest {
                         .headers(createHttpHeaders())
                         .requestAttr(TRANSACTION_KEY, transaction))
                 .andExpect(status().isConflict());
+
+        verify(dissolutionService, never()).createDraft(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -137,6 +148,22 @@ class TransactionsDissolutionControllerTest {
                         .headers(createHttpHeaders())
                         .requestAttr(TRANSACTION_KEY, transaction))
                 .andExpect(status().isConflict());
+
+        verify(dissolutionService, never()).createDraft(any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void submitDraftDissolution_returnsConflict_ifTransactionIsNotAssociatedWithTheCompany() throws Exception {
+        transaction.setStatus(TransactionStatus.OPEN);
+        transaction.setCompanyNumber("87654321");
+
+        mockMvc
+                .perform(post(DISSOLUTION_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                        .headers(createHttpHeaders())
+                        .requestAttr(TRANSACTION_KEY, transaction))
+                .andExpect(status().isConflict());
+
+        verify(dissolutionService, never()).createDraft(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -150,6 +177,8 @@ class TransactionsDissolutionControllerTest {
                         .headers(createHttpHeaders())
                         .requestAttr(TRANSACTION_KEY, transaction))
                 .andExpect(status().isBadRequest());
+
+        verify(dissolutionService, never()).createDraft(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -171,6 +200,10 @@ class TransactionsDissolutionControllerTest {
     @Test
     void submitDraftDissolution_returnsCreated_andCreateResponse_ifDraftDissolutionIsCreatedSuccessfully() throws Exception {
         final DissolutionCreateDraftResponse response = new DissolutionCreateDraftResponse();
+        response.setDissolutionId("dis-123");
+        DissolutionLinks links = new DissolutionLinks();
+        links.setSelf("/company/" + COMPANY_NUMBER + "/transaction/" + TRANSACTION_ID + "/dissolution");
+        response.setLinks(links);
         final CompanyProfile companyProfile = generateCompanyProfile();
 
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
@@ -184,7 +217,9 @@ class TransactionsDissolutionControllerTest {
                         .headers(createHttpHeaders())
                         .requestAttr(TRANSACTION_KEY, transaction))
                 .andExpect(status().isCreated())
-                .andExpect(content().json(asJsonString(response)));
+                .andExpect(content().json(asJsonString(response)))
+                .andExpect(jsonPath("$.dissolution_id").value("dis-123"))
+                .andExpect(jsonPath("$.links.self").value("/company/" + COMPANY_NUMBER + "/transaction/" + TRANSACTION_ID + "/dissolution"));
     }
 
     private HttpHeaders createHttpHeaders() {

@@ -5,15 +5,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class DissolutionCreateDraftResponse {
 
     @JsonProperty("dissolution_id")
-    private String dissolution_id;
+    private String dissolutionId;
     private DissolutionLinks links;
 
     public String getDissolutionId() {
-        return dissolution_id;
+        return dissolutionId;
     }
 
     public void setDissolutionId(String dissolutionId) {
-        this.dissolution_id = dissolutionId;
+        this.dissolutionId = dissolutionId;
     }
 
     public DissolutionLinks getLinks() {
