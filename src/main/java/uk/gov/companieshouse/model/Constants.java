@@ -44,6 +44,7 @@ public final class Constants {
 
    /* Request attributes */
    public static final String TRANSACTION_KEY = "transaction";
+   public static final int COMPANY_OFFICERS_ITEMS_PER_PAGE = 151;
 
    /* Filings */
    public static final String FILING_KIND_DS01 = "dissolution#ds01";

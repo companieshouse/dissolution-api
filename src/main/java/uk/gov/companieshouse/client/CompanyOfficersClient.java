@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static uk.gov.companieshouse.model.Constants.COMPANY_OFFICERS_ITEMS_PER_PAGE;
 import static uk.gov.companieshouse.model.Constants.CONTENT_TYPE_JSON;
 import static uk.gov.companieshouse.model.Constants.HEADER_ACCEPT;
 import static uk.gov.companieshouse.model.Constants.HEADER_AUTHORIZATION;
@@ -38,7 +39,7 @@ public class CompanyOfficersClient {
                         .get()
                         .uri(uriBuilder -> uriBuilder
                                 .path(GET_OFFICERS_URI.expand(companyNumber).toString())
-                                .queryParam("items_per_page", 150)
+                                .queryParam("items_per_page", COMPANY_OFFICERS_ITEMS_PER_PAGE)
                                 .build())
                         .header(HEADER_AUTHORIZATION, config.getApiKey())
                         .header(HEADER_ACCEPT, CONTENT_TYPE_JSON)
