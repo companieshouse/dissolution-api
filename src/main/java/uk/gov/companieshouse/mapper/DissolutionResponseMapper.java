@@ -56,7 +56,11 @@ public class DissolutionResponseMapper extends ResponseMapper {
         response.setCompanyNumber(dissolution.getCompany().getNumber());
         response.setCreatedAt(Timestamp.valueOf(dissolution.getCreatedBy().getDateTime()));
         response.setCreatedBy(dissolution.getCreatedBy().getEmail());
-        response.setDirectors(mapToDissolutionGetDirectors(dissolution.getData().getDirectors()));
+
+        Optional
+                .ofNullable(dissolution.getData().getDirectors())
+                .ifPresent(directors -> response.setDirectors(mapToDissolutionGetDirectors(directors)));
+
 
         Optional
                 .ofNullable(dissolution.getCertificate())
