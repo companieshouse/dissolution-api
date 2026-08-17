@@ -78,7 +78,7 @@ public class CompanyOfficersClientTest {
         RecordedRequest recordedRequest = mockBackEnd.takeRequest();
 
         assertEquals("GET", recordedRequest.getMethod());
-        assertEquals("/company/1234/officers?items_per_page=150", recordedRequest.getPath());
+        assertEquals("/company/1234/officers?items_per_page=151", recordedRequest.getPath());
     }
 
     @Test
