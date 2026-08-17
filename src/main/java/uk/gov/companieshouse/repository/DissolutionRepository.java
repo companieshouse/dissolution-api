@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.enums.DissolutionStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,4 +27,6 @@ public interface DissolutionRepository extends MongoRepository<Dissolution, Stri
 
     @Query("{'company.number': ?1, 'status' : 'DRAFT', 'created_by.user_id': ?0}")
     Optional<Dissolution> findDraftDissolutionForUserAndCompany(String userId, String companyNumber);
+
+    Optional<Dissolution> findFirstByCompanyNumberAndStatusOrderByProcessedAtDesc(String companyNumber, DissolutionStatus status);
 }

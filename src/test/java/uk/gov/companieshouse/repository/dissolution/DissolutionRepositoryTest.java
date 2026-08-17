@@ -1,6 +1,8 @@
 package uk.gov.companieshouse.repository.dissolution;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +12,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.companieshouse.config.AbstractMongoConfig;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
+import uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.enums.DissolutionStatus;
 import uk.gov.companieshouse.model.enums.SubmissionStatus;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
@@ -19,6 +23,8 @@ import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.*;
+import static uk.gov.companieshouse.model.enums.DissolutionStatus.*;
 
 @DataMongoTest
 @ExtendWith(SpringExtension.class)
@@ -30,7 +36,7 @@ class DissolutionRepositoryTest extends AbstractMongoConfig {
     }
 
     @Autowired
-    public DissolutionRepository repository;
+    public DissolutionRepository dissolutionRepository;
 
     @Test
     void findByCompanyNumber_findsActiveDissolution() {
@@ -40,9 +46,9 @@ class DissolutionRepositoryTest extends AbstractMongoConfig {
         dissolution.getCompany().setNumber(COMPANY_NUMBER);
         dissolution.setActive(true);
 
-        repository.insert(dissolution);
+        dissolutionRepository.insert(dissolution);
 
-        assertEquals(COMPANY_NUMBER, repository.findByCompanyNumber(COMPANY_NUMBER).get().getCompany().getNumber());
+        assertEquals(COMPANY_NUMBER, dissolutionRepository.findByCompanyNumber(COMPANY_NUMBER).get().getCompany().getNumber());
     }
 
     @Test
@@ -53,9 +59,9 @@ class DissolutionRepositoryTest extends AbstractMongoConfig {
         dissolution.getCompany().setNumber(COMPANY_NUMBER);
         dissolution.setActive(false);
 
-        repository.insert(dissolution);
+        dissolutionRepository.insert(dissolution);
 
-        assertTrue(repository.findByCompanyNumber(COMPANY_NUMBER).isEmpty());
+        assertTrue(dissolutionRepository.findByCompanyNumber(COMPANY_NUMBER).isEmpty());
     }
 
     @Test
@@ -65,9 +71,9 @@ class DissolutionRepositoryTest extends AbstractMongoConfig {
         Dissolution dissolution = DissolutionFixtures.generateDissolution();
         dissolution.getData().getApplication().setReference(APPLICATION_REFERENCE);
 
-        repository.insert(dissolution);
+        dissolutionRepository.insert(dissolution);
 
-        assertEquals(APPLICATION_REFERENCE, repository.findByDataApplicationReference(APPLICATION_REFERENCE).get().getData().getApplication().getReference());
+        assertEquals(APPLICATION_REFERENCE, dissolutionRepository.findByDataApplicationReference(APPLICATION_REFERENCE).get().getData().getApplication().getReference());
     }
 
     @Test
@@ -85,13 +91,13 @@ class DissolutionRepositoryTest extends AbstractMongoConfig {
         Dissolution dissolution5 = this.generateDissolution("5", LocalDateTime.now().minusMinutes(55),
                 SubmissionStatus.PENDING, LocalDateTime.now().minusMinutes(160));
 
-        repository.insert(dissolution1); // Not eligible - wrong status
-        repository.insert(dissolution2); // Eligible - correct status and date time is null
-        repository.insert(dissolution3); // Eligible - correct status and date time is correct
-        repository.insert(dissolution4); // Not eligible - wrong date time
-        repository.insert(dissolution5); // Eligible - correct status and date time is correct, but over the fetch limit
+        dissolutionRepository.insert(dissolution1); // Not eligible - wrong status
+        dissolutionRepository.insert(dissolution2); // Eligible - correct status and date time is null
+        dissolutionRepository.insert(dissolution3); // Eligible - correct status and date time is correct
+        dissolutionRepository.insert(dissolution4); // Not eligible - wrong date time
+        dissolutionRepository.insert(dissolution5); // Eligible - correct status and date time is correct, but over the fetch limit
 
-        ArrayList<Dissolution> dissolutions = new ArrayList<>(repository.findPendingDissolutions(
+        ArrayList<Dissolution> dissolutions = new ArrayList<>(dissolutionRepository.findPendingDissolutions(
                 LocalDateTime.now().minusMinutes(30),
                 PageRequest.of(0, SUBMISSION_LIMIT, Sort.Direction.ASC, "payment.date_time")
         ));
@@ -101,6 +107,65 @@ class DissolutionRepositoryTest extends AbstractMongoConfig {
         // Order is important - older first
         assertEquals("3", dissolutions.get(0).getCompany().getNumber());
         assertEquals("2", dissolutions.get(1).getCompany().getNumber());
+    }
+
+    @Nested
+    @DisplayName("findFirstByCompanyNumberAndStatusOrderByProcessedAtDesc")
+    class FindFirstByCompanyNumberAndStatus {
+
+        @Test
+        void findsMostRecentlyProcessedDissolution() {
+            final String COMPANY_NUMBER = "913";
+
+            Dissolution older = aDissolution()
+                    .withCompanyNumber(COMPANY_NUMBER)
+                    .withStatus(PROCESSED, LocalDateTime.of(2024, 1, 1, 12, 0))
+                    .build();
+
+            Dissolution newer = aDissolution()
+                    .withCompanyNumber(COMPANY_NUMBER)
+                    .withStatus(PROCESSED, LocalDateTime.of(2024, 1, 1, 12, 5))
+                    .build();
+
+            Dissolution draft = aDissolution()
+                    .withCompanyNumber(COMPANY_NUMBER)
+                    .withStatus(DRAFT)
+                    .build();
+
+            dissolutionRepository.insert(newer);
+            dissolutionRepository.insert(older);
+            dissolutionRepository.insert(draft);
+
+            final Dissolution result = dissolutionRepository
+                    .findFirstByCompanyNumberAndStatusOrderByProcessedAtDesc(COMPANY_NUMBER, PROCESSED)
+                    .orElseThrow();
+
+            assertEquals(newer.getId(), result.getId());
+            assertEquals(PROCESSED, result.getStatus());
+        }
+
+        @Test
+        void whenNoProcessedDissolutionThenEmptyReturned() {
+            final String COMPANY_NUMBER = "914";
+            final String OTHER_COMPANY_NUMBER = "915";
+
+            Dissolution draft = aDissolution()
+                    .withCompanyNumber(COMPANY_NUMBER)
+                    .withStatus(DRAFT)
+                    .build();
+
+            Dissolution otherCompanyProcessed = aDissolution()
+                    .withCompanyNumber(OTHER_COMPANY_NUMBER)
+                    .withStatus(PROCESSED, LocalDateTime.of(2024, 1, 1, 12, 0))
+                    .build();
+
+            dissolutionRepository.insert(draft);
+            dissolutionRepository.insert(otherCompanyProcessed);
+
+            assertTrue(dissolutionRepository
+                    .findFirstByCompanyNumberAndStatusOrderByProcessedAtDesc(COMPANY_NUMBER, PROCESSED)
+                    .isEmpty());
+        }
     }
 
     private Dissolution generateDissolution(String companyNumber, LocalDateTime submissionDateTime, SubmissionStatus submissionStatus, LocalDateTime paymentDateTime) {

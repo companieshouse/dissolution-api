@@ -8,6 +8,9 @@ import uk.gov.companieshouse.model.enums.DissolutionStatus;
 
 import java.time.LocalDateTime;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Document(collection = "dissolutions")
 public class Dissolution {
 
@@ -36,9 +39,15 @@ public class Dissolution {
 
     private DissolutionStatus status;
 
+    @Field("status_history")
+    private List<DissolutionStatusChanged> statusHistory = new ArrayList<>();
+
+    @Field("processed_at")
+    private LocalDateTime processedAt;
+
     @Field("transaction_id")
     private String transactionId;
-    
+
     public boolean getActive() {
         return active;
     }
@@ -46,7 +55,7 @@ public class Dissolution {
     public void setActive(boolean active) {
         this.active = active;
     }
-    
+
     public String getId() {
         return id;
     }
@@ -123,8 +132,16 @@ public class Dissolution {
         return status;
     }
 
-    public void setStatus(DissolutionStatus status) {
-        this.status = status;
+    public LocalDateTime getProcessedAt() {
+        return processedAt;
+    }
+
+    public void changeStatus(DissolutionStatus newStatus, LocalDateTime changedAt) {
+        statusHistory.add(new DissolutionStatusChanged(newStatus, changedAt));
+        this.status = newStatus;
+        if (newStatus == DissolutionStatus.PROCESSED) {
+            this.processedAt = changedAt;
+        }
     }
 
     public String getTransactionId() {
