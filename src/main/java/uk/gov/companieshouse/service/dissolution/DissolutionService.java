@@ -7,6 +7,7 @@ import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
@@ -17,7 +18,9 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
+import uk.gov.companieshouse.model.enums.DissolutionStatus;
 import uk.gov.companieshouse.repository.DissolutionRepository;
+import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.payment.PaymentService;
 import uk.gov.companieshouse.util.TransactionHelper;
 
@@ -33,16 +36,20 @@ public class DissolutionService {
     private final DissolutionRepository repository;
     private final TransactionHelper transactionHelper;
     private final PaymentService paymentService;
+    private final TransactionService transactionService;
+    private final DissolutionResponseMapper responseMapper;
     private final Logger logger;
 
     @Autowired
-    public DissolutionService(DissolutionCreator creator, DissolutionGetter getter, DissolutionPatcher patcher, DissolutionRepository repository, TransactionHelper transactionHelper, PaymentService paymentService, Logger logger) {
+    public DissolutionService(DissolutionCreator creator, DissolutionGetter getter, DissolutionPatcher patcher, DissolutionRepository repository, TransactionHelper transactionHelper, PaymentService paymentService, TransactionService transactionService, DissolutionResponseMapper responseMapper, Logger logger) {
         this.creator = creator;
         this.getter = getter;
         this.patcher = patcher;
         this.repository = repository;
         this.transactionHelper = transactionHelper;
         this.paymentService = paymentService;
+        this.transactionService = transactionService;
+        this.responseMapper = responseMapper;
         this.logger = logger;
     }
 
@@ -70,6 +77,23 @@ public class DissolutionService {
         return repository.findByDataApplicationReference(applicationReference).isPresent();
     }
 
+    /**
+     * Resolves the dissolution application for the given company, falling back in order across
+     * a submitted dissolution, a pending (transaction-model) dissolution, a processed dissolution
+     * with no verdict yet reached, and a draft dissolution for the given user. If found, the
+     * payment status is reconciled before being returned.
+     */
+    public Optional<DissolutionGetResponse> resolveDissolutionApplication(String userId, String companyNumber, String passThroughTokenHeader) {
+        var dissolutionDto = getByCompanyNumber(companyNumber)
+                .or(() -> getPendingDissolution(companyNumber))
+                .or(() -> getProcessedDissolutionWithNoVerdict(companyNumber, passThroughTokenHeader))
+                .or(() -> getDraftDissolution(userId, companyNumber));
+
+        dissolutionDto.ifPresent(this::reconcilePaymentStatus);
+
+        return dissolutionDto;
+    }
+
     public Optional<DissolutionGetResponse> getByCompanyNumber(String companyNumber) {
         return getter.getByCompanyNumber(companyNumber);
     }
@@ -86,23 +110,14 @@ public class DissolutionService {
         return getter.getPendingDissolution(companyNumber);
     }
 
-    public Optional<DissolutionGetResponse> getDraftDissolution(String userId, String companyNumber) {
-        return getter.getDraftDissolution(userId, companyNumber);
+    public Optional<DissolutionGetResponse> getProcessedDissolutionWithNoVerdict(String companyNumber, String passThroughTokenHeader) {
+        return repository.findFirstByCompanyNumberAndStatusOrderByProcessedAtDesc(companyNumber, DissolutionStatus.PROCESSED)
+                .filter(dissolution -> !transactionService.hasVerdictBeenReached(dissolution.getTransactionId(), passThroughTokenHeader))
+                .map(responseMapper::mapToDissolutionGetResponse);
     }
 
-    /**
-     * Resolves the dissolution application for the given company, falling back in order across
-     * a submitted dissolution, a pending (transaction-model) dissolution, and a draft dissolution
-     * for the given user. If found, the payment status is reconciled before being returned.
-     */
-    public Optional<DissolutionGetResponse> resolveDissolutionApplication(String userId, String companyNumber) {
-        var dissolutionDto = getByCompanyNumber(companyNumber)
-                .or(() -> getPendingDissolution(companyNumber))
-                .or(() -> getDraftDissolution(userId, companyNumber));
-
-        dissolutionDto.ifPresent(this::reconcilePaymentStatus);
-
-        return dissolutionDto;
+    public Optional<DissolutionGetResponse> getDraftDissolution(String userId, String companyNumber) {
+        return getter.getDraftDissolution(userId, companyNumber);
     }
 
     // This logic was moved verbatim from DissolutionController as part of a refactor and is not newly authored here.
