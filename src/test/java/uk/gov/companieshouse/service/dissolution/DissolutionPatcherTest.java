@@ -13,10 +13,7 @@ import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.mapper.DissolutionSubmissionMapper;
 import uk.gov.companieshouse.mapper.PaymentInformationMapper;
-import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
-import uk.gov.companieshouse.model.db.dissolution.Dissolution;
-import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
-import uk.gov.companieshouse.model.db.dissolution.DissolutionSubmission;
+import uk.gov.companieshouse.model.db.dissolution.*;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
@@ -25,6 +22,7 @@ import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.dissolution.certificate.DissolutionCertificateGenerator;
 
+import java.util.Collections;
 import java.util.Arrays;
 import java.util.List;
 
@@ -113,6 +111,9 @@ class DissolutionPatcherTest {
         directors.get(1).setDirectorApproval(approval);
         dissolution.getData().setDirectors(directors);
 
+        CreatedBy createdBy = DissolutionFixtures.generateCreatedBy();
+        dissolution.setCreatedBy(createdBy);
+
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
         when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
@@ -131,10 +132,16 @@ class DissolutionPatcherTest {
     }
 
     @Test
-    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApprovedForSingleDirectorCompany() throws DissolutionNotFoundException {
+    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApprovedForSingleDirectorCompanyAndPresenterIsDirector() throws DissolutionNotFoundException {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
+
+        // set the createdBy email to be the same from the director email
+        List<DissolutionDirector> directors = DissolutionFixtures.generateDissolutionDirectorList();
+        directors = Collections.singletonList(directors.get(0));
+        directors.get(0).setEmail(dissolution.getCreatedBy().getEmail());
+        dissolution.getData().setDirectors(directors);
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
         when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
@@ -145,6 +152,34 @@ class DissolutionPatcherTest {
         verify(responseMapper).mapToDissolutionPatchResponse(dissolution);
         verify(repository).save(dissolutionCaptor.capture());
         verifyNoInteractions(dissolutionEmailService);
+
+        assertEquals(response, result);
+        assertEquals(
+                ApplicationStatus.PENDING_PAYMENT,
+                dissolutionCaptor.getValue().getData().getApplication().getStatus()
+        );
+    }
+
+    @Test
+    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApprovedForSingleDirectorCompanyAndPresenterIsNotDirector() throws DissolutionNotFoundException {
+        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+        body.setIpAddress(IP_ADDRESS);
+        body.setOfficerId(OFFICER_ID);
+
+        // set the createdBy email to be different from the director email
+        List<DissolutionDirector> directors = DissolutionFixtures.generateDissolutionDirectorList();
+        directors = Collections.singletonList(directors.get(0));
+        dissolution.getData().setDirectors(directors);
+
+        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
+        when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
+        when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
+
+        final DissolutionPatchResponse result = patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, body);
+
+        verify(responseMapper).mapToDissolutionPatchResponse(dissolution);
+        verify(repository).save(dissolutionCaptor.capture());
+        verify(dissolutionEmailService).sendPendingPaymentEmail(dissolutionCaptor.capture());
 
         assertEquals(response, result);
         assertEquals(
