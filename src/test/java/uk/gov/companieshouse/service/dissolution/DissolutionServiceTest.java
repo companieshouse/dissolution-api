@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.service.dissolution;
 
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -8,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
+import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
@@ -19,12 +22,18 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
+import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.repository.DissolutionRepository;
+import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.service.payment.PaymentService;
 import uk.gov.companieshouse.util.TransactionHelper;
 
 import java.util.Map;
 import java.util.Optional;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,12 +41,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.DisplayNameGenerator.ReplaceUnderscores;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionPatchRequest;
+import static uk.gov.companieshouse.fixtures.DissolutionGetResponseTestDataBuilder.aDissolutionGetResponse;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 
 @ExtendWith(MockitoExtension.class)
@@ -61,6 +73,12 @@ class DissolutionServiceTest {
     @Mock
     private TransactionHelper transactionHelper;
 
+    @Mock
+    private PaymentService paymentService;
+
+    @Mock
+    private Logger logger;
+
     public static final String COMPANY_NUMBER = "12345678";
     public static final String APPLICATION_REFERENCE = "XYZ456";
     public static final String USER_ID = "123";
@@ -69,6 +87,7 @@ class DissolutionServiceTest {
     public static final String OFFICER_ID = "abc123";
     private static final String DISSOLUTION_ID = "12345678";
     private static final String TRANSACTION_ID = "tx-id-123";
+    private static final String PAYMENT_REFERENCE = "payment-ref-123";
 
     @Test
     void create_createsADissolutionRequest_returnsCreateResponse() {
@@ -283,5 +302,99 @@ class DissolutionServiceTest {
 
         assertTrue(result.isPresent());
         assertEquals(response, result.get());
+    }
+
+    @Nested
+    @DisplayNameGeneration(ReplaceUnderscores.class)
+    class resolveDissolutionApplication {
+
+        @Test
+        void when_no_dissolution_resolved_then_empty() {
+            when(getter.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(empty());
+            when(getter.getPendingDissolution(COMPANY_NUMBER)).thenReturn(empty());
+            when(getter.getDraftDissolution(USER_ID, COMPANY_NUMBER)).thenReturn(empty());
+
+            var dissolutionDto = service.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER);
+
+            assertThat(dissolutionDto).isEmpty();
+        }
+
+        @Test
+        void when_found_by_company_number_then_returns_it_without_falling_back() {
+            when(getter.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(of(aDissolutionGetResponse()
+                    .withApplicationReference(APPLICATION_REFERENCE)
+                    .build()));
+
+            var dissolutionDto = service.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER);
+
+            assertThat(dissolutionDto.get().getApplicationReference()).isEqualTo(APPLICATION_REFERENCE);
+        }
+
+        @Test
+        void when_not_found_by_company_number_then_falls_back_to_pending_dissolution() {
+            when(getter.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(empty());
+            when(getter.getPendingDissolution(COMPANY_NUMBER)).thenReturn(of(aDissolutionGetResponse()
+                    .withApplicationReference(APPLICATION_REFERENCE)
+                    .build()));
+
+            var dissolutionDto = service.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER);
+
+            assertThat(dissolutionDto.get().getApplicationReference()).isEqualTo(APPLICATION_REFERENCE);
+        }
+
+        @Test
+        void when_not_found_by_company_number_or_pending_then_falls_back_to_draft_dissolution() {
+            when(getter.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(empty());
+            when(getter.getPendingDissolution(COMPANY_NUMBER)).thenReturn(empty());
+            when(getter.getDraftDissolution(USER_ID, COMPANY_NUMBER)).thenReturn(of(aDissolutionGetResponse()
+                    .withApplicationReference(APPLICATION_REFERENCE)
+                    .build()));
+
+            var dissolutionDto = service.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER);
+
+            assertThat(dissolutionDto.get().getApplicationReference()).isEqualTo(APPLICATION_REFERENCE);
+        }
+
+        @Test
+        void when_pending_payment_and_payment_accepted_then_application_status_is_set_to_paid() throws DissolutionNotFoundException {
+            when(getter.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(of(aDissolutionGetResponse()
+                    .withApplicationStatus(ApplicationStatus.PENDING_PAYMENT)
+                    .withPaymentReference(PAYMENT_REFERENCE)
+                    .build()));
+            when(paymentService.getPaymentStatus(PAYMENT_REFERENCE)).thenReturn("accepted");
+
+            var dissolutionDto = service.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER);
+
+            assertThat(dissolutionDto.get().getApplicationStatus()).isEqualTo(ApplicationStatus.PAID);
+        }
+
+        @Test
+        void when_pending_payment_and_payment_status_unavailable_then_payment_reference_is_reset() throws DissolutionNotFoundException {
+            when(getter.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(of(aDissolutionGetResponse()
+                    .withApplicationStatus(ApplicationStatus.PENDING_PAYMENT)
+                    .withPaymentReference(PAYMENT_REFERENCE)
+                    .withApplicationReference(APPLICATION_REFERENCE)
+                    .build()));
+            when(paymentService.getPaymentStatus(PAYMENT_REFERENCE)).thenReturn(null);
+
+            var dissolutionDto = service.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER);
+
+            assertThat(dissolutionDto.get().getApplicationStatus()).isEqualTo(ApplicationStatus.PENDING_PAYMENT);
+            verify(patcher).setPaymentReference("", APPLICATION_REFERENCE);
+        }
+
+        @Test
+        void when_resetting_payment_reference_fails_because_dissolution_no_longer_exists_then_throws_not_found() throws DissolutionNotFoundException {
+            when(getter.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(of(aDissolutionGetResponse()
+                    .withApplicationStatus(ApplicationStatus.PENDING_PAYMENT)
+                    .withPaymentReference(PAYMENT_REFERENCE)
+                    .withApplicationReference(APPLICATION_REFERENCE)
+                    .build()));
+            when(paymentService.getPaymentStatus(PAYMENT_REFERENCE)).thenReturn(null);
+            doThrow(new DissolutionNotFoundException("not found")).when(patcher).setPaymentReference("", APPLICATION_REFERENCE);
+
+            assertThrows(NotFoundException.class,
+                    () -> service.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER));
+        }
     }
 }

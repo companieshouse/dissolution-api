@@ -19,7 +19,6 @@ import uk.gov.companieshouse.exception.BadRequestException;
 import uk.gov.companieshouse.exception.ConflictException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.NotFoundException;
-import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
@@ -27,13 +26,11 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
-import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 import uk.gov.companieshouse.service.CompanyOfficerService;
 import uk.gov.companieshouse.service.CompanyProfileService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import uk.gov.companieshouse.service.dissolution.validator.DissolutionValidator;
-import uk.gov.companieshouse.service.payment.PaymentService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -50,22 +47,16 @@ public class DissolutionController {
     private final DissolutionValidator dissolutionValidator;
     private final CompanyProfileService companyProfileService;
     private final CompanyOfficerService companyOfficerService;
-    private final PaymentService paymentService;
-    private final Logger logger;
 
     public DissolutionController(
             DissolutionService dissolutionService,
             DissolutionValidator dissolutionValidator,
             CompanyProfileService companyProfileService,
-            CompanyOfficerService companyOfficerService,
-            PaymentService paymentService,
-            Logger logger) {
+            CompanyOfficerService companyOfficerService) {
         this.dissolutionService = dissolutionService;
         this.dissolutionValidator = dissolutionValidator;
         this.companyProfileService = companyProfileService;
         this.companyOfficerService = companyOfficerService;
-        this.paymentService = paymentService;
-        this.logger = logger;
     }
 
     @Operation(summary = "Create Dissolution Request", tags = "Dissolution")
@@ -110,29 +101,9 @@ public class DissolutionController {
     @ResponseStatus(HttpStatus.OK)
     public DissolutionGetResponse getDissolutionApplication(@RequestHeader("ERIC-identity") String userId,
                                                             @PathVariable("company-number") final String companyNumber) {
-        DissolutionGetResponse dissolutionGetResponse = dissolutionService
-                .getByCompanyNumber(companyNumber)
-                .or(() -> dissolutionService.getPendingDissolution(companyNumber))
-                .or(() -> dissolutionService.getDraftDissolution(userId, companyNumber))
+        return dissolutionService
+                .resolveDissolutionApplication(userId, companyNumber)
                 .orElseThrow(NotFoundException::new);
-
-        String paymentRef = dissolutionGetResponse.getPaymentReference();
-        if (paymentRef != null && !paymentRef.isEmpty() && dissolutionGetResponse.getApplicationStatus().equals(ApplicationStatus.PENDING_PAYMENT)) {
-            // payment could be complete, we need to get up-to-date status to be sure
-            String paymentStatus = paymentService.getPaymentStatus(dissolutionGetResponse.getPaymentReference());
-            if (paymentStatus == null) {
-                logger.info(String.format("Error getting payment status for paymentRef: [%s], resetting payment ref", paymentRef));
-                // error retrieving payment status, so reset payment reference to allow user to restart payment
-                try {
-                    dissolutionService.setPaymentReference("", dissolutionGetResponse.getApplicationReference());
-                } catch (DissolutionNotFoundException e) {
-                    throw new NotFoundException();
-                }
-            } else if (paymentStatus.equals("accepted")) {
-                dissolutionGetResponse.setApplicationStatus(ApplicationStatus.PAID);
-            }
-        }
-        return dissolutionGetResponse;
     }
 
     @Operation(summary = "Patch Dissolution Application", tags = "Dissolution")
