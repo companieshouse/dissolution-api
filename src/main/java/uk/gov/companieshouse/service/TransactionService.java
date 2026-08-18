@@ -9,6 +9,7 @@ import uk.gov.companieshouse.api.model.transaction.TransactionPayment;
 import uk.gov.companieshouse.api.sdk.ApiClientService;
 import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.exception.TransactionNotFoundException;
+import uk.gov.companieshouse.model.Constants;
 
 import java.io.IOException;
 
@@ -39,6 +40,18 @@ public class TransactionService {
         } catch (URIValidationException | IOException e) {
             throw new ServiceException(String.format("Failed to retrieve transaction details for: %s", transactionId), e);
         }
+    }
+
+    public boolean hasVerdictBeenReached(String transactionId, String passThroughTokenHeader) {
+        final Transaction transaction = getTransaction(transactionId, passThroughTokenHeader);
+
+        if (transaction.getFilings() == null) {
+            return false;
+        }
+
+        return transaction.getFilings().values().stream()
+                .filter(filing -> filing.getType() != null && filing.getType().startsWith(Constants.FILING_TYPE_PREFIX_DISSOLUTION))
+                .anyMatch(filing -> FilingStatus.ACCEPTED.matches(filing.getStatus()) || FilingStatus.REJECTED.matches(filing.getStatus()));
     }
 
     public TransactionPayment getPayment(String uri, String passThroughTokenHeader) {
