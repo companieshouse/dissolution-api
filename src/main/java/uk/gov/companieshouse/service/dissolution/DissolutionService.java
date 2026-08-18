@@ -42,8 +42,8 @@ public class DissolutionService {
         return creator.create(body, companyProfile, directors, userId, ip, email);
     }
 
-    public DissolutionPatchResponse addDirectorApproval(String companyNumber, String userId, DissolutionPatchRequest body) throws DissolutionNotFoundException {
-        return patcher.addDirectorApproval(companyNumber, userId, body);
+    public DissolutionPatchResponse addDirectorApproval(Dissolution dissolution, String userId, DissolutionPatchRequest body) {
+        return patcher.addDirectorApproval(dissolution, userId, body);
     }
 
     public void handlePayment(PaymentPatchRequest body, String applicationReference) throws DissolutionNotFoundException {
@@ -54,8 +54,8 @@ public class DissolutionService {
         patcher.setPaymentReference(paymentReference, applicationReference);
     }
 
-    public boolean doesDissolutionRequestExistForCompanyByCompanyNumber(String companyNumber) {
-        return repository.findByCompanyNumber(companyNumber).isPresent();
+    public Optional<Dissolution> getDissolutionRequestForCompanyByCompanyNumber(String companyNumber) {
+        return repository.findByCompanyNumber(companyNumber);
     }
 
     public boolean doesDissolutionRequestExistForCompanyByApplicationReference(String applicationReference) {
@@ -68,10 +68,6 @@ public class DissolutionService {
 
     public Optional<DissolutionGetResponse> getByApplicationReference(String applicationReference) {
         return getter.getByApplicationReference(applicationReference);
-    }
-
-    public boolean isDirectorPendingApproval(String companyNumber, String officerId) {
-        return getter.isDirectorPendingApproval(companyNumber, officerId);
     }
 
     public Optional<DissolutionGetResponse> getPendingDissolution(String companyNumber) {

@@ -2,12 +2,12 @@ package uk.gov.companieshouse.service.dissolution;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.exception.DissolutionDirectorNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.mapper.DissolutionSubmissionMapper;
 import uk.gov.companieshouse.mapper.PaymentInformationMapper;
-import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
@@ -50,10 +50,14 @@ public class DissolutionPatcher {
         this.dissolutionEmailService = dissolutionEmailService;
     }
 
-    public DissolutionPatchResponse addDirectorApproval(String companyNumber, String userId, DissolutionPatchRequest body) throws DissolutionNotFoundException {
-        final Dissolution dissolution = this.repository.findByCompanyNumber(companyNumber).orElseThrow(DissolutionNotFoundException::new);
+    public DissolutionPatchResponse addDirectorApproval(final Dissolution dissolution, String userId, DissolutionPatchRequest body) {
+        DissolutionDirector director = this.findDirector(body.getOfficerId(), dissolution);
 
-        this.addDirectorApproval(userId, body, dissolution);
+        if (director.hasDirectorApproval()) {
+            throw new IllegalStateException(String.format("Director %s is not pending approval", body.getOfficerId()));
+        }
+
+        director.setDirectorApproval(approvalMapper.mapToDirectorApproval(userId, body.getIpAddress()));
 
         if (!this.hasDirectorsLeftToApprove(dissolution)) {
             handleFinalApproval(dissolution);
@@ -95,14 +99,14 @@ public class DissolutionPatcher {
         this.repository.save(dissolution);
     }
 
-    private DissolutionDirector findDirector(String officerId, Dissolution dissolution) throws DissolutionNotFoundException {
+    private DissolutionDirector findDirector(String officerId, Dissolution dissolution) {
         return dissolution
                 .getData()
                 .getDirectors()
                 .stream()
                 .filter(director -> director.getOfficerId().equals(officerId))
                 .findFirst()
-                .orElseThrow(DissolutionNotFoundException::new);
+                .orElseThrow(() -> new DissolutionDirectorNotFoundException(String.format("Director %s not found", officerId)));
     }
 
     private void addPaymentInformation(PaymentPatchRequest body, Dissolution dissolution) {
@@ -115,12 +119,6 @@ public class DissolutionPatcher {
         final PaymentInformation information = paymentInformationMapper.mapPaymentReference(paymentReference);
 
         dissolution.setPaymentInformation(information);
-    }
-
-    private void addDirectorApproval(String userId, DissolutionPatchRequest body, Dissolution dissolution) throws DissolutionNotFoundException {
-        final DirectorApproval approval = approvalMapper.mapToDirectorApproval(userId, body.getIpAddress());
-        DissolutionDirector director = this.findDirector(body.getOfficerId(), dissolution);
-        director.setDirectorApproval(approval);
     }
 
     private boolean hasDirectorsLeftToApprove(Dissolution dissolution) {

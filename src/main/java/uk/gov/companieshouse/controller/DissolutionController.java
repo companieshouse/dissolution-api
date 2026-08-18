@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.exception.BadRequestException;
 import uk.gov.companieshouse.exception.ConflictException;
+import uk.gov.companieshouse.exception.DissolutionDirectorNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.logging.Logger;
@@ -37,6 +38,7 @@ import uk.gov.companieshouse.service.payment.PaymentService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+
 import java.util.Map;
 
 import static uk.gov.companieshouse.util.EricHelper.getEmail;
@@ -86,7 +88,7 @@ public class DissolutionController {
 
         final CompanyProfile company = companyProfileService.getCompanyProfile(companyNumber, request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader()));
 
-        if (dissolutionService.doesDissolutionRequestExistForCompanyByCompanyNumber(companyNumber)) {
+        if (dissolutionService.getDissolutionRequestForCompanyByCompanyNumber(companyNumber).isPresent()) {
             throw new ConflictException("Dissolution already exists");
         }
 
@@ -138,8 +140,8 @@ public class DissolutionController {
     @Operation(summary = "Patch Dissolution Application", tags = "Dissolution")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Dissolution Application patched", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Dissolution Application not found"),
-            @ApiResponse(responseCode = "400", description = "Dissolution Request does not have a director pending approval")
+            @ApiResponse(responseCode = "400", description = "Dissolution Request does not have a director pending approval"),
+            @ApiResponse(responseCode = "404", description = "Dissolution Application or director not found")
     })
     @PatchMapping
     @ResponseStatus(HttpStatus.OK)
@@ -148,19 +150,15 @@ public class DissolutionController {
             @PathVariable("company-number") final String companyNumber,
             @Valid @RequestBody final DissolutionPatchRequest body
     ) {
-
-        if (!dissolutionService.doesDissolutionRequestExistForCompanyByCompanyNumber(companyNumber)) {
-            throw new NotFoundException();
-        }
-
-        if (!dissolutionService.isDirectorPendingApproval(companyNumber, body.getOfficerId())) {
-            throw new BadRequestException("Director is not pending approval");
-        }
+        final var dissolution = dissolutionService.getDissolutionRequestForCompanyByCompanyNumber(companyNumber)
+                .orElseThrow(() -> new NotFoundException(String.format("Dissolution Request not found for company number %s", companyNumber)));
 
         try {
-            return dissolutionService.addDirectorApproval(companyNumber, userId, body);
-        } catch (DissolutionNotFoundException e) {
-            throw new NotFoundException();
+            return dissolutionService.addDirectorApproval(dissolution, userId, body);
+        } catch (DissolutionDirectorNotFoundException e) {
+            throw new NotFoundException(e.getMessage());
+        } catch (IllegalStateException e) {
+            throw new BadRequestException(e.getMessage());
         }
     }
 }

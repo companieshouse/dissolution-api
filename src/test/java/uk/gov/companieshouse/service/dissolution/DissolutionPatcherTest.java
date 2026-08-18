@@ -7,6 +7,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.exception.DissolutionDirectorNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
@@ -29,10 +30,19 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.*;
-import static uk.gov.companieshouse.fixtures.DissolutionFixtures.*;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.fixtures.DissolutionDirectorTestDataBuilder.aDissolutionDirector;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDirectorApproval;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionPatchRequest;
+import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionSubmission;
+import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentInformation;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 
@@ -63,7 +73,6 @@ class DissolutionPatcherTest {
     @Mock
     private DissolutionEmailService dissolutionEmailService;
 
-    private static final String COMPANY_NUMBER = "12345678";
     private static final String APPLICATION_REFERENCE = "ABC123";
     private static final String USER_ID = "1234";
     private static final String OFFICER_ID = "abc123";
@@ -85,16 +94,15 @@ class DissolutionPatcherTest {
     }
 
     @Test
-    void patch_addsApprovalToSingleDirector_savesInDatabase() throws DissolutionNotFoundException {
+    void patch_addsApprovalToSingleDirector_savesInDatabase() {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
 
-        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
         when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
-        patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, body);
+        patcher.addDirectorApproval(dissolution, USER_ID, body);
 
         verify(repository).save(dissolutionCaptor.capture());
 
@@ -102,7 +110,7 @@ class DissolutionPatcherTest {
     }
 
     @Test
-    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApprovedForMultiDirectorCompany() throws DissolutionNotFoundException {
+    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApprovedForMultiDirectorCompany() {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
@@ -113,11 +121,10 @@ class DissolutionPatcherTest {
         directors.get(1).setDirectorApproval(approval);
         dissolution.getData().setDirectors(directors);
 
-        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
         when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
-        final DissolutionPatchResponse result = patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, body);
+        final DissolutionPatchResponse result = patcher.addDirectorApproval(dissolution, USER_ID, body);
 
         verify(responseMapper).mapToDissolutionPatchResponse(dissolution);
         verify(repository).save(dissolutionCaptor.capture());
@@ -131,16 +138,15 @@ class DissolutionPatcherTest {
     }
 
     @Test
-    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApprovedForSingleDirectorCompany() throws DissolutionNotFoundException {
+    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApprovedForSingleDirectorCompany() {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
 
-        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
         when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
-        final DissolutionPatchResponse result = patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, body);
+        final DissolutionPatchResponse result = patcher.addDirectorApproval(dissolution, USER_ID, body);
 
         verify(responseMapper).mapToDissolutionPatchResponse(dissolution);
         verify(repository).save(dissolutionCaptor.capture());
@@ -154,7 +160,7 @@ class DissolutionPatcherTest {
     }
 
     @Test
-    void patch_doesNotUpdateStatus_ifNotAllDirectorHaveApproved() throws DissolutionNotFoundException {
+    void patch_doesNotUpdateStatus_ifNotAllDirectorHaveApproved() {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
@@ -164,11 +170,10 @@ class DissolutionPatcherTest {
         directors.get(1).setOfficerId(OFFICER_ID_TWO);
         dissolution.getData().setDirectors(directors);
 
-        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
         when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
-        patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, body);
+        patcher.addDirectorApproval(dissolution, USER_ID, body);
 
         verify(repository).save(dissolutionCaptor.capture());
 
@@ -179,7 +184,7 @@ class DissolutionPatcherTest {
     }
 
     @Test
-    void patch_doesNotGenerateCertificate_ifNotAllDirectorHaveApproved() throws DissolutionNotFoundException {
+    void patch_doesNotGenerateCertificate_ifNotAllDirectorHaveApproved() {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
@@ -194,16 +199,47 @@ class DissolutionPatcherTest {
 
         dissolution.getData().setDirectors(Arrays.asList(directorOne, directorTwo));
 
-        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
         when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
-        patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, body);
+        patcher.addDirectorApproval(dissolution, USER_ID, body);
 
         verify(certificateGenerator, never()).generateDissolutionCertificate(dissolution);
         verify(repository).save(dissolutionCaptor.capture());
 
         assertNull(dissolutionCaptor.getValue().getCertificate());
+    }
+
+    @Test
+    void patch_throwsDissolutionDirectorNotFound_ifOfficerIdInRequestIsNotFound() {
+        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+        body.setIpAddress(IP_ADDRESS);
+        body.setOfficerId(OFFICER_ID);
+
+        dissolution = aDissolution()
+                .withDirectors(aDissolutionDirector().withOfficerId(OFFICER_ID_TWO))
+                .build();
+
+        assertThrows(DissolutionDirectorNotFoundException.class, () -> patcher.addDirectorApproval(dissolution, USER_ID, body));
+
+        verify(repository, never()).save(any(Dissolution.class));
+    }
+
+    @Test
+    void patch_throwsIllegalStateException_ifDirectorAlreadyApproved() {
+        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+        body.setIpAddress(IP_ADDRESS);
+        body.setOfficerId(OFFICER_ID);
+
+        dissolution = aDissolution()
+                .withDirectors(aDissolutionDirector()
+                        .withOfficerId(OFFICER_ID)
+                        .withDirectorApproval(generateDirectorApproval()))
+                .build();
+
+        assertThrows(IllegalStateException.class, () -> patcher.addDirectorApproval(dissolution, USER_ID, body));
+
+        verify(repository, never()).save(any(Dissolution.class));
     }
 
     @Test

@@ -37,7 +37,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
+import static uk.gov.companieshouse.fixtures.DissolutionDirectorTestDataBuilder.aDissolutionDirector;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionPatchRequest;
+import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 
 @ExtendWith(MockitoExtension.class)
@@ -87,21 +89,23 @@ class DissolutionServiceTest {
     }
 
     @Test
-    void doesDissolutionRequestExistForCompanyByCompanyNumber_returnsTrue_ifDissolutionForCompanyExists() {
-        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(DissolutionFixtures.generateDissolution()));
+    void getDissolutionRequestForCompanyByCompanyNumber_returnsDissolution_ifDissolutionForCompanyExists() {
+        final var dissolution = DissolutionFixtures.generateDissolution();
+        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
 
-        final boolean result = service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER);
+        final Optional<Dissolution> result = service.getDissolutionRequestForCompanyByCompanyNumber(COMPANY_NUMBER);
 
-        assertTrue(result);
+        assertTrue(result.isPresent());
+        assertEquals(dissolution, result.get());
     }
 
     @Test
-    void doesDissolutionRequestExistForCompanyByCompanyNumber_returnsFalse_ifDissolutionForCompanyDoesNotExist() {
+    void getDissolutionRequestForCompanyByCompanyNumber_returnsEmptyOptional_ifDissolutionForCompanyDoesNotExist() {
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
 
-        final boolean result = service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER);
+        final Optional<Dissolution> result = service.getDissolutionRequestForCompanyByCompanyNumber(COMPANY_NUMBER);
 
-        assertFalse(result);
+        assertFalse(result.isPresent());
     }
 
     @Test
@@ -156,30 +160,19 @@ class DissolutionServiceTest {
         body.setIpAddress(IP);
         body.setOfficerId(OFFICER_ID);
 
+        final Dissolution dissolution = aDissolution()
+                .withDirectors(aDissolutionDirector().withOfficerId(OFFICER_ID))
+                .build();
         final DissolutionPatchResponse response = DissolutionFixtures.generateDissolutionPatchResponse();
 
-        when(patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, body)).thenReturn(response);
+        when(patcher.addDirectorApproval(dissolution, USER_ID, body)).thenReturn(response);
 
-        final DissolutionPatchResponse result = service.addDirectorApproval(COMPANY_NUMBER, USER_ID, body);
+        final DissolutionPatchResponse result = service.addDirectorApproval(dissolution, USER_ID, body);
 
-        verify(patcher).addDirectorApproval(COMPANY_NUMBER, USER_ID, body);
+        verify(patcher).addDirectorApproval(dissolution, USER_ID, body);
 
         assertNotNull(result);
         assertEquals(response, result);
-    }
-
-    @Test
-    void hasDirectorAlreadyApproved_callsDissolutionGetter_isDirectorPendingApproval() {
-        final String companyNumber = "12345678";
-        final String email = "user@mail.com";
-
-        when(getter.isDirectorPendingApproval(companyNumber, email)).thenReturn(true);
-
-        final boolean result = service.isDirectorPendingApproval(companyNumber, email);
-
-        verify(getter).isDirectorPendingApproval(companyNumber, email);
-
-        assertTrue(result);
     }
 
     @Test
