@@ -141,7 +141,7 @@ class DissolutionPatcherTest {
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
 
-        // set the createdBy email to be the same from the director email
+        // Ensure the sole director email matches the presenter (createdBy) email
         List<DissolutionDirector> directors = DissolutionFixtures.generateDissolutionDirectorList();
         directors = Collections.singletonList(directors.get(0));
         directors.get(0).setEmail(dissolution.getCreatedBy().getEmail());
