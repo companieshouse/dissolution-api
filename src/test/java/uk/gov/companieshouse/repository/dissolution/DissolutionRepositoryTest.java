@@ -110,21 +110,21 @@ class DissolutionRepositoryTest extends AbstractMongoConfig {
     }
 
     @Nested
-    @DisplayName("findFirstByCompanyNumberAndStatusOrderByProcessedAtDesc")
+    @DisplayName("findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc")
     class FindFirstByCompanyNumberAndStatus {
 
         @Test
-        void findsMostRecentlyProcessedDissolution() {
+        void findsMostRecentlySubmittedDissolution() {
             final String COMPANY_NUMBER = "913";
 
             Dissolution older = aDissolution()
                     .withCompanyNumber(COMPANY_NUMBER)
-                    .withStatus(PROCESSED, LocalDateTime.of(2024, 1, 1, 12, 0))
+                    .withStatus(SUBMITTED, LocalDateTime.of(2024, 1, 1, 12, 0))
                     .build();
 
             Dissolution newer = aDissolution()
                     .withCompanyNumber(COMPANY_NUMBER)
-                    .withStatus(PROCESSED, LocalDateTime.of(2024, 1, 1, 12, 5))
+                    .withStatus(SUBMITTED, LocalDateTime.of(2024, 1, 1, 12, 5))
                     .build();
 
             Dissolution draft = aDissolution()
@@ -137,15 +137,15 @@ class DissolutionRepositoryTest extends AbstractMongoConfig {
             dissolutionRepository.insert(draft);
 
             final Dissolution result = dissolutionRepository
-                    .findFirstByCompanyNumberAndStatusOrderByProcessedAtDesc(COMPANY_NUMBER, PROCESSED)
+                    .findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, SUBMITTED)
                     .orElseThrow();
 
             assertEquals(newer.getId(), result.getId());
-            assertEquals(PROCESSED, result.getStatus());
+            assertEquals(SUBMITTED, result.getStatus());
         }
 
         @Test
-        void whenNoProcessedDissolutionThenEmptyReturned() {
+        void whenNoSubmittedDissolutionThenEmptyReturned() {
             final String COMPANY_NUMBER = "914";
             final String OTHER_COMPANY_NUMBER = "915";
 
@@ -154,16 +154,16 @@ class DissolutionRepositoryTest extends AbstractMongoConfig {
                     .withStatus(DRAFT)
                     .build();
 
-            Dissolution otherCompanyProcessed = aDissolution()
+            Dissolution otherCompanySubmitted = aDissolution()
                     .withCompanyNumber(OTHER_COMPANY_NUMBER)
-                    .withStatus(PROCESSED, LocalDateTime.of(2024, 1, 1, 12, 0))
+                    .withStatus(SUBMITTED, LocalDateTime.of(2024, 1, 1, 12, 0))
                     .build();
 
             dissolutionRepository.insert(draft);
-            dissolutionRepository.insert(otherCompanyProcessed);
+            dissolutionRepository.insert(otherCompanySubmitted);
 
             assertTrue(dissolutionRepository
-                    .findFirstByCompanyNumberAndStatusOrderByProcessedAtDesc(COMPANY_NUMBER, PROCESSED)
+                    .findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, SUBMITTED)
                     .isEmpty());
         }
     }

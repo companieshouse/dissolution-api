@@ -42,8 +42,8 @@ public class Dissolution {
     @Field("status_history")
     private List<DissolutionStatusChanged> statusHistory = new ArrayList<>();
 
-    @Field("processed_at")
-    private LocalDateTime processedAt;
+    @Field("submitted_at")
+    private LocalDateTime submittedAt;
 
     @Field("transaction_id")
     private String transactionId;
@@ -132,15 +132,15 @@ public class Dissolution {
         return status;
     }
 
-    public LocalDateTime getProcessedAt() {
-        return processedAt;
+    public LocalDateTime getSubmittedAt() {
+        return submittedAt;
     }
 
     public void changeStatus(DissolutionStatus newStatus, LocalDateTime changedAt) {
         statusHistory.add(new DissolutionStatusChanged(newStatus, changedAt));
         this.status = newStatus;
-        if (newStatus == DissolutionStatus.PROCESSED) {
-            this.processedAt = changedAt;
+        if (newStatus == DissolutionStatus.SUBMITTED) {
+            this.submittedAt = changedAt;
         }
     }
 
