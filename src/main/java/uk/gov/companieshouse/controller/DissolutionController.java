@@ -100,10 +100,9 @@ public class DissolutionController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public DissolutionGetResponse getDissolutionApplication(@RequestHeader("ERIC-identity") String userId,
-                                                            @PathVariable("company-number") final String companyNumber,
-                                                            HttpServletRequest request) {
+                                                            @PathVariable("company-number") final String companyNumber) {
         return dissolutionService
-                .resolveDissolutionApplication(userId, companyNumber, request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader()))
+                .resolveDissolutionApplication(userId, companyNumber)
                 .orElseThrow(NotFoundException::new);
     }
 

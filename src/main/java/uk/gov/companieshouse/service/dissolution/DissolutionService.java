@@ -83,10 +83,10 @@ public class DissolutionService {
      * with no verdict yet reached, and a draft dissolution for the given user. If found, the
      * payment status is reconciled before being returned.
      */
-    public Optional<DissolutionGetResponse> resolveDissolutionApplication(String userId, String companyNumber, String passThroughTokenHeader) {
+    public Optional<DissolutionGetResponse> resolveDissolutionApplication(String userId, String companyNumber) {
         var dissolutionDto = getByCompanyNumber(companyNumber)
                 .or(() -> getPendingDissolution(companyNumber))
-                .or(() -> getSubmittedDissolutionWithNoVerdict(companyNumber, passThroughTokenHeader))
+                .or(() -> getSubmittedDissolutionWithNoVerdict(companyNumber))
                 .or(() -> getDraftDissolution(userId, companyNumber));
 
         dissolutionDto.ifPresent(this::reconcilePaymentStatus);
@@ -110,9 +110,9 @@ public class DissolutionService {
         return getter.getPendingDissolution(companyNumber);
     }
 
-    public Optional<DissolutionGetResponse> getSubmittedDissolutionWithNoVerdict(String companyNumber, String passThroughTokenHeader) {
+    public Optional<DissolutionGetResponse> getSubmittedDissolutionWithNoVerdict(String companyNumber) {
         return repository.findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(companyNumber, DissolutionStatus.SUBMITTED)
-                .filter(dissolution -> !transactionService.hasVerdictBeenReached(dissolution.getTransactionId(), passThroughTokenHeader))
+                .filter(dissolution -> !transactionService.hasVerdictBeenReached(dissolution.getTransactionId()))
                 .map(responseMapper::mapToDissolutionGetResponse);
     }
 

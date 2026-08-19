@@ -96,7 +96,6 @@ class DissolutionServiceTest {
     private static final String DISSOLUTION_ID = "12345678";
     private static final String TRANSACTION_ID = "tx-id-123";
     private static final String PAYMENT_REFERENCE = "payment-ref-123";
-    private static final String PASS_THROUGH_HEADER = "545345345";
 
     @BeforeEach
     void setUp() {
@@ -326,7 +325,7 @@ class DissolutionServiceTest {
         void when_no_submitted_dissolution_exists_then_returns_empty() {
             when(repository.findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, DissolutionStatus.SUBMITTED)).thenReturn(Optional.empty());
 
-            var result = dissolutionService.getSubmittedDissolutionWithNoVerdict(COMPANY_NUMBER, PASS_THROUGH_HEADER);
+            var result = dissolutionService.getSubmittedDissolutionWithNoVerdict(COMPANY_NUMBER);
 
             assertThat(result).isEmpty();
         }
@@ -335,9 +334,9 @@ class DissolutionServiceTest {
         void when_submitted_dissolution_has_no_verdict_then_returns_it() {
             var dissolution = aDissolution().withTransactionId(TRANSACTION_ID).withApplicationReference(APPLICATION_REFERENCE).build();
             when(repository.findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, DissolutionStatus.SUBMITTED)).thenReturn(Optional.of(dissolution));
-            when(transactionService.hasVerdictBeenReached(TRANSACTION_ID, PASS_THROUGH_HEADER)).thenReturn(false);
+            when(transactionService.hasVerdictBeenReached(TRANSACTION_ID)).thenReturn(false);
 
-            var result = dissolutionService.getSubmittedDissolutionWithNoVerdict(COMPANY_NUMBER, PASS_THROUGH_HEADER);
+            var result = dissolutionService.getSubmittedDissolutionWithNoVerdict(COMPANY_NUMBER);
 
             assertThat(result.get().getApplicationReference()).isEqualTo(APPLICATION_REFERENCE);
         }
@@ -346,9 +345,9 @@ class DissolutionServiceTest {
         void when_submitted_dissolution_already_has_a_verdict_then_returns_empty() {
             var dissolution = aDissolution().withTransactionId(TRANSACTION_ID).build();
             when(repository.findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, DissolutionStatus.SUBMITTED)).thenReturn(Optional.of(dissolution));
-            when(transactionService.hasVerdictBeenReached(TRANSACTION_ID, PASS_THROUGH_HEADER)).thenReturn(true);
+            when(transactionService.hasVerdictBeenReached(TRANSACTION_ID)).thenReturn(true);
 
-            var result = dissolutionService.getSubmittedDissolutionWithNoVerdict(COMPANY_NUMBER, PASS_THROUGH_HEADER);
+            var result = dissolutionService.getSubmittedDissolutionWithNoVerdict(COMPANY_NUMBER);
 
             assertThat(result).isEmpty();
         }
@@ -364,7 +363,7 @@ class DissolutionServiceTest {
                     .withApplicationReference(APPLICATION_REFERENCE)
                     .build()));
 
-            var dissolutionDto = dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER, PASS_THROUGH_HEADER);
+            var dissolutionDto = dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER);
 
             assertThat(dissolutionDto.get().getApplicationReference()).isEqualTo(APPLICATION_REFERENCE);
         }
@@ -376,7 +375,7 @@ class DissolutionServiceTest {
                     .withApplicationReference(APPLICATION_REFERENCE)
                     .build()));
 
-            var dissolutionDto = dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER, PASS_THROUGH_HEADER);
+            var dissolutionDto = dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER);
 
             assertThat(dissolutionDto.get().getApplicationReference()).isEqualTo(APPLICATION_REFERENCE);
         }
@@ -389,9 +388,9 @@ class DissolutionServiceTest {
                     .withTransactionId(TRANSACTION_ID)
                     .withApplicationReference(APPLICATION_REFERENCE)
                     .build()));
-            when(transactionService.hasVerdictBeenReached(TRANSACTION_ID, PASS_THROUGH_HEADER)).thenReturn(false);
+            when(transactionService.hasVerdictBeenReached(TRANSACTION_ID)).thenReturn(false);
 
-            var dissolutionDto = dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER, PASS_THROUGH_HEADER);
+            var dissolutionDto = dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER);
 
             assertThat(dissolutionDto.get().getApplicationReference()).isEqualTo(APPLICATION_REFERENCE);
         }
@@ -403,12 +402,12 @@ class DissolutionServiceTest {
             when(repository.findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, DissolutionStatus.SUBMITTED)).thenReturn(of(aDissolution()
                     .withTransactionId(TRANSACTION_ID)
                     .build()));
-            when(transactionService.hasVerdictBeenReached(TRANSACTION_ID, PASS_THROUGH_HEADER)).thenReturn(true);
+            when(transactionService.hasVerdictBeenReached(TRANSACTION_ID)).thenReturn(true);
             when(getter.getDraftDissolution(USER_ID, COMPANY_NUMBER)).thenReturn(of(aDissolutionGetResponse()
                     .withApplicationReference(APPLICATION_REFERENCE)
                     .build()));
 
-            var dissolutionDto = dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER, PASS_THROUGH_HEADER);
+            var dissolutionDto = dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER);
 
             assertThat(dissolutionDto.get().getApplicationReference()).isEqualTo(APPLICATION_REFERENCE);
         }
@@ -422,7 +421,7 @@ class DissolutionServiceTest {
                     .withApplicationReference(APPLICATION_REFERENCE)
                     .build()));
 
-            var dissolutionDto = dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER, PASS_THROUGH_HEADER);
+            var dissolutionDto = dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER);
 
             assertThat(dissolutionDto.get().getApplicationReference()).isEqualTo(APPLICATION_REFERENCE);
         }
@@ -434,7 +433,7 @@ class DissolutionServiceTest {
             when(repository.findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, DissolutionStatus.SUBMITTED)).thenReturn(empty());
             when(getter.getDraftDissolution(USER_ID, COMPANY_NUMBER)).thenReturn(empty());
 
-            var dissolutionDto = dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER, PASS_THROUGH_HEADER);
+            var dissolutionDto = dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER);
 
             assertThat(dissolutionDto).isEmpty();
         }
@@ -447,7 +446,7 @@ class DissolutionServiceTest {
                     .build()));
             when(paymentService.getPaymentStatus(PAYMENT_REFERENCE)).thenReturn("accepted");
 
-            var dissolutionDto = dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER, PASS_THROUGH_HEADER);
+            var dissolutionDto = dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER);
 
             assertThat(dissolutionDto.get().getApplicationStatus()).isEqualTo(ApplicationStatus.PAID);
         }
@@ -461,7 +460,7 @@ class DissolutionServiceTest {
                     .build()));
             when(paymentService.getPaymentStatus(PAYMENT_REFERENCE)).thenReturn(null);
 
-            var dissolutionDto = dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER, PASS_THROUGH_HEADER);
+            var dissolutionDto = dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER);
 
             assertThat(dissolutionDto.get().getApplicationStatus()).isEqualTo(ApplicationStatus.PENDING_PAYMENT);
             verify(patcher).setPaymentReference("", APPLICATION_REFERENCE);
@@ -478,7 +477,7 @@ class DissolutionServiceTest {
             doThrow(new DissolutionNotFoundException("not found")).when(patcher).setPaymentReference("", APPLICATION_REFERENCE);
 
             assertThrows(NotFoundException.class,
-                    () -> dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER, PASS_THROUGH_HEADER));
+                    () -> dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER));
         }
     }
 }

@@ -12,7 +12,6 @@ import uk.gov.companieshouse.exception.InternalServerErrorException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.exception.TransactionNotFoundException;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 import uk.gov.companieshouse.service.TransactionService;
 
 import java.util.Map;
@@ -35,7 +34,6 @@ public class TransactionInterceptor implements HandlerInterceptor {
     public boolean preHandle(@NonNull HttpServletRequest request,
                              @NonNull HttpServletResponse response,
                              @NonNull Object handler) {
-        final var passThroughHeader = request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
         final var transactionId = getTransactionId(request);
 
         if (StringUtils.isBlank(transactionId)) {
@@ -43,7 +41,7 @@ public class TransactionInterceptor implements HandlerInterceptor {
         }
 
         try {
-            final var transaction = transactionService.getTransaction(transactionId, passThroughHeader);
+            final var transaction = transactionService.getTransaction(transactionId);
             logger.info("Retrieved transaction details for: " + transactionId);
             request.setAttribute(TRANSACTION_KEY, transaction);
             return true;

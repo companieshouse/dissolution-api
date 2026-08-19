@@ -69,7 +69,7 @@ public class FilingService {
 
     private Map<String, Object> buildFilingData(Context ctx) {
         final var paymentDetails = transactionService.getPayment(
-                ctx.transaction().getLinks().getPayment(), ctx.passThroughTokenHeader());
+                ctx.transaction().getLinks().getPayment());
         final var paymentSession = transactionPaymentService.getPaymentSession(
                 paymentDetails.getPaymentReference(), ctx.passThroughTokenHeader());
 
