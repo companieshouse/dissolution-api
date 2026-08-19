@@ -9,8 +9,11 @@ import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionApplication;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionData;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
+import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.DissolutionStatus;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
@@ -163,8 +166,12 @@ class DissolutionGetterTest {
     }
 
     @Test
-    void getDraftDissolution_findsDissolution_mapsToDissolutionResponse_returnsGetResponse() {
-        final Dissolution dissolution = DissolutionTestDataBuilder.aDissolution().withTransactionId(TRANSACTION_ID).withStatus(DissolutionStatus.DRAFT).build();
+    void getDraftDissolution_findsDraftDissolution_mapsToDissolutionResponse_returnsGetResponse() {
+        final DissolutionData data = new DissolutionData();
+        final DissolutionApplication application = new DissolutionApplication();
+        application.setType(ApplicationType.DS01);
+        data.setApplication(application);
+        final Dissolution dissolution = DissolutionTestDataBuilder.aDissolution().withTransactionId(TRANSACTION_ID).withStatus(DissolutionStatus.DRAFT).withActive(false).withData(data).build();
         final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse(TRANSACTION_ID, DissolutionStatus.DRAFT);
 
         when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
