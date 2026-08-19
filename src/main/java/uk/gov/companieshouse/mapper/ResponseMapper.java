@@ -11,4 +11,10 @@ public abstract class ResponseMapper {
 
         return links;
     }
+
+    protected DissolutionLinks generateDissolutionLinks(String companyNumber, String transactionId) {
+        final DissolutionLinks links = new DissolutionLinks();
+        links.setSelf(String.format("/company/%s/transaction/%s/dissolution", companyNumber, transactionId));
+        return links;
+    }
 }

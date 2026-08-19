@@ -5,8 +5,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.api.model.transaction.Transaction;
+import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
+import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.mapper.DissolutionUserDataMapper;
@@ -14,6 +17,7 @@ import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.repository.DissolutionRepository;
@@ -22,6 +26,7 @@ import uk.gov.companieshouse.service.barcode.BarcodeGenerator;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
@@ -60,7 +65,7 @@ public class DissolutionCreatorTest {
     public static final String BARCODE = "BARC0D3";
 
     @Test
-    public void create_generatesAReferenceNumber_mapsToDissolution_savesInDatabase_notifiesSignatories_returnsCreateResponse() {
+    void create_generatesAReferenceNumber_mapsToDissolution_savesInDatabase_notifiesSignatories_returnsCreateResponse() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
 
         final DissolutionUserData userData = DissolutionFixtures.generateDissolutionUserData();
@@ -84,6 +89,27 @@ public class DissolutionCreatorTest {
         verify(repository).insert(dissolution);
         verify(emailService).notifySignatoriesToSign(dissolution);
         verify(responseMapper).mapToDissolutionCreateResponse(dissolution);
+
+        assertEquals(response, result);
+    }
+
+    @Test
+    void createDraft_mapsAndPersistsDissolution_returnsCreateDraftResponse() {
+        final Transaction transaction = TransactionTestDataBuilder.aTransaction().withStatus(TransactionStatus.OPEN).build();
+        final DissolutionUserData userData = DissolutionFixtures.generateDissolutionUserData();
+        final Dissolution dissolution = DissolutionFixtures.generateDissolution();
+        final DissolutionCreateDraftResponse response = new DissolutionCreateDraftResponse();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        company.setCompanyNumber(COMPANY_NUMBER);
+
+        when(requestMapper.mapToDraftDissolution(transaction, company, userData)).thenReturn(dissolution);
+        when(responseMapper.mapToDissolutionCreateDraftResponse(transaction, dissolution)).thenReturn(response);
+        when(userDataMapper.mapToUserData(USER_ID, IP, EMAIL)).thenReturn(userData);
+
+        final DissolutionCreateDraftResponse result = creator.createDraft(transaction, company, USER_ID, IP, EMAIL);
+
+        verify(repository).insert(dissolution);
+        verify(emailService, never()).notifySignatoriesToSign(dissolution);
 
         assertEquals(response, result);
     }

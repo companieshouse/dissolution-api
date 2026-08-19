@@ -6,19 +6,24 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
+import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
+import uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder;
+import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
+import uk.gov.companieshouse.model.enums.DissolutionStatus;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.util.TransactionHelper;
 
@@ -276,5 +281,37 @@ class DissolutionServiceTest {
 
         assertTrue(result.isPresent());
         assertEquals(response, result.get());
+    }
+
+    @Test
+    void createDraft_createsDraftDissolution_returnsCreateDraftResponse() {
+        final Transaction transaction = TransactionTestDataBuilder.aTransaction().withStatus(TransactionStatus.OPEN).build();
+        final DissolutionCreateDraftResponse response = new DissolutionCreateDraftResponse();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+
+        when(creator.createDraft(transaction, company, USER_ID, IP, EMAIL)).thenReturn(response);
+
+        final DissolutionCreateDraftResponse result = service.createDraft(transaction, company, USER_ID, IP, EMAIL);
+
+        assertEquals(response, result);
+    }
+
+    @Test
+    void doesDraftDissolutionExistForUserAndCompany_returnsTrue_ifDraftDissolutionForUserAndCompanyExists() {
+        final Dissolution dissolution = DissolutionTestDataBuilder.aDissolution().withTransactionId(TRANSACTION_ID).withStatus(DissolutionStatus.DRAFT).build();
+        when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
+
+        final boolean result = service.doesDraftDissolutionExistForUserAndCompany(USER_ID, COMPANY_NUMBER);
+
+        assertTrue(result);
+    }
+
+    @Test
+    void doesDraftDissolutionExistForUserAndCompany_returnsFalse_ifDraftDissolutionForUserAndCompanyDoesNotExist() {
+        when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
+
+        final boolean result = service.doesDraftDissolutionExistForUserAndCompany(USER_ID, COMPANY_NUMBER);
+
+        assertFalse(result);
     }
 }

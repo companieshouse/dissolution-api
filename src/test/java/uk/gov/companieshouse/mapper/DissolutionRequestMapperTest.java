@@ -1,9 +1,18 @@
 package uk.gov.companieshouse.mapper;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import uk.gov.companieshouse.api.model.transaction.Transaction;
+import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
+import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionApplication;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
@@ -13,16 +22,21 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.CompanyType;
+import uk.gov.companieshouse.model.enums.DissolutionStatus;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
 
-public class DissolutionRequestMapperTest {
+class DissolutionRequestMapperTest {
 
     private static final String COMPANY_NUMBER = "12345678";
     private static final String COMPANY_NAME = "ComComp";
@@ -35,7 +49,7 @@ public class DissolutionRequestMapperTest {
     private final DissolutionRequestMapper requestMapper = new DissolutionRequestMapper();
 
     @Test
-    public void mapToDissolution_setsModifiedDateTime() {
+    void mapToDissolution_setsModifiedDateTime() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
         final DissolutionUserData userData = DissolutionFixtures.generateDissolutionUserData();
         userData.setEmail(EMAIL);
@@ -52,7 +66,7 @@ public class DissolutionRequestMapperTest {
     }
 
     @Test
-    public void mapToDissolution_setsApplicationData_includingDefaultStatusForDS01() {
+    void mapToDissolution_setsApplicationData_includingDefaultStatusForDS01() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
         final DissolutionUserData userData = DissolutionFixtures.generateDissolutionUserData();
         userData.setEmail(EMAIL);
@@ -74,7 +88,7 @@ public class DissolutionRequestMapperTest {
     }
 
     @Test
-    public void mapToDissolution_setsApplicationData_includingDefaultStatusForLLDS01() {
+    void mapToDissolution_setsApplicationData_includingDefaultStatusForLLDS01() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
         final DissolutionUserData userData = DissolutionFixtures.generateDissolutionUserData();
         userData.setEmail(EMAIL);
@@ -96,7 +110,7 @@ public class DissolutionRequestMapperTest {
     }
 
     @Test
-    public void mapToDissolution_setsDirectorsToSignFromRequestBody() {
+    void mapToDissolution_setsDirectorsToSignFromRequestBody() {
         final String officerId1 = "abc123";
         final String officerId2 = "def456";
 
@@ -152,7 +166,7 @@ public class DissolutionRequestMapperTest {
     }
 
     @Test
-    public void mapToDissolution_setsCompanyInformation() {
+    void mapToDissolution_setsCompanyInformation() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
         final DissolutionUserData userData = DissolutionFixtures.generateDissolutionUserData();
         userData.setEmail(EMAIL);
@@ -170,7 +184,7 @@ public class DissolutionRequestMapperTest {
     }
 
     @Test
-    public void mapToDissolution_setsCreatedByInformation() {
+    void mapToDissolution_setsCreatedByInformation() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
         final DissolutionUserData userData = DissolutionFixtures.generateDissolutionUserData();
         userData.setEmail(EMAIL);
@@ -187,5 +201,57 @@ public class DissolutionRequestMapperTest {
         assertEquals(EMAIL, dissolution.getCreatedBy().getEmail());
         assertEquals(IP_ADDRESS, dissolution.getCreatedBy().getIpAddress());
         assertNotNull(dissolution.getCreatedBy().getDateTime());
+    }
+
+    @Nested
+    @DisplayName("Transaction Model Dissolution")
+    class TransactionModelDissolution {
+        private Transaction transaction;
+        private CompanyProfile companyProfile;
+        private DissolutionUserData userData;
+
+        @BeforeEach
+        void setup() {
+            transaction = TransactionTestDataBuilder.aTransaction().withStatus(TransactionStatus.OPEN).build();
+            companyProfile = CompanyProfileFixtures.generateCompanyProfile();
+            companyProfile.setCompanyNumber(COMPANY_NUMBER);
+            companyProfile.setCompanyName(COMPANY_NAME);
+
+            userData = new DissolutionUserData();
+            userData.setEmail(EMAIL);
+            userData.setIpAddress(IP_ADDRESS);
+            userData.setUserId(USER_ID);
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "ltd,    DS01",
+                "llp,    LLDS01"
+        })
+        void mapToDraftDissolution_mapsApplicationType(String companyType, ApplicationType expectedType) {
+            companyProfile.setType(companyType);
+            final Dissolution dissolution = requestMapper.mapToDraftDissolution(transaction, companyProfile, userData);
+
+            assertFalse(dissolution.getActive());
+            assertNotNull(dissolution.getModifiedDateTime());
+            assertEquals(transaction.getId(), dissolution.getTransactionId());
+            assertEquals(DissolutionStatus.DRAFT, dissolution.getStatus());
+
+            DissolutionApplication application = dissolution.getData().getApplication();
+            assertEquals(expectedType, application.getType());
+
+            assertNull(application.getBarcode());
+            assertNull(application.getReference());
+            assertNull(application.getStatus());
+            assertNull(dissolution.getData().getDirectors());
+
+            assertEquals(COMPANY_NUMBER, dissolution.getCompany().getNumber());
+            assertEquals(COMPANY_NAME, dissolution.getCompany().getName());
+
+            assertEquals(USER_ID, dissolution.getCreatedBy().getUserId());
+            assertEquals(EMAIL, dissolution.getCreatedBy().getEmail());
+            assertEquals(IP_ADDRESS, dissolution.getCreatedBy().getIpAddress());
+            assertNotNull(dissolution.getCreatedBy().getDateTime());
+        }
     }
 }

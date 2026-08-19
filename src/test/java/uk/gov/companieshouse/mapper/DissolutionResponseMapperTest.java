@@ -1,11 +1,15 @@
 package uk.gov.companieshouse.mapper;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.companieshouse.api.model.transaction.Transaction;
+import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder;
+import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionLinks;
@@ -27,6 +31,7 @@ import static uk.gov.companieshouse.model.Constants.DISSOLUTION_KIND;
 
 class DissolutionResponseMapperTest {
 
+    private static final String DISSOLUTION_ID = "abcd1234";
     private static final String COMPANY_NUMBER = "12345678";
     private static final String COMPANY_NAME = "Example Name";
     private static final String ETAG = "ETag123";
@@ -189,5 +194,22 @@ class DissolutionResponseMapperTest {
 
         assertNull(result.getTransactionId());
         assertNull(result.getDissolutionStatus());
+    }
+
+    @Test
+    void mapToDissolutionCreateDraftResponse_mapsDissolutionAndTransaction() {
+        final Transaction transaction = TransactionTestDataBuilder.aTransaction().withStatus(TransactionStatus.OPEN).build();
+        final String expectedSelfLink = String.format("/company/%s/transaction/%s/dissolution", COMPANY_NUMBER, transaction.getId());
+        transaction.setCompanyNumber(COMPANY_NUMBER);
+
+        final Dissolution dissolution = DissolutionTestDataBuilder.aDissolution().withTransactionId(transaction.getId()).withStatus(DissolutionStatus.DRAFT).build();
+        dissolution.setId(DISSOLUTION_ID);
+
+        final DissolutionCreateDraftResponse result = mapper.mapToDissolutionCreateDraftResponse(transaction, dissolution);
+        final DissolutionLinks links = result.getLinks();
+
+        assertEquals(DISSOLUTION_ID, result.getDissolutionId());
+        assertEquals(expectedSelfLink, links.getSelf());
+        assertNull(links.getPayment());
     }
 }
