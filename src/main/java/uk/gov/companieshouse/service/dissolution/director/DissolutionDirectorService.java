@@ -8,7 +8,7 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchReque
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchResponse;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
-import java.util.Optional;
+import java.util.Optional;import static uk.gov.companieshouse.util.DissolutionApplicantUtil.doesEmailBelongToApplicant;
 
 @Service
 public class DissolutionDirectorService {
@@ -47,13 +47,6 @@ public class DissolutionDirectorService {
         }
 
         return Optional.empty();
-    }
-
-    private boolean doesEmailBelongToApplicant(String email, Dissolution dissolution) {
-        return dissolution
-                .getCreatedBy()
-                .getEmail()
-                .equals(email);
     }
 
     private boolean isDirectorPendingApprovalForDissolution(String officerId, Dissolution dissolution) {

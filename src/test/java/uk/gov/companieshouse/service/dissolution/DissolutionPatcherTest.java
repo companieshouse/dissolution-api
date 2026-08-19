@@ -34,7 +34,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.*;
+import static uk.gov.companieshouse.fixtures.DissolutionDirectorTestDataBuilder.aDissolutionDirector;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.*;
+import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentInformation;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 
@@ -71,6 +73,8 @@ class DissolutionPatcherTest {
     private static final String OFFICER_ID = "abc123";
     private static final String IP_ADDRESS = "127.0.0.1";
     private static final String OFFICER_ID_TWO = "def456";
+    private static final String EMAIL = "director@email.com";
+    private static final String PRESENTER_EMAIL = "presenter@email.com";
 
     private Dissolution dissolution;
     private DissolutionPatchResponse response;
@@ -115,9 +119,6 @@ class DissolutionPatcherTest {
         directors.get(1).setDirectorApproval(approval);
         dissolution.getData().setDirectors(directors);
 
-        CreatedBy createdBy = DissolutionFixtures.generateCreatedBy();
-        dissolution.setCreatedBy(createdBy);
-
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
         when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
@@ -141,11 +142,12 @@ class DissolutionPatcherTest {
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
 
-        // Ensure the sole director email matches the presenter (createdBy) email
-        List<DissolutionDirector> directors = DissolutionFixtures.generateDissolutionDirectorList();
-        directors = Collections.singletonList(directors.get(0));
-        directors.get(0).setEmail(dissolution.getCreatedBy().getEmail());
-        dissolution.getData().setDirectors(directors);
+        // set the createdBy email to be the same from the director email
+        final var soleDirector = aDissolutionDirector().withEmail(EMAIL).withDirectorApproval(generateDirectorApproval());
+        Dissolution dissolution = aDissolution()
+                .withOnlyDirector(soleDirector)
+                .withCreatedByEmail(EMAIL)
+                .build();
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
         when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
@@ -171,9 +173,11 @@ class DissolutionPatcherTest {
         body.setOfficerId(OFFICER_ID);
 
         // set the createdBy email to be different from the director email
-        List<DissolutionDirector> directors = DissolutionFixtures.generateDissolutionDirectorList();
-        directors = Collections.singletonList(directors.get(0));
-        dissolution.getData().setDirectors(directors);
+        final var soleDirector = aDissolutionDirector().withEmail(EMAIL).withDirectorApproval(generateDirectorApproval());
+        Dissolution dissolution = aDissolution()
+                .withOnlyDirector(soleDirector)
+                .withCreatedByEmail(PRESENTER_EMAIL)
+                .build();
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(java.util.Optional.of(dissolution));
         when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);

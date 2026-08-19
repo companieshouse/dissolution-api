@@ -17,6 +17,7 @@ import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.dissolution.certificate.DissolutionCertificateGenerator;
+import static uk.gov.companieshouse.util.DissolutionApplicantUtil.doesEmailBelongToApplicant;
 
 import java.util.List;
 
@@ -68,8 +69,9 @@ public class DissolutionPatcher {
         final List<DissolutionDirector> directors = dissolution.getData().getDirectors();
         setDissolutionStatus(dissolution, ApplicationStatus.PENDING_PAYMENT);
         dissolution.setCertificate(this.certificateGenerator.generateDissolutionCertificate(dissolution));
-        boolean presenterIsDirector = dissolution.getCreatedBy().getEmail().equalsIgnoreCase(directors.getFirst().getEmail());
-        if (directors.size()>1 || !presenterIsDirector) {
+        boolean isSoleDirectorSelfFiling = directors.size() == 1
+                && doesEmailBelongToApplicant(directors.getFirst().getEmail(), dissolution);
+        if (!isSoleDirectorSelfFiling) {
             dissolutionEmailService.sendPendingPaymentEmail(dissolution);
         }
     }
