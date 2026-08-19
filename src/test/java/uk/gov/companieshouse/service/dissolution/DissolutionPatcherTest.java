@@ -7,7 +7,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.companieshouse.exception.DissolutionDirectorNotFoundException;
+import uk.gov.companieshouse.exception.DissolutionDirectorApprovalException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
@@ -211,7 +211,7 @@ class DissolutionPatcherTest {
     }
 
     @Test
-    void patch_throwsDissolutionDirectorNotFound_ifOfficerIdInRequestIsNotFound() {
+    void patch_throwsDissolutionDirectorApprovalException_ifOfficerIdInRequestIsNotFound() {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
@@ -220,13 +220,13 @@ class DissolutionPatcherTest {
                 .withDirectors(aDissolutionDirector().withOfficerId(OFFICER_ID_TWO))
                 .build();
 
-        assertThrows(DissolutionDirectorNotFoundException.class, () -> patcher.addDirectorApproval(dissolution, USER_ID, body));
+        assertThrows(DissolutionDirectorApprovalException.class, () -> patcher.addDirectorApproval(dissolution, USER_ID, body));
 
         verify(repository, never()).save(any(Dissolution.class));
     }
 
     @Test
-    void patch_throwsIllegalStateException_ifDirectorAlreadyApproved() {
+    void patch_throwsDissolutionDirectorApprovalException_ifDirectorAlreadyApproved() {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
@@ -237,7 +237,7 @@ class DissolutionPatcherTest {
                         .withDirectorApproval(generateDirectorApproval()))
                 .build();
 
-        assertThrows(IllegalStateException.class, () -> patcher.addDirectorApproval(dissolution, USER_ID, body));
+        assertThrows(DissolutionDirectorApprovalException.class, () -> patcher.addDirectorApproval(dissolution, USER_ID, body));
 
         verify(repository, never()).save(any(Dissolution.class));
     }

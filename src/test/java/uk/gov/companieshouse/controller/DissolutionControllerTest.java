@@ -11,7 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.Permission;
-import uk.gov.companieshouse.exception.DissolutionDirectorNotFoundException;
+import uk.gov.companieshouse.exception.DissolutionDirectorApprovalException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
@@ -443,12 +443,12 @@ class DissolutionControllerTest {
     }
 
     @Test
-    void patchDissolutionRequest_returnsNotFound_ifDissolutionDirectorIsNotFound() throws Exception {
+    void patchDissolutionRequest_returnsBadRequest_ifDissolutionDirectorIsNotFound() throws Exception {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
 
         when(service.getDissolutionRequestForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(generateDissolution()));
         when(service.addDirectorApproval(isA(Dissolution.class), eq(USER_ID), isA(DissolutionPatchRequest.class)))
-                .thenThrow(new DissolutionDirectorNotFoundException("Director not found"));
+                .thenThrow(new DissolutionDirectorApprovalException("Director not found"));
 
         mockMvc
                 .perform(
@@ -457,7 +457,7 @@ class DissolutionControllerTest {
                                 .headers(createHttpHeaders())
                                 .content(asJsonString(body))
                 )
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -467,7 +467,7 @@ class DissolutionControllerTest {
 
         when(service.getDissolutionRequestForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(generateDissolution()));
         when(service.addDirectorApproval(isA(Dissolution.class), eq(USER_ID), isA(DissolutionPatchRequest.class)))
-                .thenThrow(new IllegalStateException("Director not pending approval"));
+                .thenThrow(new DissolutionDirectorApprovalException("Director not pending approval"));
 
         mockMvc
                 .perform(

@@ -2,7 +2,7 @@ package uk.gov.companieshouse.service.dissolution;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.exception.DissolutionDirectorNotFoundException;
+import uk.gov.companieshouse.exception.DissolutionDirectorApprovalException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
@@ -54,7 +54,7 @@ public class DissolutionPatcher {
         DissolutionDirector director = this.findDirector(body.getOfficerId(), dissolution);
 
         if (director.hasDirectorApproval()) {
-            throw new IllegalStateException(String.format("Director %s is not pending approval", body.getOfficerId()));
+            throw new DissolutionDirectorApprovalException(String.format("Director %s has already approved", body.getOfficerId()));
         }
 
         director.setDirectorApproval(approvalMapper.mapToDirectorApproval(userId, body.getIpAddress()));
@@ -72,7 +72,7 @@ public class DissolutionPatcher {
         final List<DissolutionDirector> directors = dissolution.getData().getDirectors();
         setDissolutionStatus(dissolution, ApplicationStatus.PENDING_PAYMENT);
         dissolution.setCertificate(this.certificateGenerator.generateDissolutionCertificate(dissolution));
-        if (directors.size()>1) {
+        if (directors.size() > 1) {
             dissolutionEmailService.sendPendingPaymentEmail(dissolution);
         }
     }
@@ -106,7 +106,7 @@ public class DissolutionPatcher {
                 .stream()
                 .filter(director -> director.getOfficerId().equals(officerId))
                 .findFirst()
-                .orElseThrow(() -> new DissolutionDirectorNotFoundException(String.format("Director %s not found", officerId)));
+                .orElseThrow(() -> new DissolutionDirectorApprovalException(String.format("Director %s is not a signatory", officerId)));
     }
 
     private void addPaymentInformation(PaymentPatchRequest body, Dissolution dissolution) {
