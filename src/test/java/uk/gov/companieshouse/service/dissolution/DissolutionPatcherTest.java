@@ -17,7 +17,6 @@ import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionSubmission;
-import uk.gov.companieshouse.model.db.dissolution.CreatedBy;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
@@ -26,7 +25,6 @@ import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.dissolution.certificate.DissolutionCertificateGenerator;
 
-import java.util.Collections;
 import java.util.Arrays;
 import java.util.List;
 
@@ -142,9 +140,9 @@ class DissolutionPatcherTest {
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
 
-        // set the createdBy email to be the same from the director email
+        // sole director and presenter are the same person — no payment email expected
         final var soleDirector = aDissolutionDirector().withEmail(EMAIL).withDirectorApproval(generateDirectorApproval());
-        Dissolution dissolution = aDissolution()
+        dissolution = aDissolution()
                 .withOnlyDirector(soleDirector)
                 .withCreatedByEmail(EMAIL)
                 .build();
@@ -174,7 +172,7 @@ class DissolutionPatcherTest {
 
         // set the createdBy email to be different from the director email
         final var soleDirector = aDissolutionDirector().withEmail(EMAIL).withDirectorApproval(generateDirectorApproval());
-        Dissolution dissolution = aDissolution()
+        dissolution = aDissolution()
                 .withOnlyDirector(soleDirector)
                 .withCreatedByEmail(PRESENTER_EMAIL)
                 .build();
