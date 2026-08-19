@@ -113,7 +113,7 @@ class FilingServiceTest {
         var expectedFilingData = TransactionFixtures.generateFilingData(dissolution);
 
         when(dissolutionService.getDissolutionForTransaction(transaction, DISSOLUTION_ID)).thenReturn(dissolution);
-        when(transactionService.getPayment(PAYMENT_URI, PASSTHROUGH_HEADER)).thenReturn(transactionPayment);
+        when(transactionService.getPayment(PAYMENT_URI)).thenReturn(transactionPayment);
         when(transactionPaymentService.getPaymentSession(PAYMENT_REFERENCE, PASSTHROUGH_HEADER)).thenReturn(paymentDetails);
         when(mapper.mapToFilingData(dissolution, PAYMENT_REFERENCE, PAYMENT_METHOD)).thenReturn(expectedFilingData);
         when(feeConfig.getClosingPounds()).thenReturn("10.00");
@@ -126,7 +126,7 @@ class FilingServiceTest {
         assertEquals("10.00", response.getCost());
 
         verify(dissolutionService, times(1)).getDissolutionForTransaction(transaction, DISSOLUTION_ID);
-        verify(transactionService, times(1)).getPayment(PAYMENT_URI, PASSTHROUGH_HEADER);
+        verify(transactionService, times(1)).getPayment(PAYMENT_URI);
         verify(transactionPaymentService, times(1)).getPaymentSession(PAYMENT_REFERENCE, PASSTHROUGH_HEADER);
         verify(mapper, times(1)).mapToFilingData(dissolution, PAYMENT_REFERENCE, PAYMENT_METHOD);
         verify(feeConfig, times(1)).getClosingPounds();
@@ -137,7 +137,7 @@ class FilingServiceTest {
         dissolution.getData().getApplication().setType(ApplicationType.LLDS01);
 
         when(dissolutionService.getDissolutionForTransaction(transaction, DISSOLUTION_ID)).thenReturn(dissolution);
-        when(transactionService.getPayment(PAYMENT_URI, PASSTHROUGH_HEADER)).thenReturn(transactionPayment);
+        when(transactionService.getPayment(PAYMENT_URI)).thenReturn(transactionPayment);
         when(transactionPaymentService.getPaymentSession(PAYMENT_REFERENCE, PASSTHROUGH_HEADER)).thenReturn(paymentDetails);
 
         var response = filingService.generateDissolutionFiling(transaction, DISSOLUTION_ID, PASSTHROUGH_HEADER);
@@ -166,7 +166,7 @@ class FilingServiceTest {
     @Test
     void generateDissolutionFiling_throwsServiceException_whenPaymentRetrievalFails() throws DissolutionNotFoundException, DissolutionNotLinkedToTransactionException {
         when(dissolutionService.getDissolutionForTransaction(transaction, DISSOLUTION_ID)).thenReturn(dissolution);
-        when(transactionService.getPayment(PAYMENT_URI, PASSTHROUGH_HEADER))
+        when(transactionService.getPayment(PAYMENT_URI))
                 .thenThrow(new ServiceException("payment error", new RuntimeException()));
 
         assertThrows(ServiceException.class,

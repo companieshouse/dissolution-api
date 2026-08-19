@@ -54,7 +54,7 @@ class FilingControllerTest {
     @BeforeEach
     void setup() {
         transaction = TransactionFixtures.generateClosedTransaction();
-        when(transactionService.getTransaction(TRANSACTION_ID, PASS_THROUGH_HEADER)).thenReturn(transaction);
+        when(transactionService.getTransaction(TRANSACTION_ID)).thenReturn(transaction);
     }
 
     @Test
@@ -115,7 +115,7 @@ class FilingControllerTest {
 
     @Test
     void getFiling_returnsNotFound_ifTransactionNotFound() throws Exception {
-        when(transactionService.getTransaction(TRANSACTION_ID, PASS_THROUGH_HEADER)).thenThrow(TransactionNotFoundException.class);
+        when(transactionService.getTransaction(TRANSACTION_ID)).thenThrow(TransactionNotFoundException.class);
 
         mockMvc
                 .perform(

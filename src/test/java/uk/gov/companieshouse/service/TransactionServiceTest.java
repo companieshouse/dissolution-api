@@ -2,9 +2,12 @@ package uk.gov.companieshouse.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -17,30 +20,33 @@ import uk.gov.companieshouse.api.handler.transaction.request.TransactionsPayment
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionPayment;
-import uk.gov.companieshouse.api.sdk.ApiClientService;
+import uk.gov.companieshouse.client.ApiClientProvider;
 import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.exception.TransactionNotFoundException;
 import uk.gov.companieshouse.fixtures.TransactionFixtures;
 
 import java.io.IOException;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.DisplayNameGenerator.ReplaceUnderscores;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.fixtures.FilingTestDataBuilder.aFiling;
 import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
+import static uk.gov.companieshouse.fixtures.TransactionTestDataBuilder.aTransaction;
 
 @ExtendWith(MockitoExtension.class)
 class TransactionServiceTest {
 
-    private static final String PASSTHROUGH_HEADER = "passthrough";
     private static final String TRANSACTIONS_URL = "/transactions/";
     private static final String PAYMENT_REFERENCE = "somePaymentRef";
     private static final String PAYMENT_URI = String.format("/transactions/%s/payment", TRANSACTION_ID);
 
     @Mock
-    private ApiClientService apiClientService;
+    private ApiClientProvider apiClientProvider;
 
     @Mock
     private ApiClient apiClient;
@@ -68,7 +74,7 @@ class TransactionServiceTest {
     class GetTransactionDetails {
         @BeforeEach
         void initialize() throws IOException {
-            when(apiClientService.getApiClient(PASSTHROUGH_HEADER)).thenReturn(apiClient);
+            when(apiClientProvider.getApiClient()).thenReturn(apiClient);
             when(apiClient.transactions()).thenReturn(transactionsResourceHandler);
             when(transactionsResourceHandler.get(TRANSACTIONS_URL + TRANSACTION_ID)).thenReturn(transactionsGet);
         }
@@ -80,14 +86,14 @@ class TransactionServiceTest {
             when(transactionsGet.execute()).thenReturn(apiGetResponse);
             when(apiGetResponse.getData()).thenReturn(transaction);
 
-            var response = transactionService.getTransaction(TRANSACTION_ID, PASSTHROUGH_HEADER);
+            var response = transactionService.getTransaction(TRANSACTION_ID);
             assertEquals(transaction, response);
         }
 
         @Test
         void getTransaction_throwsNotFoundException_ifApiErrorResponseExceptionOccurs() throws IOException, URIValidationException {
             when(transactionsGet.execute()).thenThrow(TransactionFixtures.generateApiErrorResponseException(404, "404 Not Found"));
-            final var exception = assertThrows(TransactionNotFoundException.class, () -> transactionService.getTransaction(TRANSACTION_ID, PASSTHROUGH_HEADER));
+            final var exception = assertThrows(TransactionNotFoundException.class, () -> transactionService.getTransaction(TRANSACTION_ID));
             assertThat(exception.getMessage(),
                     is("No transaction found with id " + TRANSACTION_ID));
         }
@@ -95,19 +101,65 @@ class TransactionServiceTest {
         @Test
         void getTransaction_throwsServiceException_ifApiErrorResponseExceptionOccurs() throws IOException, URIValidationException {
             when(transactionsGet.execute()).thenThrow(TransactionFixtures.generateApiErrorResponseException(400, "400 Bad Request"));
-            assertThrows(ServiceException.class, () -> transactionService.getTransaction(TRANSACTION_ID, PASSTHROUGH_HEADER));
+            assertThrows(ServiceException.class, () -> transactionService.getTransaction(TRANSACTION_ID));
         }
 
         @Test
         void getTransaction_throwsServiceException_ifUriValidationExceptionOccurs() throws IOException, URIValidationException {
             when(transactionsGet.execute()).thenThrow(new URIValidationException("ERROR"));
-            assertThrows(ServiceException.class, () -> transactionService.getTransaction(TRANSACTION_ID, PASSTHROUGH_HEADER));
+            assertThrows(ServiceException.class, () -> transactionService.getTransaction(TRANSACTION_ID));
         }
 
         @Test
         void getTransaction_throwsServiceException_ifIOExceptionOccurs() throws IOException, URIValidationException {
             when(transactionsGet.execute()).thenThrow(ApiErrorResponseException.fromIOException(new IOException("ERROR")));
-            assertThrows(ServiceException.class, () -> transactionService.getTransaction(TRANSACTION_ID, PASSTHROUGH_HEADER));
+            assertThrows(ServiceException.class, () -> transactionService.getTransaction(TRANSACTION_ID));
+        }
+    }
+
+    @Nested
+    @DisplayNameGeneration(ReplaceUnderscores.class)
+    class hasVerdictBeenReached {
+
+        @BeforeEach
+        void initialize() throws IOException, URIValidationException {
+            when(apiClientProvider.getApiClient()).thenReturn(apiClient);
+            when(apiClient.transactions()).thenReturn(transactionsResourceHandler);
+            when(transactionsResourceHandler.get(TRANSACTIONS_URL + TRANSACTION_ID)).thenReturn(transactionsGet);
+            when(transactionsGet.execute()).thenReturn(apiGetResponse);
+        }
+
+        @ParameterizedTest(name = "when {0} filing is {1} then {2}")
+        @CsvSource({
+                "dissolution#ds01,   ACCEPTED, true",
+                "dissolution#llds01, ACCEPTED, true",
+                "dissolution#ds01,   REJECTED, true",
+                "dissolution#llds01, REJECTED, true",
+                "dissolution#ds01,   PROCESSING,  false",
+                "accounts#abridged,  ACCEPTED, false"
+        })
+        void verdict_reached_scenarios(String filingType, FilingStatus status, boolean expectedVerdict) {
+            when(apiGetResponse.getData()).thenReturn(aTransaction()
+                    .withFiling(aFiling().withType(filingType).withStatus(status))
+                    .build());
+
+            assertThat(transactionService.hasVerdictBeenReached(TRANSACTION_ID)).isEqualTo(expectedVerdict);
+        }
+
+        @Test
+        void when_no_dissolution_filing_exists_then_false() {
+            when(apiGetResponse.getData()).thenReturn(aTransaction()
+                    .withNoFilings()
+                    .build());
+
+            assertThat(transactionService.hasVerdictBeenReached(TRANSACTION_ID)).isFalse();
+        }
+
+        @Test
+        void when_filings_is_null_then_false() {
+            when(apiGetResponse.getData()).thenReturn(aTransaction().withFilings(null).build());
+
+            assertThat(transactionService.hasVerdictBeenReached(TRANSACTION_ID)).isFalse();
         }
     }
 
@@ -117,7 +169,7 @@ class TransactionServiceTest {
 
         @BeforeEach
         void initialize() throws IOException {
-            when(apiClientService.getApiClient(PASSTHROUGH_HEADER)).thenReturn(apiClient);
+            when(apiClientProvider.getApiClient()).thenReturn(apiClient);
             when(apiClient.transactions()).thenReturn(transactionsResourceHandler);
             when(transactionsResourceHandler.getPayment(PAYMENT_URI)).thenReturn(transactionsPaymentGet);
         }
@@ -130,26 +182,26 @@ class TransactionServiceTest {
             when(transactionsPaymentGet.execute()).thenReturn(apiGetPaymentResponse);
             when(apiGetPaymentResponse.getData()).thenReturn(transactionPayment);
 
-            var response = transactionService.getPayment(PAYMENT_URI, PASSTHROUGH_HEADER);
+            var response = transactionService.getPayment(PAYMENT_URI);
             assertEquals(transactionPayment, response);
         }
 
         @Test
         void getPayment_throwsServiceException_ifApiErrorResponseExceptionOccurs() throws IOException, URIValidationException {
             when(transactionsPaymentGet.execute()).thenThrow(TransactionFixtures.generateApiErrorResponseException(404, "Payment Not Found"));
-            assertThrows(ServiceException.class, () -> transactionService.getPayment(PAYMENT_URI, PASSTHROUGH_HEADER));
+            assertThrows(ServiceException.class, () -> transactionService.getPayment(PAYMENT_URI));
         }
 
         @Test
         void getPayment_throwsServiceException_ifUriValidationExceptionOccurs() throws IOException, URIValidationException {
             when(transactionsPaymentGet.execute()).thenThrow(new URIValidationException("ERROR"));
-            assertThrows(ServiceException.class, () -> transactionService.getPayment(PAYMENT_URI, PASSTHROUGH_HEADER));
+            assertThrows(ServiceException.class, () -> transactionService.getPayment(PAYMENT_URI));
         }
 
         @Test
         void getPayment_throwsServiceException_ifIOExceptionOccurs() throws IOException, URIValidationException {
             when(transactionsPaymentGet.execute()).thenThrow(ApiErrorResponseException.fromIOException(new IOException("ERROR")));
-            assertThrows(ServiceException.class, () -> transactionService.getPayment(PAYMENT_URI, PASSTHROUGH_HEADER));
+            assertThrows(ServiceException.class, () -> transactionService.getPayment(PAYMENT_URI));
         }
     }
 }
