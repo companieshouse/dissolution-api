@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
@@ -221,8 +223,13 @@ class DissolutionRequestMapperTest {
             userData.setUserId(USER_ID);
         }
 
-        @Test
-        void mapToDraftDissolution_forDS01() {
+        @ParameterizedTest
+        @CsvSource({
+                "ltd,    DS01",
+                "llp,    LLDS01"
+        })
+        void mapToDraftDissolution_mapsApplicationType(String companyType, ApplicationType expectedType) {
+            companyProfile.setType(companyType);
             final Dissolution dissolution = requestMapper.mapToDraftDissolution(transaction, companyProfile, userData);
 
             assertFalse(dissolution.getActive());
@@ -231,35 +238,7 @@ class DissolutionRequestMapperTest {
             assertEquals(DissolutionStatus.DRAFT, dissolution.getStatus());
 
             DissolutionApplication application = dissolution.getData().getApplication();
-            assertEquals(ApplicationType.DS01, application.getType());
-
-            assertNull(application.getBarcode());
-            assertNull(application.getReference());
-            assertNull(application.getStatus());
-            assertNull(dissolution.getData().getDirectors());
-
-            assertEquals(COMPANY_NUMBER, dissolution.getCompany().getNumber());
-            assertEquals(COMPANY_NAME, dissolution.getCompany().getName());
-
-            assertEquals(USER_ID, dissolution.getCreatedBy().getUserId());
-            assertEquals(EMAIL, dissolution.getCreatedBy().getEmail());
-            assertEquals(IP_ADDRESS, dissolution.getCreatedBy().getIpAddress());
-            assertNotNull(dissolution.getCreatedBy().getDateTime());
-        }
-
-        @Test
-        void mapToDraftDissolution_forLLDS01() {
-            companyProfile.setType(CompanyType.LLP.getValue());
-
-            final Dissolution dissolution = requestMapper.mapToDraftDissolution(transaction, companyProfile, userData);
-
-            assertFalse(dissolution.getActive());
-            assertNotNull(dissolution.getModifiedDateTime());
-            assertEquals(transaction.getId(), dissolution.getTransactionId());
-            assertEquals(DissolutionStatus.DRAFT, dissolution.getStatus());
-
-            DissolutionApplication application = dissolution.getData().getApplication();
-            assertEquals(ApplicationType.LLDS01, application.getType());
+            assertEquals(expectedType, application.getType());
 
             assertNull(application.getBarcode());
             assertNull(application.getReference());
