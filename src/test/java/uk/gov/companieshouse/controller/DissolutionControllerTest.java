@@ -11,6 +11,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.Permission;
+import uk.gov.companieshouse.exception.DissolutionDirectorApprovalException;
+import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
@@ -427,7 +429,8 @@ class DissolutionControllerTest {
     void patchDissolutionRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
 
-        when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(false);
+        when(service.addDirectorApproval(eq(COMPANY_NUMBER), eq(USER_ID), isA(DissolutionPatchRequest.class)))
+                .thenThrow(new DissolutionNotFoundException("Dissolution not found"));
 
         mockMvc
                 .perform(
@@ -440,12 +443,29 @@ class DissolutionControllerTest {
     }
 
     @Test
+    void patchDissolutionRequest_returnsBadRequest_ifDissolutionDirectorIsNotFound() throws Exception {
+        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+
+        when(service.addDirectorApproval(eq(COMPANY_NUMBER), eq(USER_ID), isA(DissolutionPatchRequest.class)))
+                .thenThrow(new DissolutionDirectorApprovalException("Director not found"));
+
+        mockMvc
+                .perform(
+                        patch(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(createHttpHeaders())
+                                .content(asJsonString(body))
+                )
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void patchDissolutionRequest_returnsBadRequest_ifDirectorNotPendingApproval() throws Exception {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setOfficerId(OFFICER_ID);
 
-        when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(true);
-        when(service.isDirectorPendingApproval(eq(COMPANY_NUMBER), eq(OFFICER_ID))).thenReturn(false);
+        when(service.addDirectorApproval(eq(COMPANY_NUMBER), eq(USER_ID), isA(DissolutionPatchRequest.class)))
+                .thenThrow(new DissolutionDirectorApprovalException("Director not pending approval"));
 
         mockMvc
                 .perform(
@@ -471,8 +491,6 @@ class DissolutionControllerTest {
         body.setOfficerId(OFFICER_ID);
         final DissolutionPatchResponse response = generateDissolutionPatchResponse();
 
-        when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(true);
-        when(service.isDirectorPendingApproval(eq(COMPANY_NUMBER), eq(OFFICER_ID))).thenReturn(true);
         when(service.addDirectorApproval(eq(COMPANY_NUMBER), eq(USER_ID), isA(DissolutionPatchRequest.class))).thenReturn(response);
 
         mockMvc

@@ -37,12 +37,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
+import static uk.gov.companieshouse.fixtures.DissolutionDirectorTestDataBuilder.aDissolutionDirector;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionPatchRequest;
+import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 
 @ExtendWith(MockitoExtension.class)
@@ -156,35 +159,41 @@ class DissolutionServiceTest {
     }
 
     @Test
-    void addDirectorApproval_addsDirectorApproval_returnsPatchResponse() throws DissolutionNotFoundException {
+    void addDirectorApproval_returnsPatchResponse_ifDissolutionForCompanyExists() {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP);
         body.setOfficerId(OFFICER_ID);
 
+        final Dissolution dissolution = aDissolution()
+                .withCompanyNumber(COMPANY_NUMBER)
+                .withDirectors(aDissolutionDirector().withOfficerId(OFFICER_ID))
+                .build();
         final DissolutionPatchResponse response = DissolutionFixtures.generateDissolutionPatchResponse();
 
-        when(patcher.addDirectorApproval(COMPANY_NUMBER, USER_ID, body)).thenReturn(response);
+        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
+        when(patcher.addDirectorApproval(dissolution, USER_ID, body)).thenReturn(response);
 
         final DissolutionPatchResponse result = service.addDirectorApproval(COMPANY_NUMBER, USER_ID, body);
-
-        verify(patcher).addDirectorApproval(COMPANY_NUMBER, USER_ID, body);
 
         assertNotNull(result);
         assertEquals(response, result);
     }
 
     @Test
-    void hasDirectorAlreadyApproved_callsDissolutionGetter_isDirectorPendingApproval() {
-        final String companyNumber = "12345678";
-        final String email = "user@mail.com";
+    void addDirectorApproval_whenDissolutionDoesNotExist_throwsException() {
+        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+        body.setIpAddress(IP);
+        body.setOfficerId(OFFICER_ID);
 
-        when(getter.isDirectorPendingApproval(companyNumber, email)).thenReturn(true);
+        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
 
-        final boolean result = service.isDirectorPendingApproval(companyNumber, email);
+        final var exception = assertThrows(DissolutionNotFoundException.class,
+                () -> service.addDirectorApproval(COMPANY_NUMBER, USER_ID, body));
 
-        verify(getter).isDirectorPendingApproval(companyNumber, email);
+        assertThat(exception.getMessage(),
+                is("Dissolution Request not found for company number " + COMPANY_NUMBER));
 
-        assertTrue(result);
+        verify(patcher, never()).addDirectorApproval(any(), any(), any());
     }
 
     @Test

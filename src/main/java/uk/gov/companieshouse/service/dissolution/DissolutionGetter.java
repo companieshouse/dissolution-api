@@ -3,7 +3,6 @@ package uk.gov.companieshouse.service.dissolution;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
-import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
@@ -33,20 +32,6 @@ public class DissolutionGetter {
         return repository
                 .findByDataApplicationReference(applicationReference)
                 .map(responseMapper::mapToDissolutionGetResponse);
-    }
-
-    public boolean isDirectorPendingApproval(String companyNumber, String officerId) {
-        return repository.findByCompanyNumber(companyNumber)
-                .map(dissolution -> isDirectorPendingApprovalForDissolution(officerId, dissolution))
-                .orElse(false);
-    }
-
-    private boolean isDirectorPendingApprovalForDissolution(String officerId, Dissolution dissolution) {
-        return dissolution
-                .getData()
-                .getDirectors()
-                .stream()
-                .anyMatch(director -> director.getOfficerId().equals(officerId) && !director.hasDirectorApproval());
     }
 
     public Optional<DissolutionGetResponse> getPendingDissolution(String companyNumber) {

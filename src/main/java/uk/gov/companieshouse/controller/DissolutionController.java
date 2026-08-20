@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,8 +37,6 @@ import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import uk.gov.companieshouse.service.dissolution.validator.DissolutionValidator;
 import uk.gov.companieshouse.service.payment.PaymentService;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import java.util.Map;
 
 import static uk.gov.companieshouse.util.EricHelper.getEmail;
@@ -138,8 +138,8 @@ public class DissolutionController {
     @Operation(summary = "Patch Dissolution Application", tags = "Dissolution")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Dissolution Application patched", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Dissolution Application not found"),
-            @ApiResponse(responseCode = "400", description = "Dissolution Request does not have a director pending approval")
+            @ApiResponse(responseCode = "400", description = "Dissolution Request director is not a signatory or has already approved"),
+            @ApiResponse(responseCode = "404", description = "Dissolution Application not found")
     })
     @PatchMapping
     @ResponseStatus(HttpStatus.OK)
@@ -148,19 +148,6 @@ public class DissolutionController {
             @PathVariable("company-number") final String companyNumber,
             @Valid @RequestBody final DissolutionPatchRequest body
     ) {
-
-        if (!dissolutionService.doesDissolutionRequestExistForCompanyByCompanyNumber(companyNumber)) {
-            throw new NotFoundException();
-        }
-
-        if (!dissolutionService.isDirectorPendingApproval(companyNumber, body.getOfficerId())) {
-            throw new BadRequestException("Director is not pending approval");
-        }
-
-        try {
-            return dissolutionService.addDirectorApproval(companyNumber, userId, body);
-        } catch (DissolutionNotFoundException e) {
-            throw new NotFoundException();
-        }
+        return dissolutionService.addDirectorApproval(companyNumber, userId, body);
     }
 }

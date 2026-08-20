@@ -9,23 +9,15 @@ import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
-import uk.gov.companieshouse.model.db.dissolution.DissolutionApplication;
-import uk.gov.companieshouse.model.db.dissolution.DissolutionData;
-import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
-import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.DissolutionStatus;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 
-import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDirectorApproval;
-import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionDirector;
 import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,8 +35,6 @@ class DissolutionGetterTest {
     public static final String COMPANY_NUMBER = "12345678";
     public static final String USER_ID = "123";
     public static final String APPLICATION_REFERENCE = "XYZ456";
-    public static final String OFFICER_ID_ONE = "abc123";
-    public static final String OFFICER_ID_TWO = "def456";
 
     @Test
     void getByCompanyNumber_findsDissolution_mapsToDissolutionResponse_returnsGetResponse() {
@@ -93,56 +83,6 @@ class DissolutionGetterTest {
     }
 
     @Test
-    void isDirectorPendingApproval_returnsFalse_whenOfficerIdNotFound() {
-        final Dissolution dissolution = DissolutionFixtures.generateDissolution();
-
-        final DissolutionDirector director = generateDissolutionDirector();
-        director.setOfficerId(OFFICER_ID_ONE);
-
-        dissolution.getData().setDirectors(Collections.singletonList(director));
-
-        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
-
-        final boolean result = getter.isDirectorPendingApproval(COMPANY_NUMBER, OFFICER_ID_TWO);
-
-        assertFalse(result);
-    }
-
-    @Test
-    void isDirectorPendingApproval_returnsFalse_whenAlreadyApproved() {
-        final Dissolution dissolution = DissolutionFixtures.generateDissolution();
-
-        final DissolutionDirector director = generateDissolutionDirector();
-        director.setOfficerId(OFFICER_ID_ONE);
-        director.setDirectorApproval(generateDirectorApproval());
-
-        dissolution.getData().setDirectors(Collections.singletonList(director));
-
-        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
-
-        final boolean result = getter.isDirectorPendingApproval(COMPANY_NUMBER, OFFICER_ID_ONE);
-
-        assertFalse(result);
-    }
-
-    @Test
-    void isDirectorPendingApproval_returnsTrue_whenNotApproved() {
-        final Dissolution dissolution = DissolutionFixtures.generateDissolution();
-
-        final DissolutionDirector director = generateDissolutionDirector();
-        director.setOfficerId(OFFICER_ID_ONE);
-        director.setDirectorApproval(null);
-
-        dissolution.getData().setDirectors(Collections.singletonList(director));
-
-        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
-
-        final boolean result = getter.isDirectorPendingApproval(COMPANY_NUMBER, OFFICER_ID_ONE);
-
-        assertTrue(result);
-    }
-
-    @Test
     void getPendingDissolution_findsDissolution_mapsToDissolutionResponse_returnsGetResponse() {
         final Dissolution dissolution = DissolutionTestDataBuilder.aDissolution().withTransactionId(TRANSACTION_ID).withStatus(DissolutionStatus.DRAFT).build();
         final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse(TRANSACTION_ID, DissolutionStatus.DRAFT);
@@ -166,12 +106,8 @@ class DissolutionGetterTest {
     }
 
     @Test
-    void getDraftDissolution_findsDraftDissolution_mapsToDissolutionResponse_returnsGetResponse() {
-        final DissolutionData data = new DissolutionData();
-        final DissolutionApplication application = new DissolutionApplication();
-        application.setType(ApplicationType.DS01);
-        data.setApplication(application);
-        final Dissolution dissolution = DissolutionTestDataBuilder.aDissolution().withTransactionId(TRANSACTION_ID).withStatus(DissolutionStatus.DRAFT).withActive(false).withData(data).build();
+    void getDraftDissolution_findsDissolution_mapsToDissolutionResponse_returnsGetResponse() {
+        final Dissolution dissolution = DissolutionTestDataBuilder.aDissolution().withTransactionId(TRANSACTION_ID).withStatus(DissolutionStatus.DRAFT).build();
         final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse(TRANSACTION_ID, DissolutionStatus.DRAFT);
 
         when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
