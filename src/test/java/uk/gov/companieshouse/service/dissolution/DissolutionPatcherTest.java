@@ -140,12 +140,12 @@ class DissolutionPatcherTest {
     }
 
     @Test
-    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApprovedForSingleDirectorCompanyAndPresenterIsDirector() throws DissolutionNotFoundException {
+    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApprovedForSingleDirectorCompanyAndPresenterIsDirector() {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
 
-        final var soleDirector = aDissolutionDirector().withEmail(EMAIL).withDirectorApproval(generateDirectorApproval());
+        final var soleDirector = aDissolutionDirector().withEmail(EMAIL);
         dissolution = aDissolution()
                 .withOnlyDirector(soleDirector)
                 .withCreatedByEmail(EMAIL)
@@ -168,13 +168,13 @@ class DissolutionPatcherTest {
     }
 
     @Test
-    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApprovedForSingleDirectorCompanyAndPresenterIsNotDirector() throws DissolutionNotFoundException {
+    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApprovedForSingleDirectorCompanyAndPresenterIsNotDirector() {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
 
         // set the createdBy email to be different from the director email
-        final var soleDirector = aDissolutionDirector().withEmail(EMAIL).withDirectorApproval(generateDirectorApproval());
+        final var soleDirector = aDissolutionDirector().withEmail(EMAIL);
         dissolution = aDissolution()
                 .withOnlyDirector(soleDirector)
                 .withCreatedByEmail(PRESENTER_EMAIL)
