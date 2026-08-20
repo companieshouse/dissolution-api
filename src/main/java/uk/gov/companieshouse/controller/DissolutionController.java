@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.exception.BadRequestException;
 import uk.gov.companieshouse.exception.ConflictException;
-import uk.gov.companieshouse.exception.DissolutionDirectorApprovalException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.logging.Logger;
@@ -87,7 +86,7 @@ public class DissolutionController {
 
         final CompanyProfile company = companyProfileService.getCompanyProfile(companyNumber, request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader()));
 
-        if (dissolutionService.getDissolutionRequestForCompanyByCompanyNumber(companyNumber).isPresent()) {
+        if (dissolutionService.doesDissolutionRequestExistForCompanyByCompanyNumber(companyNumber)) {
             throw new ConflictException("Dissolution already exists");
         }
 
@@ -149,13 +148,6 @@ public class DissolutionController {
             @PathVariable("company-number") final String companyNumber,
             @Valid @RequestBody final DissolutionPatchRequest body
     ) {
-        final var dissolution = dissolutionService.getDissolutionRequestForCompanyByCompanyNumber(companyNumber)
-                .orElseThrow(() -> new NotFoundException(String.format("Dissolution Request not found for company number %s", companyNumber)));
-
-        try {
-            return dissolutionService.addDirectorApproval(dissolution, userId, body);
-        } catch (DissolutionDirectorApprovalException e) {
-            throw new BadRequestException(e.getMessage());
-        }
+        return dissolutionService.addDirectorApproval(companyNumber, userId, body);
     }
 }

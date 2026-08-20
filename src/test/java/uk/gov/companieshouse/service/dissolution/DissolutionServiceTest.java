@@ -37,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -94,23 +95,21 @@ class DissolutionServiceTest {
     }
 
     @Test
-    void getDissolutionRequestForCompanyByCompanyNumber_returnsDissolution_ifDissolutionForCompanyExists() {
-        final var dissolution = DissolutionFixtures.generateDissolution();
-        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
+    void doesDissolutionRequestExistForCompanyByCompanyNumber_returnsTrue_ifDissolutionForCompanyExists() {
+        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(DissolutionFixtures.generateDissolution()));
 
-        final Optional<Dissolution> result = service.getDissolutionRequestForCompanyByCompanyNumber(COMPANY_NUMBER);
+        final boolean result = service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER);
 
-        assertTrue(result.isPresent());
-        assertEquals(dissolution, result.get());
+        assertTrue(result);
     }
 
     @Test
-    void getDissolutionRequestForCompanyByCompanyNumber_returnsEmptyOptional_ifDissolutionForCompanyDoesNotExist() {
+    void doesDissolutionRequestExistForCompanyByCompanyNumber_returnsFalse_ifDissolutionForCompanyDoesNotExist() {
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
 
-        final Optional<Dissolution> result = service.getDissolutionRequestForCompanyByCompanyNumber(COMPANY_NUMBER);
+        final boolean result = service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER);
 
-        assertFalse(result.isPresent());
+        assertFalse(result);
     }
 
     @Test
@@ -160,24 +159,41 @@ class DissolutionServiceTest {
     }
 
     @Test
-    void addDirectorApproval_addsDirectorApproval_returnsPatchResponse() throws DissolutionNotFoundException {
+    void addDirectorApproval_returnsPatchResponse_ifDissolutionForCompanyExists() {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP);
         body.setOfficerId(OFFICER_ID);
 
         final Dissolution dissolution = aDissolution()
+                .withCompanyNumber(COMPANY_NUMBER)
                 .withDirectors(aDissolutionDirector().withOfficerId(OFFICER_ID))
                 .build();
         final DissolutionPatchResponse response = DissolutionFixtures.generateDissolutionPatchResponse();
 
+        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
         when(patcher.addDirectorApproval(dissolution, USER_ID, body)).thenReturn(response);
 
-        final DissolutionPatchResponse result = service.addDirectorApproval(dissolution, USER_ID, body);
-
-        verify(patcher).addDirectorApproval(dissolution, USER_ID, body);
+        final DissolutionPatchResponse result = service.addDirectorApproval(COMPANY_NUMBER, USER_ID, body);
 
         assertNotNull(result);
         assertEquals(response, result);
+    }
+
+    @Test
+    void addDirectorApproval_whenDissolutionDoesNotExist_throwsException() {
+        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+        body.setIpAddress(IP);
+        body.setOfficerId(OFFICER_ID);
+
+        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
+
+        final var exception = assertThrows(DissolutionNotFoundException.class,
+                () -> service.addDirectorApproval(COMPANY_NUMBER, USER_ID, body));
+
+        assertThat(exception.getMessage(),
+                is("Dissolution Request not found for company number " + COMPANY_NUMBER));
+
+        verify(patcher, never()).addDirectorApproval(any(), any(), any());
     }
 
     @Test

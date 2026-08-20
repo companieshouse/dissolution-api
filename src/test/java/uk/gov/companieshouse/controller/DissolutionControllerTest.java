@@ -12,8 +12,8 @@ import tools.jackson.databind.ObjectMapper;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.exception.DissolutionDirectorApprovalException;
+import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.NotFoundException;
-import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
@@ -48,7 +48,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
 import static uk.gov.companieshouse.fixtures.CompanyProfileFixtures.generateCompanyProfile;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDirectorRequest;
-import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolution;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionCreateRequest;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionCreateResponse;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionGetResponse;
@@ -204,7 +203,7 @@ class DissolutionControllerTest {
     @Test
     void submitDissolutionRequest_returnsConflict_ifDissolutionAlreadyExistsForCompany() throws Exception {
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(generateCompanyProfile());
-        when(service.getDissolutionRequestForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(generateDissolution()));
+        when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(true);
 
         mockMvc
                 .perform(
@@ -223,7 +222,7 @@ class DissolutionControllerTest {
         final Map<String, CompanyOfficer> companyDirectors = Map.of(OFFICER_ID, generateCompanyOfficer());
 
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
-        when(service.getDissolutionRequestForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
+        when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(false);
         when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(companyDirectors);
         when(dissolutionValidator.checkBusinessRules(eq(company), eq(companyDirectors), isA(List.class))).thenReturn(Optional.of("Some dissolution error"));
 
@@ -246,7 +245,7 @@ class DissolutionControllerTest {
         final Map<String, CompanyOfficer> companyDirectors = Map.of(OFFICER_ID, generateCompanyOfficer());
 
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
-        when(service.getDissolutionRequestForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
+        when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(false);
         when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(companyDirectors);
         when(dissolutionValidator.checkBusinessRules(eq(company), eq(companyDirectors), isA(List.class))).thenReturn(Optional.empty());
         when(service.create(isA(DissolutionCreateRequest.class), eq(company), eq(companyDirectors), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL)))
@@ -272,7 +271,7 @@ class DissolutionControllerTest {
         final Map<String, CompanyOfficer> companyDirectors = Map.of(OFFICER_ID, generateCompanyOfficer());
 
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
-        when(service.getDissolutionRequestForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
+        when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(false);
         when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(companyDirectors);
         when(dissolutionValidator.checkBusinessRules(eq(company), eq(companyDirectors), isA(List.class))).thenReturn(Optional.empty());
         when(service.create(isA(DissolutionCreateRequest.class), eq(company), eq(companyDirectors), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenReturn(response);
@@ -430,7 +429,8 @@ class DissolutionControllerTest {
     void patchDissolutionRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
 
-        when(service.getDissolutionRequestForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
+        when(service.addDirectorApproval(eq(COMPANY_NUMBER), eq(USER_ID), isA(DissolutionPatchRequest.class)))
+                .thenThrow(new DissolutionNotFoundException("Dissolution not found"));
 
         mockMvc
                 .perform(
@@ -446,8 +446,7 @@ class DissolutionControllerTest {
     void patchDissolutionRequest_returnsBadRequest_ifDissolutionDirectorIsNotFound() throws Exception {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
 
-        when(service.getDissolutionRequestForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(generateDissolution()));
-        when(service.addDirectorApproval(isA(Dissolution.class), eq(USER_ID), isA(DissolutionPatchRequest.class)))
+        when(service.addDirectorApproval(eq(COMPANY_NUMBER), eq(USER_ID), isA(DissolutionPatchRequest.class)))
                 .thenThrow(new DissolutionDirectorApprovalException("Director not found"));
 
         mockMvc
@@ -465,8 +464,7 @@ class DissolutionControllerTest {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setOfficerId(OFFICER_ID);
 
-        when(service.getDissolutionRequestForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(generateDissolution()));
-        when(service.addDirectorApproval(isA(Dissolution.class), eq(USER_ID), isA(DissolutionPatchRequest.class)))
+        when(service.addDirectorApproval(eq(COMPANY_NUMBER), eq(USER_ID), isA(DissolutionPatchRequest.class)))
                 .thenThrow(new DissolutionDirectorApprovalException("Director not pending approval"));
 
         mockMvc
@@ -493,8 +491,7 @@ class DissolutionControllerTest {
         body.setOfficerId(OFFICER_ID);
         final DissolutionPatchResponse response = generateDissolutionPatchResponse();
 
-        when(service.getDissolutionRequestForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(generateDissolution()));
-        when(service.addDirectorApproval(isA(Dissolution.class), eq(USER_ID), isA(DissolutionPatchRequest.class))).thenReturn(response);
+        when(service.addDirectorApproval(eq(COMPANY_NUMBER), eq(USER_ID), isA(DissolutionPatchRequest.class))).thenReturn(response);
 
         mockMvc
                 .perform(
@@ -505,7 +502,7 @@ class DissolutionControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(asJsonString(response)));
 
-        verify(service).addDirectorApproval(isA(Dissolution.class), eq(USER_ID), isA(DissolutionPatchRequest.class));
+        verify(service).addDirectorApproval(eq(COMPANY_NUMBER), eq(USER_ID), isA(DissolutionPatchRequest.class));
     }
 
     private void assertPostBodyValidation(DissolutionCreateRequest body, String expectedErrorJson) throws Exception {

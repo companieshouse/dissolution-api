@@ -43,7 +43,9 @@ public class DissolutionService {
         return creator.create(body, companyProfile, directors, userId, ip, email);
     }
 
-    public DissolutionPatchResponse addDirectorApproval(Dissolution dissolution, String userId, DissolutionPatchRequest body) {
+    public DissolutionPatchResponse addDirectorApproval(String companyNumber, String userId, DissolutionPatchRequest body) {
+        final Dissolution dissolution = repository.findByCompanyNumber(companyNumber)
+                .orElseThrow(() -> new DissolutionNotFoundException(String.format("Dissolution Request not found for company number %s", companyNumber)));
         return patcher.addDirectorApproval(dissolution, userId, body);
     }
 
@@ -55,8 +57,8 @@ public class DissolutionService {
         patcher.setPaymentReference(paymentReference, applicationReference);
     }
 
-    public Optional<Dissolution> getDissolutionRequestForCompanyByCompanyNumber(String companyNumber) {
-        return repository.findByCompanyNumber(companyNumber);
+    public boolean doesDissolutionRequestExistForCompanyByCompanyNumber(String companyNumber) {
+        return repository.findByCompanyNumber(companyNumber).isPresent();
     }
 
     public boolean doesDissolutionRequestExistForCompanyByApplicationReference(String applicationReference) {

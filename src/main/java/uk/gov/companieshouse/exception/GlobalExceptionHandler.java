@@ -54,8 +54,8 @@ public class GlobalExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(NotFoundException.class)
-    public void handleNotFound(NotFoundException ex, HttpServletRequest request) {
+    @ExceptionHandler({NotFoundException.class, DissolutionNotFoundException.class})
+    public void handleNotFound(RuntimeException ex, HttpServletRequest request) {
         logger.info(String.format("[Not Found] - %s - %s", request.getRequestURL().toString(), ex.getMessage()));
     }
 

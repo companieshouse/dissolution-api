@@ -52,7 +52,7 @@ public class DissolutionPatcher {
     }
 
     public DissolutionPatchResponse addDirectorApproval(final Dissolution dissolution, String userId, DissolutionPatchRequest body) {
-        DissolutionDirector director = this.findDirector(body.getOfficerId(), dissolution);
+        DissolutionDirector director = this.getDirector(body.getOfficerId(), dissolution);
 
         if (director.hasDirectorApproval()) {
             throw new DissolutionDirectorApprovalException(String.format("Director %s has already approved", body.getOfficerId()));
@@ -102,7 +102,7 @@ public class DissolutionPatcher {
         this.repository.save(dissolution);
     }
 
-    private DissolutionDirector findDirector(String officerId, Dissolution dissolution) {
+    private DissolutionDirector getDirector(String officerId, Dissolution dissolution) {
         return dissolution
                 .getData()
                 .getDirectors()
