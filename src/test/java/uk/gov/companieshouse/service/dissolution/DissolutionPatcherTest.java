@@ -140,7 +140,6 @@ class DissolutionPatcherTest {
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
 
-        // sole director and presenter are the same person — no payment email expected
         final var soleDirector = aDissolutionDirector().withEmail(EMAIL).withDirectorApproval(generateDirectorApproval());
         dissolution = aDissolution()
                 .withOnlyDirector(soleDirector)

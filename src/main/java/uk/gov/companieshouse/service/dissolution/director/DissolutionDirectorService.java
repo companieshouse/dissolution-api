@@ -7,8 +7,9 @@ import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchResponse;
 import uk.gov.companieshouse.repository.DissolutionRepository;
+import static uk.gov.companieshouse.util.DissolutionApplicantUtil.doesEmailBelongToApplicant;
 
-import java.util.Optional;import static uk.gov.companieshouse.util.DissolutionApplicantUtil.doesEmailBelongToApplicant;
+import java.util.Optional;
 
 @Service
 public class DissolutionDirectorService {
