@@ -26,7 +26,7 @@ class DissolutionDirectorResponseMapperTest {
 
         final DissolutionLinks links = result.getLinks();
 
-        assertEquals(String.format("/dissolution-request/%s", COMPANY_NUMBER), links.getSelf());
-        assertEquals(String.format("/dissolution-request/%s/payment", REFERENCE), links.getPayment());
+        assertEquals(String.format("/dissolution-request/%s", COMPANY_NUMBER), links.self());
+        assertEquals(String.format("/dissolution-request/%s/payment", REFERENCE), links.payment());
     }
 }

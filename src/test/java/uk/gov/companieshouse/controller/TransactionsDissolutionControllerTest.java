@@ -201,9 +201,7 @@ class TransactionsDissolutionControllerTest {
     void submitDraftDissolution_returnsCreated_andCreateResponse_ifDraftDissolutionIsCreatedSuccessfully() throws Exception {
         final DissolutionCreateDraftResponse response = new DissolutionCreateDraftResponse();
         response.setDissolutionId("dis-123");
-        DissolutionLinks links = new DissolutionLinks();
-        links.setSelf("/company/" + COMPANY_NUMBER + "/transaction/" + TRANSACTION_ID + "/dissolution");
-        response.setLinks(links);
+        response.setLinks(DissolutionLinks.forTransaction(COMPANY_NUMBER, TRANSACTION_ID));
         final CompanyProfile companyProfile = generateCompanyProfile();
 
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);

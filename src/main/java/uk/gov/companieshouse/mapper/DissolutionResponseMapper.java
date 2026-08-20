@@ -9,6 +9,7 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftRespons
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetDirector;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionLinks;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 
 import java.sql.Timestamp;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
 import static uk.gov.companieshouse.model.Constants.DISSOLUTION_KIND;
 
 @Service
-public class DissolutionResponseMapper extends ResponseMapper {
+public class DissolutionResponseMapper {
 
     public DissolutionCreateResponse mapToDissolutionCreateResponse(Dissolution dissolution) {
         final DissolutionCreateResponse response = new DissolutionCreateResponse();
@@ -27,7 +28,7 @@ public class DissolutionResponseMapper extends ResponseMapper {
         final String reference = dissolution.getData().getApplication().getReference();
 
         response.setApplicationReferenceNumber(reference);
-        response.setLinks(generateLinks(dissolution.getCompany().getNumber(), reference));
+        response.setLinks(DissolutionLinks.of(dissolution.getCompany().getNumber(), reference));
 
         return response;
     }
@@ -36,7 +37,7 @@ public class DissolutionResponseMapper extends ResponseMapper {
         final DissolutionCreateDraftResponse response = new DissolutionCreateDraftResponse();
 
         response.setDissolutionId(dissolution.getId());
-        response.setLinks(generateDissolutionLinks(dissolution.getCompany().getNumber(), transaction.getId()));
+        response.setLinks(DissolutionLinks.forTransaction(dissolution.getCompany().getNumber(), transaction.getId()));
 
         return response;
     }
@@ -48,7 +49,7 @@ public class DissolutionResponseMapper extends ResponseMapper {
 
         response.setETag(dissolution.getData().getETag());
         response.setKind(DISSOLUTION_KIND);
-        response.setLinks(generateLinks(dissolution.getCompany().getNumber(), reference));
+        response.setLinks(DissolutionLinks.of(dissolution.getCompany().getNumber(), reference));
         response.setApplicationStatus(dissolution.getData().getApplication().getStatus());
         response.setApplicationReference(reference);
         response.setApplicationType(dissolution.getData().getApplication().getType());
@@ -81,7 +82,7 @@ public class DissolutionResponseMapper extends ResponseMapper {
     public DissolutionPatchResponse mapToDissolutionPatchResponse(Dissolution dissolution) {
         final DissolutionPatchResponse response = new DissolutionPatchResponse();
 
-        response.setLinks(generateLinks(
+        response.setLinks(DissolutionLinks.of(
                 dissolution.getCompany().getNumber(),
                 dissolution.getData().getApplication().getReference()
         ));

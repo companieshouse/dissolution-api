@@ -1,23 +1,18 @@
 package uk.gov.companieshouse.model.dto.dissolution;
 
-public class DissolutionLinks {
+public record DissolutionLinks(String self, String payment) {
 
-    private String self;
-    private String payment;
-
-    public String getSelf() {
-        return self;
+    public static DissolutionLinks of(String companyNumber, String reference) {
+        return new DissolutionLinks(
+                String.format("/dissolution-request/%s", companyNumber),
+                String.format("/dissolution-request/%s/payment", reference)
+        );
     }
 
-    public void setSelf(String self) {
-        this.self = self;
-    }
-
-    public String getPayment() {
-        return payment;
-    }
-
-    public void setPayment(String payment) {
-        this.payment = payment;
+    public static DissolutionLinks forTransaction(String companyNumber, String transactionId) {
+        return new DissolutionLinks(
+                String.format("/company/%s/transaction/%s/dissolution", companyNumber, transactionId),
+                null
+        );
     }
 }

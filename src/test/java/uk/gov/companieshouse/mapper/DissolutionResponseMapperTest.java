@@ -61,8 +61,8 @@ class DissolutionResponseMapperTest {
 
         final DissolutionCreateResponse result = mapper.mapToDissolutionCreateResponse(dissolution);
 
-        assertEquals("/dissolution-request/12345678", result.getLinks().getSelf());
-        assertEquals("/dissolution-request/ABC123/payment", result.getLinks().getPayment());
+        assertEquals("/dissolution-request/12345678", result.getLinks().self());
+        assertEquals("/dissolution-request/ABC123/payment", result.getLinks().payment());
     }
 
     @Test
@@ -84,8 +84,8 @@ class DissolutionResponseMapperTest {
 
         assertEquals(ETAG, result.getETag());
         assertEquals(DISSOLUTION_KIND, result.getKind());
-        assertEquals("/dissolution-request/12345678", result.getLinks().getSelf());
-        assertEquals("/dissolution-request/reference123/payment", result.getLinks().getPayment());
+        assertEquals("/dissolution-request/12345678", result.getLinks().self());
+        assertEquals("/dissolution-request/reference123/payment", result.getLinks().payment());
         assertEquals(STATUS, result.getApplicationStatus());
         assertEquals(REFERENCE, result.getApplicationReference());
         assertEquals(TYPE, result.getApplicationType());
@@ -174,8 +174,8 @@ class DissolutionResponseMapperTest {
 
         final DissolutionLinks links = result.getLinks();
 
-        assertEquals(String.format("/dissolution-request/%s", COMPANY_NUMBER), links.getSelf());
-        assertEquals(String.format("/dissolution-request/%s/payment", REFERENCE), links.getPayment());
+        assertEquals(String.format("/dissolution-request/%s", COMPANY_NUMBER), links.self());
+        assertEquals(String.format("/dissolution-request/%s/payment", REFERENCE), links.payment());
     }
 
     @Test
@@ -209,7 +209,7 @@ class DissolutionResponseMapperTest {
         final DissolutionLinks links = result.getLinks();
 
         assertEquals(DISSOLUTION_ID, result.getDissolutionId());
-        assertEquals(expectedSelfLink, links.getSelf());
-        assertNull(links.getPayment());
+        assertEquals(expectedSelfLink, links.self());
+        assertNull(links.payment());
     }
 }
