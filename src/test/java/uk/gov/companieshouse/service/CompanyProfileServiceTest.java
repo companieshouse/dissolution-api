@@ -11,7 +11,6 @@ import uk.gov.companieshouse.exception.CompanyProfileServiceException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.exception.ServiceUnavailableException;
 import uk.gov.companieshouse.fixtures.CompanyProfileApiFixtures;
-import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.service.dissolution.validator.CompanyClosableValidator;
 
@@ -26,9 +25,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.fixtures.CompanyProfileTestDataBuilder.aCompany;
 
 @ExtendWith(MockitoExtension.class)
-public class CompanyProfileServiceTest {
+class CompanyProfileServiceTest {
 
     @InjectMocks
     private CompanyProfileService companyProfileService;
@@ -44,7 +44,7 @@ public class CompanyProfileServiceTest {
 
     @Test
     void isCompanyClosable_callsCompanyClosableMapper_returnsTrue() {
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        final CompanyProfile company = aCompany().build();
 
         when(companyClosableValidator.isCompanyClosable(company)).thenReturn(true);
 
@@ -57,7 +57,7 @@ public class CompanyProfileServiceTest {
 
     @Test
     void isCompanyClosable_callsCompanyClosableMapper_returnsFalse() {
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        final CompanyProfile company = aCompany().build();
 
         when(companyClosableValidator.isCompanyClosable(company)).thenReturn(false);
 
@@ -77,10 +77,10 @@ public class CompanyProfileServiceTest {
 
         verify(companyProfileClient, times(1)).getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER);
 
-        assertEquals(company.getCompanyName(), companyProfile.getCompanyName());
-        assertEquals(company.getCompanyNumber(), companyProfile.getCompanyNumber());
-        assertEquals(company.getCompanyStatus(), companyProfile.getCompanyStatus());
-        assertEquals(company.getType(), companyProfile.getType());
+        assertEquals(company.getCompanyName(), companyProfile.companyName());
+        assertEquals(company.getCompanyNumber(), companyProfile.companyNumber());
+        assertEquals(company.getCompanyStatus(), companyProfile.companyStatus());
+        assertEquals(company.getType(), companyProfile.type());
     }
 
     @Test

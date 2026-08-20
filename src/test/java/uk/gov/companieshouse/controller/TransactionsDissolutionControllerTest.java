@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.gov.companieshouse.fixtures.CompanyProfileFixtures.generateCompanyProfile;
+import static uk.gov.companieshouse.fixtures.CompanyProfileTestDataBuilder.aCompany;
 import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
 import static uk.gov.companieshouse.model.Constants.HEADER_ERIC_REQUEST_ID;
 import static uk.gov.companieshouse.model.Constants.TRANSACTION_KEY;
@@ -127,7 +127,7 @@ class TransactionsDissolutionControllerTest {
 
     @Test
     void submitDraftDissolution_returnsConflict_ifDraftDissolutionAlreadyExistsForUserAndCompany() throws Exception {
-        when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(generateCompanyProfile());
+        when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(aCompany().build());
         when(dissolutionService.doesDraftDissolutionExistForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(true);
 
         mockMvc
@@ -168,7 +168,7 @@ class TransactionsDissolutionControllerTest {
 
     @Test
     void submitDraftDissolution_returnsBadRequest_ifCompanyIsNotClosable() throws Exception {
-        when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(generateCompanyProfile());
+        when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(aCompany().build());
         when(dissolutionService.doesDraftDissolutionExistForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(false);
         when(companyProfileService.isCompanyClosable(isA(CompanyProfile.class))).thenReturn(false);
 
@@ -183,7 +183,7 @@ class TransactionsDissolutionControllerTest {
 
     @Test
     void submitDraftDissolution_returnsInternalServerError_ifExceptionOccursWhenCreatingDraftDissolution() throws Exception {
-        final CompanyProfile companyProfile = generateCompanyProfile();
+        final CompanyProfile companyProfile = aCompany().build();
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
         when(dissolutionService.doesDraftDissolutionExistForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(false);
         when(companyProfileService.isCompanyClosable(isA(CompanyProfile.class))).thenReturn(true);
@@ -202,7 +202,7 @@ class TransactionsDissolutionControllerTest {
         final DissolutionCreateDraftResponse response = new DissolutionCreateDraftResponse();
         response.setDissolutionId("dis-123");
         response.setLinks(DissolutionLinks.forTransaction(COMPANY_NUMBER, TRANSACTION_ID));
-        final CompanyProfile companyProfile = generateCompanyProfile();
+        final CompanyProfile companyProfile = aCompany().build();
 
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
         when(dissolutionService.doesDraftDissolutionExistForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(false);

@@ -8,7 +8,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
-import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
@@ -35,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
+import static uk.gov.companieshouse.fixtures.CompanyProfileTestDataBuilder.aCompany;
 
 class DissolutionRequestMapperTest {
 
@@ -56,9 +56,7 @@ class DissolutionRequestMapperTest {
         userData.setIpAddress(IP_ADDRESS);
         userData.setUserId(USER_ID);
         body.setDirectors(Collections.emptyList());
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setCompanyNumber(COMPANY_NUMBER);
-        company.setCompanyName(COMPANY_NAME);
+        final CompanyProfile company = aCompany().withCompanyNumber(COMPANY_NUMBER).withCompanyName(COMPANY_NAME).build();
 
         final Dissolution dissolution = requestMapper.mapToDissolution(body, company, new HashMap<>(), userData, REFERENCE, BARCODE);
 
@@ -73,10 +71,11 @@ class DissolutionRequestMapperTest {
         userData.setIpAddress(IP_ADDRESS);
         userData.setUserId(USER_ID);
         body.setDirectors(Collections.emptyList());
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setCompanyNumber(COMPANY_NUMBER);
-        company.setCompanyName(COMPANY_NAME);
-        company.setType(CompanyType.PLC.getValue());
+        final CompanyProfile company = aCompany()
+                .withCompanyNumber(COMPANY_NUMBER)
+                .withCompanyName(COMPANY_NAME)
+                .withType(CompanyType.PLC)
+                .build();
 
         final Dissolution dissolution = requestMapper.mapToDissolution(body, company, new HashMap<>(), userData, REFERENCE, BARCODE);
 
@@ -95,10 +94,11 @@ class DissolutionRequestMapperTest {
         userData.setIpAddress(IP_ADDRESS);
         userData.setUserId(USER_ID);
         body.setDirectors(Collections.emptyList());
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setCompanyNumber(COMPANY_NUMBER);
-        company.setCompanyName(COMPANY_NAME);
-        company.setType(CompanyType.LLP.getValue());
+        final CompanyProfile company = aCompany()
+                .withCompanyNumber(COMPANY_NUMBER)
+                .withCompanyName(COMPANY_NAME)
+                .withType(CompanyType.LLP)
+                .build();
 
         final Dissolution dissolution = requestMapper.mapToDissolution(body, company, new HashMap<>(), userData, REFERENCE, BARCODE);
 
@@ -130,9 +130,7 @@ class DissolutionRequestMapperTest {
                 officerId2, companyDirector2
         );
 
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setCompanyNumber(COMPANY_NUMBER);
-        company.setCompanyName(COMPANY_NAME);
+        final CompanyProfile company = aCompany().withCompanyNumber(COMPANY_NUMBER).withCompanyName(COMPANY_NAME).build();
 
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
 
@@ -173,9 +171,7 @@ class DissolutionRequestMapperTest {
         userData.setIpAddress(IP_ADDRESS);
         userData.setUserId(USER_ID);
         body.setDirectors(Collections.emptyList());
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setCompanyNumber(COMPANY_NUMBER);
-        company.setCompanyName(COMPANY_NAME);
+        final CompanyProfile company = aCompany().withCompanyNumber(COMPANY_NUMBER).withCompanyName(COMPANY_NAME).build();
 
         final Dissolution dissolution = requestMapper.mapToDissolution(body, company, new HashMap<>(), userData, REFERENCE, BARCODE);
 
@@ -191,9 +187,7 @@ class DissolutionRequestMapperTest {
         userData.setIpAddress(IP_ADDRESS);
         userData.setUserId(USER_ID);
         body.setDirectors(Collections.emptyList());
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setCompanyNumber(COMPANY_NUMBER);
-        company.setCompanyName(COMPANY_NAME);
+        final CompanyProfile company = aCompany().withCompanyNumber(COMPANY_NUMBER).withCompanyName(COMPANY_NAME).build();
 
         final Dissolution dissolution = requestMapper.mapToDissolution(body, company, new HashMap<>(), userData, REFERENCE, BARCODE);
 
@@ -207,15 +201,11 @@ class DissolutionRequestMapperTest {
     @DisplayName("Transaction Model Dissolution")
     class TransactionModelDissolution {
         private Transaction transaction;
-        private CompanyProfile companyProfile;
         private DissolutionUserData userData;
 
         @BeforeEach
         void setup() {
             transaction = TransactionTestDataBuilder.aTransaction().withStatus(TransactionStatus.OPEN).build();
-            companyProfile = CompanyProfileFixtures.generateCompanyProfile();
-            companyProfile.setCompanyNumber(COMPANY_NUMBER);
-            companyProfile.setCompanyName(COMPANY_NAME);
 
             userData = new DissolutionUserData();
             userData.setEmail(EMAIL);
@@ -229,8 +219,11 @@ class DissolutionRequestMapperTest {
                 "llp,    LLDS01"
         })
         void mapToDraftDissolution_mapsApplicationType(String companyType, ApplicationType expectedType) {
-            companyProfile.setType(companyType);
-            final Dissolution dissolution = requestMapper.mapToDraftDissolution(transaction, companyProfile, userData);
+            final CompanyProfile company = aCompany().withCompanyNumber(COMPANY_NUMBER)
+                    .withCompanyName(COMPANY_NAME)
+                    .withType(companyType)
+                    .build();
+            final Dissolution dissolution = requestMapper.mapToDraftDissolution(transaction, company, userData);
 
             assertFalse(dissolution.getActive());
             assertNotNull(dissolution.getModifiedDateTime());

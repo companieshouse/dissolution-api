@@ -32,8 +32,8 @@ public class DissolutionRequestMapper {
         final Dissolution dissolution = new Dissolution();
 
         dissolution.setModifiedDateTime(generateCurrentDateTime());
-        dissolution.setData(mapToDissolutionData(body, company.getType(), directors, reference, barcode));
-        dissolution.setCompany(mapToCompany(company.getCompanyNumber(), company.getCompanyName()));
+        dissolution.setData(mapToDissolutionData(body, company.type(), directors, reference, barcode));
+        dissolution.setCompany(mapToCompany(company.companyNumber(), company.companyName()));
         dissolution.setCreatedBy(mapToCreatedBy(userData.getUserId(), userData.getEmail(), userData.getIpAddress()));
         dissolution.setActive(true);
 
@@ -42,7 +42,7 @@ public class DissolutionRequestMapper {
 
     public Dissolution mapToDraftDissolution(Transaction transaction, CompanyProfile company, DissolutionUserData userData) {
         final DissolutionApplication application = new DissolutionApplication();
-        application.setType(company.getType().equals(CompanyType.LLP.getValue()) ? ApplicationType.LLDS01 : ApplicationType.DS01);
+        application.setType(company.type().equals(CompanyType.LLP.getValue()) ? ApplicationType.LLDS01 : ApplicationType.DS01);
 
         final DissolutionData data = new DissolutionData();
         data.setETag(GenerateEtagUtil.generateEtag());
@@ -51,7 +51,7 @@ public class DissolutionRequestMapper {
         final Dissolution dissolution = new Dissolution();
         dissolution.setModifiedDateTime(generateCurrentDateTime());
         dissolution.setData(data);
-        dissolution.setCompany(mapToCompany(company.getCompanyNumber(), company.getCompanyName()));
+        dissolution.setCompany(mapToCompany(company.companyNumber(), company.companyName()));
         dissolution.setCreatedBy(mapToCreatedBy(userData.getUserId(), userData.getEmail(), userData.getIpAddress()));
         // The active flag must be false so that transaction model dissolution applications
         // do not get picked up by the pre-migration dissolution process.

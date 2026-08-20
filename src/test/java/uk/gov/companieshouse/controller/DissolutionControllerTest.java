@@ -44,7 +44,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
-import static uk.gov.companieshouse.fixtures.CompanyProfileFixtures.generateCompanyProfile;
+import static uk.gov.companieshouse.fixtures.CompanyProfileTestDataBuilder.aCompany;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDirectorRequest;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionCreateRequest;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionCreateResponse;
@@ -200,7 +200,7 @@ class DissolutionControllerTest {
 
     @Test
     void submitDissolutionRequest_returnsConflict_ifDissolutionAlreadyExistsForCompany() throws Exception {
-        when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(generateCompanyProfile());
+        when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(aCompany().build());
         when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(true);
 
         mockMvc
@@ -215,14 +215,13 @@ class DissolutionControllerTest {
     @Test
     void submitDissolutionRequest_returnsBadRequest_ifValidationFails() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
-        final CompanyProfile companyProfile = generateCompanyProfile();
-        final CompanyProfile company = generateCompanyProfile();
+        final CompanyProfile companyProfile = aCompany().build();
         final Map<String, CompanyOfficer> companyDirectors = Map.of(OFFICER_ID, generateCompanyOfficer());
 
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
         when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(false);
         when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(companyDirectors);
-        when(dissolutionValidator.checkBusinessRules(eq(company), eq(companyDirectors), isA(List.class))).thenReturn(Optional.of("Some dissolution error"));
+        when(dissolutionValidator.checkBusinessRules(eq(companyProfile), eq(companyDirectors), isA(List.class))).thenReturn(Optional.of("Some dissolution error"));
 
         mockMvc
                 .perform(
@@ -232,21 +231,20 @@ class DissolutionControllerTest {
                                 .content(asJsonString(body)))
                 .andExpect(status().isBadRequest());
 
-        verify(dissolutionValidator).checkBusinessRules(eq(company), eq(companyDirectors), isA(List.class));
+        verify(dissolutionValidator).checkBusinessRules(eq(companyProfile), eq(companyDirectors), isA(List.class));
     }
 
     @Test
     void submitDissolutionRequest_returnsInternalServerError_ifExceptionOccursWhenCreatingDissolution() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
-        final CompanyProfile companyProfile = generateCompanyProfile();
-        final CompanyProfile company = generateCompanyProfile();
+        final CompanyProfile companyProfile = aCompany().build();
         final Map<String, CompanyOfficer> companyDirectors = Map.of(OFFICER_ID, generateCompanyOfficer());
 
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
         when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(false);
         when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(companyDirectors);
-        when(dissolutionValidator.checkBusinessRules(eq(company), eq(companyDirectors), isA(List.class))).thenReturn(Optional.empty());
-        when(service.create(isA(DissolutionCreateRequest.class), eq(company), eq(companyDirectors), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL)))
+        when(dissolutionValidator.checkBusinessRules(eq(companyProfile), eq(companyDirectors), isA(List.class))).thenReturn(Optional.empty());
+        when(service.create(isA(DissolutionCreateRequest.class), eq(companyProfile), eq(companyDirectors), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL)))
                 .thenThrow(new RuntimeException("Some error occurred while creating dissolution"));
 
         mockMvc
@@ -257,22 +255,21 @@ class DissolutionControllerTest {
                                 .content(asJsonString(body)))
                 .andExpect(status().isInternalServerError());
 
-        verify(service).create(isA(DissolutionCreateRequest.class), eq(company), eq(companyDirectors), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL));
+        verify(service).create(isA(DissolutionCreateRequest.class), eq(companyProfile), eq(companyDirectors), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL));
     }
 
     @Test
     void submitDissolutionRequest_returnsCreated_andCreateResponse_ifDissolutionIsCreatedSuccessfully() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
         final DissolutionCreateResponse response = generateDissolutionCreateResponse();
-        final CompanyProfile companyProfile = generateCompanyProfile();
-        final CompanyProfile company = generateCompanyProfile();
+        final CompanyProfile companyProfile = aCompany().build();
         final Map<String, CompanyOfficer> companyDirectors = Map.of(OFFICER_ID, generateCompanyOfficer());
 
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
         when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(false);
         when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(companyDirectors);
-        when(dissolutionValidator.checkBusinessRules(eq(company), eq(companyDirectors), isA(List.class))).thenReturn(Optional.empty());
-        when(service.create(isA(DissolutionCreateRequest.class), eq(company), eq(companyDirectors), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenReturn(response);
+        when(dissolutionValidator.checkBusinessRules(eq(companyProfile), eq(companyDirectors), isA(List.class))).thenReturn(Optional.empty());
+        when(service.create(isA(DissolutionCreateRequest.class), eq(companyProfile), eq(companyDirectors), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenReturn(response);
 
         mockMvc
                 .perform(
@@ -283,7 +280,7 @@ class DissolutionControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(content().json(asJsonString(response)));
 
-        verify(service).create(isA(DissolutionCreateRequest.class), eq(company), eq(companyDirectors), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL));
+        verify(service).create(isA(DissolutionCreateRequest.class), eq(companyProfile), eq(companyDirectors), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL));
     }
 
     @Test

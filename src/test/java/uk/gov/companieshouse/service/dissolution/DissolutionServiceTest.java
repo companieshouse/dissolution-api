@@ -9,7 +9,6 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
-import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder;
 import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
@@ -42,6 +41,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
+import static uk.gov.companieshouse.fixtures.CompanyProfileTestDataBuilder.aCompany;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionPatchRequest;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 
@@ -79,7 +79,7 @@ class DissolutionServiceTest {
     void create_createsADissolutionRequest_returnsCreateResponse() {
         final DissolutionCreateRequest body = DissolutionFixtures.generateDissolutionCreateRequest();
         final DissolutionCreateResponse response = DissolutionFixtures.generateDissolutionCreateResponse();
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        final CompanyProfile company = aCompany().build();
         final Map<String, CompanyOfficer> companyDirectors = Map.of(OFFICER_ID, generateCompanyOfficer());
 
         when(creator.create(body, company, companyDirectors, USER_ID, IP, EMAIL)).thenReturn(response);
@@ -294,7 +294,7 @@ class DissolutionServiceTest {
     void createDraft_createsDraftDissolution_returnsCreateDraftResponse() {
         final Transaction transaction = TransactionTestDataBuilder.aTransaction().withStatus(TransactionStatus.OPEN).build();
         final DissolutionCreateDraftResponse response = new DissolutionCreateDraftResponse();
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        final CompanyProfile company = aCompany().build();
 
         when(creator.createDraft(transaction, company, USER_ID, IP, EMAIL)).thenReturn(response);
 

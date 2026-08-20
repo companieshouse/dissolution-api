@@ -1,227 +1,129 @@
 package uk.gov.companieshouse.service.dissolution.validator;
 
 import org.junit.jupiter.api.Test;
-import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.enums.CompanyStatus;
 import uk.gov.companieshouse.model.enums.CompanyType;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.companieshouse.fixtures.CompanyProfileTestDataBuilder.aCompany;
 
-public class CompanyClosableValidatorTest {
+class CompanyClosableValidatorTest {
 
-    private final CompanyClosableValidator mapper = new CompanyClosableValidator();
+    private final CompanyClosableValidator validator = new CompanyClosableValidator();
 
     @Test
-    public void mapCompanyDetailsToClosable_companyHasTypeLtdAndIsActive_returnsTrue() {
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setType(CompanyType.LTD.getValue());
-        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
-
-        final boolean isClosable = mapper.isCompanyClosable(company);
-
-        assertTrue(isClosable);
+    void mapCompanyDetailsToClosable_companyHasTypeLtdAndIsActive_returnsTrue() {
+        final CompanyProfile company = aCompany().withType(CompanyType.LTD).withStatus(CompanyStatus.ACTIVE).build();
+        assertTrue(validator.isCompanyClosable(company));
     }
 
     @Test
-    public void mapCompanyDetailsToClosable_companyHasTypePlcAndIsActive_returnsTrue() {
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setType(CompanyType.PLC.getValue());
-        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
-
-        final boolean isClosable = mapper.isCompanyClosable(company);
-
-        assertTrue(isClosable);
+    void mapCompanyDetailsToClosable_companyHasTypePlcAndIsActive_returnsTrue() {
+        final CompanyProfile company = aCompany().withType(CompanyType.PLC).withStatus(CompanyStatus.ACTIVE).build();
+        assertTrue(validator.isCompanyClosable(company));
     }
 
     @Test
-    public void mapCompanyDetailsToClosable_companyHasTypeLlpAndIsActive_returnsTrue() {
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setType(CompanyType.LLP.getValue());
-        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
-
-        final boolean isClosable = mapper.isCompanyClosable(company);
-
-        assertTrue(isClosable);
+    void mapCompanyDetailsToClosable_companyHasTypeLlpAndIsActive_returnsTrue() {
+        final CompanyProfile company = aCompany().withType(CompanyType.LLP).withStatus(CompanyStatus.ACTIVE).build();
+        assertTrue(validator.isCompanyClosable(company));
     }
 
     @Test
-    public void mapCompanyDetailsToClosable_companyHasTypePrivateUnlimitedAndIsActive_returnsTrue() {
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setType(CompanyType.PRIVATE_UNLIMITED.getValue());
-        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
-
-        final boolean isClosable = mapper.isCompanyClosable(company);
-
-        assertTrue(isClosable);
+    void mapCompanyDetailsToClosable_companyHasTypePrivateUnlimitedAndIsActive_returnsTrue() {
+        final CompanyProfile company = aCompany().withType(CompanyType.PRIVATE_UNLIMITED).withStatus(CompanyStatus.ACTIVE).build();
+        assertTrue(validator.isCompanyClosable(company));
     }
 
     @Test
-    public void mapCompanyDetailsToClosable_companyHasTypeOldPublicCompanyAndIsActive_returnsTrue() {
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setType(CompanyType.OLD_PUBLIC_COMPANY.getValue());
-        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
-
-        final boolean isClosable = mapper.isCompanyClosable(company);
-
-        assertTrue(isClosable);
+    void mapCompanyDetailsToClosable_companyHasTypeOldPublicCompanyAndIsActive_returnsTrue() {
+        final CompanyProfile company = aCompany().withType(CompanyType.OLD_PUBLIC_COMPANY).withStatus(CompanyStatus.ACTIVE).build();
+        assertTrue(validator.isCompanyClosable(company));
     }
 
     @Test
-    public void mapCompanyDetailsToClosable_companyHasTypePrivateLimitedGuarantNscLimitedExemptionAndIsActive_returnsTrue() {
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setType(CompanyType.PRIVATE_LIMITED_GUARANT_NSC_LIMITED_EXEMPTION.getValue());
-        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
-
-        final boolean isClosable = mapper.isCompanyClosable(company);
-
-        assertTrue(isClosable);
+    void mapCompanyDetailsToClosable_companyHasTypePrivateLimitedGuarantNscLimitedExemptionAndIsActive_returnsTrue() {
+        final CompanyProfile company = aCompany().withType(CompanyType.PRIVATE_LIMITED_GUARANT_NSC_LIMITED_EXEMPTION).withStatus(CompanyStatus.ACTIVE).build();
+        assertTrue(validator.isCompanyClosable(company));
     }
 
     @Test
-    public void mapCompanyDetailsToClosable_companyHasTypePrivateLimitedGuarantNscAndIsActive_returnsTrue() {
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setType(CompanyType.PRIVATE_LIMITED_GUARANT_NSC.getValue());
-        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
-
-        final boolean isClosable = mapper.isCompanyClosable(company);
-
-        assertTrue(isClosable);
+    void mapCompanyDetailsToClosable_companyHasTypePrivateLimitedGuarantNscAndIsActive_returnsTrue() {
+        final CompanyProfile company = aCompany().withType(CompanyType.PRIVATE_LIMITED_GUARANT_NSC).withStatus(CompanyStatus.ACTIVE).build();
+        assertTrue(validator.isCompanyClosable(company));
     }
 
     @Test
-    public void mapCompanyDetailsToClosable_companyHasTypePrivateUnlimitedNscAndIsActive_returnsTrue() {
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setType(CompanyType.PRIVATE_UNLIMITED_NSC.getValue());
-        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
-
-        final boolean isClosable = mapper.isCompanyClosable(company);
-
-        assertTrue(isClosable);
+    void mapCompanyDetailsToClosable_companyHasTypePrivateUnlimitedNscAndIsActive_returnsTrue() {
+        final CompanyProfile company = aCompany().withType(CompanyType.PRIVATE_UNLIMITED_NSC).withStatus(CompanyStatus.ACTIVE).build();
+        assertTrue(validator.isCompanyClosable(company));
     }
 
     @Test
-    public void mapCompanyDetailsToClosable_companyHasTypePrivateLimitedSharesSection30ExemptionAndIsActive_returnsTrue() {
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setType(CompanyType.PRIVATE_LIMITED_SHARES_SECTION_30_EXEMPTION.getValue());
-        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
-
-        final boolean isClosable = mapper.isCompanyClosable(company);
-
-        assertTrue(isClosable);
+    void mapCompanyDetailsToClosable_companyHasTypePrivateLimitedSharesSection30ExemptionAndIsActive_returnsTrue() {
+        final CompanyProfile company = aCompany().withType(CompanyType.PRIVATE_LIMITED_SHARES_SECTION_30_EXEMPTION).withStatus(CompanyStatus.ACTIVE).build();
+        assertTrue(validator.isCompanyClosable(company));
     }
 
     @Test
-    public void mapCompanyDetailsToClosable_companyHasTypeNorthernIrelandAndIsActive_returnsTrue() {
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setType(CompanyType.NORTHERN_IRELAND.getValue());
-        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
-
-        final boolean isClosable = mapper.isCompanyClosable(company);
-
-        assertTrue(isClosable);
+    void mapCompanyDetailsToClosable_companyHasTypeNorthernIrelandAndIsActive_returnsTrue() {
+        final CompanyProfile company = aCompany().withType(CompanyType.NORTHERN_IRELAND).withStatus(CompanyStatus.ACTIVE).build();
+        assertTrue(validator.isCompanyClosable(company));
     }
 
     @Test
-    public void mapCompanyDetailsToClosable_companyHasTypeNorthernIrelandOtherAndIsActive_returnsTrue() {
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setType(CompanyType.NORTHERN_IRELAND_OTHER.getValue());
-        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
-
-        final boolean isClosable = mapper.isCompanyClosable(company);
-
-        assertTrue(isClosable);
+    void mapCompanyDetailsToClosable_companyHasTypeNorthernIrelandOtherAndIsActive_returnsTrue() {
+        final CompanyProfile company = aCompany().withType(CompanyType.NORTHERN_IRELAND_OTHER).withStatus(CompanyStatus.ACTIVE).build();
+        assertTrue(validator.isCompanyClosable(company));
     }
 
     @Test
-    public void mapCompanyDetailsToClosable_companyHasTypeLtdAndIsActiveAndOverseas_returnsFalse() {
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setType(CompanyType.LTD.getValue());
-        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
-        company.setCompanyNumber("FC123456");
-
-        final boolean isClosable = mapper.isCompanyClosable(company);
-
-        assertFalse(isClosable);
+    void mapCompanyDetailsToClosable_companyHasTypeLtdAndIsActiveAndOverseas_returnsFalse() {
+        final CompanyProfile company = aCompany().withType(CompanyType.LTD).withCompanyNumber("FC123456").withStatus(CompanyStatus.ACTIVE).build();
+        assertFalse(validator.isCompanyClosable(company));
     }
 
     @Test
-    public void mapCompanyDetailsToClosable_companyHasTypePlcAndIsActiveAndOverseas_returnsFalse() {
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setType(CompanyType.PLC.getValue());
-        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
-        company.setCompanyNumber("NF123456");
-
-        final boolean isClosable = mapper.isCompanyClosable(company);
-
-        assertFalse(isClosable);
+    void mapCompanyDetailsToClosable_companyHasTypePlcAndIsActiveAndOverseas_returnsFalse() {
+        final CompanyProfile company = aCompany().withType(CompanyType.PLC).withCompanyNumber("NF123456").withStatus(CompanyStatus.ACTIVE).build();
+        assertFalse(validator.isCompanyClosable(company));
     }
 
     @Test
-    public void mapCompanyDetailsToClosable_companyHasTypeLlpAndIsActiveAndOverseas_returnsFalse() {
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setType(CompanyType.LLP.getValue());
-        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
-        company.setCompanyNumber("SF123456");
-
-        final boolean isClosable = mapper.isCompanyClosable(company);
-
-        assertFalse(isClosable);
+    void mapCompanyDetailsToClosable_companyHasTypeLlpAndIsActiveAndOverseas_returnsFalse() {
+        final CompanyProfile company = aCompany().withType(CompanyType.LLP).withCompanyNumber("SF123456").withStatus(CompanyStatus.ACTIVE).build();
+        assertFalse(validator.isCompanyClosable(company));
     }
 
     @Test
-    public void mapCompanyDetailsToClosable_companyHasTypeLtdAndIsDissolved_returnsFalse() {
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setType(CompanyType.LTD.getValue());
-        company.setCompanyStatus(CompanyStatus.DISSOLVED.getValue());
-
-        final boolean isClosable = mapper.isCompanyClosable(company);
-
-        assertFalse(isClosable);
+    void mapCompanyDetailsToClosable_companyHasTypeLtdAndIsDissolved_returnsFalse() {
+        final CompanyProfile company = aCompany().withType(CompanyType.LTD).withStatus(CompanyStatus.DISSOLVED).build();
+        assertFalse(validator.isCompanyClosable(company));
     }
 
     @Test
-    public void mapCompanyDetailsToClosable_companyHasTypePlcAndIsDissolved_returnsFalse() {
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setType(CompanyType.PLC.getValue());
-        company.setCompanyStatus(CompanyStatus.DISSOLVED.getValue());
-
-        final boolean isClosable = mapper.isCompanyClosable(company);
-
-        assertFalse(isClosable);
+    void mapCompanyDetailsToClosable_companyHasTypePlcAndIsDissolved_returnsFalse() {
+        final CompanyProfile company = aCompany().withType(CompanyType.PLC).withStatus(CompanyStatus.DISSOLVED).build();
+        assertFalse(validator.isCompanyClosable(company));
     }
 
     @Test
-    public void mapCompanyDetailsToClosable_companyHasTypeLlpAndIsDissolved_returnsFalse() {
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setType(CompanyType.LLP.getValue());
-        company.setCompanyStatus(CompanyStatus.DISSOLVED.getValue());
-
-        final boolean isClosable = mapper.isCompanyClosable(company);
-
-        assertFalse(isClosable);
+    void mapCompanyDetailsToClosable_companyHasTypeLlpAndIsDissolved_returnsFalse() {
+        final CompanyProfile company = aCompany().withType(CompanyType.LLP).withStatus(CompanyStatus.DISSOLVED).build();
+        assertFalse(validator.isCompanyClosable(company));
     }
 
     @Test
-    public void mapCompanyDetailsToClosable_companyHasNonClosableTypeAndIsActive_returnsFalse() {
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setType(CompanyType.EEIG.getValue());
-        company.setCompanyStatus(CompanyStatus.ACTIVE.getValue());
-
-        final boolean isClosable = mapper.isCompanyClosable(company);
-
-        assertFalse(isClosable);
+    void mapCompanyDetailsToClosable_companyHasNonClosableTypeAndIsActive_returnsFalse() {
+        final CompanyProfile company = aCompany().withType(CompanyType.EEIG).withStatus(CompanyStatus.ACTIVE).build();
+        assertFalse(validator.isCompanyClosable(company));
     }
 
     @Test
-    public void mapCompanyDetailsToClosable_companyHasNonClosableTypeAndIsDissolved_returnsFalse() {
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setType(CompanyType.EEIG.getValue());
-        company.setCompanyStatus(CompanyStatus.DISSOLVED.getValue());
-
-        final boolean isClosable = mapper.isCompanyClosable(company);
-
-        assertFalse(isClosable);
+    void mapCompanyDetailsToClosable_companyHasNonClosableTypeAndIsDissolved_returnsFalse() {
+        final CompanyProfile company = aCompany().withType(CompanyType.EEIG).withStatus(CompanyStatus.DISSOLVED).build();
+        assertFalse(validator.isCompanyClosable(company));
     }
 }

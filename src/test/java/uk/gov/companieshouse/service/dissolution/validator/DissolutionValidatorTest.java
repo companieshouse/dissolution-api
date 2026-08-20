@@ -5,7 +5,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
@@ -17,14 +16,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
+import static uk.gov.companieshouse.fixtures.CompanyProfileTestDataBuilder.aCompany;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDirectorRequest;
 
 @ExtendWith(MockitoExtension.class)
-public class DissolutionValidatorTest {
+class DissolutionValidatorTest {
 
     @InjectMocks
     private DissolutionValidator dissolutionValidator;
@@ -35,12 +35,12 @@ public class DissolutionValidatorTest {
     @Mock
     private CompanyOfficerService companyOfficerService;
 
-    private final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+    private final CompanyProfile company = aCompany().build();
     private final Map<String, CompanyOfficer> companyDirectors = Map.of("abc123", generateCompanyOfficer());
     private final List<DirectorRequest> selectedDirectors = Collections.singletonList(generateDirectorRequest());
 
     @Test
-    public void checkBusinessRules_allRulesSatisfied_returnsEmptyOptional() {
+    void checkBusinessRules_allRulesSatisfied_returnsEmptyOptional() {
         when(companyProfileService.isCompanyClosable(company)).thenReturn(true);
         when(companyOfficerService.areSelectedDirectorsValid(companyDirectors, selectedDirectors)).thenReturn(Optional.empty());
 
@@ -50,7 +50,7 @@ public class DissolutionValidatorTest {
     }
 
     @Test
-    public void checkBusinessRules_companyNotClosable_returnsValidationMessage() {
+    void checkBusinessRules_companyNotClosable_returnsValidationMessage() {
         when(companyProfileService.isCompanyClosable(company)).thenReturn(false);
 
         final Optional<String> result = dissolutionValidator.checkBusinessRules(company, companyDirectors, selectedDirectors);
@@ -59,7 +59,7 @@ public class DissolutionValidatorTest {
     }
 
     @Test
-    public void checkBusinessRules_invalidSelectedDirectors_returnsValidationMessage() {
+    void checkBusinessRules_invalidSelectedDirectors_returnsValidationMessage() {
         when(companyProfileService.isCompanyClosable(company)).thenReturn(true);
         when(companyOfficerService.areSelectedDirectorsValid(companyDirectors, selectedDirectors)).thenReturn(Optional.of("Some directors error"));
 

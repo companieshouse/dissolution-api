@@ -7,7 +7,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
-import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
@@ -30,6 +29,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
+import static uk.gov.companieshouse.fixtures.CompanyProfileTestDataBuilder.aCompany;
 
 @ExtendWith(MockitoExtension.class)
 public class DissolutionCreatorTest {
@@ -71,8 +71,7 @@ public class DissolutionCreatorTest {
         final DissolutionUserData userData = DissolutionFixtures.generateDissolutionUserData();
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
         final DissolutionCreateResponse response = DissolutionFixtures.generateDissolutionCreateResponse();
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setCompanyNumber(COMPANY_NUMBER);
+        final CompanyProfile company = aCompany().withCompanyNumber(COMPANY_NUMBER).build();
         final Map<String, CompanyOfficer> directors = Map.of("abc123", generateCompanyOfficer());
 
         when(referenceGenerator.generateApplicationReference()).thenReturn(REFERENCE);
@@ -99,8 +98,7 @@ public class DissolutionCreatorTest {
         final DissolutionUserData userData = DissolutionFixtures.generateDissolutionUserData();
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
         final DissolutionCreateDraftResponse response = new DissolutionCreateDraftResponse();
-        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
-        company.setCompanyNumber(COMPANY_NUMBER);
+        final CompanyProfile company = aCompany().withCompanyNumber(COMPANY_NUMBER).build();
 
         when(requestMapper.mapToDraftDissolution(transaction, company, userData)).thenReturn(dissolution);
         when(responseMapper.mapToDissolutionCreateDraftResponse(transaction, dissolution)).thenReturn(response);

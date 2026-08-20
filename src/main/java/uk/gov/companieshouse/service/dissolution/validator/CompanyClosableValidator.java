@@ -9,7 +9,6 @@ import uk.gov.companieshouse.model.enums.CompanyType;
 import java.util.Arrays;
 import java.util.List;
 
-
 @Service
 public class CompanyClosableValidator {
     private static final List<String> CLOSABLE_TYPES = Arrays.asList(
@@ -33,9 +32,9 @@ public class CompanyClosableValidator {
     );
 
     public boolean isCompanyClosable(CompanyProfile company) {
-        return isCompanyTypeClosable(company.getType())
-                && isCompanyActive(company.getCompanyStatus())
-                && !isCompanyOverseas(company.getCompanyNumber());
+        return isCompanyTypeClosable(company.type())
+                && isCompanyActive(company.companyStatus())
+                && !isCompanyOverseas(company.companyNumber());
     }
 
     private boolean isCompanyTypeClosable(String type) {
