@@ -11,7 +11,6 @@ import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
-import uk.gov.companieshouse.mapper.DissolutionUserDataMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
@@ -47,9 +46,6 @@ public class DissolutionCreatorTest {
     private DissolutionRequestMapper requestMapper;
 
     @Mock
-    private DissolutionUserDataMapper userDataMapper;
-
-    @Mock
     private DissolutionRepository repository;
 
     @Mock
@@ -78,9 +74,8 @@ public class DissolutionCreatorTest {
         when(barcodeGenerator.generateBarcode()).thenReturn(BARCODE);
         when(requestMapper.mapToDissolution(body, company, directors, userData, REFERENCE, BARCODE)).thenReturn(dissolution);
         when(responseMapper.mapToDissolutionCreateResponse(dissolution)).thenReturn(response);
-        when(userDataMapper.mapToUserData(USER_ID, IP, EMAIL)).thenReturn(userData);
 
-        final DissolutionCreateResponse result = creator.create(body, company, directors, USER_ID, IP, EMAIL);
+        final DissolutionCreateResponse result = creator.create(body, company, directors, userData);
 
         verify(referenceGenerator).generateApplicationReference();
         verify(barcodeGenerator).generateBarcode();
@@ -102,9 +97,8 @@ public class DissolutionCreatorTest {
 
         when(requestMapper.mapToDraftDissolution(transaction, company, userData)).thenReturn(dissolution);
         when(responseMapper.mapToDissolutionCreateDraftResponse(transaction, dissolution)).thenReturn(response);
-        when(userDataMapper.mapToUserData(USER_ID, IP, EMAIL)).thenReturn(userData);
 
-        final DissolutionCreateDraftResponse result = creator.createDraft(transaction, company, USER_ID, IP, EMAIL);
+        final DissolutionCreateDraftResponse result = creator.createDraft(transaction, company, userData);
 
         verify(repository).insert(dissolution);
         verify(emailService, never()).notifySignatoriesToSign(dissolution);

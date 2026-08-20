@@ -205,12 +205,6 @@ public class DissolutionFixtures {
     }
 
     public static DissolutionUserData generateDissolutionUserData() {
-        final DissolutionUserData userData = new DissolutionUserData();
-
-        userData.setEmail("some@email.com");
-        userData.setIpAddress("some ipAddress");
-        userData.setUserId("some user id");
-
-        return userData;
+        return new DissolutionUserData("some user id", "some@email.com", "some ipAddress");
     }
 }

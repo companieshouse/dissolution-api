@@ -6,6 +6,7 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
@@ -39,8 +40,8 @@ public class DissolutionService {
         this.transactionHelper = transactionHelper;
     }
 
-    public DissolutionCreateResponse create(DissolutionCreateRequest body, CompanyProfile companyProfile, Map<String, CompanyOfficer> directors, String userId, String ip, String email) {
-        return creator.create(body, companyProfile, directors, userId, ip, email);
+    public DissolutionCreateResponse create(DissolutionCreateRequest body, CompanyProfile companyProfile, Map<String, CompanyOfficer> directors, DissolutionUserData userData) {
+        return creator.create(body, companyProfile, directors, userData);
     }
 
     public DissolutionPatchResponse addDirectorApproval(String companyNumber, String userId, DissolutionPatchRequest body) throws DissolutionNotFoundException {
@@ -98,7 +99,7 @@ public class DissolutionService {
         return repository.findDraftDissolutionForUserAndCompany(userId, companyNumber).isPresent();
     }
 
-    public DissolutionCreateDraftResponse createDraft(Transaction transaction, CompanyProfile companyProfile, String userId, String ip, String email) {
-        return creator.createDraft(transaction, companyProfile, userId, ip, email);
+    public DissolutionCreateDraftResponse createDraft(Transaction transaction, CompanyProfile companyProfile, DissolutionUserData userData) {
+        return creator.createDraft(transaction, companyProfile, userData);
     }
 }

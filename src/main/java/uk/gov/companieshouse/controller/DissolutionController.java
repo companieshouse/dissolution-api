@@ -20,6 +20,7 @@ import uk.gov.companieshouse.exception.ConflictException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
@@ -37,6 +38,7 @@ import uk.gov.companieshouse.service.payment.PaymentService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+
 import java.util.Map;
 
 import static uk.gov.companieshouse.util.EricHelper.getEmail;
@@ -98,7 +100,7 @@ public class DissolutionController {
                     throw new BadRequestException(error);
                 });
 
-        return dissolutionService.create(body, company, directors, userId, request.getRemoteAddr(), getEmail(authorisedUser));
+        return dissolutionService.create(body, company, directors, new DissolutionUserData(userId, getEmail(authorisedUser), request.getRemoteAddr()));
     }
 
     @Operation(summary = "Get Dissolution Application", tags = "Dissolution")

@@ -28,13 +28,19 @@ import static uk.gov.companieshouse.util.DateTimeGenerator.generateCurrentDateTi
 @Service
 public class DissolutionRequestMapper {
 
+    private final CreatedByMapper createdByMapper;
+
+    public DissolutionRequestMapper(CreatedByMapper createdByMapper) {
+        this.createdByMapper = createdByMapper;
+    }
+
     public Dissolution mapToDissolution(DissolutionCreateRequest body, CompanyProfile company, Map<String, CompanyOfficer> directors, DissolutionUserData userData, String reference, String barcode) {
         final Dissolution dissolution = new Dissolution();
 
         dissolution.setModifiedDateTime(generateCurrentDateTime());
         dissolution.setData(mapToDissolutionData(body, company.type(), directors, reference, barcode));
         dissolution.setCompany(mapToCompany(company.companyNumber(), company.companyName()));
-        dissolution.setCreatedBy(mapToCreatedBy(userData.getUserId(), userData.getEmail(), userData.getIpAddress()));
+        dissolution.setCreatedBy(createdByMapper.mapToCreatedBy(userData));
         dissolution.setActive(true);
 
         return dissolution;
@@ -52,7 +58,7 @@ public class DissolutionRequestMapper {
         dissolution.setModifiedDateTime(generateCurrentDateTime());
         dissolution.setData(data);
         dissolution.setCompany(mapToCompany(company.companyNumber(), company.companyName()));
-        dissolution.setCreatedBy(mapToCreatedBy(userData.getUserId(), userData.getEmail(), userData.getIpAddress()));
+        dissolution.setCreatedBy(createdByMapper.mapToCreatedBy(userData));
         // The active flag must be false so that transaction model dissolution applications
         // do not get picked up by the pre-migration dissolution process.
         dissolution.setActive(false);
@@ -110,16 +116,5 @@ public class DissolutionRequestMapper {
         company.setName(companyName);
 
         return company;
-    }
-
-    private CreatedBy mapToCreatedBy(String userId, String email, String ip) {
-        final CreatedBy createdBy = new CreatedBy();
-
-        createdBy.setUserId(userId);
-        createdBy.setEmail(email);
-        createdBy.setIpAddress(ip);
-        createdBy.setDateTime(generateCurrentDateTime());
-
-        return createdBy;
     }
 }

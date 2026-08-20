@@ -15,6 +15,7 @@ import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.exception.TransactionNotFoundException;
 import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
+import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionLinks;
@@ -109,7 +110,7 @@ class TransactionsDissolutionControllerTest {
                         .requestAttr(TRANSACTION_KEY, transaction))
                 .andExpect(status().isNotFound());
 
-        verify(dissolutionService, never()).createDraft(any(), any(), any(), any(), any());
+        verify(dissolutionService, never()).createDraft(any(), any(), any());
     }
 
     @Test
@@ -122,7 +123,7 @@ class TransactionsDissolutionControllerTest {
                         .requestAttr(TRANSACTION_KEY, transaction))
                 .andExpect(status().isNotFound());
 
-        verify(dissolutionService, never()).createDraft(any(), any(), any(), any(), any());
+        verify(dissolutionService, never()).createDraft(any(), any(), any());
     }
 
     @Test
@@ -136,7 +137,7 @@ class TransactionsDissolutionControllerTest {
                         .requestAttr(TRANSACTION_KEY, transaction))
                 .andExpect(status().isConflict());
 
-        verify(dissolutionService, never()).createDraft(any(), any(), any(), any(), any());
+        verify(dissolutionService, never()).createDraft(any(), any(), any());
     }
 
     @Test
@@ -149,7 +150,7 @@ class TransactionsDissolutionControllerTest {
                         .requestAttr(TRANSACTION_KEY, transaction))
                 .andExpect(status().isConflict());
 
-        verify(dissolutionService, never()).createDraft(any(), any(), any(), any(), any());
+        verify(dissolutionService, never()).createDraft(any(), any(), any());
     }
 
     @Test
@@ -163,7 +164,7 @@ class TransactionsDissolutionControllerTest {
                         .requestAttr(TRANSACTION_KEY, transaction))
                 .andExpect(status().isConflict());
 
-        verify(dissolutionService, never()).createDraft(any(), any(), any(), any(), any());
+        verify(dissolutionService, never()).createDraft(any(), any(), any());
     }
 
     @Test
@@ -178,16 +179,17 @@ class TransactionsDissolutionControllerTest {
                         .requestAttr(TRANSACTION_KEY, transaction))
                 .andExpect(status().isBadRequest());
 
-        verify(dissolutionService, never()).createDraft(any(), any(), any(), any(), any());
+        verify(dissolutionService, never()).createDraft(any(), any(), any());
     }
 
     @Test
     void submitDraftDissolution_returnsInternalServerError_ifExceptionOccursWhenCreatingDraftDissolution() throws Exception {
         final CompanyProfile companyProfile = aCompany().build();
+        final DissolutionUserData userData = new DissolutionUserData(USER_ID, EMAIL, IP_ADDRESS);
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
         when(dissolutionService.doesDraftDissolutionExistForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(false);
         when(companyProfileService.isCompanyClosable(isA(CompanyProfile.class))).thenReturn(true);
-        when(dissolutionService.createDraft(isA(Transaction.class), eq(companyProfile), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL)))
+        when(dissolutionService.createDraft(isA(Transaction.class), eq(companyProfile), eq(userData)))
                 .thenThrow(new RuntimeException("Some error occurred while creating draft dissolution"));
 
         mockMvc
@@ -203,12 +205,12 @@ class TransactionsDissolutionControllerTest {
         response.setDissolutionId("dis-123");
         response.setLinks(DissolutionLinks.forTransaction(COMPANY_NUMBER, TRANSACTION_ID));
         final CompanyProfile companyProfile = aCompany().build();
+        final DissolutionUserData userData = new DissolutionUserData(USER_ID, EMAIL, IP_ADDRESS);
 
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
         when(dissolutionService.doesDraftDissolutionExistForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(false);
         when(companyProfileService.isCompanyClosable(isA(CompanyProfile.class))).thenReturn(true);
-        when(dissolutionService.createDraft(isA(Transaction.class), eq(companyProfile), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL)))
-                .thenReturn(response);
+        when(dissolutionService.createDraft(isA(Transaction.class), eq(companyProfile), eq(userData))).thenReturn(response);
 
         mockMvc
                 .perform(post(DISSOLUTION_URI, COMPANY_NUMBER, TRANSACTION_ID)

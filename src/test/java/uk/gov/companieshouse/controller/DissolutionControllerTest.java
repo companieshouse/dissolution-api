@@ -12,6 +12,7 @@ import tools.jackson.databind.ObjectMapper;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.exception.NotFoundException;
+import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
@@ -238,13 +239,14 @@ class DissolutionControllerTest {
     void submitDissolutionRequest_returnsInternalServerError_ifExceptionOccursWhenCreatingDissolution() throws Exception {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
         final CompanyProfile companyProfile = aCompany().build();
+        final DissolutionUserData userData = new DissolutionUserData(USER_ID, EMAIL, IP_ADDRESS);
         final Map<String, CompanyOfficer> companyDirectors = Map.of(OFFICER_ID, generateCompanyOfficer());
 
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
         when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(false);
         when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(companyDirectors);
         when(dissolutionValidator.checkBusinessRules(eq(companyProfile), eq(companyDirectors), isA(List.class))).thenReturn(Optional.empty());
-        when(service.create(isA(DissolutionCreateRequest.class), eq(companyProfile), eq(companyDirectors), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL)))
+        when(service.create(isA(DissolutionCreateRequest.class), eq(companyProfile), eq(companyDirectors), eq(userData)))
                 .thenThrow(new RuntimeException("Some error occurred while creating dissolution"));
 
         mockMvc
@@ -255,7 +257,7 @@ class DissolutionControllerTest {
                                 .content(asJsonString(body)))
                 .andExpect(status().isInternalServerError());
 
-        verify(service).create(isA(DissolutionCreateRequest.class), eq(companyProfile), eq(companyDirectors), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL));
+        verify(service).create(isA(DissolutionCreateRequest.class), eq(companyProfile), eq(companyDirectors), eq(userData));
     }
 
     @Test
@@ -263,13 +265,14 @@ class DissolutionControllerTest {
         final DissolutionCreateRequest body = generateDissolutionCreateRequest();
         final DissolutionCreateResponse response = generateDissolutionCreateResponse();
         final CompanyProfile companyProfile = aCompany().build();
+        final DissolutionUserData userData = new DissolutionUserData(USER_ID, EMAIL, IP_ADDRESS);
         final Map<String, CompanyOfficer> companyDirectors = Map.of(OFFICER_ID, generateCompanyOfficer());
 
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
         when(service.doesDissolutionRequestExistForCompanyByCompanyNumber(COMPANY_NUMBER)).thenReturn(false);
         when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(companyDirectors);
         when(dissolutionValidator.checkBusinessRules(eq(companyProfile), eq(companyDirectors), isA(List.class))).thenReturn(Optional.empty());
-        when(service.create(isA(DissolutionCreateRequest.class), eq(companyProfile), eq(companyDirectors), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL))).thenReturn(response);
+        when(service.create(isA(DissolutionCreateRequest.class), eq(companyProfile), eq(companyDirectors), eq(userData))).thenReturn(response);
 
         mockMvc
                 .perform(
@@ -280,7 +283,7 @@ class DissolutionControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(content().json(asJsonString(response)));
 
-        verify(service).create(isA(DissolutionCreateRequest.class), eq(companyProfile), eq(companyDirectors), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL));
+        verify(service).create(isA(DissolutionCreateRequest.class), eq(companyProfile), eq(companyDirectors), eq(userData));
     }
 
     @Test

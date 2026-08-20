@@ -18,6 +18,7 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.exception.BadRequestException;
 import uk.gov.companieshouse.exception.ConflictException;
+import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
@@ -78,6 +79,6 @@ public class TransactionsDissolutionController {
             throw new BadRequestException("Company must be of a closable type, have an active status and must not be an overseas company");
         }
 
-        return dissolutionService.createDraft(transaction, company, userId, request.getRemoteAddr(), getEmail(authorisedUser));
+        return dissolutionService.createDraft(transaction, company, new DissolutionUserData(userId, getEmail(authorisedUser), request.getRemoteAddr()));
     }
 }

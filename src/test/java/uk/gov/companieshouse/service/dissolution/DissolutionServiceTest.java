@@ -13,6 +13,7 @@ import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder;
 import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
@@ -81,12 +82,13 @@ class DissolutionServiceTest {
         final DissolutionCreateResponse response = DissolutionFixtures.generateDissolutionCreateResponse();
         final CompanyProfile company = aCompany().build();
         final Map<String, CompanyOfficer> companyDirectors = Map.of(OFFICER_ID, generateCompanyOfficer());
+        final DissolutionUserData userData = new DissolutionUserData(USER_ID, EMAIL, IP);
 
-        when(creator.create(body, company, companyDirectors, USER_ID, IP, EMAIL)).thenReturn(response);
+        when(creator.create(body, company, companyDirectors, userData)).thenReturn(response);
 
-        final DissolutionCreateResponse result = service.create(body, company, companyDirectors, USER_ID, IP, EMAIL);
+        final DissolutionCreateResponse result = service.create(body, company, companyDirectors, userData);
 
-        verify(creator).create(body, company, companyDirectors, USER_ID, IP, EMAIL);
+        verify(creator).create(body, company, companyDirectors, userData);
 
         assertEquals(response, result);
     }
@@ -295,10 +297,11 @@ class DissolutionServiceTest {
         final Transaction transaction = TransactionTestDataBuilder.aTransaction().withStatus(TransactionStatus.OPEN).build();
         final DissolutionCreateDraftResponse response = new DissolutionCreateDraftResponse();
         final CompanyProfile company = aCompany().build();
+        final DissolutionUserData userData = new DissolutionUserData(USER_ID, EMAIL, IP);
 
-        when(creator.createDraft(transaction, company, USER_ID, IP, EMAIL)).thenReturn(response);
+        when(creator.createDraft(transaction, company, userData)).thenReturn(response);
 
-        final DissolutionCreateDraftResponse result = service.createDraft(transaction, company, USER_ID, IP, EMAIL);
+        final DissolutionCreateDraftResponse result = service.createDraft(transaction, company, userData);
 
         assertEquals(response, result);
     }

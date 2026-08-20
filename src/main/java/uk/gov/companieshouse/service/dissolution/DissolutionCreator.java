@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
-import uk.gov.companieshouse.mapper.DissolutionUserDataMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
@@ -27,7 +26,6 @@ public class DissolutionCreator {
     private final DissolutionRepository repository;
     private final DissolutionResponseMapper responseMapper;
     private final DissolutionEmailService emailService;
-    private final DissolutionUserDataMapper userDataMapper;
 
     @Autowired
     public DissolutionCreator(
@@ -36,21 +34,18 @@ public class DissolutionCreator {
             DissolutionRequestMapper requestMapper,
             DissolutionRepository repository,
             DissolutionResponseMapper responseMapper,
-            DissolutionEmailService emailService,
-            DissolutionUserDataMapper userDataMapper) {
+            DissolutionEmailService emailService) {
         this.referenceGenerator = referenceGenerator;
         this.barcodeGenerator = barcodeGenerator;
         this.requestMapper = requestMapper;
         this.repository = repository;
         this.responseMapper = responseMapper;
         this.emailService = emailService;
-        this.userDataMapper = userDataMapper;
     }
 
-    public DissolutionCreateResponse create(DissolutionCreateRequest body, CompanyProfile companyProfile, Map<String, CompanyOfficer> directors, String userId, String ip, String email) {
+    public DissolutionCreateResponse create(DissolutionCreateRequest body, CompanyProfile companyProfile, Map<String, CompanyOfficer> directors, DissolutionUserData userData) {
         final String reference = referenceGenerator.generateApplicationReference();
         final String barcode = barcodeGenerator.generateBarcode();
-        final DissolutionUserData userData = userDataMapper.mapToUserData(userId, ip, email);
         final Dissolution dissolution = requestMapper.mapToDissolution(body, companyProfile, directors, userData, reference, barcode);
         repository.insert(dissolution);
 
@@ -58,8 +53,7 @@ public class DissolutionCreator {
         return responseMapper.mapToDissolutionCreateResponse(dissolution);
     }
 
-    public DissolutionCreateDraftResponse createDraft(Transaction transaction, CompanyProfile companyProfile, String userId, String ip, String email) {
-        final DissolutionUserData userData = userDataMapper.mapToUserData(userId, ip, email);
+    public DissolutionCreateDraftResponse createDraft(Transaction transaction, CompanyProfile companyProfile, DissolutionUserData userData) {
         final Dissolution dissolution = requestMapper.mapToDraftDissolution(transaction, companyProfile, userData);
         repository.insert(dissolution);
 
