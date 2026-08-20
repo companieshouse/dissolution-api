@@ -78,6 +78,8 @@ class DissolutionPatcherTest {
     private static final String OFFICER_ID = "abc123";
     private static final String IP_ADDRESS = "127.0.0.1";
     private static final String OFFICER_ID_TWO = "def456";
+    private static final String EMAIL = "director@email.com";
+    private static final String PRESENTER_EMAIL = "presenter@email.com";
 
     private Dissolution dissolution;
     private DissolutionPatchResponse response;
@@ -138,10 +140,16 @@ class DissolutionPatcherTest {
     }
 
     @Test
-    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApprovedForSingleDirectorCompany() {
+    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApprovedForSingleDirectorCompanyAndPresenterIsDirector() throws DissolutionNotFoundException {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
+
+        final var soleDirector = aDissolutionDirector().withEmail(EMAIL).withDirectorApproval(generateDirectorApproval());
+        dissolution = aDissolution()
+                .withOnlyDirector(soleDirector)
+                .withCreatedByEmail(EMAIL)
+                .build();
 
         when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
@@ -151,6 +159,35 @@ class DissolutionPatcherTest {
         verify(responseMapper).mapToDissolutionPatchResponse(dissolution);
         verify(repository).save(dissolutionCaptor.capture());
         verifyNoInteractions(dissolutionEmailService);
+
+        assertEquals(response, result);
+        assertEquals(
+                ApplicationStatus.PENDING_PAYMENT,
+                dissolutionCaptor.getValue().getData().getApplication().getStatus()
+        );
+    }
+
+    @Test
+    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApprovedForSingleDirectorCompanyAndPresenterIsNotDirector() throws DissolutionNotFoundException {
+        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+        body.setIpAddress(IP_ADDRESS);
+        body.setOfficerId(OFFICER_ID);
+
+        // set the createdBy email to be different from the director email
+        final var soleDirector = aDissolutionDirector().withEmail(EMAIL).withDirectorApproval(generateDirectorApproval());
+        dissolution = aDissolution()
+                .withOnlyDirector(soleDirector)
+                .withCreatedByEmail(PRESENTER_EMAIL)
+                .build();
+
+        when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
+        when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
+
+        final DissolutionPatchResponse result = patcher.addDirectorApproval(dissolution, USER_ID, body);
+
+        verify(responseMapper).mapToDissolutionPatchResponse(dissolution);
+        verify(repository).save(dissolutionCaptor.capture());
+        verify(dissolutionEmailService).sendPendingPaymentEmail(dissolutionCaptor.capture());
 
         assertEquals(response, result);
         assertEquals(
