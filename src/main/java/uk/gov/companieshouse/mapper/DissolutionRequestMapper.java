@@ -57,7 +57,7 @@ public class DissolutionRequestMapper {
         // do not get picked up by the pre-migration dissolution process.
         dissolution.setActive(false);
 
-        dissolution.setStatus(DissolutionStatus.DRAFT);
+        dissolution.changeStatus(DissolutionStatus.DRAFT, generateCurrentDateTime());
         dissolution.setTransactionId(transaction.getId());
 
         return dissolution;

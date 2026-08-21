@@ -2,9 +2,12 @@ package uk.gov.companieshouse.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -24,12 +27,16 @@ import uk.gov.companieshouse.fixtures.TransactionFixtures;
 
 import java.io.IOException;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.DisplayNameGenerator.ReplaceUnderscores;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.fixtures.FilingTestDataBuilder.aFiling;
 import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
+import static uk.gov.companieshouse.fixtures.TransactionTestDataBuilder.aTransaction;
 
 @ExtendWith(MockitoExtension.class)
 class TransactionServiceTest {
@@ -108,6 +115,52 @@ class TransactionServiceTest {
         void getTransaction_throwsServiceException_ifIOExceptionOccurs() throws IOException, URIValidationException {
             when(transactionsGet.execute()).thenThrow(ApiErrorResponseException.fromIOException(new IOException("ERROR")));
             assertThrows(ServiceException.class, () -> transactionService.getTransaction(TRANSACTION_ID, PASSTHROUGH_HEADER));
+        }
+    }
+
+    @Nested
+    @DisplayNameGeneration(ReplaceUnderscores.class)
+    class hasVerdictBeenReached {
+
+        @BeforeEach
+        void initialize() throws IOException, URIValidationException {
+            when(apiClientService.getApiClient(PASSTHROUGH_HEADER)).thenReturn(apiClient);
+            when(apiClient.transactions()).thenReturn(transactionsResourceHandler);
+            when(transactionsResourceHandler.get(TRANSACTIONS_URL + TRANSACTION_ID)).thenReturn(transactionsGet);
+            when(transactionsGet.execute()).thenReturn(apiGetResponse);
+        }
+
+        @ParameterizedTest(name = "when {0} filing is {1} then {2}")
+        @CsvSource({
+                "dissolution#ds01,   ACCEPTED, true",
+                "dissolution#llds01, ACCEPTED, true",
+                "dissolution#ds01,   REJECTED, true",
+                "dissolution#llds01, REJECTED, true",
+                "dissolution#ds01,   PROCESSING,  false",
+                "accounts#abridged,  ACCEPTED, false"
+        })
+        void verdict_reached_scenarios(String filingType, FilingStatus status, boolean expectedVerdict) {
+            when(apiGetResponse.getData()).thenReturn(aTransaction()
+                    .withFiling(aFiling().withType(filingType).withStatus(status))
+                    .build());
+
+            assertThat(transactionService.hasVerdictBeenReached(TRANSACTION_ID, PASSTHROUGH_HEADER)).isEqualTo(expectedVerdict);
+        }
+
+        @Test
+        void when_no_dissolution_filing_exists_then_false() {
+            when(apiGetResponse.getData()).thenReturn(aTransaction()
+                    .withNoFilings()
+                    .build());
+
+            assertThat(transactionService.hasVerdictBeenReached(TRANSACTION_ID, PASSTHROUGH_HEADER)).isFalse();
+        }
+
+        @Test
+        void when_filings_is_null_then_false() {
+            when(apiGetResponse.getData()).thenReturn(aTransaction().withFilings(null).build());
+
+            assertThat(transactionService.hasVerdictBeenReached(TRANSACTION_ID, PASSTHROUGH_HEADER)).isFalse();
         }
     }
 
