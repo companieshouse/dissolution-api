@@ -23,6 +23,7 @@ import uk.gov.companieshouse.exception.InternalServerErrorException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
+import uk.gov.companieshouse.service.dissolution.validator.TransactionValidator;
 import uk.gov.companieshouse.service.transaction.FilingService;
 
 import java.util.HashMap;
@@ -44,7 +45,7 @@ public class FilingController {
         this.logger = logger;
     }
 
-    @Operation(summary = "Get Dissolution filing", tags = "Dissolution")
+    @Operation(summary = "Get Dissolution filing", tags = "Dissolution (Transaction Model)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Dissolution filing generated successfully"),
             @ApiResponse(responseCode = "400", description = "Dissolution not linked to transaction"),
@@ -61,12 +62,13 @@ public class FilingController {
             @PathVariable(DISSOLUTION_ID_KEY) final String dissolutionId,
             HttpServletRequest request) {
         final var passThroughHeader = request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
+        final var validator = new TransactionValidator(transaction);
 
         var logCtx = new HashMap<String, Object>();
         logCtx.put(TRANSACTION_ID_KEY, transactionId);
         logCtx.put(DISSOLUTION_ID_KEY, dissolutionId);
 
-        if (!transaction.getStatus().equals(TransactionStatus.CLOSED)) {
+        if (!validator.hasStatus(TransactionStatus.CLOSED)) {
             logCtx.put("transaction_status", transaction.getStatus());
             logger.infoContext(requestId, "Failed to generate dissolution filing as transaction is not CLOSED", logCtx);
             throw new ConflictException("Rejected filings request due to invalid transaction status");

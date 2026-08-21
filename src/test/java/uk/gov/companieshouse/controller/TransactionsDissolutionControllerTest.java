@@ -68,7 +68,7 @@ class TransactionsDissolutionControllerTest {
 
     @BeforeEach
     void setup() {
-        transaction = TransactionTestDataBuilder.aTransaction().withStatus(TransactionStatus.OPEN).build();
+        transaction = TransactionTestDataBuilder.aTransaction().withStatus(TransactionStatus.OPEN).withCompanyNumber(COMPANY_NUMBER).build();
         when(transactionService.getTransaction(TRANSACTION_ID, PASSTHROUGH_HEADER)).thenReturn(transaction);
     }
 
@@ -154,7 +154,6 @@ class TransactionsDissolutionControllerTest {
 
     @Test
     void submitDraftDissolution_returnsConflict_ifTransactionIsNotAssociatedWithTheCompany() throws Exception {
-        transaction.setStatus(TransactionStatus.OPEN);
         transaction.setCompanyNumber("87654321");
 
         mockMvc

@@ -19,6 +19,7 @@ import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionSubmission;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
+import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalData;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
@@ -100,11 +101,12 @@ class DissolutionPatcherTest {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
+        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
         when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
-        patcher.addDirectorApproval(dissolution, USER_ID, body);
+        patcher.addDirectorApproval(dissolution, directorApprovalData);
 
         verify(repository).save(dissolutionCaptor.capture());
 
@@ -116,6 +118,7 @@ class DissolutionPatcherTest {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
+        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
         final List<DissolutionDirector> directors = DissolutionFixtures.generateDissolutionDirectorList();
         directors.get(0).setOfficerId(OFFICER_ID);
@@ -126,7 +129,7 @@ class DissolutionPatcherTest {
         when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
-        final DissolutionPatchResponse result = patcher.addDirectorApproval(dissolution, USER_ID, body);
+        final DissolutionPatchResponse result = patcher.addDirectorApproval(dissolution, directorApprovalData);
 
         verify(responseMapper).mapToDissolutionPatchResponse(dissolution);
         verify(repository).save(dissolutionCaptor.capture());
@@ -144,6 +147,7 @@ class DissolutionPatcherTest {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
+        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
         final var soleDirector = aDissolutionDirector().withEmail(EMAIL);
         dissolution = aDissolution()
@@ -154,7 +158,7 @@ class DissolutionPatcherTest {
         when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
-        final DissolutionPatchResponse result = patcher.addDirectorApproval(dissolution, USER_ID, body);
+        final DissolutionPatchResponse result = patcher.addDirectorApproval(dissolution, directorApprovalData);
 
         verify(responseMapper).mapToDissolutionPatchResponse(dissolution);
         verify(repository).save(dissolutionCaptor.capture());
@@ -172,6 +176,7 @@ class DissolutionPatcherTest {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
+        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
         // set the createdBy email to be different from the director email
         final var soleDirector = aDissolutionDirector().withEmail(EMAIL);
@@ -183,7 +188,7 @@ class DissolutionPatcherTest {
         when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
-        final DissolutionPatchResponse result = patcher.addDirectorApproval(dissolution, USER_ID, body);
+        final DissolutionPatchResponse result = patcher.addDirectorApproval(dissolution, directorApprovalData);
 
         verify(responseMapper).mapToDissolutionPatchResponse(dissolution);
         verify(repository).save(dissolutionCaptor.capture());
@@ -201,6 +206,7 @@ class DissolutionPatcherTest {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
+        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
         final List<DissolutionDirector> directors = DissolutionFixtures.generateDissolutionDirectorList();
         directors.get(0).setOfficerId(OFFICER_ID);
@@ -210,7 +216,7 @@ class DissolutionPatcherTest {
         when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
-        patcher.addDirectorApproval(dissolution, USER_ID, body);
+        patcher.addDirectorApproval(dissolution, directorApprovalData);
 
         verify(repository).save(dissolutionCaptor.capture());
 
@@ -225,6 +231,7 @@ class DissolutionPatcherTest {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
+        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
         final DissolutionDirector directorOne = DissolutionFixtures.generateDissolutionDirector();
         directorOne.setOfficerId(OFFICER_ID);
@@ -239,7 +246,7 @@ class DissolutionPatcherTest {
         when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
-        patcher.addDirectorApproval(dissolution, USER_ID, body);
+        patcher.addDirectorApproval(dissolution, directorApprovalData);
 
         verify(certificateGenerator, never()).generateDissolutionCertificate(dissolution);
         verify(repository).save(dissolutionCaptor.capture());
@@ -252,12 +259,13 @@ class DissolutionPatcherTest {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
+        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
         dissolution = aDissolution()
                 .withDirectors(aDissolutionDirector().withOfficerId(OFFICER_ID_TWO))
                 .build();
 
-        assertThrows(DissolutionDirectorApprovalException.class, () -> patcher.addDirectorApproval(dissolution, USER_ID, body));
+        assertThrows(DissolutionDirectorApprovalException.class, () -> patcher.addDirectorApproval(dissolution, directorApprovalData));
 
         verify(repository, never()).save(any(Dissolution.class));
     }
@@ -267,6 +275,7 @@ class DissolutionPatcherTest {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
+        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
         dissolution = aDissolution()
                 .withDirectors(aDissolutionDirector()
@@ -274,7 +283,7 @@ class DissolutionPatcherTest {
                         .withDirectorApproval(generateDirectorApproval()))
                 .build();
 
-        assertThrows(DissolutionDirectorApprovalException.class, () -> patcher.addDirectorApproval(dissolution, USER_ID, body));
+        assertThrows(DissolutionDirectorApprovalException.class, () -> patcher.addDirectorApproval(dissolution, directorApprovalData));
 
         verify(repository, never()).save(any(Dissolution.class));
     }

@@ -14,6 +14,7 @@ import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder;
 import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalData;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
@@ -163,6 +164,7 @@ class DissolutionServiceTest {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP);
         body.setOfficerId(OFFICER_ID);
+        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
         final Dissolution dissolution = aDissolution()
                 .withCompanyNumber(COMPANY_NUMBER)
@@ -171,9 +173,9 @@ class DissolutionServiceTest {
         final DissolutionPatchResponse response = DissolutionFixtures.generateDissolutionPatchResponse();
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
-        when(patcher.addDirectorApproval(dissolution, USER_ID, body)).thenReturn(response);
+        when(patcher.addDirectorApproval(dissolution, directorApprovalData)).thenReturn(response);
 
-        final DissolutionPatchResponse result = service.addDirectorApproval(COMPANY_NUMBER, USER_ID, body);
+        final DissolutionPatchResponse result = service.addDirectorApproval(COMPANY_NUMBER, directorApprovalData);
 
         assertNotNull(result);
         assertEquals(response, result);
@@ -184,16 +186,17 @@ class DissolutionServiceTest {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP);
         body.setOfficerId(OFFICER_ID);
+        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
 
         final var exception = assertThrows(DissolutionNotFoundException.class,
-                () -> service.addDirectorApproval(COMPANY_NUMBER, USER_ID, body));
+                () -> service.addDirectorApproval(COMPANY_NUMBER, directorApprovalData));
 
         assertThat(exception.getMessage(),
                 is("Dissolution Request not found for company number " + COMPANY_NUMBER));
 
-        verify(patcher, never()).addDirectorApproval(any(), any(), any());
+        verify(patcher, never()).addDirectorApproval(any(), any());
     }
 
     @Test

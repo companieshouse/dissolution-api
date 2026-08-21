@@ -35,7 +35,7 @@ public class CostController {
         this.logger = logger;
     }
 
-    @Operation(summary = "Get Dissolution Costs", tags = "Dissolution")
+    @Operation(summary = "Get Dissolution Costs", tags = "Dissolution (Transaction Model)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Costs found"),
             @ApiResponse(responseCode = "400", description = "Dissolution not linked to transaction"),
