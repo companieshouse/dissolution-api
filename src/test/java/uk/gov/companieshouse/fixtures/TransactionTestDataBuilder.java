@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.fixtures;
 
+import uk.gov.companieshouse.api.model.transaction.Filing;
 import uk.gov.companieshouse.api.model.transaction.Resource;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionLinks;
@@ -15,6 +16,7 @@ public class TransactionTestDataBuilder {
     private String id = TransactionFixtures.TRANSACTION_ID;
     private TransactionStatus status = TransactionStatus.OPEN;
     private Map<String, Resource> resources;
+    private Map<String, Filing> filings;
     private TransactionLinks transactionLinks = new TransactionLinks();
 
     public static TransactionTestDataBuilder aTransaction() {
@@ -53,11 +55,33 @@ public class TransactionTestDataBuilder {
         return this;
     }
 
+    public TransactionTestDataBuilder withFilings(Map<String, Filing> filings) {
+        this.filings = filings;
+        return this;
+    }
+
+    public TransactionTestDataBuilder withNoFilings() {
+        return withFilings(Map.of());
+    }
+
+    public TransactionTestDataBuilder withFiling(FilingTestDataBuilder filingBuilder) {
+        return withFiling("a-filing-id", filingBuilder);
+    }
+
+    public TransactionTestDataBuilder withFiling(String key, FilingTestDataBuilder filingBuilder) {
+        if (filings == null) {
+            filings = new HashMap<>();
+        }
+        filings.put(key, filingBuilder.build());
+        return this;
+    }
+
     public Transaction build() {
         final Transaction transaction = new Transaction();
         transaction.setId(id);
         transaction.setStatus(status);
         transaction.setResources(resources);
+        transaction.setFilings(filings);
         transaction.setLinks(transactionLinks);
         return transaction;
     }

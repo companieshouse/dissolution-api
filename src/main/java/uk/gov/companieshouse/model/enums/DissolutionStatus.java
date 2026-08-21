@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum DissolutionStatus {
     DRAFT("draft"),
     PENDING("pending"),
-    PROCESSED("processed");
+    SUBMITTED("submitted");
 
     private final String value;
 

@@ -52,6 +52,7 @@ public final class Constants {
    /* Filings */
    public static final String FILING_KIND_DS01 = "dissolution#ds01";
    public static final String FILING_KIND_LLDS01 = "dissolution#llds01";
+   public static final String FILING_TYPE_PREFIX_DISSOLUTION = "dissolution";
 
    /* Transactions */
    public static final String SUBMISSION_URI_PATTERN = "/transactions/%s/dissolution/%s";
