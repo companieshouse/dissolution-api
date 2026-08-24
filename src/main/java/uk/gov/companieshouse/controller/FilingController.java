@@ -3,7 +3,6 @@ package uk.gov.companieshouse.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,7 +21,6 @@ import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionExceptio
 import uk.gov.companieshouse.exception.InternalServerErrorException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 import uk.gov.companieshouse.service.transaction.FilingService;
 
 import java.util.HashMap;
@@ -58,10 +56,7 @@ public class FilingController {
             @RequestAttribute(TRANSACTION_KEY) Transaction transaction,
             @RequestHeader(HEADER_ERIC_REQUEST_ID) String requestId,
             @PathVariable(TRANSACTION_ID_KEY) String transactionId,
-            @PathVariable(DISSOLUTION_ID_KEY) final String dissolutionId,
-            HttpServletRequest request) {
-        final var passThroughHeader = request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
-
+            @PathVariable(DISSOLUTION_ID_KEY) final String dissolutionId) {
         var logCtx = new HashMap<String, Object>();
         logCtx.put(TRANSACTION_ID_KEY, transactionId);
         logCtx.put(DISSOLUTION_ID_KEY, dissolutionId);
@@ -73,7 +68,7 @@ public class FilingController {
         }
 
         try {
-            FilingApi filing = filingService.generateDissolutionFiling(transaction, dissolutionId, passThroughHeader);
+            FilingApi filing = filingService.generateDissolutionFiling(transaction, dissolutionId);
             return new FilingApi[] { filing };
         } catch (DissolutionNotLinkedToTransactionException e) {
             throw new BadRequestException(e.getMessage());

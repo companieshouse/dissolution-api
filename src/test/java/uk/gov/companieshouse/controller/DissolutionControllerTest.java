@@ -318,7 +318,7 @@ class DissolutionControllerTest {
 
     @Test
     void getDissolutionRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
-        when(service.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(Optional.empty());
+        when(service.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
 
         mockMvc
                 .perform(
@@ -330,7 +330,7 @@ class DissolutionControllerTest {
 
     @Test
     void getDissolutionRequest_returnsNotFound_ifDissolutionNoLongerExistsWhenReconcilingPayment() throws Exception {
-        when(service.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenThrow(new NotFoundException("not found"));
+        when(service.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER)).thenThrow(new NotFoundException("not found"));
 
         mockMvc
                 .perform(
@@ -344,7 +344,7 @@ class DissolutionControllerTest {
     void getDissolutionRequest_returnsDissolutionInfo_ifDissolutionExists() throws Exception {
         final DissolutionGetResponse response = generateDissolutionGetResponse();
 
-        when(service.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(Optional.of(response));
+        when(service.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.of(response));
 
         mockMvc
                 .perform(
@@ -359,7 +359,7 @@ class DissolutionControllerTest {
     void getDissolutionRequest_returnsDraftOrPendingDissolutionInfo_ifTransactionModelDissolutionExists() throws Exception {
         final DissolutionGetResponse response = generateDissolutionGetResponse(TRANSACTION_ID, DissolutionStatus.DRAFT);
 
-        when(service.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(Optional.of(response));
+        when(service.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.of(response));
 
         mockMvc
                 .perform(

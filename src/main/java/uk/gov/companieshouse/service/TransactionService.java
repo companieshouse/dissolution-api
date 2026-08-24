@@ -6,7 +6,7 @@ import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.exception.URIValidationException;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionPayment;
-import uk.gov.companieshouse.api.sdk.ApiClientService;
+import uk.gov.companieshouse.client.ApiClientProvider;
 import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.exception.TransactionNotFoundException;
 import uk.gov.companieshouse.model.Constants;
@@ -16,17 +16,17 @@ import java.io.IOException;
 @Service
 public class TransactionService {
 
-    private final ApiClientService apiClientService;
+    private final ApiClientProvider apiClientProvider;
 
-    public TransactionService(ApiClientService apiClientService) {
-        this.apiClientService = apiClientService;
+    public TransactionService(ApiClientProvider apiClientProvider) {
+        this.apiClientProvider = apiClientProvider;
     }
 
-    public Transaction getTransaction(String transactionId, String passThroughTokenHeader) {
+    public Transaction getTransaction(String transactionId) {
         final var uri = "/transactions/" + transactionId;
 
         try {
-            return apiClientService.getApiClient(passThroughTokenHeader)
+            return apiClientProvider.getApiClient()
                     .transactions()
                     .get(uri)
                     .execute()
@@ -42,8 +42,8 @@ public class TransactionService {
         }
     }
 
-    public boolean hasVerdictBeenReached(String transactionId, String passThroughTokenHeader) {
-        final Transaction transaction = getTransaction(transactionId, passThroughTokenHeader);
+    public boolean hasVerdictBeenReached(String transactionId) {
+        final Transaction transaction = getTransaction(transactionId);
 
         if (transaction.getFilings() == null) {
             return false;
@@ -54,9 +54,9 @@ public class TransactionService {
                 .anyMatch(filing -> FilingStatus.ACCEPTED.matches(filing.getStatus()) || FilingStatus.REJECTED.matches(filing.getStatus()));
     }
 
-    public TransactionPayment getPayment(String uri, String passThroughTokenHeader) {
+    public TransactionPayment getPayment(String uri) {
         try {
-            return apiClientService.getApiClient(passThroughTokenHeader)
+            return apiClientProvider.getApiClient()
                     .transactions()
                     .getPayment(uri)
                     .execute()
