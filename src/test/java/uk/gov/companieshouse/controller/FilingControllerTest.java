@@ -28,7 +28,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
-import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
 import static uk.gov.companieshouse.model.Constants.HEADER_ERIC_REQUEST_ID;
 import static uk.gov.companieshouse.model.Constants.TRANSACTION_KEY;
 
@@ -62,7 +61,7 @@ class FilingControllerTest {
                 .withStatus(TransactionStatus.CLOSED)
                 .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
                 .build();
-        when(transactionService.getTransaction(TRANSACTION_ID, PASS_THROUGH_HEADER)).thenReturn(transaction);
+        when(transactionService.getTransaction(TRANSACTION_ID)).thenReturn(transaction);
     }
 
     @Test
@@ -109,7 +108,7 @@ class FilingControllerTest {
 
     @Test
     void getFiling_returnsNotFound_ifDissolutionNotFound() throws Exception {
-        when(filingService.generateDissolutionFiling(isA(Transaction.class), eq(DISSOLUTION_ID), eq(PASS_THROUGH_HEADER)))
+        when(filingService.generateDissolutionFiling(isA(Transaction.class), eq(DISSOLUTION_ID)))
                 .thenThrow(new DissolutionNotFoundException("dissolution not found"));
 
         mockMvc
@@ -123,7 +122,7 @@ class FilingControllerTest {
 
     @Test
     void getFiling_returnsNotFound_ifTransactionNotFound() throws Exception {
-        when(transactionService.getTransaction(TRANSACTION_ID, PASS_THROUGH_HEADER)).thenThrow(TransactionNotFoundException.class);
+        when(transactionService.getTransaction(TRANSACTION_ID)).thenThrow(TransactionNotFoundException.class);
 
         mockMvc
                 .perform(
@@ -132,7 +131,7 @@ class FilingControllerTest {
                 )
                 .andExpect(status().isNotFound());
 
-        verify(filingService, never()).generateDissolutionFiling(isA(Transaction.class), eq(DISSOLUTION_ID), eq(PASS_THROUGH_HEADER));
+        verify(filingService, never()).generateDissolutionFiling(isA(Transaction.class), eq(DISSOLUTION_ID));
     }
 
     @Test
@@ -152,7 +151,7 @@ class FilingControllerTest {
 
     @Test
     void getFiling_returnsBadRequest_ifDissolutionNotLinkedToTransaction() throws Exception {
-        when(filingService.generateDissolutionFiling(isA(Transaction.class), eq(DISSOLUTION_ID), eq(PASS_THROUGH_HEADER)))
+        when(filingService.generateDissolutionFiling(isA(Transaction.class), eq(DISSOLUTION_ID)))
                 .thenThrow(new DissolutionNotLinkedToTransactionException("dissolution not linked to transaction"));
 
         mockMvc
@@ -166,7 +165,7 @@ class FilingControllerTest {
 
     @Test
     void getFiling_returnsInternalServerError_ifExceptionOccursWhenGeneratingFiling() throws Exception {
-        when(filingService.generateDissolutionFiling(isA(Transaction.class), eq(DISSOLUTION_ID), eq(PASS_THROUGH_HEADER)))
+        when(filingService.generateDissolutionFiling(isA(Transaction.class), eq(DISSOLUTION_ID)))
                 .thenThrow(new RuntimeException("Some error occurred while generating dissolution filing"));
 
         mockMvc
@@ -177,7 +176,7 @@ class FilingControllerTest {
                 )
                 .andExpect(status().isInternalServerError());
 
-        verify(filingService).generateDissolutionFiling(isA(Transaction.class), eq(DISSOLUTION_ID), eq(PASS_THROUGH_HEADER));
+        verify(filingService).generateDissolutionFiling(isA(Transaction.class), eq(DISSOLUTION_ID));
     }
 
     @Test
@@ -186,7 +185,7 @@ class FilingControllerTest {
         filing.setDescription("12345678");
         FilingApi[] response = new FilingApi[]{filing};
 
-        when(filingService.generateDissolutionFiling(isA(Transaction.class), eq(DISSOLUTION_ID), eq(PASS_THROUGH_HEADER)))
+        when(filingService.generateDissolutionFiling(isA(Transaction.class), eq(DISSOLUTION_ID)))
                 .thenReturn(filing);
 
         mockMvc

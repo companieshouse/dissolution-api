@@ -29,7 +29,6 @@ import uk.gov.companieshouse.service.CompanyProfileService;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import uk.gov.companieshouse.service.dissolution.validator.DissolutionValidator;
-import uk.gov.companieshouse.service.payment.PaymentService;
 
 import java.util.Collections;
 import java.util.List;
@@ -38,7 +37,6 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -86,9 +84,6 @@ class DissolutionControllerTest {
 
     @MockitoBean
     private TransactionService transactionService;
-
-    @MockitoBean
-    private PaymentService paymentService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -324,9 +319,19 @@ class DissolutionControllerTest {
 
     @Test
     void getDissolutionRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
-        when(service.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
-        when(service.getPendingDissolution(COMPANY_NUMBER)).thenReturn(Optional.empty());
-        when(service.getDraftDissolution(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
+        when(service.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
+
+        mockMvc
+                .perform(
+                        get(DISSOLUTION_URI, COMPANY_NUMBER)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .headers(createHttpHeaders()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getDissolutionRequest_returnsNotFound_ifDissolutionNoLongerExistsWhenReconcilingPayment() throws Exception {
+        when(service.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER)).thenThrow(new NotFoundException("not found"));
 
         mockMvc
                 .perform(
@@ -340,7 +345,7 @@ class DissolutionControllerTest {
     void getDissolutionRequest_returnsDissolutionInfo_ifDissolutionExists() throws Exception {
         final DissolutionGetResponse response = generateDissolutionGetResponse();
 
-        when(service.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(response));
+        when(service.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.of(response));
 
         mockMvc
                 .perform(
@@ -349,18 +354,13 @@ class DissolutionControllerTest {
                                 .headers(createHttpHeaders()))
                 .andExpect(status().isOk())
                 .andExpect(content().json(asJsonString(response)));
-
-        verify(service, never()).getPendingDissolution(COMPANY_NUMBER);
-        verify(service, never()).getDraftDissolution(USER_ID, COMPANY_NUMBER);
     }
 
     @Test
     void getDissolutionRequest_returnsDraftOrPendingDissolutionInfo_ifTransactionModelDissolutionExists() throws Exception {
         final DissolutionGetResponse response = generateDissolutionGetResponse(TRANSACTION_ID, DissolutionStatus.DRAFT);
 
-        when(service.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
-        when(service.getPendingDissolution(COMPANY_NUMBER)).thenReturn(Optional.of(response));
-
+        when(service.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.of(response));
 
         mockMvc
                 .perform(
@@ -369,8 +369,6 @@ class DissolutionControllerTest {
                                 .headers(createHttpHeaders()))
                 .andExpect(status().isOk())
                 .andExpect(content().json(asJsonString(response)));
-
-        verify(service, never()).getDraftDissolution(USER_ID, COMPANY_NUMBER);
     }
 
     @Test

@@ -13,7 +13,7 @@ import uk.gov.companieshouse.api.handler.payment.PaymentResourceHandler;
 import uk.gov.companieshouse.api.handler.payment.request.PaymentGet;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.api.model.payment.PaymentApi;
-import uk.gov.companieshouse.api.sdk.ApiClientService;
+import uk.gov.companieshouse.client.ApiClientProvider;
 import uk.gov.companieshouse.exception.ServiceException;
 
 import java.io.IOException;
@@ -25,13 +25,12 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class TransactionPaymentServiceTest {
 
-    private static final String PASSTHROUGH_HEADER = "passthrough";
     private static final String PAYMENT_METHOD = "credit-card";
     private static final String PAYMENT_REFERENCE = "somePaymentRef";
     private static final String PAYMENT_URI = String.format("/payments/%s", PAYMENT_REFERENCE);
 
     @Mock
-    private ApiClientService apiClientService;
+    private ApiClientProvider apiClientProvider;
 
     @Mock
     private ApiClient apiClient;
@@ -50,7 +49,7 @@ class TransactionPaymentServiceTest {
 
     @BeforeEach
     void initialize() throws IOException {
-        when(apiClientService.getApiClient(PASSTHROUGH_HEADER)).thenReturn(apiClient);
+        when(apiClientProvider.getApiClient()).thenReturn(apiClient);
         when(apiClient.payment()).thenReturn(paymentResourceHandler);
         when(paymentResourceHandler.get(PAYMENT_URI)).thenReturn(paymentGet);
     }
@@ -63,19 +62,19 @@ class TransactionPaymentServiceTest {
         when(paymentGet.execute()).thenReturn(apiGetResponse);
         when(apiGetResponse.getData()).thenReturn(paymentSession);
 
-        var response = service.getPaymentSession(PAYMENT_REFERENCE, PASSTHROUGH_HEADER);
+        var response = service.getPaymentSession(PAYMENT_REFERENCE);
         assertEquals(paymentSession, response);
     }
 
     @Test
     void getPaymentSession_throwsServiceException_ifUriValidationExceptionOccurs() throws IOException, URIValidationException {
         when(paymentGet.execute()).thenThrow(new URIValidationException("ERROR"));
-        assertThrows(ServiceException.class, () -> service.getPaymentSession(PAYMENT_REFERENCE, PASSTHROUGH_HEADER));
+        assertThrows(ServiceException.class, () -> service.getPaymentSession(PAYMENT_REFERENCE));
     }
 
     @Test
     void getPaymentSession_throwsServiceException_ifIOExceptionOccurs() throws IOException, URIValidationException {
         when(paymentGet.execute()).thenThrow(ApiErrorResponseException.fromIOException(new IOException("ERROR")));
-        assertThrows(ServiceException.class, () -> service.getPaymentSession(PAYMENT_REFERENCE, PASSTHROUGH_HEADER));
+        assertThrows(ServiceException.class, () -> service.getPaymentSession(PAYMENT_REFERENCE));
     }
 }

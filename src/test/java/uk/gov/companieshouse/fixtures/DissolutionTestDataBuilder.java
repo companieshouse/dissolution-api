@@ -28,6 +28,7 @@ public class DissolutionTestDataBuilder {
     private boolean active = true;
     private String transactionId = null;
     private DissolutionStatus status = null;
+    private LocalDateTime statusChangedAt = null;
 
     public static DissolutionTestDataBuilder aDissolution() {
         return new DissolutionTestDataBuilder();
@@ -141,6 +142,12 @@ public class DissolutionTestDataBuilder {
         return this;
     }
 
+    public DissolutionTestDataBuilder withStatus(DissolutionStatus status, LocalDateTime changedAt) {
+        this.status = status;
+        this.statusChangedAt = changedAt;
+        return this;
+    }
+
     public Dissolution build() {
         final Dissolution dissolution = new Dissolution();
         dissolution.setModifiedDateTime(modifiedDateTime);
@@ -152,7 +159,9 @@ public class DissolutionTestDataBuilder {
         dissolution.setVerdict(verdict);
         dissolution.setActive(active);
         dissolution.setTransactionId(transactionId);
-        dissolution.setStatus(status);
+        if (status != null) {
+            dissolution.changeStatus(status, statusChangedAt != null ? statusChangedAt : LocalDateTime.now());
+        }
         return dissolution;
     }
 }
