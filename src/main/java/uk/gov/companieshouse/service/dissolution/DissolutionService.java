@@ -50,7 +50,7 @@ public class DissolutionService {
 
     public void addDirectorApproval(String companyNumber, Transaction transaction, DissolutionDirectorApprovalData directorApprovalData) {
         final Dissolution dissolution = repository.findPendingDissolutionByCompanyNumber(companyNumber)
-                .orElseThrow(() -> new DissolutionNotFoundException(String.format("Dissolution Request not found for company number %s", companyNumber)));
+                .orElseThrow(() -> new DissolutionNotFoundException(String.format("Pending Dissolution not found for company number %s", companyNumber)));
 
         TransactionValidator.of(transaction).hasStatus(TransactionStatus.OPEN).forCompany(companyNumber).isLinkedToDissolution(dissolution.getId()).validate();
 
