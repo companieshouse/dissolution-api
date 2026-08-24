@@ -3,6 +3,8 @@ package uk.gov.companieshouse.service.dissolution;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -24,9 +26,11 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
+import uk.gov.companieshouse.model.enums.DissolutionStatus;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.dissolution.certificate.DissolutionCertificateGenerator;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -46,6 +50,7 @@ import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolu
 import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentInformation;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
+import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
 
 @ExtendWith(MockitoExtension.class)
 class DissolutionPatcherTest {
@@ -113,8 +118,9 @@ class DissolutionPatcherTest {
         assertSame(dissolutionCaptor.getValue().getData().getDirectors().getFirst().getDirectorApproval(), approval);
     }
 
-    @Test
-    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApprovedForMultiDirectorCompany() {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApprovedForMultiDirectorCompany(boolean hasTransactionId) {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
@@ -126,6 +132,12 @@ class DissolutionPatcherTest {
         directors.get(1).setDirectorApproval(approval);
         dissolution.getData().setDirectors(directors);
 
+        // This is needed as the transaction model dissolution process leverage the same approval patching
+        // flow, but conditionally updates the top level dissolution.status based on the presence of a transaction_id.
+        // The existing process does not update the top level dissolution.status but the application.status instead.
+        // This is a temporary measure until we fully migrate to the transaction model dissolution process.
+        if (hasTransactionId) dissolution.setTransactionId(TRANSACTION_ID);
+
         when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
@@ -136,14 +148,12 @@ class DissolutionPatcherTest {
         verify(dissolutionEmailService).sendPendingPaymentEmail(dissolutionCaptor.capture());
 
         assertEquals(response, result);
-        assertEquals(
-                ApplicationStatus.PENDING_PAYMENT,
-                dissolutionCaptor.getValue().getData().getApplication().getStatus()
-        );
+        assertReadyForPayment(hasTransactionId, dissolutionCaptor.getValue());
     }
 
-    @Test
-    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApprovedForSingleDirectorCompanyAndPresenterIsDirector() {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApprovedForSingleDirectorCompanyAndPresenterIsDirector(boolean hasTransactionId) {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
@@ -155,6 +165,8 @@ class DissolutionPatcherTest {
                 .withCreatedByEmail(EMAIL)
                 .build();
 
+        if (hasTransactionId) dissolution.setTransactionId(TRANSACTION_ID);
+
         when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
@@ -165,14 +177,12 @@ class DissolutionPatcherTest {
         verifyNoInteractions(dissolutionEmailService);
 
         assertEquals(response, result);
-        assertEquals(
-                ApplicationStatus.PENDING_PAYMENT,
-                dissolutionCaptor.getValue().getData().getApplication().getStatus()
-        );
+        assertReadyForPayment(hasTransactionId, dissolutionCaptor.getValue());
     }
 
-    @Test
-    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApprovedForSingleDirectorCompanyAndPresenterIsNotDirector() {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void patch_updatesStatusToPendingPayment_ifAllDirectorHaveApprovedForSingleDirectorCompanyAndPresenterIsNotDirector(boolean hasTransactionId) {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
@@ -185,6 +195,8 @@ class DissolutionPatcherTest {
                 .withCreatedByEmail(PRESENTER_EMAIL)
                 .build();
 
+        if (hasTransactionId) dissolution.setTransactionId(TRANSACTION_ID);
+
         when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
@@ -195,14 +207,12 @@ class DissolutionPatcherTest {
         verify(dissolutionEmailService).sendPendingPaymentEmail(dissolutionCaptor.capture());
 
         assertEquals(response, result);
-        assertEquals(
-                ApplicationStatus.PENDING_PAYMENT,
-                dissolutionCaptor.getValue().getData().getApplication().getStatus()
-        );
+        assertReadyForPayment(hasTransactionId, dissolutionCaptor.getValue());
     }
 
-    @Test
-    void patch_doesNotUpdateStatus_ifNotAllDirectorHaveApproved() {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void patch_doesNotUpdateStatus_ifNotAllDirectorHaveApproved(boolean hasTransactionId) {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
@@ -213,6 +223,11 @@ class DissolutionPatcherTest {
         directors.get(1).setOfficerId(OFFICER_ID_TWO);
         dissolution.getData().setDirectors(directors);
 
+        if (hasTransactionId) {
+            dissolution.setTransactionId(TRANSACTION_ID);
+            dissolution.changeStatus(DissolutionStatus.PENDING, LocalDateTime.now());
+        }
+
         when(responseMapper.mapToDissolutionPatchResponse(dissolution)).thenReturn(response);
         when(approvalMapper.mapToDirectorApproval(USER_ID, IP_ADDRESS)).thenReturn(approval);
 
@@ -220,10 +235,7 @@ class DissolutionPatcherTest {
 
         verify(repository).save(dissolutionCaptor.capture());
 
-        assertEquals(
-                ApplicationStatus.PENDING_APPROVAL,
-                dissolutionCaptor.getValue().getData().getApplication().getStatus()
-        );
+        assertStatusUnchanged(hasTransactionId, dissolutionCaptor.getValue());
     }
 
     @Test
@@ -306,5 +318,21 @@ class DissolutionPatcherTest {
 
         assertEquals(paymentInformation, dissolutionCaptor.getValue().getPaymentInformation());
         assertEquals(submission, dissolutionCaptor.getValue().getSubmission());
+    }
+
+    private void assertReadyForPayment(boolean hasTransactionId, Dissolution dissolution) {
+        if (hasTransactionId) {
+            assertEquals(DissolutionStatus.SUBMITTED, dissolution.getStatus());
+        } else {
+            assertEquals(ApplicationStatus.PENDING_PAYMENT, dissolution.getData().getApplication().getStatus());
+        }
+    }
+
+    private void assertStatusUnchanged(boolean hasTransactionId, Dissolution dissolution) {
+        if (hasTransactionId) {
+            assertEquals(DissolutionStatus.PENDING, dissolution.getStatus());
+        } else {
+            assertEquals(ApplicationStatus.PENDING_APPROVAL, dissolution.getData().getApplication().getStatus());
+        }
     }
 }
