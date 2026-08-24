@@ -29,7 +29,6 @@ import static uk.gov.companieshouse.model.Constants.TRANSACTION_KEY;
 class TransactionInterceptorTest {
 
     private static final String TX_ID = "12345678";
-    private static final String PASSTHROUGH_HEADER = "passthrough";
 
     @Mock
     private TransactionService transactionService;
@@ -53,9 +52,8 @@ class TransactionInterceptorTest {
         var pathParams = new HashMap<String, String>();
         pathParams.put(TRANSACTION_ID_KEY, TX_ID);
 
-        when(transactionService.getTransaction(TX_ID, PASSTHROUGH_HEADER)).thenReturn(dummyTransaction);
+        when(transactionService.getTransaction(TX_ID)).thenReturn(dummyTransaction);
         when(mockHttpServletRequest.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)).thenReturn(pathParams);
-        when(mockHttpServletRequest.getHeader("ERIC-Access-Token")).thenReturn(PASSTHROUGH_HEADER);
 
         assertTrue(transactionInterceptor.preHandle(mockHttpServletRequest, mockHttpServletResponse, mockHandler));
         verify(mockHttpServletRequest, times(1)).setAttribute(TRANSACTION_KEY, dummyTransaction);
@@ -70,8 +68,7 @@ class TransactionInterceptorTest {
         pathParams.put(TRANSACTION_ID_KEY, TX_ID);
 
         when(mockHttpServletRequest.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)).thenReturn(pathParams);
-        when(mockHttpServletRequest.getHeader("ERIC-Access-Token")).thenReturn(PASSTHROUGH_HEADER);
-        when(transactionService.getTransaction(TX_ID, PASSTHROUGH_HEADER)).thenThrow(TransactionNotFoundException.class);
+        when(transactionService.getTransaction(TX_ID)).thenThrow(TransactionNotFoundException.class);
 
         assertThrows(NotFoundException.class, () -> transactionInterceptor.preHandle(mockHttpServletRequest, mockHttpServletResponse, mockHandler));
     }
@@ -85,8 +82,7 @@ class TransactionInterceptorTest {
         pathParams.put(TRANSACTION_ID_KEY, TX_ID);
 
         when(mockHttpServletRequest.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)).thenReturn(pathParams);
-        when(mockHttpServletRequest.getHeader("ERIC-Access-Token")).thenReturn(PASSTHROUGH_HEADER);
-        when(transactionService.getTransaction(TX_ID, PASSTHROUGH_HEADER)).thenThrow(RuntimeException.class);
+        when(transactionService.getTransaction(TX_ID)).thenThrow(RuntimeException.class);
 
         assertThrows(InternalServerErrorException.class, () -> transactionInterceptor.preHandle(mockHttpServletRequest, mockHttpServletResponse, mockHandler));
     }
@@ -96,10 +92,9 @@ class TransactionInterceptorTest {
         MockHttpServletResponse mockHttpServletResponse = new MockHttpServletResponse();
         Object mockHandler = new Object();
 
-        when(mockHttpServletRequest.getHeader("ERIC-Access-Token")).thenReturn(PASSTHROUGH_HEADER);
         when(mockHttpServletRequest.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)).thenReturn(Map.of());
 
         assertThrows(BadRequestException.class, () -> transactionInterceptor.preHandle(mockHttpServletRequest, mockHttpServletResponse, mockHandler));
-        verify(transactionService, never()).getTransaction(TX_ID, PASSTHROUGH_HEADER);
+        verify(transactionService, never()).getTransaction(TX_ID);
     }
 }

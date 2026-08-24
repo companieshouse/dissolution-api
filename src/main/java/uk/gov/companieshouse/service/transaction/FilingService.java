@@ -23,7 +23,7 @@ import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
 @Service
 public class FilingService {
 
-    private record Context(Dissolution dissolution, Transaction transaction, String passThroughTokenHeader) {
+    private record Context(Dissolution dissolution, Transaction transaction) {
     }
 
     @Value("${dissolution.filingDescription}")
@@ -45,12 +45,12 @@ public class FilingService {
         this.feeConfig = feeConfig;
     }
 
-    public FilingApi generateDissolutionFiling(Transaction transaction, String dissolutionId, String passThroughTokenHeader) throws DissolutionNotFoundException, ServiceException, DissolutionNotLinkedToTransactionException {
+    public FilingApi generateDissolutionFiling(Transaction transaction, String dissolutionId) throws DissolutionNotFoundException, ServiceException, DissolutionNotLinkedToTransactionException {
         logger.info(String.format("Generating dissolution filing for dissolution %s with transaction %s", dissolutionId, transaction.getId()));
 
         var filing = new FilingApi();
         var dissolution = dissolutionService.getDissolutionForTransaction(transaction, dissolutionId);
-        var context = new Context(dissolution, transaction, passThroughTokenHeader);
+        var context = new Context(dissolution, transaction);
 
         setFilingApiData(filing, context);
         return filing;
@@ -69,9 +69,9 @@ public class FilingService {
 
     private Map<String, Object> buildFilingData(Context ctx) {
         final var paymentDetails = transactionService.getPayment(
-                ctx.transaction().getLinks().getPayment(), ctx.passThroughTokenHeader());
+                ctx.transaction().getLinks().getPayment());
         final var paymentSession = transactionPaymentService.getPaymentSession(
-                paymentDetails.getPaymentReference(), ctx.passThroughTokenHeader());
+                paymentDetails.getPaymentReference());
 
         return mapper.mapToFilingData(
                 ctx.dissolution(),

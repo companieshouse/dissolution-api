@@ -69,7 +69,7 @@ class TransactionsDissolutionControllerTest {
     @BeforeEach
     void setup() {
         transaction = TransactionTestDataBuilder.aTransaction().withStatus(TransactionStatus.OPEN).build();
-        when(transactionService.getTransaction(TRANSACTION_ID, PASSTHROUGH_HEADER)).thenReturn(transaction);
+        when(transactionService.getTransaction(TRANSACTION_ID)).thenReturn(transaction);
     }
 
     @Test
@@ -114,7 +114,7 @@ class TransactionsDissolutionControllerTest {
 
     @Test
     void submitDraftDissolution_returnsNotFound_ifTransactionNotFound() throws Exception {
-        when(transactionService.getTransaction(TRANSACTION_ID, PASSTHROUGH_HEADER)).thenThrow(TransactionNotFoundException.class);
+        when(transactionService.getTransaction(TRANSACTION_ID)).thenThrow(TransactionNotFoundException.class);
 
         mockMvc
                 .perform(post(DISSOLUTION_URI, COMPANY_NUMBER, TRANSACTION_ID)
