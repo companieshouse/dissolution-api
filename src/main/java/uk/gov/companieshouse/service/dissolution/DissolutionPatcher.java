@@ -20,6 +20,8 @@ import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.DissolutionStatus;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.dissolution.certificate.DissolutionCertificateGenerator;
+
+import static uk.gov.companieshouse.util.DateTimeGenerator.generateCurrentDateTime;
 import static uk.gov.companieshouse.util.DissolutionApplicantUtil.doesEmailBelongToApplicant;
 
 import java.util.List;
@@ -77,7 +79,7 @@ public class DissolutionPatcher {
         if (StringUtils.isBlank(dissolution.getTransactionId())) {
             setDissolutionStatus(dissolution, ApplicationStatus.PENDING_PAYMENT);
         } else {
-            dissolution.setStatus(DissolutionStatus.PROCESSED);
+            dissolution.changeStatus(DissolutionStatus.SUBMITTED, generateCurrentDateTime());
         }
         dissolution.setCertificate(this.certificateGenerator.generateDissolutionCertificate(dissolution));
         boolean isSoleDirectorSelfFiling = directors.size() == 1

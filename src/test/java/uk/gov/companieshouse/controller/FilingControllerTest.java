@@ -137,7 +137,7 @@ class FilingControllerTest {
     @Test
     void getFiling_returnsConflict_ifTransactionIsNotClosed() throws Exception {
         transaction.setStatus(TransactionStatus.OPEN);
-        when(filingService.generateDissolutionFiling(isA(Transaction.class), eq(DISSOLUTION_ID), eq(PASS_THROUGH_HEADER)))
+        when(filingService.generateDissolutionFiling(isA(Transaction.class), eq(DISSOLUTION_ID)))
                 .thenThrow(new InvalidTransactionStateException("transaction is not closed"));
 
         mockMvc

@@ -313,7 +313,7 @@ class TransactionsDissolutionControllerTest {
 
     @Test
     void patchDissolutionApproval_returnsNotFound_ifTransactionNotFound() throws Exception {
-        when(transactionService.getTransaction(TRANSACTION_ID, PASSTHROUGH_HEADER)).thenThrow(TransactionNotFoundException.class);
+        when(transactionService.getTransaction(TRANSACTION_ID)).thenThrow(TransactionNotFoundException.class);
 
         mockMvc
                 .perform(patch(DISSOLUTION_APPROVAL_URI, COMPANY_NUMBER, TRANSACTION_ID)
