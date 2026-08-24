@@ -12,6 +12,8 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.Permission;
+import uk.gov.companieshouse.exception.ConflictException;
+import uk.gov.companieshouse.exception.InvalidTransactionStateException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.exception.TransactionNotFoundException;
 import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
@@ -127,48 +129,54 @@ class TransactionsDissolutionControllerTest {
 
     @Test
     void submitDraftDissolution_returnsConflict_ifDraftDissolutionAlreadyExistsForUserAndCompany() throws Exception {
-        when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(generateCompanyProfile());
-        when(dissolutionService.doesDraftDissolutionExistForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(true);
+        final CompanyProfile companyProfile = generateCompanyProfile();
+        when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
+        when(companyProfileService.isCompanyClosable(isA(CompanyProfile.class))).thenReturn(true);
+        when(dissolutionService.createDraft(isA(Transaction.class), eq(companyProfile), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL)))
+                .thenThrow(new ConflictException("draft dissolution already exists"));
 
         mockMvc
                 .perform(post(DISSOLUTION_URI, COMPANY_NUMBER, TRANSACTION_ID)
                         .headers(createHttpHeaders())
                         .requestAttr(TRANSACTION_KEY, transaction))
                 .andExpect(status().isConflict());
-
-        verify(dissolutionService, never()).createDraft(any(), any(), any(), any(), any());
     }
 
     @Test
     void submitDraftDissolution_returnsConflict_ifTransactionIsNotOpen() throws Exception {
         transaction.setStatus(TransactionStatus.CLOSED);
+        final CompanyProfile companyProfile = generateCompanyProfile();
+        when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
+        when(companyProfileService.isCompanyClosable(isA(CompanyProfile.class))).thenReturn(true);
+        when(dissolutionService.createDraft(isA(Transaction.class), eq(companyProfile), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL)))
+                .thenThrow(new InvalidTransactionStateException("transaction is not open"));
 
         mockMvc
                 .perform(post(DISSOLUTION_URI, COMPANY_NUMBER, TRANSACTION_ID)
                         .headers(createHttpHeaders())
                         .requestAttr(TRANSACTION_KEY, transaction))
                 .andExpect(status().isConflict());
-
-        verify(dissolutionService, never()).createDraft(any(), any(), any(), any(), any());
     }
 
     @Test
     void submitDraftDissolution_returnsConflict_ifTransactionIsNotAssociatedWithTheCompany() throws Exception {
         transaction.setCompanyNumber("87654321");
+        final CompanyProfile companyProfile = generateCompanyProfile();
+        when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
+        when(companyProfileService.isCompanyClosable(isA(CompanyProfile.class))).thenReturn(true);
+        when(dissolutionService.createDraft(isA(Transaction.class), eq(companyProfile), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL)))
+                .thenThrow(new InvalidTransactionStateException("transaction is not associated with the company"));
 
         mockMvc
                 .perform(post(DISSOLUTION_URI, COMPANY_NUMBER, TRANSACTION_ID)
                         .headers(createHttpHeaders())
                         .requestAttr(TRANSACTION_KEY, transaction))
                 .andExpect(status().isConflict());
-
-        verify(dissolutionService, never()).createDraft(any(), any(), any(), any(), any());
     }
 
     @Test
     void submitDraftDissolution_returnsBadRequest_ifCompanyIsNotClosable() throws Exception {
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(generateCompanyProfile());
-        when(dissolutionService.doesDraftDissolutionExistForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(false);
         when(companyProfileService.isCompanyClosable(isA(CompanyProfile.class))).thenReturn(false);
 
         mockMvc
@@ -184,7 +192,6 @@ class TransactionsDissolutionControllerTest {
     void submitDraftDissolution_returnsInternalServerError_ifExceptionOccursWhenCreatingDraftDissolution() throws Exception {
         final CompanyProfile companyProfile = generateCompanyProfile();
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
-        when(dissolutionService.doesDraftDissolutionExistForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(false);
         when(companyProfileService.isCompanyClosable(isA(CompanyProfile.class))).thenReturn(true);
         when(dissolutionService.createDraft(isA(Transaction.class), eq(companyProfile), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL)))
                 .thenThrow(new RuntimeException("Some error occurred while creating draft dissolution"));
@@ -206,7 +213,6 @@ class TransactionsDissolutionControllerTest {
         final CompanyProfile companyProfile = generateCompanyProfile();
 
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
-        when(dissolutionService.doesDraftDissolutionExistForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(false);
         when(companyProfileService.isCompanyClosable(isA(CompanyProfile.class))).thenReturn(true);
         when(dissolutionService.createDraft(isA(Transaction.class), eq(companyProfile), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL)))
                 .thenReturn(response);

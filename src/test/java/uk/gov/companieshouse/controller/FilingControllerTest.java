@@ -15,8 +15,10 @@ import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.SecurityConstants;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
+import uk.gov.companieshouse.exception.InvalidTransactionStateException;
 import uk.gov.companieshouse.exception.TransactionNotFoundException;
 import uk.gov.companieshouse.fixtures.TransactionFixtures;
+import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.transaction.FilingService;
 
@@ -25,6 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
+import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
 import static uk.gov.companieshouse.model.Constants.HEADER_ERIC_REQUEST_ID;
 import static uk.gov.companieshouse.model.Constants.TRANSACTION_KEY;
 
@@ -53,7 +56,11 @@ class FilingControllerTest {
 
     @BeforeEach
     void setup() {
-        transaction = TransactionFixtures.generateClosedTransaction();
+        transaction = TransactionTestDataBuilder.aTransaction()
+                .withId(TRANSACTION_ID)
+                .withStatus(TransactionStatus.CLOSED)
+                .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_LLDS01, DISSOLUTION_ID))
+                .build();
         when(transactionService.getTransaction(TRANSACTION_ID, PASS_THROUGH_HEADER)).thenReturn(transaction);
     }
 
@@ -130,6 +137,8 @@ class FilingControllerTest {
     @Test
     void getFiling_returnsConflict_ifTransactionIsNotClosed() throws Exception {
         transaction.setStatus(TransactionStatus.OPEN);
+        when(filingService.generateDissolutionFiling(isA(Transaction.class), eq(DISSOLUTION_ID), eq(PASS_THROUGH_HEADER)))
+                .thenThrow(new InvalidTransactionStateException("transaction is not closed"));
 
         mockMvc
                 .perform(
@@ -138,8 +147,6 @@ class FilingControllerTest {
                                 .requestAttr(TRANSACTION_KEY, transaction)
                 )
                 .andExpect(status().isConflict());
-
-        verify(filingService, never()).generateDissolutionFiling(isA(Transaction.class), eq(DISSOLUTION_ID), eq(PASS_THROUGH_HEADER));
     }
 
     @Test

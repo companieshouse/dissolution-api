@@ -18,9 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
-import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.exception.BadRequestException;
-import uk.gov.companieshouse.exception.ConflictException;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalData;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
@@ -28,7 +26,6 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 import uk.gov.companieshouse.service.CompanyProfileService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
-import uk.gov.companieshouse.service.dissolution.validator.TransactionValidator;
 
 import static uk.gov.companieshouse.model.Constants.COMPANY_NUMBER_KEY;
 import static uk.gov.companieshouse.model.Constants.TRANSACTION_KEY;
@@ -66,20 +63,6 @@ public class TransactionsDissolutionController {
             @RequestAttribute(TRANSACTION_KEY) Transaction transaction,
             HttpServletRequest request) {
 
-        final var validator = new TransactionValidator(transaction);
-
-        if (!validator.hasStatus(TransactionStatus.OPEN)) {
-            throw new ConflictException("Transaction is already closed or closed pending payment");
-        }
-
-        if (!validator.isLinkedToCompany(companyNumber)) {
-            throw new ConflictException("Transaction does not belong to company " + companyNumber);
-        }
-
-        if (dissolutionService.doesDraftDissolutionExistForUserAndCompany(userId, companyNumber)) {
-            throw new ConflictException("Draft dissolution already exists for user " + userId);
-        }
-
         final CompanyProfile company = companyProfileService.getCompanyProfile(companyNumber, request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader()));
 
         if (!companyProfileService.isCompanyClosable(company)) {
@@ -94,7 +77,7 @@ public class TransactionsDissolutionController {
             @ApiResponse(responseCode = "200", description = "Dissolution Application successfully endorsed", content = @Content),
             @ApiResponse(responseCode = "400", description = "Dissolution Request director is not a signatory or has already approved"),
             @ApiResponse(responseCode = "404", description = "Dissolution Application or Company not found"),
-            @ApiResponse(responseCode = "409", description = "Transaction is not open, is not associated with the company", content = @Content)
+            @ApiResponse(responseCode = "409", description = "Transaction is not open, is not associated with the company or linked to the dissolution", content = @Content)
     })
     @PatchMapping("/approve")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -102,19 +85,9 @@ public class TransactionsDissolutionController {
             @RequestHeader("ERIC-identity") String userId,
             @PathVariable(COMPANY_NUMBER_KEY) final String companyNumber,
             @RequestAttribute(TRANSACTION_KEY) Transaction transaction,
-            @Valid @RequestBody final DissolutionPatchRequest patchRequest
-    ) {
-        final var validator = new TransactionValidator(transaction);
-
-        if (!validator.hasStatus(TransactionStatus.OPEN)) {
-            throw new ConflictException("Transaction is already closed or closed pending payment");
-        }
-
-        if (!validator.isLinkedToCompany(companyNumber)) {
-            throw new ConflictException("Transaction does not belong to company " + companyNumber);
-        }
+            @Valid @RequestBody final DissolutionPatchRequest patchRequest) {
 
         final var directorApprovalData = new DissolutionDirectorApprovalData(userId, patchRequest.getOfficerId(), patchRequest.getIpAddress(), patchRequest.getHasApproved());
-        dissolutionService.addDirectorApproval(companyNumber, directorApprovalData);
+        dissolutionService.addDirectorApproval(companyNumber, transaction, directorApprovalData);
     }
 }

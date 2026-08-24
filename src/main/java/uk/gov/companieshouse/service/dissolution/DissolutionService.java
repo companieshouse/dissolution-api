@@ -3,8 +3,9 @@ package uk.gov.companieshouse.service.dissolution;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
+import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
+import uk.gov.companieshouse.exception.ConflictException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
-import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalData;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
@@ -16,7 +17,7 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.repository.DissolutionRepository;
-import uk.gov.companieshouse.util.TransactionHelper;
+import uk.gov.companieshouse.service.dissolution.validator.TransactionValidator;
 
 import java.util.Map;
 import java.util.Optional;
@@ -28,15 +29,13 @@ public class DissolutionService {
     private final DissolutionGetter getter;
     private final DissolutionPatcher patcher;
     private final DissolutionRepository repository;
-    private final TransactionHelper transactionHelper;
 
     @Autowired
-    public DissolutionService(DissolutionCreator creator, DissolutionGetter getter, DissolutionPatcher patcher, DissolutionRepository repository, TransactionHelper transactionHelper) {
+    public DissolutionService(DissolutionCreator creator, DissolutionGetter getter, DissolutionPatcher patcher, DissolutionRepository repository) {
         this.creator = creator;
         this.getter = getter;
         this.patcher = patcher;
         this.repository = repository;
-        this.transactionHelper = transactionHelper;
     }
 
     public DissolutionCreateResponse create(DissolutionCreateRequest body, CompanyProfile companyProfile, Map<String, CompanyOfficer> directors, String userId, String ip, String email) {
@@ -45,9 +44,17 @@ public class DissolutionService {
 
     public DissolutionPatchResponse addDirectorApproval(String companyNumber, DissolutionDirectorApprovalData directorApprovalData) {
         final Dissolution dissolution = repository.findByCompanyNumber(companyNumber)
-                .or(() -> repository.findPendingDissolutionByCompanyNumber(companyNumber))
                 .orElseThrow(() -> new DissolutionNotFoundException(String.format("Dissolution Request not found for company number %s", companyNumber)));
         return patcher.addDirectorApproval(dissolution, directorApprovalData);
+    }
+
+    public void addDirectorApproval(String companyNumber, Transaction transaction, DissolutionDirectorApprovalData directorApprovalData) {
+        final Dissolution dissolution = repository.findPendingDissolutionByCompanyNumber(companyNumber)
+                .orElseThrow(() -> new DissolutionNotFoundException(String.format("Dissolution Request not found for company number %s", companyNumber)));
+
+        TransactionValidator.of(transaction).hasStatus(TransactionStatus.OPEN).forCompany(companyNumber).validate();
+
+        patcher.addDirectorApproval(dissolution, directorApprovalData);
     }
 
     public void handlePayment(PaymentPatchRequest body, String applicationReference) throws DissolutionNotFoundException {
@@ -82,22 +89,17 @@ public class DissolutionService {
         return getter.getDraftDissolution(userId, companyNumber);
     }
 
-    public Optional<Dissolution> getDissolutionById(String dissolutionId) {
-        return repository.findById(dissolutionId);
-    }
-
-    public Dissolution getDissolutionForTransaction(Transaction transaction, String dissolutionId) throws DissolutionNotLinkedToTransactionException, DissolutionNotFoundException {
-        if (!transactionHelper.isTransactionLinkedToDissolution(transaction, dissolutionId)) {
-            throw new DissolutionNotLinkedToTransactionException("Transaction not linked to dissolution");
-        }
-        return getDissolutionById(dissolutionId).orElseThrow(() -> new DissolutionNotFoundException("No dissolution found with id " + dissolutionId));
-    }
-
-    public boolean doesDraftDissolutionExistForUserAndCompany(String userId, String companyNumber) {
-        return repository.findDraftDissolutionForUserAndCompany(userId, companyNumber).isPresent();
+    public Dissolution getDissolutionById(String dissolutionId) {
+        return repository.findById(dissolutionId).orElseThrow(() -> new DissolutionNotFoundException("No dissolution found with id " + dissolutionId));
     }
 
     public DissolutionCreateDraftResponse createDraft(Transaction transaction, CompanyProfile companyProfile, String userId, String ip, String email) {
+        if (repository.findDraftDissolutionForUserAndCompany(userId, companyProfile.getCompanyNumber()).isPresent()) {
+            throw new ConflictException("Draft dissolution already exists for user " + userId);
+        }
+
+        TransactionValidator.of(transaction).hasStatus(TransactionStatus.OPEN).forCompany(companyProfile.getCompanyNumber()).validate();
+
         return creator.createDraft(transaction, companyProfile, userId, ip, email);
     }
 }

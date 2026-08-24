@@ -7,11 +7,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
+import uk.gov.companieshouse.exception.ConflictException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
+import uk.gov.companieshouse.exception.InvalidTransactionStateException;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
-import uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder;
+import uk.gov.companieshouse.fixtures.TransactionFixtures;
 import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalData;
@@ -24,9 +26,7 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
-import uk.gov.companieshouse.model.enums.DissolutionStatus;
 import uk.gov.companieshouse.repository.DissolutionRepository;
-import uk.gov.companieshouse.util.TransactionHelper;
 
 import java.util.Map;
 import java.util.Optional;
@@ -48,6 +48,7 @@ import static uk.gov.companieshouse.fixtures.DissolutionDirectorTestDataBuilder.
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionPatchRequest;
 import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
+import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
 
 @ExtendWith(MockitoExtension.class)
 class DissolutionServiceTest {
@@ -66,9 +67,6 @@ class DissolutionServiceTest {
 
     @Mock
     private DissolutionRepository repository;
-
-    @Mock
-    private TransactionHelper transactionHelper;
 
     public static final String COMPANY_NUMBER = "12345678";
     public static final String APPLICATION_REFERENCE = "XYZ456";
@@ -209,71 +207,27 @@ class DissolutionServiceTest {
     }
 
     @Test
-    void givenGetDissolutionByIdCalled_whenValidId_returnsDissolution() {
+    void givenGetDissolutionByIdCalled_whenLinkedDissolutionExists_returnsDissolution() {
         var dissolution = DissolutionFixtures.generateDissolution();
         dissolution.setId(DISSOLUTION_ID);
 
         when(repository.findById(DISSOLUTION_ID)).thenReturn(Optional.of(dissolution));
 
-        final Optional<Dissolution> result = service.getDissolutionById(DISSOLUTION_ID);
-
-        verify(repository).findById(DISSOLUTION_ID);
-        assertTrue(result.isPresent());
-        assertEquals(dissolution, result.get());
-    }
-
-    @Test
-    void givenGetDissolutionByIdCalled_whenInvalidId_returnsEmptyOptional() {
-        when(repository.findById(DISSOLUTION_ID)).thenReturn(Optional.empty());
-
-        final Optional<Dissolution> result = service.getDissolutionById(DISSOLUTION_ID);
-
-        verify(repository).findById(DISSOLUTION_ID);
-        assertFalse(result.isPresent());
-    }
-
-    @Test
-    void givenGetDissolutionForTransactionCalled_whenLinkedDissolutionExists_returnsDissolution() throws DissolutionNotFoundException, DissolutionNotLinkedToTransactionException {
-        var dissolution = DissolutionFixtures.generateDissolution();
-        dissolution.setId(DISSOLUTION_ID);
-        var transaction = new Transaction();
-        transaction.setId(TRANSACTION_ID);
-
-        when(transactionHelper.isTransactionLinkedToDissolution(transaction, DISSOLUTION_ID)).thenReturn(true);
-        when(repository.findById(DISSOLUTION_ID)).thenReturn(Optional.of(dissolution));
-
-        final Dissolution result = service.getDissolutionForTransaction(transaction, DISSOLUTION_ID);
+        final Dissolution result = service.getDissolutionById(DISSOLUTION_ID);
 
         verify(repository).findById(DISSOLUTION_ID);
         assertEquals(dissolution, result);
     }
 
     @Test
-    void givenGetDissolutionForTransactionCalled_whenDissolutionNotLinkedToTransaction_throwsException() {
+    void givenGetDissolutionByIdCalled_whenDissolutionDoesNotExist_throwsException() {
         var dissolution = DissolutionFixtures.generateDissolution();
         dissolution.setId(DISSOLUTION_ID);
-        var transaction = new Transaction();
-        transaction.setId(TRANSACTION_ID);
 
-        when(transactionHelper.isTransactionLinkedToDissolution(transaction, DISSOLUTION_ID)).thenReturn(false);
-
-        assertThrows(DissolutionNotLinkedToTransactionException.class,
-                () -> service.getDissolutionForTransaction(transaction, DISSOLUTION_ID));
-        verify(repository, never()).findById(DISSOLUTION_ID);
-    }
-
-    @Test
-    void givenGetDissolutionForTransactionCalled_whenDissolutionDoesNotExist_throwsException() {
-        var dissolution = DissolutionFixtures.generateDissolution();
-        dissolution.setId(DISSOLUTION_ID);
-        var transaction = new Transaction();
-        transaction.setId(TRANSACTION_ID);
-
-        when(transactionHelper.isTransactionLinkedToDissolution(transaction, DISSOLUTION_ID)).thenReturn(true);
         when(repository.findById(DISSOLUTION_ID)).thenReturn(Optional.empty());
 
         final var exception = assertThrows(DissolutionNotFoundException.class,
-                () -> service.getDissolutionForTransaction(transaction, DISSOLUTION_ID));
+                () -> service.getDissolutionById(DISSOLUTION_ID));
 
         assertThat(exception.getMessage(),
                 is("No dissolution found with id " + DISSOLUTION_ID));
@@ -304,10 +258,12 @@ class DissolutionServiceTest {
 
     @Test
     void createDraft_createsDraftDissolution_returnsCreateDraftResponse() {
-        final Transaction transaction = TransactionTestDataBuilder.aTransaction().withStatus(TransactionStatus.OPEN).build();
+        final Transaction transaction = TransactionTestDataBuilder.aTransaction().withStatus(TransactionStatus.OPEN).withCompanyNumber(COMPANY_NUMBER).build();
         final DissolutionCreateDraftResponse response = new DissolutionCreateDraftResponse();
         final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        company.setCompanyNumber(COMPANY_NUMBER);
 
+        when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
         when(creator.createDraft(transaction, company, USER_ID, IP, EMAIL)).thenReturn(response);
 
         final DissolutionCreateDraftResponse result = service.createDraft(transaction, company, USER_ID, IP, EMAIL);
@@ -316,21 +272,42 @@ class DissolutionServiceTest {
     }
 
     @Test
-    void doesDraftDissolutionExistForUserAndCompany_returnsTrue_ifDraftDissolutionForUserAndCompanyExists() {
-        final Dissolution dissolution = DissolutionTestDataBuilder.aDissolution().withTransactionId(TRANSACTION_ID).withStatus(DissolutionStatus.DRAFT).build();
-        when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
+    void createDraft_returnsConflict_ifDraftDissolutionAlreadyExistsForUserAndCompany() {
+        final Transaction transaction = TransactionTestDataBuilder.aTransaction().withStatus(TransactionStatus.OPEN).withCompanyNumber(COMPANY_NUMBER).build();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        company.setCompanyNumber(COMPANY_NUMBER);
 
-        final boolean result = service.doesDraftDissolutionExistForUserAndCompany(USER_ID, COMPANY_NUMBER);
+        when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.of(new Dissolution()));
 
-        assertTrue(result);
+        assertThrows(ConflictException.class, () -> service.createDraft(transaction, company, USER_ID, IP, EMAIL));
+
+        verify(creator, never()).createDraft(any(), any(), any(), any(), any());
     }
 
     @Test
-    void doesDraftDissolutionExistForUserAndCompany_returnsFalse_ifDraftDissolutionForUserAndCompanyDoesNotExist() {
+    void createDraft_returnsInvalidTransactionStateException_ifTransactionIsNotOpen() {
+        final Transaction transaction = TransactionTestDataBuilder.aTransaction().withStatus(TransactionStatus.CLOSED).withCompanyNumber(COMPANY_NUMBER).build();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        company.setCompanyNumber(COMPANY_NUMBER);
+
         when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
 
-        final boolean result = service.doesDraftDissolutionExistForUserAndCompany(USER_ID, COMPANY_NUMBER);
+        assertThrows(InvalidTransactionStateException.class, () -> service.createDraft(transaction, company, USER_ID, IP, EMAIL));
 
-        assertFalse(result);
+        verify(creator, never()).createDraft(any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void createDraft_returnsInvalidTransactionStateException_ifTransactionIsLinkedToAnotherCompany() {
+        final var wrongCompanyNumber = "87654321";
+        final Transaction transaction = TransactionTestDataBuilder.aTransaction().withStatus(TransactionStatus.OPEN).withCompanyNumber(wrongCompanyNumber).build();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        company.setCompanyNumber(COMPANY_NUMBER);
+
+        when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
+
+        assertThrows(InvalidTransactionStateException.class, () -> service.createDraft(transaction, company, USER_ID, IP, EMAIL));
+
+        verify(creator, never()).createDraft(any(), any(), any(), any(), any());
     }
 }

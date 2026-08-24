@@ -4,16 +4,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
+import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.config.FeeConfig;
-import uk.gov.companieshouse.exception.DissolutionNotFoundException;
-import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
 import uk.gov.companieshouse.exception.ServiceException;
-import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.filing.FilingDataMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
+import uk.gov.companieshouse.service.dissolution.validator.TransactionValidator;
 
 import java.util.Map;
 
@@ -33,23 +32,21 @@ public class FilingService {
     private final TransactionService transactionService;
     private final TransactionPaymentService transactionPaymentService;
     private final FilingDataMapper mapper;
-    private final Logger logger;
     private final FeeConfig feeConfig;
 
-    public FilingService(DissolutionService dissolutionService, TransactionService transactionService, TransactionPaymentService transactionPaymentService, FilingDataMapper mapper, Logger logger, FeeConfig feeConfig) {
+    public FilingService(DissolutionService dissolutionService, TransactionService transactionService, TransactionPaymentService transactionPaymentService, FilingDataMapper mapper, FeeConfig feeConfig) {
         this.dissolutionService = dissolutionService;
         this.transactionService = transactionService;
         this.transactionPaymentService = transactionPaymentService;
         this.mapper = mapper;
-        this.logger = logger;
         this.feeConfig = feeConfig;
     }
 
-    public FilingApi generateDissolutionFiling(Transaction transaction, String dissolutionId, String passThroughTokenHeader) throws DissolutionNotFoundException, ServiceException, DissolutionNotLinkedToTransactionException {
-        logger.info(String.format("Generating dissolution filing for dissolution %s with transaction %s", dissolutionId, transaction.getId()));
+    public FilingApi generateDissolutionFiling(Transaction transaction, String dissolutionId, String passThroughTokenHeader) {
+        TransactionValidator.of(transaction).hasStatus(TransactionStatus.CLOSED).isLinkedToDissolution(dissolutionId).validate();
 
         var filing = new FilingApi();
-        var dissolution = dissolutionService.getDissolutionForTransaction(transaction, dissolutionId);
+        var dissolution = dissolutionService.getDissolutionById(dissolutionId);
         var context = new Context(dissolution, transaction, passThroughTokenHeader);
 
         setFilingApiData(filing, context);

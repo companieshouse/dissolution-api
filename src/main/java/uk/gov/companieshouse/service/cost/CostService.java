@@ -4,9 +4,8 @@ import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.model.payment.Cost;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.config.FeeConfig;
-import uk.gov.companieshouse.exception.DissolutionNotFoundException;
-import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
+import uk.gov.companieshouse.service.dissolution.validator.TransactionValidator;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,8 +28,9 @@ public class CostService {
         this.feeConfig = feeConfig;
     }
 
-    public Cost getCosts(Transaction transaction, String dissolutionId) throws DissolutionNotFoundException, DissolutionNotLinkedToTransactionException {
-        var dissolution = dissolutionService.getDissolutionForTransaction(transaction, dissolutionId);
+    public Cost getCosts(Transaction transaction, String dissolutionId) {
+        TransactionValidator.of(transaction).isLinkedToDissolution(dissolutionId).validate();
+        var dissolution = dissolutionService.getDissolutionById(dissolutionId);
         var company = dissolution.getCompany();
         var applicationType = dissolution.getData().getApplication().getType();
 

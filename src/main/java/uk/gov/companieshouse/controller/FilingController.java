@@ -14,16 +14,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
-import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
-import uk.gov.companieshouse.exception.BadRequestException;
-import uk.gov.companieshouse.exception.ConflictException;
-import uk.gov.companieshouse.exception.DissolutionNotFoundException;
-import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
-import uk.gov.companieshouse.exception.InternalServerErrorException;
-import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
-import uk.gov.companieshouse.service.dissolution.validator.TransactionValidator;
 import uk.gov.companieshouse.service.transaction.FilingService;
 
 import java.util.HashMap;
@@ -62,27 +54,13 @@ public class FilingController {
             @PathVariable(DISSOLUTION_ID_KEY) final String dissolutionId,
             HttpServletRequest request) {
         final var passThroughHeader = request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
-        final var validator = new TransactionValidator(transaction);
 
         var logCtx = new HashMap<String, Object>();
         logCtx.put(TRANSACTION_ID_KEY, transactionId);
         logCtx.put(DISSOLUTION_ID_KEY, dissolutionId);
+        logger.infoContext(requestId, "Attempting to generate dissolution filing", logCtx);
 
-        if (!validator.hasStatus(TransactionStatus.CLOSED)) {
-            logCtx.put("transaction_status", transaction.getStatus());
-            logger.infoContext(requestId, "Failed to generate dissolution filing as transaction is not CLOSED", logCtx);
-            throw new ConflictException("Rejected filings request due to invalid transaction status");
-        }
-
-        try {
-            FilingApi filing = filingService.generateDissolutionFiling(transaction, dissolutionId, passThroughHeader);
-            return new FilingApi[] { filing };
-        } catch (DissolutionNotLinkedToTransactionException e) {
-            throw new BadRequestException(e.getMessage());
-        } catch (DissolutionNotFoundException e) {
-            throw new NotFoundException(e.getMessage());
-        } catch (Exception e) {
-            throw new InternalServerErrorException("Failed to generate dissolution filing", e);
-        }
+        FilingApi filing = filingService.generateDissolutionFiling(transaction, dissolutionId, passThroughHeader);
+        return new FilingApi[]{filing};
     }
 }

@@ -14,7 +14,7 @@ public class TransactionTestDataBuilder {
 
     private String id = TransactionFixtures.TRANSACTION_ID;
     private TransactionStatus status = TransactionStatus.OPEN;
-    private String comanyNumber = "12345678";
+    private String companyNumber = "12345678";
     private Map<String, Resource> resources;
     private TransactionLinks transactionLinks = new TransactionLinks();
 
@@ -33,7 +33,7 @@ public class TransactionTestDataBuilder {
     }
 
     public TransactionTestDataBuilder withCompanyNumber(String companyNumber) {
-        this.comanyNumber = companyNumber;
+        this.companyNumber = companyNumber;
         return this;
     }
 
@@ -63,7 +63,7 @@ public class TransactionTestDataBuilder {
         final Transaction transaction = new Transaction();
         transaction.setId(id);
         transaction.setStatus(status);
-        transaction.setCompanyNumber(comanyNumber);
+        transaction.setCompanyNumber(companyNumber);
         transaction.setResources(resources);
         transaction.setLinks(transactionLinks);
         return transaction;
