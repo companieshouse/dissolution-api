@@ -15,7 +15,7 @@ import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
 import static uk.gov.companieshouse.model.Constants.LINK_RESOURCE;
 
-public class TransactionValidatorTest {
+class TransactionValidatorTest {
 
     private static final String DISSOLUTION_ID = "sub-456";
     private static final String COMPANY_NUMBER = "12345678";
