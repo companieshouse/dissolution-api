@@ -70,7 +70,7 @@
         <!-- Source: https://mvnrepository.com/artifact/software.amazon.awssdk/bom -->
         <aws-java-sdk.version>2.47.6</aws-java-sdk.version>
         <!-- Source: https://mvnrepository.com/artifact/io.netty/netty-all -->
-        <netty.version>4.2.16.Final</netty.version>
+        <netty.version>4.2.17.Final</netty.version>
         <!-- Source: https://mvnrepository.com/artifact/io.projectreactor.netty/reactor-netty-core -->
         <reactor-netty-core.version>1.3.6</reactor-netty-core.version>
         <!-- Source: https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-bom -->
@@ -84,7 +84,7 @@
         <!-- Source: https://mvnrepository.com/artifact/org.json/json -->
         <org-json.version>20260522</org-json.version>
         <!-- Source: https://mvnrepository.com/artifact/org.webjars/swagger-ui -->
-        <swagger-ui.version>5.32.8</swagger-ui.version>
+        <swagger-ui.version>5.32.14</swagger-ui.version>
         <!-- Source: https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-http -->
         <jetty.version>12.1.11</jetty.version>
         <!-- Source: https://mvnrepository.com/artifact/io.opentelemetry.instrumentation/opentelemetry-instrumentation-bom -->
@@ -263,7 +263,7 @@
             <dependency>
                 <groupId>org.apache.httpcomponents.client5</groupId>
                 <artifactId>httpclient5</artifactId>
-                <version>5.6.2</version>
+                <version>5.6.4</version>
                 <scope>compile</scope>
             </dependency>
 
@@ -295,7 +295,14 @@
     </dependencyManagement>
 
     <dependencies>
-
+        <!-- Start of temporary override of dependencies to fix CVEs. These should be removed once the kafka-models > 3.0.39 updates this library -->
+        <!-- Source: https://mvnrepository.com/artifact/at.yawk.lz4/lz4-java -->
+        <dependency>
+            <groupId>at.yawk.lz4</groupId>
+            <artifactId>lz4-java</artifactId>
+            <version>1.11.2</version>
+        </dependency>
+        <!-- end of temporary override of dependencies to fix CVEs. -->
         <dependency>
             <groupId>io.projectreactor.netty</groupId>
             <artifactId>reactor-netty-core</artifactId>
