@@ -34,7 +34,7 @@ class TransactionValidatorTest {
     }
 
     @Test
-    void transactionValidator_throwsInvalidTransactionStateException_whenComanyNumberIsNull() {
+    void transactionValidator_throwsInvalidTransactionStateException_whenCompanyNumberIsNull() {
         final var transaction = TransactionTestDataBuilder.aTransaction().withStatus(TransactionStatus.OPEN).withCompanyNumber(null).build();
         final var validator = TransactionValidator.of(transaction).forCompany(COMPANY_NUMBER);
 

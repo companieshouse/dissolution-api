@@ -132,7 +132,7 @@ class DissolutionPatcherTest {
         directors.get(1).setDirectorApproval(approval);
         dissolution.getData().setDirectors(directors);
 
-        // This is needed as the transaction model dissolution process leverage the same approval patching
+        // This is needed as the transaction model dissolution process leverages the same approval patching
         // flow, but conditionally updates the top level dissolution.status based on the presence of a transaction_id.
         // The existing process does not update the top level dissolution.status but the application.status instead.
         // This is a temporary measure until we fully migrate to the transaction model dissolution process.

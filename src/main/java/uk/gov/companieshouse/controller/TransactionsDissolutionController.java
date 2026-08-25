@@ -74,7 +74,7 @@ public class TransactionsDissolutionController {
 
     @Operation(summary = "Patch Dissolution Application Approval")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Dissolution Application successfully endorsed", content = @Content),
+            @ApiResponse(responseCode = "204", description = "Dissolution Application successfully endorsed", content = @Content),
             @ApiResponse(responseCode = "400", description = "Dissolution Request director is not a signatory, has already approved or transaction is not linked to the dissolution"),
             @ApiResponse(responseCode = "404", description = "Dissolution Application or Company not found"),
             @ApiResponse(responseCode = "409", description = "Transaction is not open, is not associated with the company", content = @Content)
