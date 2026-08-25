@@ -33,15 +33,15 @@ public class TransactionValidator {
 
     public TransactionValidator hasStatus(TransactionStatus transactionStatus) {
         return addRule(tx -> {
-            if (!transactionStatus.equals(transaction.getStatus())) {
-                throw new InvalidTransactionStateException(String.format("Transaction status %s does not match expected status %s", transaction.getStatus(), transactionStatus));
+            if (!transactionStatus.equals(tx.getStatus())) {
+                throw new InvalidTransactionStateException(String.format("Transaction status %s does not match expected status %s", tx.getStatus(), transactionStatus));
             }
         });
     }
 
     public TransactionValidator forCompany(String companyNumber) {
         return addRule(tx -> {
-            if (!(StringUtils.isNotBlank(companyNumber) && companyNumber.equals(transaction.getCompanyNumber()))) {
+            if (!(StringUtils.isNotBlank(companyNumber) && companyNumber.equals(tx.getCompanyNumber()))) {
                 throw new InvalidTransactionStateException("Transaction does not belong to company " + companyNumber);
             }
         });
@@ -49,9 +49,9 @@ public class TransactionValidator {
 
     public TransactionValidator isLinkedToDissolution(String dissolutionId) {
         return addRule(tx -> {
-            final String submissionSelfLink = String.format(SUBMISSION_URI_PATTERN, transaction.getId(), dissolutionId);
+            final String submissionSelfLink = String.format(SUBMISSION_URI_PATTERN, tx.getId(), dissolutionId);
 
-            final boolean isLinked = Objects.nonNull(transaction.getResources()) && transaction.getResources().values().stream()
+            final boolean isLinked = Objects.nonNull(tx.getResources()) && tx.getResources().values().stream()
                     .filter(resource -> DISSOLUTION_FILING_KINDS.contains(resource.getKind()))
                     .anyMatch(resource -> submissionSelfLink.equals(resource.getLinks().get(LINK_RESOURCE)));
 
