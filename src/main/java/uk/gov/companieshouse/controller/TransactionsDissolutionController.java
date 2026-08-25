@@ -19,10 +19,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.exception.BadRequestException;
+import uk.gov.companieshouse.mapper.DissolutionInitiationMapper;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalData;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionInitiationRequest;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 import uk.gov.companieshouse.service.CompanyProfileService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
@@ -39,12 +41,15 @@ public class TransactionsDissolutionController {
 
     private final DissolutionService dissolutionService;
     private final CompanyProfileService companyProfileService;
+    private final DissolutionInitiationMapper dissolutionInitiationMapper;
 
     public TransactionsDissolutionController(
             DissolutionService dissolutionService,
-            CompanyProfileService companyProfileService) {
+            CompanyProfileService companyProfileService,
+            DissolutionInitiationMapper dissolutionInitiationMapper) {
         this.dissolutionService = dissolutionService;
         this.companyProfileService = companyProfileService;
+        this.dissolutionInitiationMapper = dissolutionInitiationMapper;
     }
 
     @Operation(summary = "Create Draft Dissolution Request")
@@ -89,5 +94,26 @@ public class TransactionsDissolutionController {
 
         final var directorApprovalData = new DissolutionDirectorApprovalData(userId, patchRequest.getOfficerId(), patchRequest.getIpAddress(), patchRequest.getHasApproved());
         dissolutionService.addDirectorApproval(companyNumber, transaction, directorApprovalData);
+    }
+
+    @Operation(summary = "Initiate Dissolution Request")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Dissolution initiated"),
+            @ApiResponse(responseCode = "400", description = "Signatories are invalid"),
+            @ApiResponse(responseCode = "404", description = "Draft Dissolution not found"),
+            @ApiResponse(responseCode = "409", description = "Transaction is not open or is not associated with the company", content = @Content),
+            @ApiResponse(responseCode = "422", description = "Request body failed validation")
+    })
+    @PostMapping("/initiation")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void initiateDissolution(
+            @RequestHeader("ERIC-identity") String userId,
+            @PathVariable(COMPANY_NUMBER_KEY) final String companyNumber,
+            @RequestAttribute(TRANSACTION_KEY) Transaction transaction,
+            @Valid @RequestBody final DissolutionInitiationRequest dissolutionInitiationRequest) {
+
+        final var command = dissolutionInitiationMapper.toCommand(transaction, companyNumber, userId, dissolutionInitiationRequest);
+
+        dissolutionService.initiateDissolution(command);
     }
 }

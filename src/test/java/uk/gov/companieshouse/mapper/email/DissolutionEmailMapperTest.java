@@ -1,13 +1,14 @@
 package uk.gov.companieshouse.mapper.email;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.config.EnvironmentConfig;
-import uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder;
 import uk.gov.companieshouse.fixtures.EmailFixtures;
 import uk.gov.companieshouse.model.db.dissolution.Company;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
@@ -22,10 +23,13 @@ import uk.gov.companieshouse.model.enums.SubmissionStatus;
 
 import java.time.LocalDateTime;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.DisplayNameGenerator.ReplaceUnderscores;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateCompany;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolution;
+import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 import static uk.gov.companieshouse.fixtures.EmailFixtures.CDN_HOST;
 import static uk.gov.companieshouse.fixtures.EmailFixtures.CHS_URL;
 import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
@@ -130,7 +134,7 @@ public class DissolutionEmailMapperTest {
         company.setName("Some Company Name");
         company.setNumber("12345");
 
-        final Dissolution dissolution = DissolutionTestDataBuilder.aDissolution()
+        final Dissolution dissolution = aDissolution()
                 .withTransactionId(TRANSACTION_ID)
                 .withStatus(DissolutionStatus.PENDING)
                 .withCompany(company)
@@ -196,6 +200,52 @@ public class DissolutionEmailMapperTest {
 
         assertEquals(CHS_URL, result.getChsUrl());
         assertEquals(CDN_HOST, result.getCdnHost());
+    }
+
+    @Nested
+    @DisplayNameGeneration(ReplaceUnderscores.class)
+    class MapToSignatoryToSignEmailData {
+
+        @BeforeEach
+        void setup() {
+            when(environmentConfig.getChsUrl()).thenReturn(CHS_URL);
+        }
+
+        @Test
+        void when_dissolution_has_no_transaction_id_then_application_reference_is_used() {
+            final var dissolution = aDissolution().build();
+
+            final var result = dissolutionEmailMapper.mapToSignatoryToSignEmailData(dissolution, SIGNATORY_TO_SIGN_EMAIL, SIGNATORY_TO_SIGN_DEADLINE);
+
+            assertThat(result.getDissolutionReferenceNumber()).isEqualTo(dissolution.getData().getApplication().getReference());
+        }
+
+        @Test
+        void when_dissolution_has_a_transaction_id_then_transaction_id_is_used() {
+            final var dissolution = aDissolution()
+                    .withTransactionId(TRANSACTION_ID)
+                    .withStatus(DissolutionStatus.PENDING)
+                    .build();
+
+            final var result = dissolutionEmailMapper.mapToSignatoryToSignEmailData(dissolution, SIGNATORY_TO_SIGN_EMAIL, SIGNATORY_TO_SIGN_DEADLINE);
+
+            assertThat(result.getDissolutionReferenceNumber()).isEqualTo(TRANSACTION_ID);
+        }
+
+        @Test
+        void when_dissolution_has_both_a_transaction_id_and_an_application_reference_then_transaction_id_takes_precedence() {
+            final var dissolution = aDissolution()
+                    .withTransactionId(TRANSACTION_ID)
+                    .withStatus(DissolutionStatus.PENDING)
+                    .build();
+            dissolution.getData().getApplication().setReference("abc123");
+
+            final var result = dissolutionEmailMapper.mapToSignatoryToSignEmailData(dissolution, SIGNATORY_TO_SIGN_EMAIL, SIGNATORY_TO_SIGN_DEADLINE);
+
+            assertThat(result.getDissolutionReferenceNumber())
+                    .isEqualTo(TRANSACTION_ID)
+                    .isNotEqualTo("abc123");
+        }
     }
 
     @Test

@@ -3,14 +3,16 @@ package uk.gov.companieshouse.service.dissolution;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
-import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.exception.ConflictException;
+import uk.gov.companieshouse.exception.DissolutionInvalidSignatoriesException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalData;
+import uk.gov.companieshouse.model.domain.DissolutionInitiationCommand;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
@@ -22,12 +24,17 @@ import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.DissolutionStatus;
 import uk.gov.companieshouse.repository.DissolutionRepository;
+import uk.gov.companieshouse.service.CompanyOfficerService;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.validator.TransactionValidator;
 import uk.gov.companieshouse.service.payment.PaymentService;
 
 import java.util.Map;
 import java.util.Optional;
+
+import static uk.gov.companieshouse.api.model.transaction.TransactionStatus.OPEN;
+import static uk.gov.companieshouse.model.enums.DissolutionStatus.PENDING;
+import static uk.gov.companieshouse.util.DateTimeGenerator.generateCurrentDateTime;
 
 @Service
 public class DissolutionService {
@@ -40,9 +47,12 @@ public class DissolutionService {
     private final TransactionService transactionService;
     private final DissolutionResponseMapper responseMapper;
     private final Logger logger;
+    private final CompanyOfficerService companyOfficerService;
+    private final DissolutionRequestMapper dissolutionRequestMapper;
+    private final DissolutionEmailService emailService;
 
     @Autowired
-    public DissolutionService(DissolutionCreator creator, DissolutionGetter getter, DissolutionPatcher patcher, DissolutionRepository repository, PaymentService paymentService, TransactionService transactionService, DissolutionResponseMapper responseMapper, Logger logger) {
+    public DissolutionService(DissolutionCreator creator, DissolutionGetter getter, DissolutionPatcher patcher, DissolutionRepository repository, PaymentService paymentService, TransactionService transactionService, DissolutionResponseMapper responseMapper, Logger logger, CompanyOfficerService companyOfficerService, DissolutionRequestMapper dissolutionRequestMapper, DissolutionEmailService emailService) {
         this.creator = creator;
         this.getter = getter;
         this.patcher = patcher;
@@ -51,6 +61,9 @@ public class DissolutionService {
         this.transactionService = transactionService;
         this.responseMapper = responseMapper;
         this.logger = logger;
+        this.companyOfficerService = companyOfficerService;
+        this.dissolutionRequestMapper = dissolutionRequestMapper;
+        this.emailService = emailService;
     }
 
     public DissolutionCreateResponse create(DissolutionCreateRequest body, CompanyProfile companyProfile, Map<String, CompanyOfficer> directors, String userId, String ip, String email) {
@@ -67,7 +80,7 @@ public class DissolutionService {
         final Dissolution dissolution = repository.findPendingDissolutionByCompanyNumber(companyNumber)
                 .orElseThrow(() -> new DissolutionNotFoundException(String.format("Pending Dissolution not found for company number %s", companyNumber)));
 
-        TransactionValidator.of(transaction).hasStatus(TransactionStatus.OPEN).forCompany(companyNumber).isLinkedToDissolution(dissolution.getId()).validate();
+        TransactionValidator.of(transaction).hasStatus(OPEN).forCompany(companyNumber).isLinkedToDissolution(dissolution.getId()).validate();
 
         patcher.addDirectorApproval(dissolution, directorApprovalData);
     }
@@ -162,8 +175,44 @@ public class DissolutionService {
             throw new ConflictException("Draft dissolution already exists for user " + userId);
         }
 
-        TransactionValidator.of(transaction).hasStatus(TransactionStatus.OPEN).forCompany(companyProfile.getCompanyNumber()).validate();
+        TransactionValidator.of(transaction).hasStatus(OPEN).forCompany(companyProfile.getCompanyNumber()).validate();
 
         return creator.createDraft(transaction, companyProfile, userId, ip, email);
+    }
+
+    public void initiateDissolution(DissolutionInitiationCommand command) {
+        final var dissolution = findDraftDissolutionOrThrow(command.companyNumber(), command.userId());
+        final var activeDirectors = companyOfficerService.getActiveDirectorsForCompany(command.companyNumber());
+
+        validateInitiateDissolution(command, dissolution.getId(), activeDirectors);
+
+        final var signatories = dissolutionRequestMapper.mapToDissolutionDirectors(command.signatories(), activeDirectors);
+
+        dissolution.assignSignatories(signatories);
+        dissolution.changeStatus(PENDING, generateCurrentDateTime());
+
+        // Not atomic - but this is the current approach in this code base
+        // if the email fails to send, the dissolution will still be saved with PENDING status. To be addressed in a future release.
+        repository.save(dissolution);
+        emailService.notifySignatoriesToSign(dissolution);
+    }
+
+    private void validateInitiateDissolution(DissolutionInitiationCommand command, String dissolutionId, Map<String, CompanyOfficer> activeDirectors) {
+        TransactionValidator.of(command.transaction()).hasStatus(OPEN).forCompany(command.companyNumber()).isLinkedToDissolution(dissolutionId).validate();
+
+        if (repository.findPendingDissolutionByCompanyNumber(command.companyNumber()).isPresent()) {
+            throw new ConflictException(String.format("Pending dissolution already exists for company number %s", command.companyNumber()));
+        }
+
+        companyOfficerService
+                .areSelectedDirectorsValid(activeDirectors, command.signatories())
+                .ifPresent(error -> {
+                    throw new DissolutionInvalidSignatoriesException(error);
+                });
+    }
+
+    private Dissolution findDraftDissolutionOrThrow(String companyNumber, String userId) {
+        return repository.findDraftDissolutionForUserAndCompany(userId, companyNumber)
+                .orElseThrow(() -> new DissolutionNotFoundException(String.format("Draft dissolution not found for user %s and company number %s.", userId, companyNumber)));
     }
 }

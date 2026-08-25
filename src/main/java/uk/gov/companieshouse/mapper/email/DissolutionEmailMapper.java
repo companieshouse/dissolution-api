@@ -75,7 +75,7 @@ public class DissolutionEmailMapper {
         signatoryToSignEmailData.setTo(signatoryEmail);
         signatoryToSignEmailData.setSubject(SIGNATORY_TO_SIGN_EMAIL_SUBJECT);
         signatoryToSignEmailData.setCdnHost(environmentConfig.getCdnHost());
-        signatoryToSignEmailData.setDissolutionReferenceNumber(dissolution.getData().getApplication().getReference());
+        signatoryToSignEmailData.setDissolutionReferenceNumber(dissolution.getReferenceNumber());
         signatoryToSignEmailData.setCompanyNumber(dissolution.getCompany().getNumber());
         signatoryToSignEmailData.setCompanyName(dissolution.getCompany().getName());
         signatoryToSignEmailData.setDissolutionDeadlineDate(deadline);

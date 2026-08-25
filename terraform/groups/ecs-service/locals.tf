@@ -1,4 +1,4 @@
-# Define all hardcoded local variable and local variables looked up from data resources 
+# Define all hardcoded local variable and local variables looked up from data resources
 locals {
   stack_name                 = "filing-close" # this must match the stack name the service deploys into
   name_prefix                = "${local.stack_name}-${var.environment}"
@@ -9,7 +9,7 @@ locals {
   docker_repo                = "dissolution-api"
   kms_alias                  = "alias/${var.aws_profile}/environment-services-kms"
   lb_listener_rule_priority  = 180
-  lb_listener_paths          = ["/dissolution-request/*", "/dissolution-request", "/dissolution-request/*/payment", "/transactions/*/dissolution/*", "/private/transactions/*/dissolution/*/filings", "/company/*/transaction/*/dissolution", "/company/*/transaction/*/dissolution/approve"]
+  lb_listener_paths          = ["/dissolution-request/*", "/dissolution-request", "/dissolution-request/*/payment", "/transactions/*/dissolution/*", "/private/transactions/*/dissolution/*/filings", "/company/*/transaction/*/dissolution", "/company/*/transaction/*/dissolution/approve", "/company/*/transaction/*/dissolution/initiation"]
   healthcheck_path           = "/dissolution-api/healthcheck" #healthcheck path for dissolution api
   healthcheck_matcher        = "200"
   vpc_name                   = local.stack_secrets["vpc_name"]
@@ -72,4 +72,4 @@ locals {
   ]
   eric_environment_filename = "eric.env"
 }
- 
+

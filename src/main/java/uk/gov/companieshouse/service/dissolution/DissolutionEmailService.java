@@ -97,7 +97,7 @@ public class DissolutionEmailService {
     public void notifySignatoriesToSign(Dissolution dissolution) {
         final MessageType messageType = messageTypeCalculator.getForSignatoriesToSign(dissolution);
 
-        final String deadlineDate = deadlineDateCalculator.calculateSignatoryDeadlineDate(dissolution.getCreatedBy().getDateTime());
+        final String deadlineDate = deadlineDateCalculator.calculateSignatoryDeadlineDate(dissolution.dateDissolutionInitiated());
 
         getUniqueSignatories(dissolution)
                 .stream()
@@ -109,7 +109,7 @@ public class DissolutionEmailService {
     public void notifySignatoryToSign(Dissolution dissolution, String email) {
         final MessageType messageType = messageTypeCalculator.getForSignatoriesToSign(dissolution);
 
-        final String deadlineDate = deadlineDateCalculator.calculateSignatoryDeadlineDate(dissolution.getCreatedBy().getDateTime());
+        final String deadlineDate = deadlineDateCalculator.calculateSignatoryDeadlineDate(dissolution.dateDissolutionInitiated());
 
         EmailDocument<SignatoryToSignEmailData> emailDocument = mapToSignatoryToSignEmail(dissolution, email, messageType, deadlineDate);
 

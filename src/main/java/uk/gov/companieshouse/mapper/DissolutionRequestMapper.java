@@ -84,7 +84,7 @@ public class DissolutionRequestMapper {
         return application;
     }
 
-    private List<DissolutionDirector> mapToDissolutionDirectors(List<DirectorRequest> selectedDirectors, Map<String, CompanyOfficer> companyDirectors) {
+    public List<DissolutionDirector> mapToDissolutionDirectors(List<DirectorRequest> selectedDirectors, Map<String, CompanyOfficer> companyDirectors) {
         return selectedDirectors.stream().map(selectedDirector -> mapToDissolutionDirector(selectedDirector, companyDirectors)).collect(Collectors.toList());
     }
 
