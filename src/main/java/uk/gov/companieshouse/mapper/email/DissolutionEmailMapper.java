@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.mapper.email;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.config.EnvironmentConfig;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
@@ -87,9 +88,13 @@ public class DissolutionEmailMapper {
     public PendingPaymentEmailData mapToPendingPaymentEmailData(Dissolution dissolution) {
         PendingPaymentEmailData pendingPaymentEmailData = new PendingPaymentEmailData();
 
+        final String reference = StringUtils.isBlank(dissolution.getTransactionId())
+                ? dissolution.getData().getApplication().getReference()
+                : dissolution.getTransactionId();
+
         pendingPaymentEmailData.setTo(dissolution.getCreatedBy().getEmail());
         pendingPaymentEmailData.setSubject(PENDING_PAYMENT_EMAIL_SUBJECT);
-        pendingPaymentEmailData.setDissolutionReferenceNumber(dissolution.getData().getApplication().getReference());
+        pendingPaymentEmailData.setDissolutionReferenceNumber(reference);
         pendingPaymentEmailData.setCompanyNumber(dissolution.getCompany().getNumber());
         pendingPaymentEmailData.setCompanyName(dissolution.getCompany().getName());
         pendingPaymentEmailData.setChsUrl(environmentConfig.getChsUrl());

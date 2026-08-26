@@ -57,4 +57,8 @@ public final class Constants {
    /* Transactions */
    public static final String SUBMISSION_URI_PATTERN = "/transactions/%s/dissolution/%s";
    public static final String LINK_RESOURCE = "resource";
+
+   /* Certificate */
+   public static final String CERTIFICATE_FILE_NAME_PREFIX = "Apply-to-strike-off-and-dissolve-a-company";
+   public static final String S3_URI_PATTERN = "s3://%s/%s/dissolution/%s-%s.pdf";
 }
