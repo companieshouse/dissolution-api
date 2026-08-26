@@ -42,8 +42,8 @@ public class GlobalExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)
-    @ExceptionHandler(ConflictException.class)
-    public void handleConflict(ConflictException ex, HttpServletRequest request) {
+    @ExceptionHandler({ConflictException.class, InvalidTransactionStateException.class})
+    public void handleConflict(RuntimeException ex, HttpServletRequest request) {
         logger.info(String.format("[Conflict] - %s - %s", request.getRequestURL().toString(), ex.getMessage()));
     }
 
@@ -66,7 +66,7 @@ public class GlobalExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(BadRequestException.class)
+    @ExceptionHandler({BadRequestException.class, DissolutionNotLinkedToTransactionException.class})
     public void handleBadRequest(RuntimeException ex, HttpServletRequest request) {
         logger.info(String.format("[Bad Request] - %s - %s", request.getRequestURL().toString(), ex.getMessage()));
     }

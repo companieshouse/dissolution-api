@@ -5,15 +5,18 @@ import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
 import uk.gov.companieshouse.exception.InvalidTransactionStateException;
 import uk.gov.companieshouse.fixtures.TransactionFixtures;
+import uk.gov.companieshouse.fixtures.TransactionResourceTestDataBuilder;
 import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
 import static uk.gov.companieshouse.model.Constants.LINK_RESOURCE;
+import static uk.gov.companieshouse.model.Constants.SUBMISSION_URI_PATTERN;
 
 class TransactionValidatorTest {
 
@@ -90,6 +93,18 @@ class TransactionValidatorTest {
         final var resourceBuilder = TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID)
                 .withSingleLink(LINK_RESOURCE, "/transactions/other-tx/dissolution/other-sub");
         final var transaction = TransactionTestDataBuilder.aTransaction().withResources(resourceBuilder).build();
+        final var validator = TransactionValidator.of(transaction).isLinkedToDissolution(DISSOLUTION_ID);
+
+        assertThrows(DissolutionNotLinkedToTransactionException.class, validator::validate);
+    }
+
+    @Test
+    void transactionValidator_throwsDissolutionNotLinkedToTransactionException_whenResourceHasDissolutionKindButLinksIsNull() {
+        final var resource = TransactionResourceTestDataBuilder.aTransactionResource()
+                .withResourceKey(String.format(SUBMISSION_URI_PATTERN, TRANSACTION_ID, DISSOLUTION_ID))
+                .withKind(FILING_KIND_DS01)
+                .withLinks((Map<String, String>) null);
+        final var transaction = TransactionTestDataBuilder.aTransaction().withResources(resource).build();
         final var validator = TransactionValidator.of(transaction).isLinkedToDissolution(DISSOLUTION_ID);
 
         assertThrows(DissolutionNotLinkedToTransactionException.class, validator::validate);

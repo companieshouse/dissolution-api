@@ -8,6 +8,7 @@ import uk.gov.companieshouse.exception.InvalidTransactionStateException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -53,7 +54,7 @@ public class TransactionValidator {
 
             final boolean isLinked = Objects.nonNull(tx.getResources()) && tx.getResources().values().stream()
                     .filter(resource -> DISSOLUTION_FILING_KINDS.contains(resource.getKind()))
-                    .anyMatch(resource -> submissionSelfLink.equals(resource.getLinks().get(LINK_RESOURCE)));
+                    .anyMatch(resource -> submissionSelfLink.equals(Objects.requireNonNullElseGet(resource.getLinks(), Map::of).get(LINK_RESOURCE)));
 
             if (!isLinked) {
                 throw new DissolutionNotLinkedToTransactionException("Transaction is not linked to dissolution " + dissolutionId);
