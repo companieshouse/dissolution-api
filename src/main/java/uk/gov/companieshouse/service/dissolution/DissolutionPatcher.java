@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.service.dissolution;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.exception.DissolutionDirectorApprovalException;
@@ -13,7 +12,6 @@ import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalData;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
@@ -76,10 +74,10 @@ public class DissolutionPatcher {
 
     private void handleFinalApproval(Dissolution dissolution) {
         final List<DissolutionDirector> directors = dissolution.getData().getDirectors();
-        if (StringUtils.isBlank(dissolution.getTransactionId())) {
-            setDissolutionStatus(dissolution, ApplicationStatus.PENDING_PAYMENT);
-        } else {
+        if (dissolution.isTransactionModelDissolution()) {
             dissolution.changeStatus(DissolutionStatus.SUBMITTED, generateCurrentDateTime());
+        } else {
+            setDissolutionStatus(dissolution, ApplicationStatus.PENDING_PAYMENT);
         }
         dissolution.setCertificate(this.certificateGenerator.generateDissolutionCertificate(dissolution));
         boolean isSoleDirectorSelfFiling = directors.size() == 1

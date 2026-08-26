@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.service.dissolution.certificate;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.config.DissolutionConfig;
 import uk.gov.companieshouse.config.EnvironmentConfig;
@@ -21,9 +20,6 @@ public class DissolutionCertificateLocationGenerator {
     }
 
     public String generateCertificateLocation(Dissolution dissolution) {
-        final String reference = StringUtils.isBlank(dissolution.getTransactionId())
-                ? dissolution.getData().getApplication().getReference()
-                : dissolution.getTransactionId();
-        return String.format(S3_URI_PATTERN, dissolutionConfig.getDissolutionPdfBucket(), envConfig.getEnvironmentName(), CERTIFICATE_FILE_NAME_PREFIX, reference);
+        return String.format(S3_URI_PATTERN, dissolutionConfig.getDissolutionPdfBucket(), envConfig.getEnvironmentName(), CERTIFICATE_FILE_NAME_PREFIX, dissolution.getReferenceNumber());
     }
 }
