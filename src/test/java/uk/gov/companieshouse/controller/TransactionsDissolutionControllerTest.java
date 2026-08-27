@@ -1,6 +1,9 @@
 package uk.gov.companieshouse.controller;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -21,7 +24,8 @@ import uk.gov.companieshouse.exception.InvalidTransactionStateException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.exception.TransactionNotFoundException;
 import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
-import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalData;
+import uk.gov.companieshouse.mapper.DissolutionDirectorApprovalMapper;
+import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionLinks;
@@ -72,6 +76,9 @@ class TransactionsDissolutionControllerTest {
 
     @MockitoBean
     private CompanyProfileService companyProfileService;
+
+    @MockitoBean
+    private DissolutionDirectorApprovalMapper dissolutionDirectorApprovalMapper;
 
     @Autowired
     private MockMvc mockMvc;
@@ -239,154 +246,163 @@ class TransactionsDissolutionControllerTest {
                 .andExpect(jsonPath("$.links.self").value("/company/" + COMPANY_NUMBER + "/transaction/" + TRANSACTION_ID + "/dissolution"));
     }
 
-    @Test
-    void patchDissolutionApproval_returnsUnauthorised_ifNoTokenPermissionsAreProvided() throws Exception {
-        final HttpHeaders headers = new HttpHeaders();
-        headers.add(EricConstants.ERIC_IDENTITY, USER_ID);
-        headers.add(AUTHORISED_USER_HEADER, EMAIL);
+    @Nested
+    @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
+    class patchDirectorApproval {
+        @Test
+        void when_no_token_permissions_are_provided_then_return_unauthorised() throws Exception {
+            final HttpHeaders headers = new HttpHeaders();
+            headers.add(EricConstants.ERIC_IDENTITY, USER_ID);
+            headers.add(AUTHORISED_USER_HEADER, EMAIL);
 
-        mockMvc
-                .perform(
-                        patch(DISSOLUTION_APPROVAL_URI, COMPANY_NUMBER, TRANSACTION_ID)
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .headers(headers)
-                                .content(asJsonString(generateDissolutionPatchRequest()))
-                )
-                .andExpect(status().isUnauthorized());
-    }
+            mockMvc
+                    .perform(
+                            patch(DISSOLUTION_APPROVAL_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                    .headers(headers)
+                                    .content(asJsonString(generateDissolutionPatchRequest()))
+                    )
+                    .andExpect(status().isUnauthorized());
+        }
 
-    @Test
-    void patchDissolutionApproval_returnsUnauthorised_ifCompanyNumberTokenPermissionDoesNotMatchUri() throws Exception {
-        final HttpHeaders headers = new HttpHeaders();
-        headers.add(EricConstants.ERIC_IDENTITY, USER_ID);
-        headers.add(AUTHORISED_USER_HEADER, EMAIL);
-        headers.add(EricConstants.ERIC_AUTHORISED_TOKEN_PERMISSIONS, String.format(
-                "%s=%s %s=%s",
-                Permission.Key.COMPANY_NUMBER, "1234",
-                Permission.Key.COMPANY_TRANSACTIONS, Permission.Value.UPDATE
-        ));
+        @Test
+        void when_company_number_token_permission_does_not_match_uri_then_return_unauthorised() throws Exception {
+            final HttpHeaders headers = new HttpHeaders();
+            headers.add(EricConstants.ERIC_IDENTITY, USER_ID);
+            headers.add(AUTHORISED_USER_HEADER, EMAIL);
+            headers.add(EricConstants.ERIC_AUTHORISED_TOKEN_PERMISSIONS, String.format(
+                    "%s=%s %s=%s",
+                    Permission.Key.COMPANY_NUMBER, "1234",
+                    Permission.Key.COMPANY_TRANSACTIONS, Permission.Value.UPDATE
+            ));
 
-        mockMvc
-                .perform(
-                        patch(DISSOLUTION_APPROVAL_URI, COMPANY_NUMBER, TRANSACTION_ID)
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .headers(headers)
-                                .content(asJsonString(generateDissolutionPatchRequest()))
-                )
-                .andExpect(status().isUnauthorized());
-    }
+            mockMvc
+                    .perform(
+                            patch(DISSOLUTION_APPROVAL_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                    .headers(headers)
+                                    .content(asJsonString(generateDissolutionPatchRequest()))
+                    )
+                    .andExpect(status().isUnauthorized());
+        }
 
-    @Test
-    void patchDissolutionApproval_returnsUnprocessableEntity_ifNoOfficerIdProvided() throws Exception {
-        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
-        body.setOfficerId(null);
+        @Test
+        void when_no_officer_id_provided_then_return_unprocessable_entity() throws Exception {
+            final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+            body.setOfficerId(null);
 
-        assertPatchBodyValidation(body, "{'officerId':'must not be blank'}");
-    }
+            assertPatchBodyValidation(body, "{'officerId':'must not be blank'}");
+        }
 
-    @Test
-    void patchDissolutionApproval_returnsUnprocessableEntity_ifHasApprovedIsNotTrue() throws Exception {
-        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
-        body.setHasApproved(false);
+        @Test
+        void when_has_approved_is_not_true_then_return_unprocessable_entity() throws Exception {
+            final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+            body.setHasApproved(false);
 
-        assertPatchBodyValidation(body, "{'hasApproved':'must be true'}");
-    }
+            assertPatchBodyValidation(body, "{'hasApproved':'must be true'}");
+        }
 
-    @Test
-    void patchDissolutionApproval_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
-        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
-        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
+        @Test
+        void when_ip_is_blank_then_return_unprocessable_entity() throws Exception {
+            final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+            body.setIpAddress(null);
 
-        doThrow(new DissolutionNotFoundException("Dissolution not found"))
-                .when(dissolutionService).addDirectorApproval(COMPANY_NUMBER, transaction, directorApprovalData);
+            assertPatchBodyValidation(body, "{'ipAddress':'must not be blank'}");
+        }
 
-        mockMvc
-                .perform(
-                        patch(DISSOLUTION_APPROVAL_URI, COMPANY_NUMBER, TRANSACTION_ID)
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .headers(createHttpHeaders())
-                                .requestAttr(TRANSACTION_KEY, transaction)
-                                .content(asJsonString(body))
-                )
-                .andExpect(status().isNotFound());
-    }
+        @Test
+        void when_dissolution_does_not_exist_then_return_not_found() throws Exception {
+            final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+            final var command = new DissolutionDirectorApprovalCommand(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
-    @Test
-    void patchDissolutionApproval_returnsNotFound_ifTransactionNotFound() throws Exception {
-        when(transactionService.getTransaction(TRANSACTION_ID)).thenThrow(TransactionNotFoundException.class);
+            when(dissolutionDirectorApprovalMapper.toCommand(eq(USER_ID), any(DissolutionPatchRequest.class))).thenReturn(command);
+            doThrow(new DissolutionNotFoundException("Dissolution not found"))
+                    .when(dissolutionService).addDirectorApproval(COMPANY_NUMBER, transaction, command);
 
-        mockMvc
-                .perform(patch(DISSOLUTION_APPROVAL_URI, COMPANY_NUMBER, TRANSACTION_ID)
-                        .headers(createHttpHeaders())
-                        .requestAttr(TRANSACTION_KEY, transaction))
-                .andExpect(status().isNotFound());
+            mockMvc
+                    .perform(
+                            patch(DISSOLUTION_APPROVAL_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                    .headers(createHttpHeaders())
+                                    .requestAttr(TRANSACTION_KEY, transaction)
+                                    .content(asJsonString(body))
+                    )
+                    .andExpect(status().isNotFound());
+        }
 
-        verify(dissolutionService, never()).addDirectorApproval(any(), any(), any());
-    }
+        @Test
+        void when_transaction_does_not_exist_then_return_not_found() throws Exception {
+            when(transactionService.getTransaction(TRANSACTION_ID)).thenThrow(TransactionNotFoundException.class);
 
-    @Test
-    void patchDissolutionApproval_returnsBadRequest_ifDissolutionDirectorIsNotFound() throws Exception {
-        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
-        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
+            mockMvc
+                    .perform(patch(DISSOLUTION_APPROVAL_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                            .headers(createHttpHeaders())
+                            .requestAttr(TRANSACTION_KEY, transaction))
+                    .andExpect(status().isNotFound());
 
-        doThrow(new DissolutionDirectorApprovalException("Director not found"))
-                .when(dissolutionService).addDirectorApproval(COMPANY_NUMBER, transaction, directorApprovalData);
+            verify(dissolutionService, never()).addDirectorApproval(any(), any(), any());
+        }
 
-        mockMvc
-                .perform(
-                        patch(DISSOLUTION_APPROVAL_URI, COMPANY_NUMBER, TRANSACTION_ID)
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .headers(createHttpHeaders())
-                                .requestAttr(TRANSACTION_KEY, transaction)
-                                .content(asJsonString(body))
-                )
-                .andExpect(status().isBadRequest());
-    }
+        @Test
+        void when_dissolution_director_is_a_signatory_then_return_bad_request() throws Exception {
+            final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+            final var command = new DissolutionDirectorApprovalCommand(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
-    @Test
-    void patchDissolutionApproval_returnsBadRequest_ifDirectorNotPendingApproval() throws Exception {
-        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
-        body.setOfficerId(OFFICER_ID);
-        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
+            when(dissolutionDirectorApprovalMapper.toCommand(eq(USER_ID), any(DissolutionPatchRequest.class))).thenReturn(command);
+            doThrow(new DissolutionDirectorApprovalException("Director not found"))
+                    .when(dissolutionService).addDirectorApproval(COMPANY_NUMBER, transaction, command);
 
-        doThrow(new DissolutionDirectorApprovalException("Director not pending approval"))
-                .when(dissolutionService).addDirectorApproval(COMPANY_NUMBER, transaction, directorApprovalData);
+            mockMvc
+                    .perform(
+                            patch(DISSOLUTION_APPROVAL_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                    .headers(createHttpHeaders())
+                                    .requestAttr(TRANSACTION_KEY, transaction)
+                                    .content(asJsonString(body))
+                    )
+                    .andExpect(status().isBadRequest());
+        }
 
-        mockMvc
-                .perform(
-                        patch(DISSOLUTION_APPROVAL_URI, COMPANY_NUMBER, TRANSACTION_ID)
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .headers(createHttpHeaders())
-                                .requestAttr(TRANSACTION_KEY, transaction)
-                                .content(asJsonString(body)))
-                .andExpect(status().isBadRequest());
-    }
+        @Test
+        void when_director_is_not_pending_approval_then_return_bad_request() throws Exception {
+            final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+            body.setOfficerId(OFFICER_ID);
+            final var command = new DissolutionDirectorApprovalCommand(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
-    @Test
-    void patchDissolutionApproval_returnsUnprocessableEntity_ifIPIsBlank() throws Exception {
-        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
-        body.setIpAddress(null);
+            when(dissolutionDirectorApprovalMapper.toCommand(eq(USER_ID), any(DissolutionPatchRequest.class))).thenReturn(command);
+            doThrow(new DissolutionDirectorApprovalException("Director not pending approval"))
+                    .when(dissolutionService).addDirectorApproval(COMPANY_NUMBER, transaction, command);
 
-        assertPatchBodyValidation(body, "{'ipAddress':'must not be blank'}");
-    }
+            mockMvc
+                    .perform(
+                            patch(DISSOLUTION_APPROVAL_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                    .headers(createHttpHeaders())
+                                    .requestAttr(TRANSACTION_KEY, transaction)
+                                    .content(asJsonString(body)))
+                    .andExpect(status().isBadRequest());
+        }
 
-    @Test
-    void patchDissolutionApproval_returnsNoContent_ifDissolutionApprovalIsPatchedSuccessfully() throws Exception {
-        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
-        body.setIpAddress(IP_ADDRESS);
-        body.setOfficerId(OFFICER_ID);
-        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
+        @Test
+        void when_dissolution_approval_is_patched_successfully_then_return_no_content() throws Exception {
+            final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+            body.setIpAddress(IP_ADDRESS);
+            body.setOfficerId(OFFICER_ID);
+            final var command = new DissolutionDirectorApprovalCommand(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
-        mockMvc
-                .perform(
-                        patch(DISSOLUTION_APPROVAL_URI, COMPANY_NUMBER, TRANSACTION_ID)
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .headers(createHttpHeaders())
-                                .requestAttr(TRANSACTION_KEY, transaction)
-                                .content(asJsonString(body)))
-                .andExpect(status().isNoContent());
+            when(dissolutionDirectorApprovalMapper.toCommand(eq(USER_ID), any(DissolutionPatchRequest.class))).thenReturn(command);
 
-        verify(dissolutionService, times(1)).addDirectorApproval(COMPANY_NUMBER, transaction, directorApprovalData);
+            mockMvc
+                    .perform(
+                            patch(DISSOLUTION_APPROVAL_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                    .headers(createHttpHeaders())
+                                    .requestAttr(TRANSACTION_KEY, transaction)
+                                    .content(asJsonString(body)))
+                    .andExpect(status().isNoContent());
+
+            verify(dissolutionService, times(1)).addDirectorApproval(COMPANY_NUMBER, transaction, command);
+        }
     }
 
     private HttpHeaders createHttpHeaders() {

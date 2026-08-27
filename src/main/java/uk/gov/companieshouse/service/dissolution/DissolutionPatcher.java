@@ -11,7 +11,7 @@ import uk.gov.companieshouse.mapper.PaymentInformationMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
-import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalData;
+import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
@@ -54,14 +54,14 @@ public class DissolutionPatcher {
         this.dissolutionEmailService = dissolutionEmailService;
     }
 
-    public DissolutionPatchResponse addDirectorApproval(final Dissolution dissolution, DissolutionDirectorApprovalData directorApprovalData) {
-        DissolutionDirector director = this.getDirector(directorApprovalData.officerId(), dissolution);
+    public DissolutionPatchResponse addDirectorApproval(final Dissolution dissolution, DissolutionDirectorApprovalCommand command) {
+        DissolutionDirector director = this.getDirector(command.officerId(), dissolution);
 
         if (director.hasDirectorApproval()) {
-            throw new DissolutionDirectorApprovalException(String.format("Director %s has already approved", directorApprovalData.officerId()));
+            throw new DissolutionDirectorApprovalException(String.format("Director %s has already approved", command.officerId()));
         }
 
-        director.setDirectorApproval(approvalMapper.mapToDirectorApproval(directorApprovalData.userId(), directorApprovalData.ipAddress()));
+        director.setDirectorApproval(approvalMapper.mapToDirectorApproval(command.userId(), command.ipAddress()));
 
         if (!this.hasDirectorsLeftToApprove(dissolution)) {
             handleFinalApproval(dissolution);

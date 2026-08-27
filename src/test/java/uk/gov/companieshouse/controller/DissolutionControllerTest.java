@@ -14,7 +14,7 @@ import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.exception.DissolutionDirectorApprovalException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.NotFoundException;
-import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalData;
+import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DirectorRequest;
@@ -427,7 +427,7 @@ class DissolutionControllerTest {
     @Test
     void patchDissolutionRequest_returnsNotFound_ifDissolutionDoesntExist() throws Exception {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
-        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
+        final var directorApprovalData = new DissolutionDirectorApprovalCommand(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
         when(service.addDirectorApproval(COMPANY_NUMBER, directorApprovalData))
                 .thenThrow(new DissolutionNotFoundException("Dissolution not found"));
@@ -445,7 +445,7 @@ class DissolutionControllerTest {
     @Test
     void patchDissolutionRequest_returnsBadRequest_ifDissolutionDirectorIsNotFound() throws Exception {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
-        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
+        final var directorApprovalData = new DissolutionDirectorApprovalCommand(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
         when(service.addDirectorApproval(COMPANY_NUMBER, directorApprovalData))
                 .thenThrow(new DissolutionDirectorApprovalException("Director not found"));
@@ -464,7 +464,7 @@ class DissolutionControllerTest {
     void patchDissolutionRequest_returnsBadRequest_ifDirectorNotPendingApproval() throws Exception {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setOfficerId(OFFICER_ID);
-        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
+        final var directorApprovalData = new DissolutionDirectorApprovalCommand(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
         when(service.addDirectorApproval(COMPANY_NUMBER, directorApprovalData))
                 .thenThrow(new DissolutionDirectorApprovalException("Director not pending approval"));
@@ -492,7 +492,7 @@ class DissolutionControllerTest {
         body.setIpAddress(IP_ADDRESS);
         body.setOfficerId(OFFICER_ID);
         final DissolutionPatchResponse response = generateDissolutionPatchResponse();
-        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
+        final var directorApprovalData = new DissolutionDirectorApprovalCommand(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
         when(service.addDirectorApproval(COMPANY_NUMBER, directorApprovalData)).thenReturn(response);
 

@@ -20,7 +20,7 @@ import uk.gov.companieshouse.fixtures.TransactionFixtures;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
-import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalData;
+import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
@@ -194,7 +194,7 @@ class DissolutionServiceTest {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP);
         body.setOfficerId(OFFICER_ID);
-        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
+        final var directorApprovalData = new DissolutionDirectorApprovalCommand(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
         final Dissolution dissolution = aDissolution()
                 .withCompanyNumber(COMPANY_NUMBER)
@@ -218,7 +218,7 @@ class DissolutionServiceTest {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP);
         body.setOfficerId(OFFICER_ID);
-        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
+        final var directorApprovalData = new DissolutionDirectorApprovalCommand(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
 
@@ -347,14 +347,14 @@ class DissolutionServiceTest {
     class addDirectorApprovalForTransactionModelDissolution {
 
         private Dissolution dissolution;
-        private DissolutionDirectorApprovalData directorApprovalData;
+        private DissolutionDirectorApprovalCommand directorApprovalData;
 
         @BeforeEach
         void initialize() {
             final DissolutionPatchRequest body = generateDissolutionPatchRequest();
             body.setIpAddress(IP);
             body.setOfficerId(OFFICER_ID);
-            directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
+            directorApprovalData = new DissolutionDirectorApprovalCommand(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
             dissolution = aDissolution()
                     .withId(DISSOLUTION_ID)
