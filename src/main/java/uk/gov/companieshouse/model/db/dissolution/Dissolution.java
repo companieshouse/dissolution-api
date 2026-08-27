@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.model.db.dissolution;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -155,5 +156,20 @@ public class Dissolution {
 
     public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
+    }
+
+    /**
+     * Returns the reference number for this dissolution application, which is either:
+     * the transaction ID (for transaction model dissolutions)
+     * or the application reference from the dissolution data.
+     */
+    public String getReferenceNumber() {
+        return isTransactionModelDissolution()
+                ? this.getTransactionId()
+                : this.getData().getApplication().getReference();
+    }
+
+    public boolean isTransactionModelDissolution() {
+        return StringUtils.isNotBlank(this.getTransactionId());
     }
 }

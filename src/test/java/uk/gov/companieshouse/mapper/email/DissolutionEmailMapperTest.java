@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.config.EnvironmentConfig;
+import uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder;
 import uk.gov.companieshouse.fixtures.EmailFixtures;
 import uk.gov.companieshouse.model.db.dissolution.Company;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
@@ -16,6 +17,7 @@ import uk.gov.companieshouse.model.dto.email.PendingPaymentEmailData;
 import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
 import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
 import uk.gov.companieshouse.model.dto.email.SupportNotificationEmailData;
+import uk.gov.companieshouse.model.enums.DissolutionStatus;
 import uk.gov.companieshouse.model.enums.SubmissionStatus;
 
 import java.time.LocalDateTime;
@@ -26,6 +28,7 @@ import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateCompany
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolution;
 import static uk.gov.companieshouse.fixtures.EmailFixtures.CDN_HOST;
 import static uk.gov.companieshouse.fixtures.EmailFixtures.CHS_URL;
+import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
 import static uk.gov.companieshouse.model.Constants.PENDING_PAYMENT_EMAIL_SUBJECT;
 import static uk.gov.companieshouse.model.Constants.SIGNATORY_TO_SIGN_EMAIL_SUBJECT;
 
@@ -117,6 +120,30 @@ public class DissolutionEmailMapperTest {
         assertEquals("test@test.com", result.getTo());
         assertEquals(PENDING_PAYMENT_EMAIL_SUBJECT, result.getSubject());
         assertEquals(dissolution.getData().getApplication().getReference(), result.getDissolutionReferenceNumber());
+        assertEquals("12345", result.getCompanyNumber());
+        assertEquals("Some Company Name", result.getCompanyName());
+    }
+
+    @Test
+    void mapToPendingPaymentEmailData_mapsTransactionIdToDissolutionReferenceNumber() {
+        final Company company = generateCompany();
+        company.setName("Some Company Name");
+        company.setNumber("12345");
+
+        final Dissolution dissolution = DissolutionTestDataBuilder.aDissolution()
+                .withTransactionId(TRANSACTION_ID)
+                .withStatus(DissolutionStatus.PENDING)
+                .withCompany(company)
+                .withCreatedByEmail("test@test.com")
+                .build();
+
+        when(environmentConfig.getChsUrl()).thenReturn(CHS_URL);
+
+        final PendingPaymentEmailData result = dissolutionEmailMapper.mapToPendingPaymentEmailData(dissolution);
+
+        assertEquals("test@test.com", result.getTo());
+        assertEquals(PENDING_PAYMENT_EMAIL_SUBJECT, result.getSubject());
+        assertEquals(dissolution.getTransactionId(), result.getDissolutionReferenceNumber());
         assertEquals("12345", result.getCompanyNumber());
         assertEquals("Some Company Name", result.getCompanyName());
     }

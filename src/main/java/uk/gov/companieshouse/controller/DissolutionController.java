@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.exception.BadRequestException;
 import uk.gov.companieshouse.exception.ConflictException;
-import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.NotFoundException;
+import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalData;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
@@ -117,8 +117,9 @@ public class DissolutionController {
     public DissolutionPatchResponse patchDissolutionApplication(
             @RequestHeader("ERIC-identity") String userId,
             @PathVariable("company-number") final String companyNumber,
-            @Valid @RequestBody final DissolutionPatchRequest body
+            @Valid @RequestBody final DissolutionPatchRequest patchRequest
     ) {
-        return dissolutionService.addDirectorApproval(companyNumber, userId, body);
+        final var directorApprovalData = new DissolutionDirectorApprovalData(userId, patchRequest.getOfficerId(), patchRequest.getIpAddress(), patchRequest.getHasApproved());
+        return dissolutionService.addDirectorApproval(companyNumber, directorApprovalData);
     }
 }

@@ -9,6 +9,8 @@ import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.DisplayNameGenerator.ReplaceUnderscores;
+import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
+import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
 
 @DisplayNameGeneration(ReplaceUnderscores.class)
 class DissolutionTest {
@@ -60,6 +62,22 @@ class DissolutionTest {
             dissolution.changeStatus(DissolutionStatus.PENDING, LocalDateTime.now());
 
             assertThat(dissolution.getSubmittedAt()).isNull();
+        }
+    }
+
+    @Nested
+    class TransactionModelDissolution {
+
+        @Test
+        void when_transaction_model_dissolution_then_return_transaction_id_as_reference() {
+            final var dissolution = aDissolution().withTransactionId(TRANSACTION_ID).build();
+            assertThat(dissolution.getReferenceNumber()).isEqualTo(TRANSACTION_ID);
+        }
+
+        @Test
+        void when_non_transaction_model_dissolution_then_return_application_reference_as_reference() {
+            final var dissolution = aDissolution().withApplicationReference("some-reference").build();
+            assertThat(dissolution.getReferenceNumber()).isEqualTo("some-reference");
         }
     }
 }

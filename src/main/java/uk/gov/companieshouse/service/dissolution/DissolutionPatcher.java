@@ -11,12 +11,15 @@ import uk.gov.companieshouse.mapper.PaymentInformationMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
+import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalData;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
+import uk.gov.companieshouse.model.enums.DissolutionStatus;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.dissolution.certificate.DissolutionCertificateGenerator;
+
+import static uk.gov.companieshouse.util.DateTimeGenerator.generateCurrentDateTime;
 import static uk.gov.companieshouse.util.DissolutionApplicantUtil.doesEmailBelongToApplicant;
 
 import java.util.List;
@@ -51,14 +54,14 @@ public class DissolutionPatcher {
         this.dissolutionEmailService = dissolutionEmailService;
     }
 
-    public DissolutionPatchResponse addDirectorApproval(final Dissolution dissolution, String userId, DissolutionPatchRequest body) {
-        DissolutionDirector director = this.getDirector(body.getOfficerId(), dissolution);
+    public DissolutionPatchResponse addDirectorApproval(final Dissolution dissolution, DissolutionDirectorApprovalData directorApprovalData) {
+        DissolutionDirector director = this.getDirector(directorApprovalData.officerId(), dissolution);
 
         if (director.hasDirectorApproval()) {
-            throw new DissolutionDirectorApprovalException(String.format("Director %s has already approved", body.getOfficerId()));
+            throw new DissolutionDirectorApprovalException(String.format("Director %s has already approved", directorApprovalData.officerId()));
         }
 
-        director.setDirectorApproval(approvalMapper.mapToDirectorApproval(userId, body.getIpAddress()));
+        director.setDirectorApproval(approvalMapper.mapToDirectorApproval(directorApprovalData.userId(), directorApprovalData.ipAddress()));
 
         if (!this.hasDirectorsLeftToApprove(dissolution)) {
             handleFinalApproval(dissolution);
@@ -71,7 +74,11 @@ public class DissolutionPatcher {
 
     private void handleFinalApproval(Dissolution dissolution) {
         final List<DissolutionDirector> directors = dissolution.getData().getDirectors();
-        setDissolutionStatus(dissolution, ApplicationStatus.PENDING_PAYMENT);
+        if (dissolution.isTransactionModelDissolution()) {
+            dissolution.changeStatus(DissolutionStatus.SUBMITTED, generateCurrentDateTime());
+        } else {
+            setDissolutionStatus(dissolution, ApplicationStatus.PENDING_PAYMENT);
+        }
         dissolution.setCertificate(this.certificateGenerator.generateDissolutionCertificate(dissolution));
         boolean isSoleDirectorSelfFiling = directors.size() == 1
                 && doesEmailBelongToApplicant(directors.getFirst().getEmail(), dissolution);
@@ -138,5 +145,4 @@ public class DissolutionPatcher {
                 .getApplication()
                 .setStatus(status);
     }
-
 }

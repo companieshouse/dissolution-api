@@ -14,6 +14,7 @@ import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.config.FeeConfig;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
+import uk.gov.companieshouse.exception.InvalidTransactionStateException;
 import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.fixtures.TransactionFixtures;
@@ -81,6 +82,7 @@ class FilingServiceTest {
         transaction = TransactionTestDataBuilder.aTransaction()
                 .withId(TRANSACTION_ID)
                 .withStatus(TransactionStatus.CLOSED)
+                .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_LLDS01, DISSOLUTION_ID))
                 .withPaymentLink(PAYMENT_URI)
                 .build();
 
@@ -107,11 +109,11 @@ class FilingServiceTest {
     }
 
     @Test
-    void generateDissolutionFiling_returnsFilingData() throws DissolutionNotFoundException, DissolutionNotLinkedToTransactionException {
+    void generateDissolutionFiling_returnsFilingData() {
         var expectedDescription = String.format(FILING_DESCRIPTION, dissolution.getCompany().getName(), dissolution.getCompany().getNumber());
         var expectedFilingData = TransactionFixtures.generateFilingData(dissolution);
 
-        when(dissolutionService.getDissolutionForTransaction(transaction, DISSOLUTION_ID)).thenReturn(dissolution);
+        when(dissolutionService.getDissolutionById(DISSOLUTION_ID)).thenReturn(dissolution);
         when(transactionService.getPayment(PAYMENT_URI)).thenReturn(transactionPayment);
         when(transactionPaymentService.getPaymentSession(PAYMENT_REFERENCE)).thenReturn(paymentDetails);
         when(mapper.mapToFilingData(dissolution, PAYMENT_REFERENCE, PAYMENT_METHOD)).thenReturn(expectedFilingData);
@@ -124,7 +126,7 @@ class FilingServiceTest {
         assertEquals(expectedFilingData, response.getData());
         assertEquals("10.00", response.getCost());
 
-        verify(dissolutionService, times(1)).getDissolutionForTransaction(transaction, DISSOLUTION_ID);
+        verify(dissolutionService, times(1)).getDissolutionById(DISSOLUTION_ID);
         verify(transactionService, times(1)).getPayment(PAYMENT_URI);
         verify(transactionPaymentService, times(1)).getPaymentSession(PAYMENT_REFERENCE);
         verify(mapper, times(1)).mapToFilingData(dissolution, PAYMENT_REFERENCE, PAYMENT_METHOD);
@@ -132,10 +134,10 @@ class FilingServiceTest {
     }
 
     @Test
-    void generateDissolutionFiling_setsKindToLLDS01_whenApplicationTypeIsLLDS01() throws DissolutionNotFoundException, DissolutionNotLinkedToTransactionException {
+    void generateDissolutionFiling_setsKindToLLDS01_whenApplicationTypeIsLLDS01() {
         dissolution.getData().getApplication().setType(ApplicationType.LLDS01);
 
-        when(dissolutionService.getDissolutionForTransaction(transaction, DISSOLUTION_ID)).thenReturn(dissolution);
+        when(dissolutionService.getDissolutionById(DISSOLUTION_ID)).thenReturn(dissolution);
         when(transactionService.getPayment(PAYMENT_URI)).thenReturn(transactionPayment);
         when(transactionPaymentService.getPaymentSession(PAYMENT_REFERENCE)).thenReturn(paymentDetails);
 
@@ -145,8 +147,8 @@ class FilingServiceTest {
     }
 
     @Test
-    void generateDissolutionFiling_throwsDissolutionNotFoundException_whenDissolutionDoesNotExist() throws DissolutionNotFoundException, DissolutionNotLinkedToTransactionException {
-        when(dissolutionService.getDissolutionForTransaction(transaction, DISSOLUTION_ID))
+    void generateDissolutionFiling_throwsDissolutionNotFoundException_whenDissolutionDoesNotExist() {
+        when(dissolutionService.getDissolutionById(DISSOLUTION_ID))
                 .thenThrow(new DissolutionNotFoundException());
 
         assertThrows(DissolutionNotFoundException.class,
@@ -154,17 +156,32 @@ class FilingServiceTest {
     }
 
     @Test
-    void generateDissolutionFiling_throwsDissolutionNotLinkedToTransactionException_whenDissolutionNotLinkedToTransaction() throws DissolutionNotFoundException, DissolutionNotLinkedToTransactionException {
-        when(dissolutionService.getDissolutionForTransaction(transaction, DISSOLUTION_ID))
-                .thenThrow(new DissolutionNotLinkedToTransactionException("not linked"));
+    void generateDissolutionFiling_throwsDissolutionNotLinkedToTransactionException_whenDissolutionNotLinkedToTransaction() {
+        transaction = TransactionTestDataBuilder.aTransaction()
+                .withId(TRANSACTION_ID)
+                .withStatus(TransactionStatus.CLOSED)
+                .build();
 
         assertThrows(DissolutionNotLinkedToTransactionException.class,
                 () -> filingService.generateDissolutionFiling(transaction, DISSOLUTION_ID));
     }
 
     @Test
-    void generateDissolutionFiling_throwsServiceException_whenPaymentRetrievalFails() throws DissolutionNotFoundException, DissolutionNotLinkedToTransactionException {
-        when(dissolutionService.getDissolutionForTransaction(transaction, DISSOLUTION_ID)).thenReturn(dissolution);
+    void generateDissolutionFiling_throwsInvalidTransactionStateException_whenTransactionIsNotClosed() {
+        transaction = TransactionTestDataBuilder.aTransaction()
+                .withId(TRANSACTION_ID)
+                .withStatus(TransactionStatus.OPEN)
+                .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_LLDS01, DISSOLUTION_ID))
+                .withPaymentLink(PAYMENT_URI)
+                .build();
+
+        assertThrows(InvalidTransactionStateException.class,
+                () -> filingService.generateDissolutionFiling(transaction, DISSOLUTION_ID));
+    }
+
+    @Test
+    void generateDissolutionFiling_throwsServiceException_whenPaymentRetrievalFails() {
+        when(dissolutionService.getDissolutionById(DISSOLUTION_ID)).thenReturn(dissolution);
         when(transactionService.getPayment(PAYMENT_URI))
                 .thenThrow(new ServiceException("payment error", new RuntimeException()));
 

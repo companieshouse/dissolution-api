@@ -89,7 +89,7 @@ public class DissolutionEmailMapper {
 
         pendingPaymentEmailData.setTo(dissolution.getCreatedBy().getEmail());
         pendingPaymentEmailData.setSubject(PENDING_PAYMENT_EMAIL_SUBJECT);
-        pendingPaymentEmailData.setDissolutionReferenceNumber(dissolution.getData().getApplication().getReference());
+        pendingPaymentEmailData.setDissolutionReferenceNumber(dissolution.getReferenceNumber());
         pendingPaymentEmailData.setCompanyNumber(dissolution.getCompany().getNumber());
         pendingPaymentEmailData.setCompanyName(dissolution.getCompany().getName());
         pendingPaymentEmailData.setChsUrl(environmentConfig.getChsUrl());

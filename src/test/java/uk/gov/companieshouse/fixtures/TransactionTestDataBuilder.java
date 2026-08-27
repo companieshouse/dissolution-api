@@ -15,6 +15,7 @@ public class TransactionTestDataBuilder {
 
     private String id = TransactionFixtures.TRANSACTION_ID;
     private TransactionStatus status = TransactionStatus.OPEN;
+    private String companyNumber = "12345678";
     private Map<String, Resource> resources;
     private Map<String, Filing> filings;
     private TransactionLinks transactionLinks = new TransactionLinks();
@@ -30,6 +31,11 @@ public class TransactionTestDataBuilder {
 
     public TransactionTestDataBuilder withStatus(TransactionStatus status) {
         this.status = status;
+        return this;
+    }
+
+    public TransactionTestDataBuilder withCompanyNumber(String companyNumber) {
+        this.companyNumber = companyNumber;
         return this;
     }
 
@@ -80,6 +86,7 @@ public class TransactionTestDataBuilder {
         final Transaction transaction = new Transaction();
         transaction.setId(id);
         transaction.setStatus(status);
+        transaction.setCompanyNumber(companyNumber);
         transaction.setResources(resources);
         transaction.setFilings(filings);
         transaction.setLinks(transactionLinks);
