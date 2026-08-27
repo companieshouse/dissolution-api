@@ -18,6 +18,7 @@ import java.util.List;
 
 public class DissolutionTestDataBuilder {
 
+    private String id = null;
     private LocalDateTime modifiedDateTime = LocalDateTime.now();
     private DissolutionData data = DissolutionFixtures.generateDissolutionData();
     private Company company = DissolutionFixtures.generateCompany();
@@ -32,6 +33,11 @@ public class DissolutionTestDataBuilder {
 
     public static DissolutionTestDataBuilder aDissolution() {
         return new DissolutionTestDataBuilder();
+    }
+
+    public DissolutionTestDataBuilder withId(String id) {
+        this.id = id;
+        return this;
     }
 
     public DissolutionTestDataBuilder withModifiedDateTime(LocalDateTime modifiedDateTime) {
@@ -150,6 +156,7 @@ public class DissolutionTestDataBuilder {
 
     public Dissolution build() {
         final Dissolution dissolution = new Dissolution();
+        dissolution.setId(id);
         dissolution.setModifiedDateTime(modifiedDateTime);
         dissolution.setData(data);
         dissolution.setCompany(company);

@@ -202,8 +202,12 @@ class DissolutionResponseMapperTest {
         final String expectedSelfLink = String.format("/company/%s/transaction/%s/dissolution", COMPANY_NUMBER, transaction.getId());
         transaction.setCompanyNumber(COMPANY_NUMBER);
 
-        final Dissolution dissolution = DissolutionTestDataBuilder.aDissolution().withTransactionId(transaction.getId()).withStatus(DissolutionStatus.DRAFT).build();
-        dissolution.setId(DISSOLUTION_ID);
+        final Dissolution dissolution = DissolutionTestDataBuilder
+                .aDissolution()
+                .withId(DISSOLUTION_ID)
+                .withTransactionId(transaction.getId())
+                .withStatus(DissolutionStatus.DRAFT)
+                .build();
 
         final DissolutionCreateDraftResponse result = mapper.mapToDissolutionCreateDraftResponse(transaction, dissolution);
         final DissolutionLinks links = result.getLinks();

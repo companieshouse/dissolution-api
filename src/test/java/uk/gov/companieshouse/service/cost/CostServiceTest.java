@@ -59,10 +59,10 @@ class CostServiceTest {
     @Test
     void givenGetCostsCalled_returnsCost_whenvalidDissolutionId() throws DissolutionNotFoundException, DissolutionNotLinkedToTransactionException {
         final var dissolution = aDissolution()
+                .withId(DISSOLUTION_ID)
                 .withCompanyNumber(COMPANY_NUMBER)
                 .withCompanyName(COMPANY_NAME)
                 .build();
-        dissolution.setId(DISSOLUTION_ID);
 
         when(dissolutionService.getDissolutionById(DISSOLUTION_ID)).thenReturn(dissolution);
         when(feeConfig.getClosingPounds()).thenReturn("10.00");
