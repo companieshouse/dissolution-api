@@ -25,7 +25,7 @@ import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
-import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalData;
+import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
@@ -48,6 +48,7 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -215,7 +216,7 @@ class DissolutionServiceTest {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP);
         body.setOfficerId(OFFICER_ID);
-        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
+        final var directorApprovalData = new DissolutionDirectorApprovalCommand(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
         final Dissolution dissolution = aDissolution()
                 .withCompanyNumber(COMPANY_NUMBER)
@@ -239,7 +240,7 @@ class DissolutionServiceTest {
         final DissolutionPatchRequest body = generateDissolutionPatchRequest();
         body.setIpAddress(IP);
         body.setOfficerId(OFFICER_ID);
-        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
+        final var directorApprovalData = new DissolutionDirectorApprovalCommand(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
         when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
 
@@ -264,8 +265,7 @@ class DissolutionServiceTest {
 
     @Test
     void givenGetDissolutionByIdCalled_whenLinkedDissolutionExists_returnsDissolution() {
-        var dissolution = DissolutionFixtures.generateDissolution();
-        dissolution.setId(DISSOLUTION_ID);
+        final var dissolution = aDissolution().withId(DISSOLUTION_ID).build();
 
         when(repository.findById(DISSOLUTION_ID)).thenReturn(Optional.of(dissolution));
 
@@ -277,9 +277,6 @@ class DissolutionServiceTest {
 
     @Test
     void givenGetDissolutionByIdCalled_whenDissolutionDoesNotExist_throwsException() {
-        var dissolution = DissolutionFixtures.generateDissolution();
-        dissolution.setId(DISSOLUTION_ID);
-
         when(repository.findById(DISSOLUTION_ID)).thenReturn(Optional.empty());
 
         final var exception = assertThrows(DissolutionNotFoundException.class,
@@ -367,130 +364,113 @@ class DissolutionServiceTest {
         verify(creator, never()).createDraft(any(), any(), any(), any(), any());
     }
 
-    @Test
-    void addDirectorApproval_callsPatcher_ifPendingDissolutionForCompanyExists() {
-        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
-        body.setIpAddress(IP);
-        body.setOfficerId(OFFICER_ID);
-        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
+    @Nested
+    @DisplayNameGeneration(ReplaceUnderscores.class)
+    class addDirectorApprovalForTransactionModelDissolution {
 
-        final Dissolution dissolution = aDissolution()
-                .withCompanyNumber(COMPANY_NUMBER)
-                .withDirectors(aDissolutionDirector().withOfficerId(OFFICER_ID))
-                .build();
-        dissolution.setId(DISSOLUTION_ID);
-        final Transaction transaction = aTransaction()
-                .withStatus(TransactionStatus.OPEN)
-                .withCompanyNumber(COMPANY_NUMBER)
-                .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
-                .build();
+        private Dissolution dissolution;
+        private DissolutionDirectorApprovalCommand directorApprovalData;
 
-        when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
+        @BeforeEach
+        void initialize() {
+            final DissolutionPatchRequest body = generateDissolutionPatchRequest();
+            body.setIpAddress(IP);
+            body.setOfficerId(OFFICER_ID);
+            directorApprovalData = new DissolutionDirectorApprovalCommand(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
-        dissolutionService.addDirectorApproval(COMPANY_NUMBER, transaction, directorApprovalData);
+            dissolution = aDissolution()
+                    .withId(DISSOLUTION_ID)
+                    .withCompanyNumber(COMPANY_NUMBER)
+                    .withDirectors(aDissolutionDirector().withOfficerId(OFFICER_ID))
+                    .build();
+        }
 
-        verify(repository, never()).findByCompanyNumber(COMPANY_NUMBER);
-        verify(patcher, times(1)).addDirectorApproval(dissolution, directorApprovalData);
-    }
+        @Test
+        void when_pending_dissolution_exists_then_director_approval_is_applied() {
+            final Transaction transaction = aTransaction()
+                    .withStatus(TransactionStatus.OPEN)
+                    .withCompanyNumber(COMPANY_NUMBER)
+                    .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
+                    .build();
 
-    @Test
-    void addDirectorApproval_whenPendingDissolutionDoesNotExist_throwsException() {
-        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
-        body.setIpAddress(IP);
-        body.setOfficerId(OFFICER_ID);
-        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
+            when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
 
-        final Transaction transaction = aTransaction()
-                .withStatus(TransactionStatus.OPEN)
-                .withCompanyNumber(COMPANY_NUMBER)
-                .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
-                .build();
+            dissolutionService.addDirectorApproval(COMPANY_NUMBER, transaction, directorApprovalData);
 
-        when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
+            verify(repository, never()).findByCompanyNumber(COMPANY_NUMBER);
+            verify(patcher, times(1)).addDirectorApproval(dissolution, directorApprovalData);
+        }
 
+        @Test
+        void when_pending_dissolution_does_not_exist_then_dissolution_not_found_exception_thrown() {
+            final Transaction transaction = aTransaction()
+                    .withStatus(TransactionStatus.OPEN)
+                    .withCompanyNumber(COMPANY_NUMBER)
+                    .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
+                    .build();
 
-        final var exception = assertThrows(DissolutionNotFoundException.class,
-                () -> dissolutionService.addDirectorApproval(COMPANY_NUMBER, transaction, directorApprovalData));
+            when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
 
-        assertThat(exception.getMessage(),
-                is("Pending Dissolution not found for company number " + COMPANY_NUMBER));
+            assertThatThrownBy(() -> dissolutionService.addDirectorApproval(COMPANY_NUMBER, transaction, directorApprovalData))
+                    .isInstanceOf(DissolutionNotFoundException.class)
+                    .hasMessage("Pending Dissolution not found for company number " + COMPANY_NUMBER);
 
-        verify(repository, never()).findByCompanyNumber(COMPANY_NUMBER);
-        verify(patcher, never()).addDirectorApproval(any(), any());
-    }
+            verify(repository, never()).findByCompanyNumber(COMPANY_NUMBER);
+            verify(patcher, never()).addDirectorApproval(any(), any());
+        }
 
-    @Test
-    void addDirectorApproval_whenTransactionIsClosed_throwsException() {
-        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
-        body.setIpAddress(IP);
-        body.setOfficerId(OFFICER_ID);
-        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
-        final Dissolution dissolution = aDissolution()
-                .withCompanyNumber(COMPANY_NUMBER)
-                .withDirectors(aDissolutionDirector().withOfficerId(OFFICER_ID))
-                .build();
-        final Transaction transaction = aTransaction()
-                .withStatus(TransactionStatus.CLOSED)
-                .withCompanyNumber(COMPANY_NUMBER)
-                .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
-                .build();
+        @Test
+        void when_transaction_is_closed_then_invalid_transaction_state_exception_thrown() {
+            final Transaction transaction = aTransaction()
+                    .withStatus(TransactionStatus.CLOSED)
+                    .withCompanyNumber(COMPANY_NUMBER)
+                    .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
+                    .build();
 
-        when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
+            when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
 
-        assertThrows(InvalidTransactionStateException.class,
-                () -> dissolutionService.addDirectorApproval(COMPANY_NUMBER, transaction, directorApprovalData));
+            assertThatThrownBy(() -> dissolutionService.addDirectorApproval(COMPANY_NUMBER, transaction, directorApprovalData))
+                    .isInstanceOf(InvalidTransactionStateException.class)
+                    .hasMessage("Transaction status CLOSED does not match expected status OPEN");
 
-        verify(repository, never()).findByCompanyNumber(COMPANY_NUMBER);
-        verify(patcher, never()).addDirectorApproval(any(), any());
-    }
+            verify(repository, never()).findByCompanyNumber(COMPANY_NUMBER);
+            verify(patcher, never()).addDirectorApproval(any(), any());
+        }
 
-    @Test
-    void addDirectorApproval_whenTransactionIsNotLinkedToCompany_throwsException() {
-        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
-        body.setIpAddress(IP);
-        body.setOfficerId(OFFICER_ID);
-        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
-        final Dissolution dissolution = aDissolution()
-                .withCompanyNumber(COMPANY_NUMBER)
-                .withDirectors(aDissolutionDirector().withOfficerId(OFFICER_ID))
-                .build();
-        final Transaction transaction = aTransaction()
-                .withStatus(TransactionStatus.OPEN)
-                .withCompanyNumber("87654321") // Different company number
-                .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
-                .build();
+        @Test
+        void when_transaction_is_not_linked_to_company_then_invalid_transaction_state_exception_thrown() {
+            final Transaction transaction = aTransaction()
+                    .withStatus(TransactionStatus.OPEN)
+                    .withCompanyNumber("87654321") // Different company number
+                    .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
+                    .build();
 
-        when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
+            when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
 
-        assertThrows(InvalidTransactionStateException.class,
-                () -> dissolutionService.addDirectorApproval(COMPANY_NUMBER, transaction, directorApprovalData));
+            assertThatThrownBy(() -> dissolutionService.addDirectorApproval(COMPANY_NUMBER, transaction, directorApprovalData))
+                    .isInstanceOf(InvalidTransactionStateException.class)
+                    .hasMessage("Transaction does not belong to company " + COMPANY_NUMBER);
 
-        verify(repository, never()).findByCompanyNumber(COMPANY_NUMBER);
-        verify(patcher, never()).addDirectorApproval(any(), any());
-    }
+            verify(repository, never()).findByCompanyNumber(COMPANY_NUMBER);
+            verify(patcher, never()).addDirectorApproval(any(), any());
+        }
 
-    @Test
-    void addDirectorApproval_whenTransactionIsNotLinkedToDissolution_throwsException() {
-        final DissolutionPatchRequest body = generateDissolutionPatchRequest();
-        body.setIpAddress(IP);
-        body.setOfficerId(OFFICER_ID);
-        final var directorApprovalData = new DissolutionDirectorApprovalData(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
-        final Dissolution dissolution = aDissolution()
-                .withCompanyNumber(COMPANY_NUMBER)
-                .withDirectors(aDissolutionDirector().withOfficerId(OFFICER_ID))
-                .build();
-        final Transaction transaction = aTransaction()
-                .withStatus(TransactionStatus.OPEN)
-                .withCompanyNumber(COMPANY_NUMBER)
-                .build();
+        @Test
+        void when_transaction_is_not_linked_to_dissolution_then_dissolution_not_linked_to_transaction_exception_thrown() {
+            final Transaction transaction = aTransaction()
+                    .withStatus(TransactionStatus.OPEN)
+                    .withCompanyNumber(COMPANY_NUMBER)
+                    .build();
 
-        when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
+            when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
 
-        assertThrows(DissolutionNotLinkedToTransactionException.class,
-                () -> dissolutionService.addDirectorApproval(COMPANY_NUMBER, transaction, directorApprovalData));
+            assertThatThrownBy(() -> dissolutionService.addDirectorApproval(COMPANY_NUMBER, transaction, directorApprovalData))
+                    .isInstanceOf(DissolutionNotLinkedToTransactionException.class)
+                    .hasMessage("Transaction is not linked to dissolution " + DISSOLUTION_ID);
 
-        verify(repository, never()).findByCompanyNumber(COMPANY_NUMBER);
-        verify(patcher, never()).addDirectorApproval(any(), any());
+            verify(repository, never()).findByCompanyNumber(COMPANY_NUMBER);
+            verify(patcher, never()).addDirectorApproval(any(), any());
+        }
     }
 
     @Nested

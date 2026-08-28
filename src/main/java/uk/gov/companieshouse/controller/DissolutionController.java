@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.exception.BadRequestException;
 import uk.gov.companieshouse.exception.ConflictException;
 import uk.gov.companieshouse.exception.NotFoundException;
-import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalData;
+import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
@@ -119,7 +119,12 @@ public class DissolutionController {
             @PathVariable("company-number") final String companyNumber,
             @Valid @RequestBody final DissolutionPatchRequest patchRequest
     ) {
-        final var directorApprovalData = new DissolutionDirectorApprovalData(userId, patchRequest.getOfficerId(), patchRequest.getIpAddress(), patchRequest.getHasApproved());
-        return dissolutionService.addDirectorApproval(companyNumber, directorApprovalData);
+        final var command = new DissolutionDirectorApprovalCommand(
+                userId,
+                patchRequest.getOfficerId(),
+                patchRequest.getIpAddress(),
+                patchRequest.getHasApproved()
+        );
+        return dissolutionService.addDirectorApproval(companyNumber, command);
     }
 }

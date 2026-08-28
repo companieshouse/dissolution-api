@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 
 @ExtendWith(MockitoExtension.class)
 class FilingDataMapperTest {
@@ -46,8 +47,7 @@ class FilingDataMapperTest {
     void setup() {
         objectMapper = new ObjectMapper();
         mapper = new FilingDataMapper(objectMapper);
-        dissolution = DissolutionFixtures.generateDissolution();
-        dissolution.setId(DISSOLUTION_ID);
+        dissolution = aDissolution().withId(DISSOLUTION_ID).build();
 
         final DirectorApproval approvalOne = DissolutionFixtures.generateDirectorApproval();
         approvalOne.setDateTime(LocalDateTime.of(2020, 10, 20, 0, 0));

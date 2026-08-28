@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.exception.BadRequestException;
+import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.mapper.DissolutionInitiationMapper;
-import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalData;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
@@ -92,8 +92,13 @@ public class TransactionsDissolutionController {
             @RequestAttribute(TRANSACTION_KEY) Transaction transaction,
             @Valid @RequestBody final DissolutionPatchRequest patchRequest) {
 
-        final var directorApprovalData = new DissolutionDirectorApprovalData(userId, patchRequest.getOfficerId(), patchRequest.getIpAddress(), patchRequest.getHasApproved());
-        dissolutionService.addDirectorApproval(companyNumber, transaction, directorApprovalData);
+        final var command = new DissolutionDirectorApprovalCommand(
+                userId,
+                patchRequest.getOfficerId(),
+                patchRequest.getIpAddress(),
+                patchRequest.getHasApproved()
+        );
+        dissolutionService.addDirectorApproval(companyNumber, transaction, command);
     }
 
     @Operation(summary = "Initiate Dissolution Request")

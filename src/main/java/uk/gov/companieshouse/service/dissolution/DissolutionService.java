@@ -11,7 +11,7 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
-import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalData;
+import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.model.domain.DissolutionInitiationCommand;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
@@ -70,19 +70,19 @@ public class DissolutionService {
         return creator.create(body, companyProfile, directors, userId, ip, email);
     }
 
-    public DissolutionPatchResponse addDirectorApproval(String companyNumber, DissolutionDirectorApprovalData directorApprovalData) {
+    public DissolutionPatchResponse addDirectorApproval(String companyNumber, DissolutionDirectorApprovalCommand command) {
         final Dissolution dissolution = repository.findByCompanyNumber(companyNumber)
                 .orElseThrow(() -> new DissolutionNotFoundException(String.format("Dissolution Request not found for company number %s", companyNumber)));
-        return patcher.addDirectorApproval(dissolution, directorApprovalData);
+        return patcher.addDirectorApproval(dissolution, command);
     }
 
-    public void addDirectorApproval(String companyNumber, Transaction transaction, DissolutionDirectorApprovalData directorApprovalData) {
+    public void addDirectorApproval(String companyNumber, Transaction transaction, DissolutionDirectorApprovalCommand command) {
         final Dissolution dissolution = repository.findPendingDissolutionByCompanyNumber(companyNumber)
                 .orElseThrow(() -> new DissolutionNotFoundException(String.format("Pending Dissolution not found for company number %s", companyNumber)));
 
         TransactionValidator.of(transaction).hasStatus(OPEN).forCompany(companyNumber).isLinkedToDissolution(dissolution.getId()).validate();
 
-        patcher.addDirectorApproval(dissolution, directorApprovalData);
+        patcher.addDirectorApproval(dissolution, command);
     }
 
     public void handlePayment(PaymentPatchRequest body, String applicationReference) throws DissolutionNotFoundException {
