@@ -802,7 +802,7 @@ class DissolutionServiceTest {
         }
 
         @Test
-        void when_pending_dissolution_exists_then_director_approval_is_applied() {
+        void when_pending_dissolution_exists_then_signatory_details_are_updated() {
             when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
 
             dissolutionService.findAndUpdateSignatory(COMPANY_NUMBER, transaction, command);

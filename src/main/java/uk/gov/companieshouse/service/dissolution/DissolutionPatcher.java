@@ -14,6 +14,7 @@ import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
 import uk.gov.companieshouse.model.domain.ChangeSignatoryDetailsCommand;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
@@ -25,6 +26,7 @@ import static uk.gov.companieshouse.util.DateTimeGenerator.generateCurrentDateTi
 import static uk.gov.companieshouse.util.DissolutionApplicantUtil.doesEmailBelongToApplicant;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -93,7 +95,7 @@ public class DissolutionPatcher {
             signatory.setOnBehalfName(command.onBehalfName());
 
             this.repository.save(dissolution);
-            dissolutionEmailService.notifySignatoryToSign(dissolution, email);
+            dissolutionEmailService.notifySignatoryToSign(dissolution, signatory.getEmail());
         }
     }
 

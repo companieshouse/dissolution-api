@@ -131,7 +131,7 @@ public class TransactionsDissolutionController {
             @ApiResponse(responseCode = "404", description = "Dissolution Application or Company not found"),
             @ApiResponse(responseCode = "409", description = "Transaction is not open, is not associated with the company", content = @Content)
     })
-    @PatchMapping("signatories/{officer_id}")
+    @PatchMapping("/signatories/{officer_id}")
     @ResponseStatus(HttpStatus.OK)
     public void changeSignatoryDetails(
             @RequestHeader("ERIC-identity") String userId,

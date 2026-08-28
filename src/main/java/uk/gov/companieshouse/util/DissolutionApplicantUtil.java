@@ -2,6 +2,8 @@ package uk.gov.companieshouse.util;
 
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 
+import java.util.Objects;
+
 public class DissolutionApplicantUtil {
 
     private DissolutionApplicantUtil() {}
@@ -14,9 +16,7 @@ public class DissolutionApplicantUtil {
     }
 
     public static boolean isApplicant(String userId, Dissolution dissolution) {
-        return dissolution
-                .getCreatedBy()
-                .getUserId()
-                .equals(userId);
+        var createdBy = dissolution.getCreatedBy();
+        return createdBy != null && Objects.equals(createdBy.getUserId(), userId);
     }
 }
