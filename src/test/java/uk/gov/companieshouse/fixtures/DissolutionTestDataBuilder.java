@@ -26,6 +26,7 @@ public class DissolutionTestDataBuilder {
     private PaymentInformation paymentInformation = new PaymentInformation();
     private DissolutionVerdict verdict = new DissolutionVerdict();
     private boolean active = true;
+    private String id = null;
     private String transactionId = null;
     private DissolutionStatus status = null;
     private LocalDateTime statusChangedAt = null;
@@ -137,6 +138,11 @@ public class DissolutionTestDataBuilder {
         return this;
     }
 
+    public DissolutionTestDataBuilder withId(String id) {
+        this.id = id;
+        return this;
+    }
+
     public DissolutionTestDataBuilder withStatus(DissolutionStatus status) {
         this.status = status;
         return this;
@@ -150,6 +156,7 @@ public class DissolutionTestDataBuilder {
 
     public Dissolution build() {
         final Dissolution dissolution = new Dissolution();
+        dissolution.setId(id);
         dissolution.setModifiedDateTime(modifiedDateTime);
         dissolution.setData(data);
         dissolution.setCompany(company);

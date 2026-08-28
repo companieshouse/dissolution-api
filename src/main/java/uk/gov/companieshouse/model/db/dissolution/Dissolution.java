@@ -146,6 +146,13 @@ public class Dissolution {
         }
     }
 
+    public void assignSignatories(List<DissolutionDirector> directors) {
+        if (this.data == null) {
+            throw new IllegalStateException("Cannot assign signatories: dissolution data is not initialised");
+        }
+        this.data.setDirectors(directors);
+    }
+
     public List<DissolutionStatusChanged> getStatusHistory() {
         return Collections.unmodifiableList(statusHistory);
     }
@@ -171,5 +178,22 @@ public class Dissolution {
 
     public boolean isTransactionModelDissolution() {
         return StringUtils.isNotBlank(this.getTransactionId());
+    }
+
+    /**
+     * Returns the date/time the dissolution application was initiated, which is either:
+     * the date/time the dissolution status was changed to PENDING (for transaction model
+     * dissolutions, as the draft may have been created earlier than the application itself
+     * was initiated), or the date/time the application was created otherwise.
+     */
+    public LocalDateTime dateDissolutionInitiated() {
+        return isTransactionModelDissolution()
+                ? this.getStatusHistory()
+                        .stream()
+                        .filter(statusChanged -> statusChanged.getStatus() == DissolutionStatus.PENDING)
+                        .map(DissolutionStatusChanged::getChangedAt)
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalStateException("Dissolution has not been initiated: no PENDING status found in status history"))
+                : this.getCreatedBy().getDateTime();
     }
 }
