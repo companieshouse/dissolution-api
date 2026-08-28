@@ -3,7 +3,9 @@ package uk.gov.companieshouse.service.dissolution;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
+import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.exception.ConflictException;
+import uk.gov.companieshouse.exception.DissolutionChangeDirectorException;
 import uk.gov.companieshouse.exception.DissolutionInvalidSignatoriesException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.NotFoundException;
@@ -11,6 +13,7 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.domain.ChangeSignatoryDetailsCommand;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.model.domain.DissolutionInitiationCommand;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
@@ -35,6 +38,7 @@ import java.util.Optional;
 import static uk.gov.companieshouse.api.model.transaction.TransactionStatus.OPEN;
 import static uk.gov.companieshouse.model.enums.DissolutionStatus.PENDING;
 import static uk.gov.companieshouse.util.DateTimeGenerator.generateCurrentDateTime;
+import static uk.gov.companieshouse.util.DissolutionApplicantUtil.isApplicant;
 
 @Service
 public class DissolutionService {
@@ -214,5 +218,18 @@ public class DissolutionService {
     private Dissolution findDraftDissolutionOrThrow(String companyNumber, String userId) {
         return repository.findDraftDissolutionForUserAndCompany(userId, companyNumber)
                 .orElseThrow(() -> new DissolutionNotFoundException(String.format("Draft dissolution not found for user %s and company number %s.", userId, companyNumber)));
+    }
+
+    public void findAndUpdateSignatory(String companyNumber, Transaction transaction, ChangeSignatoryDetailsCommand command) {
+        final Dissolution dissolution = repository.findPendingDissolutionByCompanyNumber(companyNumber)
+                .orElseThrow(() -> new DissolutionNotFoundException(String.format("Pending Dissolution not found for company number %s", companyNumber)));
+
+        if (!isApplicant(command.userId(), dissolution)) {
+            throw new DissolutionChangeDirectorException("Only the applicant can update signatory");
+        }
+
+        TransactionValidator.of(transaction).hasStatus(TransactionStatus.OPEN).forCompany(companyNumber).isLinkedToDissolution(dissolution.getId()).validate();
+
+        patcher.updateSignatory(dissolution, command);
     }
 }

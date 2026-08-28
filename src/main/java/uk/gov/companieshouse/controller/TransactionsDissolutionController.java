@@ -19,10 +19,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.exception.BadRequestException;
+import uk.gov.companieshouse.model.domain.ChangeSignatoryDetailsCommand;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.mapper.DissolutionInitiationMapper;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionInitiationRequest;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
@@ -120,5 +122,31 @@ public class TransactionsDissolutionController {
         final var command = dissolutionInitiationMapper.toCommand(transaction, companyNumber, userId, dissolutionInitiationRequest);
 
         dissolutionService.initiateDissolution(command);
+    }
+
+    @Operation(summary = "Update Dissolution Signatory Details")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Dissolution Director details successfully updated", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Dissolution Request director is not a signatory, has already approved or transaction is not linked to the dissolution"),
+            @ApiResponse(responseCode = "404", description = "Dissolution Application or Company not found"),
+            @ApiResponse(responseCode = "409", description = "Transaction is not open, is not associated with the company", content = @Content)
+    })
+    @PatchMapping("/directors/{director_id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void patchDissolutionDirector(
+            @RequestHeader("ERIC-identity") String userId,
+            @RequestHeader("ERIC-Authorised-User") String authorisedUser,
+            @PathVariable(COMPANY_NUMBER_KEY) final String companyNumber,
+            @RequestAttribute(TRANSACTION_KEY) Transaction transaction,
+            @PathVariable("director_id") final String directorId,
+            @Valid @RequestBody final DissolutionDirectorPatchRequest directorPatchRequest) {
+
+        final var command = new ChangeSignatoryDetailsCommand(
+                userId,
+                directorId,
+                directorPatchRequest.getEmail(),
+                directorPatchRequest.getOnBehalfName()
+        );
+        dissolutionService.findAndUpdateSignatory(companyNumber, transaction, command);
     }
 }

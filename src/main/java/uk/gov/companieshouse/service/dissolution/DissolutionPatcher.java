@@ -2,6 +2,7 @@ package uk.gov.companieshouse.service.dissolution;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.exception.DissolutionChangeDirectorException;
 import uk.gov.companieshouse.exception.DissolutionDirectorApprovalException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
@@ -11,6 +12,7 @@ import uk.gov.companieshouse.mapper.PaymentInformationMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
+import uk.gov.companieshouse.model.domain.ChangeSignatoryDetailsCommand;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
@@ -23,6 +25,7 @@ import static uk.gov.companieshouse.util.DateTimeGenerator.generateCurrentDateTi
 import static uk.gov.companieshouse.util.DissolutionApplicantUtil.doesEmailBelongToApplicant;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class DissolutionPatcher {
@@ -55,10 +58,12 @@ public class DissolutionPatcher {
     }
 
     public DissolutionPatchResponse addDirectorApproval(final Dissolution dissolution, DissolutionDirectorApprovalCommand command) {
-        DissolutionDirector director = this.getDirector(command.officerId(), dissolution);
+        final var officerId = command.officerId();
+        DissolutionDirector director = this.findSignatory(officerId, dissolution)
+                .orElseThrow(() -> new DissolutionDirectorApprovalException(String.format("Director %s is not a signatory", officerId)));
 
         if (director.hasDirectorApproval()) {
-            throw new DissolutionDirectorApprovalException(String.format("Director %s has already approved", command.officerId()));
+            throw new DissolutionDirectorApprovalException(String.format("Director %s has already approved", officerId));
         }
 
         director.setDirectorApproval(approvalMapper.mapToDirectorApproval(command.userId(), command.ipAddress()));
@@ -70,6 +75,26 @@ public class DissolutionPatcher {
         this.repository.save(dissolution);
 
         return this.responseMapper.mapToDissolutionPatchResponse(dissolution);
+    }
+
+    public void updateSignatory(Dissolution dissolution, ChangeSignatoryDetailsCommand command) {
+        final var officerId = command.officerId();
+        final var email = command.officerEmail();
+
+        DissolutionDirector signatory = this.findSignatory(officerId, dissolution)
+                .orElseThrow(() -> new DissolutionChangeDirectorException(String.format("Director %s is not a signatory", officerId)));
+
+        if (signatory.hasDirectorApproval()) {
+            throw new DissolutionChangeDirectorException(String.format("Signatory %s has already approved", officerId));
+        }
+
+        if (signatory.hasDetailsChanged(email, command.onBehalfName())) {
+            signatory.setEmail(email.trim().toLowerCase());
+            signatory.setOnBehalfName(command.onBehalfName());
+
+            this.repository.save(dissolution);
+            dissolutionEmailService.notifySignatoryToSign(dissolution, email);
+        }
     }
 
     private void handleFinalApproval(Dissolution dissolution) {
@@ -109,14 +134,13 @@ public class DissolutionPatcher {
         this.repository.save(dissolution);
     }
 
-    private DissolutionDirector getDirector(String officerId, Dissolution dissolution) {
+    public Optional<DissolutionDirector> findSignatory(String officerId, Dissolution dissolution) {
         return dissolution
                 .getData()
                 .getDirectors()
                 .stream()
                 .filter(director -> director.getOfficerId().equals(officerId))
-                .findFirst()
-                .orElseThrow(() -> new DissolutionDirectorApprovalException(String.format("Director %s is not a signatory", officerId)));
+                .findFirst();
     }
 
     private void addPaymentInformation(PaymentPatchRequest body, Dissolution dissolution) {
@@ -144,5 +168,12 @@ public class DissolutionPatcher {
                 .getData()
                 .getApplication()
                 .setStatus(status);
+    }
+
+    private boolean isApplicant(String userId, Dissolution dissolution) {
+        return dissolution
+                .getCreatedBy()
+                .getUserId()
+                .equals(userId);
     }
 }

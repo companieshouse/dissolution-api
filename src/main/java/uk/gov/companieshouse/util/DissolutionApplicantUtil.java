@@ -13,4 +13,10 @@ public class DissolutionApplicantUtil {
                 .equals(email);
     }
 
+    public static boolean isApplicant(String userId, Dissolution dissolution) {
+        return dissolution
+                .getCreatedBy()
+                .getUserId()
+                .equals(userId);
+    }
 }

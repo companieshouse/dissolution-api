@@ -66,7 +66,7 @@ public class GlobalExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler({BadRequestException.class, DissolutionNotLinkedToTransactionException.class, DissolutionInvalidSignatoriesException.class})
+    @ExceptionHandler({BadRequestException.class, DissolutionNotLinkedToTransactionException.class, DissolutionInvalidSignatoriesException.class, DissolutionChangeDirectorException.class})
     public void handleBadRequest(RuntimeException ex, HttpServletRequest request) {
         logger.info(String.format("[Bad Request] - %s - %s", request.getRequestURL().toString(), ex.getMessage()));
     }
