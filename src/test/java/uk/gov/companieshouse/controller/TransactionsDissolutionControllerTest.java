@@ -5,8 +5,12 @@ import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,19 +23,26 @@ import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.exception.ConflictException;
 import uk.gov.companieshouse.exception.DissolutionDirectorApprovalException;
+import uk.gov.companieshouse.exception.DissolutionInvalidSignatoriesException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.InvalidTransactionStateException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.exception.TransactionNotFoundException;
 import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
+import uk.gov.companieshouse.mapper.DissolutionInitiationMapper;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionLinks;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionInitiationRequest;
 import uk.gov.companieshouse.service.CompanyProfileService;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -41,22 +52,27 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.companieshouse.fixtures.CompanyProfileFixtures.generateCompanyProfile;
+import static uk.gov.companieshouse.fixtures.DirectorRequestTestDataBuilder.aDirectorRequest;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionPatchRequest;
+import static uk.gov.companieshouse.fixtures.DissolutionInitiationRequestTestDataBuilder.aDissolutionInitiationRequest;
 import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
 import static uk.gov.companieshouse.model.Constants.HEADER_ERIC_REQUEST_ID;
 import static uk.gov.companieshouse.model.Constants.TRANSACTION_KEY;
 
 @WebMvcTest(TransactionsDissolutionController.class)
+@Import(DissolutionInitiationMapper.class)
 class TransactionsDissolutionControllerTest {
 
     private static final String DISSOLUTION_URI = "/company/{company-number}/transaction/{transaction_id}/dissolution";
     private static final String DISSOLUTION_APPROVAL_URI = "/company/{company-number}/transaction/{transaction_id}/dissolution/approve";
+    private static final String DISSOLUTION_INITIATION_URI = "/company/{company-number}/transaction/{transaction_id}/dissolution/initiation";
     private static final String COMPANY_NUMBER = "12345678";
     private static final String OFFICER_ID = "abc123";
     private static final String USER_ID = "1234";
@@ -87,6 +103,20 @@ class TransactionsDissolutionControllerTest {
     void setup() {
         transaction = TransactionTestDataBuilder.aTransaction().withStatus(TransactionStatus.OPEN).withCompanyNumber(COMPANY_NUMBER).build();
         when(transactionService.getTransaction(TRANSACTION_ID)).thenReturn(transaction);
+    }
+
+    static Stream<Arguments> invalidDirectorsRequests() {
+        return Stream.of(
+                Arguments.of(
+                        "directors is null",
+                        aDissolutionInitiationRequest().withDirectors(null).build()),
+                Arguments.of(
+                        "directors is empty",
+                        aDissolutionInitiationRequest().withDirectors(Collections.emptyList()).build()),
+                Arguments.of(
+                        "directors contains a null element",
+                        aDissolutionInitiationRequest().withDirectors(Arrays.asList(aDirectorRequest().build(), null)).build())
+        );
     }
 
     @Test
@@ -393,6 +423,93 @@ class TransactionsDissolutionControllerTest {
                     .andExpect(status().isNoContent());
 
             verify(dissolutionService, times(1)).addDirectorApproval(COMPANY_NUMBER, transaction, command);
+        }
+    }
+
+    @Nested
+    class initiateDissolution {
+
+        @Test
+        void when_dissolution_is_initiated_successfully_then_204_response() throws Exception {
+            mockMvc
+                    .perform(post(DISSOLUTION_INITIATION_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                            .headers(createHttpHeaders())
+                            .contentType(APPLICATION_JSON)
+                            .content(asJsonString(aDissolutionInitiationRequest().withDirectorRequest(aDirectorRequest()).build()))
+                            .requestAttr(TRANSACTION_KEY, transaction))
+                    .andExpect(status().isNoContent());
+
+            verify(dissolutionService).initiateDissolution(any());
+        }
+
+        @Test
+        void when_DRAFT_dissolution_for_user_and_company_does_not_exist_then_404_response() throws Exception {
+            doThrow(DissolutionNotFoundException.class)
+                    .when(dissolutionService).initiateDissolution(any());
+
+            mockMvc
+                    .perform(post(DISSOLUTION_INITIATION_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                            .headers(createHttpHeaders())
+                            .contentType(APPLICATION_JSON)
+                            .content(asJsonString(aDissolutionInitiationRequest().withDirectorRequest(aDirectorRequest()).build()))
+                            .requestAttr(TRANSACTION_KEY, transaction))
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void when_specified_signatory_directors_are_invalid_then_400_response() throws Exception {
+            doThrow(new DissolutionInvalidSignatoriesException("Invalid signatories"))
+                    .when(dissolutionService).initiateDissolution(any());
+
+            mockMvc
+                    .perform(post(DISSOLUTION_INITIATION_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                            .headers(createHttpHeaders())
+                            .contentType(APPLICATION_JSON)
+                            .content(asJsonString(aDissolutionInitiationRequest().withDirectorRequest(aDirectorRequest()).build()))
+                            .requestAttr(TRANSACTION_KEY, transaction))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @ParameterizedTest(name = "{index} => {0}")
+        @MethodSource("uk.gov.companieshouse.controller.TransactionsDissolutionControllerTest#invalidDirectorsRequests")
+        void when_directors_is_missing_or_contains_invalid_entries_then_422_response(String description, DissolutionInitiationRequest request) throws Exception {
+            mockMvc
+                    .perform(post(DISSOLUTION_INITIATION_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                            .headers(createHttpHeaders())
+                            .contentType(APPLICATION_JSON)
+                            .content(asJsonString(request))
+                            .requestAttr(TRANSACTION_KEY, transaction))
+                            .andExpect(status().isUnprocessableContent());
+
+            verify(dissolutionService, never()).initiateDissolution(any());
+        }
+
+        @Test
+        void when_transaction_is_not_open_then_409_response() throws Exception {
+            doThrow(new InvalidTransactionStateException("Transaction is already closed or closed pending payment"))
+                    .when(dissolutionService).initiateDissolution(any());
+
+            mockMvc
+                    .perform(post(DISSOLUTION_INITIATION_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                            .headers(createHttpHeaders())
+                            .contentType(APPLICATION_JSON)
+                            .content(asJsonString(aDissolutionInitiationRequest().withDirectorRequest(aDirectorRequest()).build()))
+                            .requestAttr(TRANSACTION_KEY, transaction))
+                    .andExpect(status().isConflict());
+        }
+
+        @Test
+        void when_transaction_is_not_associated_with_the_company_then_409_response() throws Exception {
+            doThrow(new InvalidTransactionStateException("Transaction does not belong to company " + COMPANY_NUMBER))
+                    .when(dissolutionService).initiateDissolution(any());
+
+            mockMvc
+                    .perform(post(DISSOLUTION_INITIATION_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                            .headers(createHttpHeaders())
+                            .contentType(APPLICATION_JSON)
+                            .content(asJsonString(aDissolutionInitiationRequest().withDirectorRequest(aDirectorRequest()).build()))
+                            .requestAttr(TRANSACTION_KEY, transaction))
+                    .andExpect(status().isConflict());
         }
     }
 

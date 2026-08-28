@@ -6,8 +6,10 @@ import org.junit.jupiter.api.Test;
 import uk.gov.companieshouse.model.enums.DissolutionStatus;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.DisplayNameGenerator.ReplaceUnderscores;
 import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
@@ -78,6 +80,72 @@ class DissolutionTest {
         void when_non_transaction_model_dissolution_then_return_application_reference_as_reference() {
             final var dissolution = aDissolution().withApplicationReference("some-reference").build();
             assertThat(dissolution.getReferenceNumber()).isEqualTo("some-reference");
+        }
+    }
+
+    @Nested
+    class dateDissolutionInitiated {
+
+        @Test
+        void when_non_transaction_model_dissolution_then_return_createdBy_dateTime() {
+            var createdByDateTime = LocalDateTime.now().minusDays(3);
+            var createdBy = new CreatedBy();
+            createdBy.setDateTime(createdByDateTime);
+
+            var dissolution = new Dissolution();
+            dissolution.setCreatedBy(createdBy);
+            dissolution.changeStatus(DissolutionStatus.PENDING, LocalDateTime.now());
+
+            assertThat(dissolution.dateDissolutionInitiated()).isEqualTo(createdByDateTime);
+        }
+
+        @Test
+        void when_transaction_model_dissolution_then_return_changedAt_of_PENDING_status() {
+            var draftCreatedAt = LocalDateTime.now().minusDays(5);
+            var pendingChangedAt = LocalDateTime.now().minusDays(1);
+            var createdBy = new CreatedBy();
+            createdBy.setDateTime(draftCreatedAt);
+
+            var dissolution = new Dissolution();
+            dissolution.setCreatedBy(createdBy);
+            dissolution.setTransactionId(TRANSACTION_ID);
+            dissolution.changeStatus(DissolutionStatus.DRAFT, draftCreatedAt);
+            dissolution.changeStatus(DissolutionStatus.PENDING, pendingChangedAt);
+
+            assertThat(dissolution.dateDissolutionInitiated()).isEqualTo(pendingChangedAt);
+        }
+
+        @Test
+        void when_transaction_model_dissolution_and_no_PENDING_status_in_history_then_exception_thrown() {
+            var dissolution = new Dissolution();
+            dissolution.setTransactionId(TRANSACTION_ID);
+            dissolution.changeStatus(DissolutionStatus.DRAFT, LocalDateTime.now());
+
+            assertThrows(IllegalStateException.class, dissolution::dateDissolutionInitiated);
+        }
+    }
+
+    @Nested
+    class assignSignatories {
+
+        @Test
+        void assigns_the_directors_to_the_dissolution_data() {
+            var dissolution = new Dissolution();
+            dissolution.setData(new DissolutionData());
+            var directors = List.of(new DissolutionDirector());
+
+            dissolution.assignSignatories(directors);
+
+            assertThat(dissolution.getData().getDirectors()).isEqualTo(directors);
+        }
+
+        @Test
+        void when_data_is_not_initialised_then_exception_thrown() {
+            var dissolution = new Dissolution();
+            var directors = List.of(new DissolutionDirector());
+
+            assertThrows(IllegalStateException.class,
+                    () -> dissolution.assignSignatories(directors));
         }
     }
 }

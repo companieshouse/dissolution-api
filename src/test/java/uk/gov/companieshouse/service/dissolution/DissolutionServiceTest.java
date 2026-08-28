@@ -5,11 +5,14 @@ import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.exception.ConflictException;
+import uk.gov.companieshouse.exception.DissolutionInvalidSignatoriesException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
 import uk.gov.companieshouse.exception.InvalidTransactionStateException;
@@ -18,8 +21,10 @@ import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.fixtures.TransactionFixtures;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
@@ -31,8 +36,8 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
-import uk.gov.companieshouse.model.enums.DissolutionStatus;
 import uk.gov.companieshouse.repository.DissolutionRepository;
+import uk.gov.companieshouse.service.CompanyOfficerService;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.payment.PaymentService;
 
@@ -42,6 +47,7 @@ import java.util.Optional;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -58,13 +64,19 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
+import static uk.gov.companieshouse.fixtures.CompanyOfficerTestDataBuilder.aCompanyOfficer;
+import static uk.gov.companieshouse.fixtures.DirectorRequestTestDataBuilder.aDirectorRequest;
 import static uk.gov.companieshouse.fixtures.DissolutionDirectorTestDataBuilder.aDissolutionDirector;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionPatchRequest;
 import static uk.gov.companieshouse.fixtures.DissolutionGetResponseTestDataBuilder.aDissolutionGetResponse;
 import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
+import static uk.gov.companieshouse.fixtures.DissolutionInitiationCommandTestDataBuilder.aDissolutionInitiationCommand;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 import static uk.gov.companieshouse.fixtures.TransactionTestDataBuilder.aTransaction;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
+import static uk.gov.companieshouse.model.enums.DissolutionStatus.DRAFT;
+import static uk.gov.companieshouse.model.enums.DissolutionStatus.PENDING;
+import static uk.gov.companieshouse.model.enums.DissolutionStatus.SUBMITTED;
 
 @ExtendWith(MockitoExtension.class)
 class DissolutionServiceTest {
@@ -90,9 +102,19 @@ class DissolutionServiceTest {
     private TransactionService transactionService;
 
     private final DissolutionResponseMapper responseMapper = new DissolutionResponseMapper();
+    private final DissolutionRequestMapper requestMapper = new DissolutionRequestMapper();
 
     @Mock
     private Logger logger;
+
+    @Mock
+    private CompanyOfficerService companyOfficerService;
+
+    @Mock
+    private DissolutionEmailService emailService;
+
+    @Captor
+    private ArgumentCaptor<Dissolution> dissolutionCaptor;
 
     public static final String COMPANY_NUMBER = "12345678";
     public static final String APPLICATION_REFERENCE = "XYZ456";
@@ -106,7 +128,7 @@ class DissolutionServiceTest {
 
     @BeforeEach
     void setUp() {
-        dissolutionService = new DissolutionService(creator, getter, patcher, repository, paymentService, transactionService, responseMapper, logger);
+        dissolutionService = new DissolutionService(creator, getter, patcher, repository, paymentService, transactionService, responseMapper, logger, companyOfficerService, requestMapper, emailService);
     }
 
     @Test
@@ -457,7 +479,7 @@ class DissolutionServiceTest {
 
         @Test
         void when_no_submitted_dissolution_exists_then_returns_empty() {
-            when(repository.findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, DissolutionStatus.SUBMITTED)).thenReturn(Optional.empty());
+            when(repository.findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, SUBMITTED)).thenReturn(Optional.empty());
 
             var result = dissolutionService.findSubmittedDissolutionWithNoVerdict(COMPANY_NUMBER);
 
@@ -467,7 +489,7 @@ class DissolutionServiceTest {
         @Test
         void when_submitted_dissolution_has_no_verdict_then_returns_it() {
             var dissolution = aDissolution().withTransactionId(TRANSACTION_ID).withApplicationReference(APPLICATION_REFERENCE).build();
-            when(repository.findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, DissolutionStatus.SUBMITTED)).thenReturn(Optional.of(dissolution));
+            when(repository.findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, SUBMITTED)).thenReturn(Optional.of(dissolution));
             when(transactionService.hasVerdictBeenReached(TRANSACTION_ID)).thenReturn(false);
 
             var result = dissolutionService.findSubmittedDissolutionWithNoVerdict(COMPANY_NUMBER);
@@ -478,7 +500,7 @@ class DissolutionServiceTest {
         @Test
         void when_submitted_dissolution_already_has_a_verdict_then_returns_empty() {
             var dissolution = aDissolution().withTransactionId(TRANSACTION_ID).build();
-            when(repository.findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, DissolutionStatus.SUBMITTED)).thenReturn(Optional.of(dissolution));
+            when(repository.findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, SUBMITTED)).thenReturn(Optional.of(dissolution));
             when(transactionService.hasVerdictBeenReached(TRANSACTION_ID)).thenReturn(true);
 
             var result = dissolutionService.findSubmittedDissolutionWithNoVerdict(COMPANY_NUMBER);
@@ -506,65 +528,65 @@ class DissolutionServiceTest {
         void when_not_found_by_company_number_then_falls_back_to_pending_dissolution() {
             when(getter.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(empty());
             when(getter.getPendingDissolution(COMPANY_NUMBER)).thenReturn(of(aDissolutionGetResponse()
-                    .withDissolutionStatus(DissolutionStatus.PENDING)
+                    .withDissolutionStatus(PENDING)
                     .build()));
 
             var dissolutionDto = dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER);
 
-            assertThat(dissolutionDto.get().getDissolutionStatus()).isEqualTo(DissolutionStatus.PENDING);
+            assertThat(dissolutionDto.get().getDissolutionStatus()).isEqualTo(PENDING);
         }
 
         @Test
         void when_not_found_by_pending_then_falls_back_to_submitted_dissolution_with_no_verdict() {
             when(getter.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(empty());
             when(getter.getPendingDissolution(COMPANY_NUMBER)).thenReturn(empty());
-            when(repository.findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, DissolutionStatus.SUBMITTED)).thenReturn(of(aDissolution()
+            when(repository.findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, SUBMITTED)).thenReturn(of(aDissolution()
                     .withTransactionId(TRANSACTION_ID)
-                    .withStatus(DissolutionStatus.SUBMITTED)
+                    .withStatus(SUBMITTED)
                     .build()));
             when(transactionService.hasVerdictBeenReached(TRANSACTION_ID)).thenReturn(false);
 
             var dissolutionDto = dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER);
 
-            assertThat(dissolutionDto.get().getDissolutionStatus()).isEqualTo(DissolutionStatus.SUBMITTED);
+            assertThat(dissolutionDto.get().getDissolutionStatus()).isEqualTo(SUBMITTED);
         }
 
         @Test
         void when_submitted_dissolution_already_has_a_verdict_then_falls_back_to_draft_dissolution() {
             when(getter.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(empty());
             when(getter.getPendingDissolution(COMPANY_NUMBER)).thenReturn(empty());
-            when(repository.findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, DissolutionStatus.SUBMITTED)).thenReturn(of(aDissolution()
+            when(repository.findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, SUBMITTED)).thenReturn(of(aDissolution()
                     .withTransactionId(TRANSACTION_ID)
                     .build()));
             when(transactionService.hasVerdictBeenReached(TRANSACTION_ID)).thenReturn(true);
             when(getter.getDraftDissolution(USER_ID, COMPANY_NUMBER)).thenReturn(of(aDissolutionGetResponse()
-                    .withDissolutionStatus(DissolutionStatus.DRAFT)
+                    .withDissolutionStatus(DRAFT)
                     .build()));
 
             var dissolutionDto = dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER);
 
-            assertThat(dissolutionDto.get().getDissolutionStatus()).isEqualTo(DissolutionStatus.DRAFT);
+            assertThat(dissolutionDto.get().getDissolutionStatus()).isEqualTo(DRAFT);
         }
 
         @Test
         void when_not_found_by_submitted_then_falls_back_to_draft_dissolution() {
             when(getter.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(empty());
             when(getter.getPendingDissolution(COMPANY_NUMBER)).thenReturn(empty());
-            when(repository.findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, DissolutionStatus.SUBMITTED)).thenReturn(empty());
+            when(repository.findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, SUBMITTED)).thenReturn(empty());
             when(getter.getDraftDissolution(USER_ID, COMPANY_NUMBER)).thenReturn(of(aDissolutionGetResponse()
-                    .withDissolutionStatus(DissolutionStatus.DRAFT)
+                    .withDissolutionStatus(DRAFT)
                     .build()));
 
             var dissolutionDto = dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER);
 
-            assertThat(dissolutionDto.get().getDissolutionStatus()).isEqualTo(DissolutionStatus.DRAFT);
+            assertThat(dissolutionDto.get().getDissolutionStatus()).isEqualTo(DRAFT);
         }
 
         @Test
         void when_no_dissolution_found_by_company_number_pending_submitted_or_draft_then_empty() {
             when(getter.getByCompanyNumber(COMPANY_NUMBER)).thenReturn(empty());
             when(getter.getPendingDissolution(COMPANY_NUMBER)).thenReturn(empty());
-            when(repository.findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, DissolutionStatus.SUBMITTED)).thenReturn(empty());
+            when(repository.findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, SUBMITTED)).thenReturn(empty());
             when(getter.getDraftDissolution(USER_ID, COMPANY_NUMBER)).thenReturn(empty());
 
             var dissolutionDto = dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER);
@@ -612,6 +634,134 @@ class DissolutionServiceTest {
 
             assertThrows(NotFoundException.class,
                     () -> dissolutionService.resolveDissolutionApplication(USER_ID, COMPANY_NUMBER));
+        }
+    }
+
+    @Nested
+    @DisplayNameGeneration(ReplaceUnderscores.class)
+    class initiateDissolution {
+
+        private final Transaction transaction = aTransaction()
+                .withId(TRANSACTION_ID)
+                .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
+                .build();
+
+        @Test
+        void when_transaction_validation_fails_then_exception_thrown() {
+
+            final var command = aDissolutionInitiationCommand()
+                    .withTransaction(aTransaction().withId(TRANSACTION_ID).withStatus(TransactionStatus.CLOSED)).build();
+
+            when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER))
+                    .thenReturn(of(aDissolution().withId(DISSOLUTION_ID).withTransactionId(TRANSACTION_ID).build()));
+
+            assertThrows(InvalidTransactionStateException.class,
+                    () -> dissolutionService.initiateDissolution(command));
+        }
+
+        @Test
+        void when_a_pending_dissolution_already_exists_for_the_company_then_exception_thrown() {
+            when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER))
+                    .thenReturn(of(aDissolution().withId(DISSOLUTION_ID).withTransactionId(TRANSACTION_ID).build()));
+            when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER))
+                    .thenReturn(of(aDissolution().withTransactionId(TRANSACTION_ID).build()));
+
+            final var command = aDissolutionInitiationCommand().withTransaction(transaction).build();
+
+            assertThrows(ConflictException.class,
+                    () -> dissolutionService.initiateDissolution(command));
+        }
+
+        @Test
+        void when_DRAFT_dissolution_for_user_and_company_does_not_exist_then_exception_thrown() {
+            when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(empty());
+
+            final var command = aDissolutionInitiationCommand().build();
+
+            assertThrows(DissolutionNotFoundException.class,
+                    () -> dissolutionService.initiateDissolution(command));
+        }
+
+        @Test
+        void when_DRAFT_dissolution_belongs_to_a_different_transaction_then_exception_thrown() {
+            when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER))
+                    .thenReturn(of(aDissolution().withId("some-other-dissolution-id").withTransactionId(TRANSACTION_ID).build()));
+
+            final var command = aDissolutionInitiationCommand().withTransaction(transaction).build();
+
+            assertThrows(DissolutionNotLinkedToTransactionException.class,
+                    () -> dissolutionService.initiateDissolution(command));
+        }
+
+        @Test
+        void when_request_signatories_are_invalid_then_exception_thrown() {
+            when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER))
+                    .thenReturn(of(aDissolution().withId(DISSOLUTION_ID).withTransactionId(TRANSACTION_ID).build()));
+            when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(Map.of(OFFICER_ID, aCompanyOfficer().build()));
+            when(companyOfficerService.areSelectedDirectorsValid(any(), any())).thenReturn(of("Invalid signatories"));
+
+            final var command = aDissolutionInitiationCommand().withTransaction(transaction).build();
+
+            assertThrows(DissolutionInvalidSignatoriesException.class,
+                    () -> dissolutionService.initiateDissolution(command));
+        }
+
+        @Test
+        void assigns_the_signatories_to_the_dissolution() {
+            when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER))
+                    .thenReturn(of(aDissolution().withId(DISSOLUTION_ID).withTransactionId(TRANSACTION_ID).build()));
+            when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(Map.of(
+                    "officer-id-1", aCompanyOfficer().withOfficerId("officer-id-1").withName("John Doe").build(),
+                    "officer-id-2", aCompanyOfficer().withOfficerId("officer-id-2").withName("Jane Smith").build()));
+            when(companyOfficerService.areSelectedDirectorsValid(any(), any())).thenReturn(empty());
+
+            dissolutionService.initiateDissolution(aDissolutionInitiationCommand()
+                    .withTransaction(transaction)
+                    .withSignatories(
+                            aDirectorRequest().withOfficerId("officer-id-1"),
+                            aDirectorRequest().withOfficerId("officer-id-2"))
+                    .build());
+
+            verify(repository).save(dissolutionCaptor.capture());
+
+            assertThat(dissolutionCaptor.getValue().getData().getDirectors())
+                    .extracting(DissolutionDirector::getOfficerId, DissolutionDirector::getName)
+                    .containsExactlyInAnyOrder(
+                            tuple("officer-id-1", "John Doe"),
+                            tuple("officer-id-2", "Jane Smith"));
+        }
+
+        @Test
+        void sends_notifications_to_signatories() {
+            final Dissolution draftDissolution = aDissolution().withId(DISSOLUTION_ID).withTransactionId(TRANSACTION_ID).withStatus(DRAFT).build();
+
+            when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(of(draftDissolution));
+            when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(Map.of("officer-id-1", aCompanyOfficer().withOfficerId("officer-id-1").build()));
+            when(companyOfficerService.areSelectedDirectorsValid(any(), any())).thenReturn(empty());
+
+            dissolutionService.initiateDissolution(aDissolutionInitiationCommand()
+                    .withTransaction(transaction)
+                    .withSignatories(aDirectorRequest().withOfficerId("officer-id-1"))
+                    .build());
+
+            verify(emailService).notifySignatoriesToSign(draftDissolution);
+        }
+
+        @Test
+        void changes_the_dissolution_status_to_PENDING() {
+            when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER))
+                    .thenReturn(of(aDissolution().withId(DISSOLUTION_ID).withTransactionId(TRANSACTION_ID).withStatus(DRAFT).build()));
+            when(companyOfficerService.getActiveDirectorsForCompany(COMPANY_NUMBER)).thenReturn(Map.of("officer-id-1", aCompanyOfficer().withOfficerId("officer-id-1").build()));
+            when(companyOfficerService.areSelectedDirectorsValid(any(), any())).thenReturn(empty());
+
+            dissolutionService.initiateDissolution(aDissolutionInitiationCommand()
+                    .withTransaction(transaction)
+                    .withSignatories(aDirectorRequest().withOfficerId("officer-id-1"))
+                    .build());
+
+            verify(repository).save(dissolutionCaptor.capture());
+
+            assertThat(dissolutionCaptor.getValue().getStatus()).isEqualTo(PENDING);
         }
     }
 }
