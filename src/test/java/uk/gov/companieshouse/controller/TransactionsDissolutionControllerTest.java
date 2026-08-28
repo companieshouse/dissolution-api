@@ -24,7 +24,6 @@ import uk.gov.companieshouse.exception.InvalidTransactionStateException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.exception.TransactionNotFoundException;
 import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
-import uk.gov.companieshouse.mapper.DissolutionDirectorApprovalMapper;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
@@ -76,9 +75,6 @@ class TransactionsDissolutionControllerTest {
 
     @MockitoBean
     private CompanyProfileService companyProfileService;
-
-    @MockitoBean
-    private DissolutionDirectorApprovalMapper dissolutionDirectorApprovalMapper;
 
     @Autowired
     private MockMvc mockMvc;
@@ -315,7 +311,6 @@ class TransactionsDissolutionControllerTest {
             final DissolutionPatchRequest body = generateDissolutionPatchRequest();
             final var command = new DissolutionDirectorApprovalCommand(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
-            when(dissolutionDirectorApprovalMapper.toCommand(eq(USER_ID), any(DissolutionPatchRequest.class))).thenReturn(command);
             doThrow(new DissolutionNotFoundException("Dissolution not found"))
                     .when(dissolutionService).addDirectorApproval(COMPANY_NUMBER, transaction, command);
 
@@ -348,7 +343,6 @@ class TransactionsDissolutionControllerTest {
             final DissolutionPatchRequest body = generateDissolutionPatchRequest();
             final var command = new DissolutionDirectorApprovalCommand(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
-            when(dissolutionDirectorApprovalMapper.toCommand(eq(USER_ID), any(DissolutionPatchRequest.class))).thenReturn(command);
             doThrow(new DissolutionDirectorApprovalException("Director not found"))
                     .when(dissolutionService).addDirectorApproval(COMPANY_NUMBER, transaction, command);
 
@@ -369,7 +363,6 @@ class TransactionsDissolutionControllerTest {
             body.setOfficerId(OFFICER_ID);
             final var command = new DissolutionDirectorApprovalCommand(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
 
-            when(dissolutionDirectorApprovalMapper.toCommand(eq(USER_ID), any(DissolutionPatchRequest.class))).thenReturn(command);
             doThrow(new DissolutionDirectorApprovalException("Director not pending approval"))
                     .when(dissolutionService).addDirectorApproval(COMPANY_NUMBER, transaction, command);
 
@@ -389,8 +382,6 @@ class TransactionsDissolutionControllerTest {
             body.setIpAddress(IP_ADDRESS);
             body.setOfficerId(OFFICER_ID);
             final var command = new DissolutionDirectorApprovalCommand(USER_ID, body.getOfficerId(), body.getIpAddress(), body.getHasApproved());
-
-            when(dissolutionDirectorApprovalMapper.toCommand(eq(USER_ID), any(DissolutionPatchRequest.class))).thenReturn(command);
 
             mockMvc
                     .perform(

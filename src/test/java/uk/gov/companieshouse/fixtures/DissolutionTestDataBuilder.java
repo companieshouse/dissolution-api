@@ -18,7 +18,8 @@ import java.util.List;
 
 public class DissolutionTestDataBuilder {
 
-    private String id = null;
+    private String id;
+    private String transactionId;
     private LocalDateTime modifiedDateTime = LocalDateTime.now();
     private DissolutionData data = DissolutionFixtures.generateDissolutionData();
     private Company company = DissolutionFixtures.generateCompany();
@@ -27,9 +28,8 @@ public class DissolutionTestDataBuilder {
     private PaymentInformation paymentInformation = new PaymentInformation();
     private DissolutionVerdict verdict = new DissolutionVerdict();
     private boolean active = true;
-    private String transactionId = null;
-    private DissolutionStatus status = null;
-    private LocalDateTime statusChangedAt = null;
+    private DissolutionStatus status;
+    private LocalDateTime statusChangedAt;
 
     public static DissolutionTestDataBuilder aDissolution() {
         return new DissolutionTestDataBuilder();

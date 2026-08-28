@@ -119,7 +119,12 @@ public class DissolutionController {
             @PathVariable("company-number") final String companyNumber,
             @Valid @RequestBody final DissolutionPatchRequest patchRequest
     ) {
-        final var command = new DissolutionDirectorApprovalCommand(userId, patchRequest.getOfficerId(), patchRequest.getIpAddress(), patchRequest.getHasApproved());
+        final var command = new DissolutionDirectorApprovalCommand(
+                userId,
+                patchRequest.getOfficerId(),
+                patchRequest.getIpAddress(),
+                patchRequest.getHasApproved()
+        );
         return dissolutionService.addDirectorApproval(companyNumber, command);
     }
 }
