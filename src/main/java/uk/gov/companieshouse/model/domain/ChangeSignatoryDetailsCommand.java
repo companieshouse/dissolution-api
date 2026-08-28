@@ -7,6 +7,5 @@ public record ChangeSignatoryDetailsCommand(String userId, String officerId, Str
         requireNonNull(userId, "userId must not be null");
         requireNonNull(officerId, "officerId must not be null");
         requireNonNull(officerEmail, "officerEmail must not be null");
-        requireNonNull(onBehalfName, "onBehalfName must not be null");
     }
 }

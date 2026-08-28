@@ -84,7 +84,7 @@ class DissolutionDirectorPatcherTest {
         verify(repository).save(dissolutionCaptor.capture());
 
         assertEquals(EMAIL, dissolutionCaptor.getValue().getData().getDirectors().getFirst().getEmail());
-        assertNull(null, dissolutionCaptor.getValue().getData().getDirectors().getFirst().getOnBehalfName());
+        assertNull(dissolutionCaptor.getValue().getData().getDirectors().getFirst().getOnBehalfName());
     }
 
     @Test
