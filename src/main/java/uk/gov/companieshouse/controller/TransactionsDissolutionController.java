@@ -124,28 +124,27 @@ public class TransactionsDissolutionController {
         dissolutionService.initiateDissolution(command);
     }
 
-    @Operation(summary = "Update Dissolution Signatory Details")
+    @Operation(summary = "Change Dissolution Signatory Details")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Dissolution Director details successfully updated", content = @Content),
-            @ApiResponse(responseCode = "400", description = "Dissolution Request director is not a signatory, has already approved or transaction is not linked to the dissolution"),
+            @ApiResponse(responseCode = "200", description = "Dissolution signatory details successfully changed", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Officer is not a signatory, has already approved, user is not the applicant or transaction is not linked to the dissolution"),
             @ApiResponse(responseCode = "404", description = "Dissolution Application or Company not found"),
             @ApiResponse(responseCode = "409", description = "Transaction is not open, is not associated with the company", content = @Content)
     })
-    @PatchMapping("/directors/{director_id}")
+    @PatchMapping("signatories/{officer_id}")
     @ResponseStatus(HttpStatus.OK)
-    public void patchDissolutionDirector(
+    public void changeSignatoryDetails(
             @RequestHeader("ERIC-identity") String userId,
-            @RequestHeader("ERIC-Authorised-User") String authorisedUser,
             @PathVariable(COMPANY_NUMBER_KEY) final String companyNumber,
             @RequestAttribute(TRANSACTION_KEY) Transaction transaction,
-            @PathVariable("director_id") final String directorId,
-            @Valid @RequestBody final DissolutionDirectorPatchRequest directorPatchRequest) {
+            @PathVariable("officer_id") final String officerId,
+            @Valid @RequestBody final DissolutionDirectorPatchRequest changeDetailsRequest) {
 
         final var command = new ChangeSignatoryDetailsCommand(
                 userId,
-                directorId,
-                directorPatchRequest.getEmail(),
-                directorPatchRequest.getOnBehalfName()
+                officerId,
+                changeDetailsRequest.getEmail(),
+                changeDetailsRequest.getOnBehalfName()
         );
         dissolutionService.findAndUpdateSignatory(companyNumber, transaction, command);
     }

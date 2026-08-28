@@ -2,7 +2,7 @@ package uk.gov.companieshouse.service.dissolution;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.exception.DissolutionChangeDirectorException;
+import uk.gov.companieshouse.exception.DissolutionChangeSignatoryException;
 import uk.gov.companieshouse.exception.DissolutionDirectorApprovalException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
@@ -82,10 +82,10 @@ public class DissolutionPatcher {
         final var email = command.officerEmail();
 
         DissolutionDirector signatory = this.findSignatory(officerId, dissolution)
-                .orElseThrow(() -> new DissolutionChangeDirectorException(String.format("Director %s is not a signatory", officerId)));
+                .orElseThrow(() -> new DissolutionChangeSignatoryException(String.format("Director %s is not a signatory", officerId)));
 
         if (signatory.hasDirectorApproval()) {
-            throw new DissolutionChangeDirectorException(String.format("Signatory %s has already approved", officerId));
+            throw new DissolutionChangeSignatoryException(String.format("Signatory %s has already approved", officerId));
         }
 
         if (signatory.hasDetailsChanged(email, command.onBehalfName())) {
@@ -134,7 +134,7 @@ public class DissolutionPatcher {
         this.repository.save(dissolution);
     }
 
-    public Optional<DissolutionDirector> findSignatory(String officerId, Dissolution dissolution) {
+    private Optional<DissolutionDirector> findSignatory(String officerId, Dissolution dissolution) {
         return dissolution
                 .getData()
                 .getDirectors()
@@ -168,12 +168,5 @@ public class DissolutionPatcher {
                 .getData()
                 .getApplication()
                 .setStatus(status);
-    }
-
-    private boolean isApplicant(String userId, Dissolution dissolution) {
-        return dissolution
-                .getCreatedBy()
-                .getUserId()
-                .equals(userId);
     }
 }

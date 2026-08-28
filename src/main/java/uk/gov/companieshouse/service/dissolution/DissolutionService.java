@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.exception.ConflictException;
-import uk.gov.companieshouse.exception.DissolutionChangeDirectorException;
+import uk.gov.companieshouse.exception.DissolutionChangeSignatoryException;
 import uk.gov.companieshouse.exception.DissolutionInvalidSignatoriesException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.NotFoundException;
@@ -225,7 +225,7 @@ public class DissolutionService {
                 .orElseThrow(() -> new DissolutionNotFoundException(String.format("Pending Dissolution not found for company number %s", companyNumber)));
 
         if (!isApplicant(command.userId(), dissolution)) {
-            throw new DissolutionChangeDirectorException("Only the applicant can update signatory");
+            throw new DissolutionChangeSignatoryException("Only the applicant can update signatory");
         }
 
         TransactionValidator.of(transaction).hasStatus(TransactionStatus.OPEN).forCompany(companyNumber).isLinkedToDissolution(dissolution.getId()).validate();
