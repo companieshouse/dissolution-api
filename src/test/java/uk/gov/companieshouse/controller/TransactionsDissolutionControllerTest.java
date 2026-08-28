@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -64,6 +65,7 @@ import static uk.gov.companieshouse.model.Constants.HEADER_ERIC_REQUEST_ID;
 import static uk.gov.companieshouse.model.Constants.TRANSACTION_KEY;
 
 @WebMvcTest(TransactionsDissolutionController.class)
+@Import(DissolutionInitiationMapper.class)
 class TransactionsDissolutionControllerTest {
 
     private static final String DISSOLUTION_URI = "/company/{company-number}/transaction/{transaction_id}/dissolution";
@@ -87,9 +89,6 @@ class TransactionsDissolutionControllerTest {
 
     @MockitoBean
     private CompanyProfileService companyProfileService;
-
-    @MockitoBean
-    private DissolutionInitiationMapper dissolutionInitiationMapper;
 
     @Autowired
     private MockMvc mockMvc;
