@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+import uk.gov.companieshouse.exception.DissolutionSignatoryNotFoundException;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
 import uk.gov.companieshouse.model.enums.DissolutionStatus;
 
@@ -151,6 +152,21 @@ public class Dissolution {
             throw new IllegalStateException("Cannot assign signatories: dissolution data is not initialised");
         }
         this.data.setDirectors(directors);
+    }
+
+    public List<DissolutionDirector> getSignatories() {
+        return this.data == null || this.data.getDirectors() == null
+                ? Collections.emptyList()
+                : this.data.getDirectors();
+    }
+
+    public String getSignatoryEmail(String signatoryId) {
+        return this.getSignatories().stream()
+                .filter(d -> d.getOfficerId().equals(signatoryId))
+                .map(DissolutionDirector::getEmail)
+                .findFirst()
+                .orElseThrow(() -> new DissolutionSignatoryNotFoundException(
+                        "No signatory found for signatory id " + signatoryId));
     }
 
     public List<DissolutionStatusChanged> getStatusHistory() {

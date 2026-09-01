@@ -26,6 +26,7 @@ import uk.gov.companieshouse.exception.DissolutionChangeSignatoryException;
 import uk.gov.companieshouse.exception.DissolutionDirectorApprovalException;
 import uk.gov.companieshouse.exception.DissolutionInvalidSignatoriesException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
+import uk.gov.companieshouse.exception.DissolutionSignatoryNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
 import uk.gov.companieshouse.exception.InvalidTransactionStateException;
 import uk.gov.companieshouse.exception.NotFoundException;
@@ -42,6 +43,7 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionLinks;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.service.CompanyProfileService;
 import uk.gov.companieshouse.service.TransactionService;
+import uk.gov.companieshouse.service.dissolution.DissolutionEmailService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 
 import java.util.Arrays;
@@ -78,6 +80,7 @@ class TransactionsDissolutionControllerTest {
     private static final String DISSOLUTION_URI = "/company/{company-number}/transaction/{transaction_id}/dissolution";
     private static final String DISSOLUTION_APPROVAL_URI = "/company/{company-number}/transaction/{transaction_id}/dissolution/approve";
     private static final String DISSOLUTION_INITIATION_URI = "/company/{company-number}/transaction/{transaction_id}/dissolution/initiation";
+    private static final String DISSOLUTION_SIGNATORY_NOTIFICATION_URI = "/company/{company-number}/transaction/{transaction_id}/dissolution/signatories/{signatory-id}/signature-notification";
     private static final String DISSOLUTION_SIGNATORY_DETAILS_URI = "/company/{company-number}/transaction/{transaction_id}/dissolution/signatories/{officer_id}";
     private static final String COMPANY_NUMBER = "12345678";
     private static final String OFFICER_ID = "abc123";
@@ -95,6 +98,9 @@ class TransactionsDissolutionControllerTest {
 
     @MockitoBean
     private DissolutionService dissolutionService;
+
+    @MockitoBean
+    private DissolutionEmailService dissolutionEmailService;
 
     @MockitoBean
     private CompanyProfileService companyProfileService;
@@ -517,6 +523,71 @@ class TransactionsDissolutionControllerTest {
                             .content(asJsonString(aDissolutionInitiationRequest().withDirectorRequest(aDirectorRequest()).build()))
                             .requestAttr(TRANSACTION_KEY, transaction))
                     .andExpect(status().isConflict());
+        }
+    }
+
+    @Nested
+    class resendSignatoryNotification {
+
+        @Test
+        void when_email_notification_sent_successfully_then_200_response() throws Exception {
+            mockMvc
+                    .perform(post(DISSOLUTION_SIGNATORY_NOTIFICATION_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
+                            .headers(createHttpHeaders())
+                            .requestAttr(TRANSACTION_KEY, transaction))
+                    .andExpect(status().isOk());
+
+            verify(dissolutionEmailService).notifySignatoryToSign(any());
+        }
+
+        @Test
+        void when_no_PENDING_diisolution_for_provided_company_number_then_404_response() throws Exception {
+            doThrow(DissolutionNotFoundException.class)
+                    .when(dissolutionEmailService).notifySignatoryToSign(any());
+
+            mockMvc
+                    .perform(post(DISSOLUTION_SIGNATORY_NOTIFICATION_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
+                            .headers(createHttpHeaders())
+                            .requestAttr(TRANSACTION_KEY, transaction))
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void when_transaction_company_number_is_different_to_dissolution_companyNumber_then_409_respose() throws Exception {
+            doThrow(new InvalidTransactionStateException("Transaction does not belong to company " + COMPANY_NUMBER))
+                    .when(dissolutionEmailService).notifySignatoryToSign(any());
+
+            mockMvc
+                    .perform(post(DISSOLUTION_SIGNATORY_NOTIFICATION_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
+                            .headers(createHttpHeaders())
+                            .requestAttr(TRANSACTION_KEY, transaction))
+                    .andExpect(status().isConflict());
+        }
+
+        @Test
+        void when_transaction_is_not_OPEN_then_409_response() throws Exception {
+            doThrow(new InvalidTransactionStateException(String.format(
+                    "Transaction status %s does not match expected status %s",
+                    TransactionStatus.CLOSED, TransactionStatus.OPEN)))
+                    .when(dissolutionEmailService).notifySignatoryToSign(any());
+
+            mockMvc
+                    .perform(post(DISSOLUTION_SIGNATORY_NOTIFICATION_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
+                            .headers(createHttpHeaders())
+                            .requestAttr(TRANSACTION_KEY, transaction))
+                    .andExpect(status().isConflict());
+        }
+
+        @Test
+        void when_sigatoryId_does_not_relate_to_a_signatory_then_400_response() throws Exception {
+            doThrow(new DissolutionSignatoryNotFoundException("No signatory found for signatory id " + OFFICER_ID))
+                    .when(dissolutionEmailService).notifySignatoryToSign(any());
+
+            mockMvc
+                    .perform(post(DISSOLUTION_SIGNATORY_NOTIFICATION_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
+                            .headers(createHttpHeaders())
+                            .requestAttr(TRANSACTION_KEY, transaction))
+                    .andExpect(status().isBadRequest());
         }
     }
 
