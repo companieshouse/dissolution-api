@@ -1,11 +1,25 @@
 package uk.gov.companieshouse.service.dissolution;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.config.EnvironmentConfig;
+import uk.gov.companieshouse.exception.DissolutionNotFoundException;
+import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
+import uk.gov.companieshouse.exception.DissolutionSignatoryNotFoundException;
+import uk.gov.companieshouse.exception.InvalidTransactionStateException;
 import uk.gov.companieshouse.fixtures.EmailFixtures;
 import uk.gov.companieshouse.mapper.email.DissolutionEmailMapper;
 import uk.gov.companieshouse.mapper.email.EmailMapper;
@@ -14,6 +28,7 @@ import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionRejectReason;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionVerdict;
+import uk.gov.companieshouse.model.domain.ResendSignatoryNotificationCommand;
 import uk.gov.companieshouse.model.dto.email.ApplicationAcceptedEmailData;
 import uk.gov.companieshouse.model.dto.email.ApplicationRejectedEmailData;
 import uk.gov.companieshouse.model.dto.email.EmailDocument;
@@ -23,24 +38,38 @@ import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
 import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
 import uk.gov.companieshouse.model.dto.email.SupportNotificationEmailData;
 import uk.gov.companieshouse.model.enums.VerdictResult;
+import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.email.EmailService;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.api.model.transaction.TransactionStatus.CLOSED;
+import static uk.gov.companieshouse.api.model.transaction.TransactionStatus.OPEN;
+import static uk.gov.companieshouse.fixtures.DissolutionDirectorTestDataBuilder.aDissolutionDirector;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateCreatedBy;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolution;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionDirector;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionRejectReason;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionVerdict;
+import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 import static uk.gov.companieshouse.fixtures.EmailFixtures.generateEmailDocument;
 import static uk.gov.companieshouse.fixtures.EmailFixtures.generateSignatoryToSignEmailData;
 import static uk.gov.companieshouse.fixtures.EmailFixtures.generateSupportNotificationEmailData;
+import static uk.gov.companieshouse.fixtures.TransactionFixtures.generateTransactionResource;
+import static uk.gov.companieshouse.fixtures.TransactionTestDataBuilder.aTransaction;
+import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
+import static uk.gov.companieshouse.model.dto.email.MessageType.SIGNATORY_TO_SIGN;
 
 @ExtendWith(MockitoExtension.class)
 class DissolutionEmailServiceTest {
@@ -219,12 +248,12 @@ class DissolutionEmailServiceTest {
         final EmailDocument<SignatoryToSignEmailData> emailOne = generateEmailDocument(emailDataOne);
         final EmailDocument<SignatoryToSignEmailData> emailTwo = generateEmailDocument(emailDataTwo);
 
-        when(messageTypeCalculator.getForSignatoriesToSign(dissolution)).thenReturn(MessageType.SIGNATORY_TO_SIGN);
+        when(messageTypeCalculator.getForSignatoriesToSign(dissolution)).thenReturn(SIGNATORY_TO_SIGN);
         when(deadlineDateCalculator.calculateSignatoryDeadlineDate(any())).thenReturn(SIGNATORY_TO_SIGN_DEADLINE);
         when(dissolutionEmailMapper.mapToSignatoryToSignEmailData(dissolution, SIGNATORY_EMAIL_ONE, SIGNATORY_TO_SIGN_DEADLINE)).thenReturn(emailDataOne);
         when(dissolutionEmailMapper.mapToSignatoryToSignEmailData(dissolution, SIGNATORY_EMAIL_TWO, SIGNATORY_TO_SIGN_DEADLINE)).thenReturn(emailDataTwo);
-        when(emailMapper.mapToEmailDocument(emailDataOne, SIGNATORY_EMAIL_ONE, MessageType.SIGNATORY_TO_SIGN)).thenReturn(emailOne);
-        when(emailMapper.mapToEmailDocument(emailDataTwo, SIGNATORY_EMAIL_TWO, MessageType.SIGNATORY_TO_SIGN)).thenReturn(emailTwo);
+        when(emailMapper.mapToEmailDocument(emailDataOne, SIGNATORY_EMAIL_ONE, SIGNATORY_TO_SIGN)).thenReturn(emailOne);
+        when(emailMapper.mapToEmailDocument(emailDataTwo, SIGNATORY_EMAIL_TWO, SIGNATORY_TO_SIGN)).thenReturn(emailTwo);
 
         dissolutionEmailService.notifySignatoriesToSign(dissolution);
 
@@ -245,10 +274,10 @@ class DissolutionEmailServiceTest {
 
         final EmailDocument<SignatoryToSignEmailData> emailOne = generateEmailDocument(emailDataOne);
 
-        when(messageTypeCalculator.getForSignatoriesToSign(dissolution)).thenReturn(MessageType.SIGNATORY_TO_SIGN);
+        when(messageTypeCalculator.getForSignatoriesToSign(dissolution)).thenReturn(SIGNATORY_TO_SIGN);
         when(deadlineDateCalculator.calculateSignatoryDeadlineDate(any())).thenReturn(SIGNATORY_TO_SIGN_DEADLINE);
         when(dissolutionEmailMapper.mapToSignatoryToSignEmailData(dissolution, SIGNATORY_EMAIL_ONE, SIGNATORY_TO_SIGN_DEADLINE)).thenReturn(emailDataOne);
-        when(emailMapper.mapToEmailDocument(emailDataOne, SIGNATORY_EMAIL_ONE, MessageType.SIGNATORY_TO_SIGN)).thenReturn(emailOne);
+        when(emailMapper.mapToEmailDocument(emailDataOne, SIGNATORY_EMAIL_ONE, SIGNATORY_TO_SIGN)).thenReturn(emailOne);
 
         dissolutionEmailService.notifySignatoryToSign(dissolution, SIGNATORY_EMAIL_ONE);
 
@@ -267,5 +296,118 @@ class DissolutionEmailServiceTest {
         dissolutionEmailService.sendFailedSubmissionNotificationEmail(dissolution);
 
         verify(emailService).sendMessage(emailDoc);
+    }
+
+    @Nested
+    @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
+    class NotifySignatoryToSign {
+
+        @Mock
+        DissolutionRepository dissolutionRepository;
+
+        @Captor
+        private ArgumentCaptor<EmailDocument<SignatoryToSignEmailData>> emailDocumentArgumentCaptor;
+
+        private DissolutionEmailService dissolutionEmailService;
+
+        @BeforeEach
+        void setUp() {
+            dissolutionEmailService = new DissolutionEmailService(new DissolutionEmailMapper(environmentConfig), new DissolutionMessageTypeCalculator(),
+                    new EmailMapper(), emailService, new DissolutionDeadlineDateCalculator(), environmentConfig, dissolutionRepository);
+        }
+
+        @Test
+        void sends_signing_notification_to_signatory() {
+
+            var companyNumber = "123456789";
+            var dissolutionId = "dissolution-id-1";
+            var signatoryId = "signatory-id-1";
+            var signatoryEmail = "singatory@test.co.uk";
+
+            when(dissolutionRepository.findPendingDissolutionByCompanyNumber(companyNumber)).thenReturn(of(aDissolution()
+                    .withId(dissolutionId)
+                    .withCompanyNumber(companyNumber)
+                    .withDirectors(aDissolutionDirector().withOfficerId(signatoryId).withEmail(signatoryEmail)).build()));
+
+            var transaction = aTransaction()
+                    .withCompanyNumber(companyNumber)
+                    .withStatus(OPEN)
+                    .withResources(generateTransactionResource(FILING_KIND_DS01, dissolutionId))
+                    .build();
+
+            var command = new ResendSignatoryNotificationCommand(transaction, companyNumber, signatoryId);
+
+            dissolutionEmailService.notifySignatoryToSign(command);
+
+            verify(emailService, times(1)).sendMessage(emailDocumentArgumentCaptor.capture());
+            var emailDoc = emailDocumentArgumentCaptor.getValue();
+            assertThat(emailDoc.getEmailAddress()).isEqualTo(signatoryEmail);
+            assertThat(emailDoc.getMessageType()).isEqualTo(SIGNATORY_TO_SIGN.getValue());
+        }
+
+        @Test
+        void when_no_PENDING_dissolution_exists_for_provided_company_number_then_exception_thrown() {
+
+            when(dissolutionRepository.findPendingDissolutionByCompanyNumber(any())).thenReturn(empty());
+
+            var command = new ResendSignatoryNotificationCommand(aTransaction().withCompanyNumber("123456").build(), "123456", "789");
+
+            assertThatThrownBy(() -> dissolutionEmailService.notifySignatoryToSign(command)).isInstanceOf(DissolutionNotFoundException.class);
+        }
+
+        @Test
+        void when_no_signatory_found_for_signatory_id_then_exception_thrown() {
+
+            when(dissolutionRepository.findPendingDissolutionByCompanyNumber(any())).thenReturn(of(aDissolution()
+                    .withId("a-dissolution-id")
+                    .withDirectors(aDissolutionDirector().withOfficerId("a-signatory-id")).build()));
+
+            var transaction = aTransaction()
+                    .withCompanyNumber("123456")
+                    .withStatus(OPEN)
+                    .withResources(generateTransactionResource(FILING_KIND_DS01, "a-dissolution-id"))
+                    .build();
+
+            var command = new ResendSignatoryNotificationCommand(transaction, "123456", "a-different-signatory-id");
+
+            assertThatThrownBy(() -> dissolutionEmailService.notifySignatoryToSign(command)).isInstanceOf(DissolutionSignatoryNotFoundException.class);
+        }
+
+        @ParameterizedTest(name = "{index} => {0}")
+        @MethodSource("invalidTransactions")
+        void when_transaction_validation_fails_then_exception_thrown(String scenario, Transaction transaction, Class<? extends RuntimeException> expectedException, String expectedMessage) {
+
+            when(dissolutionRepository.findPendingDissolutionByCompanyNumber(any())).thenReturn(of(aDissolution().withId("a-dissolution-id").withCompanyNumber("123456").build()));
+
+            var command = new ResendSignatoryNotificationCommand(transaction, "123456", "789");
+
+            assertThatThrownBy(() -> dissolutionEmailService.notifySignatoryToSign(command)).isInstanceOf(expectedException).hasMessage(expectedMessage);
+        }
+
+        static Stream<Arguments> invalidTransactions() {
+            return Stream.of(
+                    Arguments.of("company number does not match", aTransaction()
+                                    .withCompanyNumber("654321")
+                                    .withStatus(OPEN)
+                                    .withResources(generateTransactionResource(FILING_KIND_DS01, "a-dissolution-id")).build(),
+                            InvalidTransactionStateException.class,
+                            "Transaction does not belong to company 123456"
+                    ),
+                    Arguments.of("status is not OPEN", aTransaction()
+                                    .withStatus(CLOSED)
+                                    .withCompanyNumber("654321")
+                                    .withResources(generateTransactionResource(FILING_KIND_DS01, "a-dissolution-id")).build(),
+                            InvalidTransactionStateException.class,
+                            "Transaction status CLOSED does not match expected status OPEN"
+                    ),
+                    Arguments.of("transaction is not linked to the dissolution", aTransaction()
+                                    .withResources(generateTransactionResource(FILING_KIND_DS01, "a-invalid-dissolution-id"))
+                                    .withCompanyNumber("123456")
+                                    .withStatus(OPEN).build(),
+                            DissolutionNotLinkedToTransactionException.class,
+                            "Transaction is not linked to dissolution a-dissolution-id"
+                    )
+            );
+        }
     }
 }
