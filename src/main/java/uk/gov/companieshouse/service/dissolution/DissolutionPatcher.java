@@ -59,7 +59,7 @@ public class DissolutionPatcher {
 
     public DissolutionPatchResponse addDirectorApproval(final Dissolution dissolution, DissolutionDirectorApprovalCommand command) {
         final var officerId = command.officerId();
-        DissolutionDirector director = this.findSignatory(officerId, dissolution)
+        DissolutionDirector director = dissolution.findSignatory(officerId)
                 .orElseThrow(() -> new DissolutionDirectorApprovalException(String.format("Director %s is not a signatory", officerId)));
 
         if (director.hasDirectorApproval()) {
@@ -81,7 +81,7 @@ public class DissolutionPatcher {
         final var officerId = command.officerId();
         final var email = command.officerEmail();
 
-        DissolutionDirector signatory = this.findSignatory(officerId, dissolution)
+        DissolutionDirector signatory = dissolution.findSignatory(officerId)
                 .orElseThrow(() -> new DissolutionChangeSignatoryException(String.format("Director %s is not a signatory", officerId)));
 
         if (signatory.hasDirectorApproval()) {
@@ -132,15 +132,6 @@ public class DissolutionPatcher {
         this.addPaymentReference(paymentReference, dissolution);
 
         this.repository.save(dissolution);
-    }
-
-    private Optional<DissolutionDirector> findSignatory(String officerId, Dissolution dissolution) {
-        return dissolution
-                .getData()
-                .getDirectors()
-                .stream()
-                .filter(director -> director.getOfficerId().equals(officerId))
-                .findFirst();
     }
 
     private void addPaymentInformation(PaymentPatchRequest body, Dissolution dissolution) {

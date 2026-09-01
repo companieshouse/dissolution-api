@@ -18,7 +18,8 @@ locals {
       "/company/*/transaction/*/dissolution",
       "/company/*/transaction/*/dissolution/approve",
       "/company/*/transaction/*/dissolution/initiation",
-      "/company/*/transaction/*/dissolution/signatories/*"
+      "/company/*/transaction/*/dissolution/signatories/*",
+      "/company/*/transaction/*/dissolution/signatories/*/signature-notification"
   ]
   healthcheck_path           = "/dissolution-api/healthcheck" #healthcheck path for dissolution api
   healthcheck_matcher        = "200"

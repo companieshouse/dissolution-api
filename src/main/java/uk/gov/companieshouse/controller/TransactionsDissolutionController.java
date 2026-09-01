@@ -144,7 +144,7 @@ public class TransactionsDissolutionController {
 
         final var command = new ResendSignatoryNotificationCommand(transaction, companyNumber, signatoryId);
 
-        dissolutionEmailService.notifySignatoryToSign(command);
+        dissolutionService.resendSignatoryNotification(command);
     }
 
     @Operation(summary = "Change Dissolution Signatory Details")

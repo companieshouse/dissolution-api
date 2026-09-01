@@ -8,14 +8,17 @@ import uk.gov.companieshouse.exception.ConflictException;
 import uk.gov.companieshouse.exception.DissolutionChangeSignatoryException;
 import uk.gov.companieshouse.exception.DissolutionInvalidSignatoriesException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
+import uk.gov.companieshouse.exception.DissolutionSignatoryNotFoundException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.domain.ChangeSignatoryDetailsCommand;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.model.domain.DissolutionInitiationCommand;
+import uk.gov.companieshouse.model.domain.ResendSignatoryNotificationCommand;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
@@ -81,8 +84,7 @@ public class DissolutionService {
     }
 
     public void addDirectorApproval(String companyNumber, Transaction transaction, DissolutionDirectorApprovalCommand command) {
-        final Dissolution dissolution = repository.findPendingDissolutionByCompanyNumber(companyNumber)
-                .orElseThrow(() -> new DissolutionNotFoundException(String.format("Pending Dissolution not found for company number %s", companyNumber)));
+        final Dissolution dissolution = getPendingDissolution(companyNumber);
 
         TransactionValidator.of(transaction).hasStatus(OPEN).forCompany(companyNumber).isLinkedToDissolution(dissolution.getId()).validate();
 
@@ -174,6 +176,11 @@ public class DissolutionService {
         return repository.findById(dissolutionId).orElseThrow(() -> new DissolutionNotFoundException("No dissolution found with id " + dissolutionId));
     }
 
+    public Dissolution getPendingDissolution(String companyNumber) {
+        return repository.findPendingDissolutionByCompanyNumber(companyNumber)
+                .orElseThrow(() -> new DissolutionNotFoundException(String.format("Pending Dissolution not found for company number %s", companyNumber)));
+    }
+
     public DissolutionCreateDraftResponse createDraft(Transaction transaction, CompanyProfile companyProfile, String userId, String ip, String email) {
         if (repository.findDraftDissolutionForUserAndCompany(userId, companyProfile.getCompanyNumber()).isPresent()) {
             throw new ConflictException("Draft dissolution already exists for user " + userId);
@@ -221,8 +228,7 @@ public class DissolutionService {
     }
 
     public void findAndUpdateSignatory(String companyNumber, Transaction transaction, ChangeSignatoryDetailsCommand command) {
-        final Dissolution dissolution = repository.findPendingDissolutionByCompanyNumber(companyNumber)
-                .orElseThrow(() -> new DissolutionNotFoundException(String.format("Pending Dissolution not found for company number %s", companyNumber)));
+        final Dissolution dissolution = getPendingDissolution(companyNumber);
 
         if (!isApplicant(command.userId(), dissolution)) {
             throw new DissolutionChangeSignatoryException("Only the applicant can update signatory");
@@ -231,5 +237,22 @@ public class DissolutionService {
         TransactionValidator.of(transaction).hasStatus(TransactionStatus.OPEN).forCompany(companyNumber).isLinkedToDissolution(dissolution.getId()).validate();
 
         patcher.updateSignatory(dissolution, command);
+    }
+
+    public void resendSignatoryNotification(ResendSignatoryNotificationCommand command) {
+        final Dissolution dissolution = getPendingDissolution(command.companyNumber());
+
+        TransactionValidator.of(command.transaction())
+                .hasStatus(TransactionStatus.OPEN)
+                .forCompany(command.companyNumber())
+                .isLinkedToDissolution(dissolution.getId())
+                .validate();
+
+        final var signatoryEmail = dissolution.findSignatory(command.signatoryId())
+                .map(DissolutionDirector::getEmail)
+                .orElseThrow(() -> new DissolutionSignatoryNotFoundException(
+                        "No signatory found for signatory id " + command.signatoryId()));
+
+        emailService.notifySignatoryToSign(dissolution, signatoryEmail);
     }
 }

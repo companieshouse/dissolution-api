@@ -19,6 +19,7 @@ public class SecurityConfig implements WebMvcConfigurer {
     private static final String DISSOLUTION_APPROVAL = DISSOLUTION + "/approve";
     private static final String DISSOLUTION_INITIATION = DISSOLUTION + "/initiation";
     private static final String SIGNATORY_DETAILS = DISSOLUTION + "/signatories/*";
+    private static final String SIGNATORY_RESEND_NOTIFICATION = DISSOLUTION + "/signatories/*/signature-notification";
 
     private static final String[] API_KEY_PERMISSION_AUTH_INCLUDE_LIST = {
             "/dissolution-request/{application-reference}/payment",
@@ -40,7 +41,8 @@ public class SecurityConfig implements WebMvcConfigurer {
             DISSOLUTION,
             DISSOLUTION_APPROVAL,
             DISSOLUTION_INITIATION,
-            SIGNATORY_DETAILS
+            SIGNATORY_DETAILS,
+            SIGNATORY_RESEND_NOTIFICATION
     };
 
     private final TokenPermissionsInterceptor tokenPermissionsInterceptor;
@@ -61,8 +63,8 @@ public class SecurityConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
-        registry.addInterceptor(tokenPermissionsInterceptor).addPathPatterns(URI_PATTERN, DISSOLUTION, DISSOLUTION_APPROVAL, DISSOLUTION_INITIATION, SIGNATORY_DETAILS).excludePathPatterns(TOKEN_PERMISSION_AUTH_EXCLUDE_LIST);
-        registry.addInterceptor(dissolutionTokenPermissionsInterceptor).addPathPatterns(URI_PATTERN, DISSOLUTION, DISSOLUTION_APPROVAL, DISSOLUTION_INITIATION, SIGNATORY_DETAILS).excludePathPatterns(TOKEN_PERMISSION_AUTH_EXCLUDE_LIST);
+        registry.addInterceptor(tokenPermissionsInterceptor).addPathPatterns(URI_PATTERN, DISSOLUTION, DISSOLUTION_APPROVAL, DISSOLUTION_INITIATION, SIGNATORY_DETAILS, SIGNATORY_RESEND_NOTIFICATION).excludePathPatterns(TOKEN_PERMISSION_AUTH_EXCLUDE_LIST);
+        registry.addInterceptor(dissolutionTokenPermissionsInterceptor).addPathPatterns(URI_PATTERN, DISSOLUTION, DISSOLUTION_APPROVAL, DISSOLUTION_INITIATION, SIGNATORY_DETAILS, SIGNATORY_RESEND_NOTIFICATION).excludePathPatterns(TOKEN_PERMISSION_AUTH_EXCLUDE_LIST);
         registry.addInterceptor(apiKeyPermissionsInterceptor).addPathPatterns(API_KEY_PERMISSION_AUTH_INCLUDE_LIST);
         registry.addInterceptor(transactionInterceptor).addPathPatterns(TRANSACTIONS_INCLUDE_LIST);
     }

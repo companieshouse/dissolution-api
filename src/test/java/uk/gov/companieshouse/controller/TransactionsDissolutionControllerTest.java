@@ -530,6 +530,35 @@ class TransactionsDissolutionControllerTest {
     class resendSignatoryNotification {
 
         @Test
+        void when_no_token_permissions_are_provided_then_return_unauthorised() throws Exception {
+            final HttpHeaders headers = new HttpHeaders();
+            headers.add(EricConstants.ERIC_IDENTITY, USER_ID);
+            headers.add(AUTHORISED_USER_HEADER, EMAIL);
+
+            mockMvc
+                    .perform(post(DISSOLUTION_SIGNATORY_NOTIFICATION_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
+                                    .headers(headers))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        void when_company_number_token_permission_does_not_match_uri_then_return_unauthorised() throws Exception {
+            final HttpHeaders headers = new HttpHeaders();
+            headers.add(EricConstants.ERIC_IDENTITY, USER_ID);
+            headers.add(AUTHORISED_USER_HEADER, EMAIL);
+            headers.add(EricConstants.ERIC_AUTHORISED_TOKEN_PERMISSIONS, String.format(
+                    "%s=%s %s=%s",
+                    Permission.Key.COMPANY_NUMBER, "1234",
+                    Permission.Key.COMPANY_TRANSACTIONS, Permission.Value.UPDATE
+            ));
+
+            mockMvc
+                    .perform(post(DISSOLUTION_SIGNATORY_NOTIFICATION_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
+                            .headers(headers))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
         void when_email_notification_sent_successfully_then_200_response() throws Exception {
             mockMvc
                     .perform(post(DISSOLUTION_SIGNATORY_NOTIFICATION_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
@@ -537,13 +566,13 @@ class TransactionsDissolutionControllerTest {
                             .requestAttr(TRANSACTION_KEY, transaction))
                     .andExpect(status().isOk());
 
-            verify(dissolutionEmailService).notifySignatoryToSign(any());
+            verify(dissolutionService).resendSignatoryNotification(any());
         }
 
         @Test
-        void when_no_PENDING_diisolution_for_provided_company_number_then_404_response() throws Exception {
+        void when_no_PENDING_dissolution_for_provided_company_number_then_404_response() throws Exception {
             doThrow(DissolutionNotFoundException.class)
-                    .when(dissolutionEmailService).notifySignatoryToSign(any());
+                    .when(dissolutionService).resendSignatoryNotification(any());
 
             mockMvc
                     .perform(post(DISSOLUTION_SIGNATORY_NOTIFICATION_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
@@ -553,9 +582,9 @@ class TransactionsDissolutionControllerTest {
         }
 
         @Test
-        void when_transaction_company_number_is_different_to_dissolution_companyNumber_then_409_respose() throws Exception {
+        void when_transaction_company_number_is_different_to_dissolution_companyNumber_then_409_response() throws Exception {
             doThrow(new InvalidTransactionStateException("Transaction does not belong to company " + COMPANY_NUMBER))
-                    .when(dissolutionEmailService).notifySignatoryToSign(any());
+                    .when(dissolutionService).resendSignatoryNotification(any());
 
             mockMvc
                     .perform(post(DISSOLUTION_SIGNATORY_NOTIFICATION_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
@@ -569,7 +598,7 @@ class TransactionsDissolutionControllerTest {
             doThrow(new InvalidTransactionStateException(String.format(
                     "Transaction status %s does not match expected status %s",
                     TransactionStatus.CLOSED, TransactionStatus.OPEN)))
-                    .when(dissolutionEmailService).notifySignatoryToSign(any());
+                    .when(dissolutionService).resendSignatoryNotification(any());
 
             mockMvc
                     .perform(post(DISSOLUTION_SIGNATORY_NOTIFICATION_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
@@ -579,9 +608,9 @@ class TransactionsDissolutionControllerTest {
         }
 
         @Test
-        void when_sigatoryId_does_not_relate_to_a_signatory_then_400_response() throws Exception {
+        void when_signatory_id_does_not_relate_to_a_signatory_then_400_response() throws Exception {
             doThrow(new DissolutionSignatoryNotFoundException("No signatory found for signatory id " + OFFICER_ID))
-                    .when(dissolutionEmailService).notifySignatoryToSign(any());
+                    .when(dissolutionService).resendSignatoryNotification(any());
 
             mockMvc
                     .perform(post(DISSOLUTION_SIGNATORY_NOTIFICATION_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
