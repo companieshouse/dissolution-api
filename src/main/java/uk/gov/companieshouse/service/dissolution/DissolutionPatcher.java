@@ -25,7 +25,6 @@ import static uk.gov.companieshouse.util.DateTimeGenerator.generateCurrentDateTi
 import static uk.gov.companieshouse.util.DissolutionApplicantUtil.doesEmailBelongToApplicant;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class DissolutionPatcher {
