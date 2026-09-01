@@ -4,6 +4,7 @@ import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import uk.gov.companieshouse.exception.DissolutionSignatoryNotFoundException;
+import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.DissolutionStatus;
 
 import java.time.LocalDateTime;
@@ -15,6 +16,8 @@ import static org.junit.jupiter.api.DisplayNameGenerator.ReplaceUnderscores;
 import static uk.gov.companieshouse.fixtures.DissolutionDirectorTestDataBuilder.aDissolutionDirector;
 import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
+import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
+import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
 
 @DisplayNameGeneration(ReplaceUnderscores.class)
 class DissolutionTest {
@@ -210,6 +213,47 @@ class DissolutionTest {
                     .build();
 
             assertThat(dissolution.getSignatoryEmail("abc123")).isEqualTo("john@doe.com");
+        }
+    }
+
+    @Nested
+    class getFilingKind {
+
+        @Test
+        void when_data_is_not_initialised_then_exception_thrown() {
+            var dissolution = new Dissolution();
+
+            assertThrows(IllegalStateException.class, dissolution::getFilingKind);
+        }
+
+        @Test
+        void when_application_is_not_initialised_then_exception_thrown() {
+            var dissolution = aDissolution().build();
+            dissolution.getData().setApplication(null);
+
+            assertThrows(IllegalStateException.class, dissolution::getFilingKind);
+        }
+
+        @Test
+        void when_application_type_is_null_then_exception_thrown() {
+            var dissolution = aDissolution().build();
+            dissolution.getData().getApplication().setType(null);
+
+            assertThrows(IllegalStateException.class, dissolution::getFilingKind);
+        }
+
+        @Test
+        void when_application_is_DS01_then_return_the_correct_filing_kind() {
+            var dissolution = aDissolution().build();
+
+            assertThat(dissolution.getFilingKind()).isEqualTo(FILING_KIND_DS01);
+        }
+
+        @Test
+        void when_application_is_LLDS01_then_return_the_correct_filing_kind() {
+            var dissolution = aDissolution().build();
+            dissolution.getData().getApplication().setType(ApplicationType.LLDS01);
+            assertThat(dissolution.getFilingKind()).isEqualTo(FILING_KIND_LLDS01);
         }
     }
 }

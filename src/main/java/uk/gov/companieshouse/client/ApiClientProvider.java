@@ -11,4 +11,5 @@ import java.io.IOException;
 public interface ApiClientProvider {
 
     ApiClient getApiClient() throws IOException;
+    ApiClient getInternalApiClient() throws IOException;
 }

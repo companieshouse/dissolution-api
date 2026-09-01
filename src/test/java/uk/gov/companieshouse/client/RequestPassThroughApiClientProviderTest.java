@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import uk.gov.companieshouse.api.ApiClient;
+import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.sdk.ApiClientService;
 
 import java.io.IOException;
@@ -35,6 +36,9 @@ class RequestPassThroughApiClientProviderTest {
 
     @Mock
     private ApiClient apiClient;
+
+    @Mock
+    private InternalApiClient internalApiClient;
 
     @InjectMocks
     private RequestPassThroughApiClientProvider provider;
@@ -69,6 +73,40 @@ class RequestPassThroughApiClientProviderTest {
                         .thenThrow(new IllegalStateException("No thread-bound request found"));
 
                 assertThatIllegalStateException().isThrownBy(provider::getApiClient);
+            }
+        }
+    }
+
+    @Nested
+    @DisplayNameGeneration(ReplaceUnderscores.class)
+    class getInternalApiClient {
+
+        @Test
+        void resolves_eric_passthrough_token_from_current_request_and_returns_authenticated_client() throws IOException {
+            HttpServletRequest request = mock(HttpServletRequest.class);
+            when(request.getHeader("ERIC-Access-Token")).thenReturn(PASSTHROUGH_HEADER);
+
+            ServletRequestAttributes requestAttributes = mock(ServletRequestAttributes.class);
+            when(requestAttributes.getRequest()).thenReturn(request);
+
+            try (MockedStatic<RequestContextHolder> mocked = mockStatic(RequestContextHolder.class)) {
+                mocked.when(RequestContextHolder::currentRequestAttributes).thenReturn(requestAttributes);
+                when(apiClientService.getInternalApiClient(PASSTHROUGH_HEADER)).thenReturn(internalApiClient);
+
+                var result = provider.getInternalApiClient();
+
+                assertThat(result).isEqualTo(internalApiClient);
+                verify(apiClientService, times(1)).getInternalApiClient(PASSTHROUGH_HEADER);
+            }
+        }
+
+        @Test
+        void when_called_outside_of_a_request_then_illegal_state_exception_thrown() {
+            try (MockedStatic<RequestContextHolder> mocked = mockStatic(RequestContextHolder.class)) {
+                mocked.when(RequestContextHolder::currentRequestAttributes)
+                        .thenThrow(new IllegalStateException("No thread-bound request found"));
+
+                assertThatIllegalStateException().isThrownBy(provider::getInternalApiClient);
             }
         }
     }

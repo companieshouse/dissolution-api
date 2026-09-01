@@ -28,6 +28,7 @@ import uk.gov.companieshouse.service.CompanyOfficerService;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.validator.TransactionValidator;
 import uk.gov.companieshouse.service.payment.PaymentService;
+import uk.gov.companieshouse.service.transaction.TransactionFiling;
 
 import java.util.Map;
 import java.util.Optional;
@@ -177,7 +178,13 @@ public class DissolutionService {
 
         TransactionValidator.of(transaction).hasStatus(OPEN).forCompany(companyProfile.getCompanyNumber()).validate();
 
-        return creator.createDraft(transaction, companyProfile, userId, ip, email);
+        final Dissolution dissolution = creator.createDraft(transaction, companyProfile, userId, ip, email);
+        repository.insert(dissolution);
+
+        final var filing = new TransactionFiling(dissolution.getId(), dissolution.getFilingKind(), dissolution.getCompany().getName());
+        transactionService.updateTransaction(transaction, filing);
+
+        return responseMapper.mapToDissolutionCreateDraftResponse(transaction, dissolution);
     }
 
     public void initiateDissolution(DissolutionInitiationCommand command) {

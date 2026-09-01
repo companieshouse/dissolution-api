@@ -10,7 +10,6 @@ import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.repository.DissolutionRepository;
@@ -58,11 +57,8 @@ public class DissolutionCreator {
         return responseMapper.mapToDissolutionCreateResponse(dissolution);
     }
 
-    public DissolutionCreateDraftResponse createDraft(Transaction transaction, CompanyProfile companyProfile, String userId, String ip, String email) {
+    public Dissolution createDraft(Transaction transaction, CompanyProfile companyProfile, String userId, String ip, String email) {
         final DissolutionUserData userData = userDataMapper.mapToUserData(userId, ip, email);
-        final Dissolution dissolution = requestMapper.mapToDraftDissolution(transaction, companyProfile, userData);
-        repository.insert(dissolution);
-
-        return responseMapper.mapToDissolutionCreateDraftResponse(transaction, dissolution);
+        return requestMapper.mapToDraftDissolution(transaction, companyProfile, userData);
     }
 }

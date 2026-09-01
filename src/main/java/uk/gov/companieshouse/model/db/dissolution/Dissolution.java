@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import uk.gov.companieshouse.exception.DissolutionSignatoryNotFoundException;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
+import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.DissolutionStatus;
 
 import java.time.LocalDateTime;
@@ -13,6 +14,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+
+import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
+import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
 
 @Document(collection = "dissolutions")
 public class Dissolution {
@@ -169,6 +174,14 @@ public class Dissolution {
                         "No signatory found for signatory id " + signatoryId));
     }
 
+    public String getFilingKind() {
+        ApplicationType type = Optional.ofNullable(this.data)
+                .map(DissolutionData::getApplication)
+                .map(DissolutionApplication::getType)
+                .orElseThrow(() -> new IllegalStateException("Dissolution does not have an application type"));
+        return type == ApplicationType.LLDS01 ? FILING_KIND_LLDS01 : FILING_KIND_DS01;
+    }
+
     public List<DissolutionStatusChanged> getStatusHistory() {
         return Collections.unmodifiableList(statusHistory);
     }
@@ -205,11 +218,11 @@ public class Dissolution {
     public LocalDateTime dateDissolutionInitiated() {
         return isTransactionModelDissolution()
                 ? this.getStatusHistory()
-                        .stream()
-                        .filter(statusChanged -> statusChanged.getStatus() == DissolutionStatus.PENDING)
-                        .map(DissolutionStatusChanged::getChangedAt)
-                        .findFirst()
-                        .orElseThrow(() -> new IllegalStateException("Dissolution has not been initiated: no PENDING status found in status history"))
+                .stream()
+                .filter(statusChanged -> statusChanged.getStatus() == DissolutionStatus.PENDING)
+                .map(DissolutionStatusChanged::getChangedAt)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Dissolution has not been initiated: no PENDING status found in status history"))
                 : this.getCreatedBy().getDateTime();
     }
 }

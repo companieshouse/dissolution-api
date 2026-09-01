@@ -17,7 +17,6 @@ import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.repository.DissolutionRepository;
@@ -94,23 +93,22 @@ public class DissolutionCreatorTest {
     }
 
     @Test
-    void createDraft_mapsAndPersistsDissolution_returnsCreateDraftResponse() {
+    void createDraft_mapsDissolution_returnsDraftDissolution() {
         final Transaction transaction = TransactionTestDataBuilder.aTransaction().withStatus(TransactionStatus.OPEN).build();
         final DissolutionUserData userData = DissolutionFixtures.generateDissolutionUserData();
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
-        final DissolutionCreateDraftResponse response = new DissolutionCreateDraftResponse();
         final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setCompanyNumber(COMPANY_NUMBER);
 
         when(requestMapper.mapToDraftDissolution(transaction, company, userData)).thenReturn(dissolution);
-        when(responseMapper.mapToDissolutionCreateDraftResponse(transaction, dissolution)).thenReturn(response);
         when(userDataMapper.mapToUserData(USER_ID, IP, EMAIL)).thenReturn(userData);
 
-        final DissolutionCreateDraftResponse result = creator.createDraft(transaction, company, USER_ID, IP, EMAIL);
+        final Dissolution result = creator.createDraft(transaction, company, USER_ID, IP, EMAIL);
 
-        verify(repository).insert(dissolution);
+        verify(repository, never()).insert(dissolution);
         verify(emailService, never()).notifySignatoriesToSign(dissolution);
+        verify(responseMapper, never()).mapToDissolutionCreateDraftResponse(transaction, dissolution);
 
-        assertEquals(response, result);
+        assertEquals(dissolution, result);
     }
 }

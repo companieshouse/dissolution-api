@@ -40,6 +40,7 @@ import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.CompanyOfficerService;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.payment.PaymentService;
+import uk.gov.companieshouse.service.transaction.TransactionFiling;
 
 import java.util.Map;
 import java.util.Optional;
@@ -47,8 +48,8 @@ import java.util.Optional;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -69,8 +70,8 @@ import static uk.gov.companieshouse.fixtures.DirectorRequestTestDataBuilder.aDir
 import static uk.gov.companieshouse.fixtures.DissolutionDirectorTestDataBuilder.aDissolutionDirector;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionPatchRequest;
 import static uk.gov.companieshouse.fixtures.DissolutionGetResponseTestDataBuilder.aDissolutionGetResponse;
-import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 import static uk.gov.companieshouse.fixtures.DissolutionInitiationCommandTestDataBuilder.aDissolutionInitiationCommand;
+import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 import static uk.gov.companieshouse.fixtures.TransactionTestDataBuilder.aTransaction;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
@@ -310,18 +311,28 @@ class DissolutionServiceTest {
     }
 
     @Test
-    void createDraft_createsDraftDissolution_returnsCreateDraftResponse() {
+    void createDraft_createsDraftDissolutionAndUpdatesTransaction_returnsCreateDraftResponse() {
         final Transaction transaction = aTransaction().withStatus(TransactionStatus.OPEN).withCompanyNumber(COMPANY_NUMBER).build();
-        final DissolutionCreateDraftResponse response = new DissolutionCreateDraftResponse();
+        final String expectedSelfLink = String.format("/company/%s/transaction/%s/dissolution", COMPANY_NUMBER, transaction.getId());
         final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setCompanyNumber(COMPANY_NUMBER);
+        Dissolution dissolution = aDissolution().
+                withId(DISSOLUTION_ID).
+                withCompanyNumber(COMPANY_NUMBER)
+                .withCompanyName(company.getCompanyName())
+                .withTransactionId(transaction.getId())
+                .build();
+        TransactionFiling filing = new TransactionFiling(dissolution.getId(), FILING_KIND_DS01, company.getCompanyName());
 
         when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
-        when(creator.createDraft(transaction, company, USER_ID, IP, EMAIL)).thenReturn(response);
+        when(creator.createDraft(transaction, company, USER_ID, IP, EMAIL)).thenReturn(dissolution);
 
         final DissolutionCreateDraftResponse result = dissolutionService.createDraft(transaction, company, USER_ID, IP, EMAIL);
 
-        assertEquals(response, result);
+
+        assertEquals(DISSOLUTION_ID, result.getDissolutionId());
+        assertEquals(expectedSelfLink, result.getLinks().getSelf());
+        verify(transactionService).updateTransaction(transaction, filing);
     }
 
     @Test
