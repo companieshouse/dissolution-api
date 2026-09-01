@@ -106,7 +106,7 @@ public class TransactionService {
                     .execute();
 
             if (resp.getStatusCode() != 204) {
-                throw new IOException(String.format("Received invalid http status code %s for transaction %s", resp.getStatusCode(), transaction.getId()));
+                throw new ServiceException(String.format("Received invalid http status code %s for transaction %s", resp.getStatusCode(), transaction.getId()));
             }
         } catch (ApiErrorResponseException e) {
             final var status = e.getStatusCode();

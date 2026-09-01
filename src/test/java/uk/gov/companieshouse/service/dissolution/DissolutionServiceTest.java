@@ -17,6 +17,7 @@ import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
 import uk.gov.companieshouse.exception.InvalidTransactionStateException;
 import uk.gov.companieshouse.exception.NotFoundException;
+import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.fixtures.TransactionFixtures;
@@ -332,7 +333,33 @@ class DissolutionServiceTest {
 
         assertEquals(DISSOLUTION_ID, result.getDissolutionId());
         assertEquals(expectedSelfLink, result.getLinks().getSelf());
+
+        verify(repository).insert(dissolution);
         verify(transactionService).updateTransaction(transaction, filing);
+    }
+
+    @Test
+    void createDraft_rollsBackInsert_andRethrows_ifUpdateTransactionFails() {
+        final Transaction transaction = aTransaction().withStatus(TransactionStatus.OPEN).withCompanyNumber(COMPANY_NUMBER).build();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        company.setCompanyNumber(COMPANY_NUMBER);
+        final Dissolution dissolution = aDissolution()
+                .withId(DISSOLUTION_ID)
+                .withCompanyNumber(COMPANY_NUMBER)
+                .withCompanyName(company.getCompanyName())
+                .withTransactionId(transaction.getId())
+                .build();
+
+        TransactionFiling filing = new TransactionFiling(dissolution.getId(), FILING_KIND_DS01, company.getCompanyName());
+
+        when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
+        when(creator.createDraft(transaction, company, USER_ID, IP, EMAIL)).thenReturn(dissolution);
+        doThrow(new ServiceException("Failed to update transaction")).when(transactionService).updateTransaction(transaction, filing);
+
+        assertThrows(ServiceException.class, () -> dissolutionService.createDraft(transaction, company, USER_ID, IP, EMAIL));
+
+        verify(repository).insert(dissolution);
+        verify(repository).deleteById(DISSOLUTION_ID);
     }
 
     @Test

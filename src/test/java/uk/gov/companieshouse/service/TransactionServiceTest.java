@@ -218,7 +218,7 @@ class TransactionServiceTest {
 
     @Nested
     @DisplayName("PATCH /transactions/{transaction_id}")
-    class PatchTransactionPaymentDetails {
+    class PatchTransactionData {
 
         public static final String COMPANY_NUMBER = "12345678";
         private static final String DISSOLUTION_ID = "12345678";
