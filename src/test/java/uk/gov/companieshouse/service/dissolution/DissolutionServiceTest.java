@@ -792,7 +792,6 @@ class DissolutionServiceTest {
         @BeforeEach
         void initialize() {
             final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
-            command = new UpdateSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
 
             final var createdBy = generateCreatedBy();
             createdBy.setUserId(USER_ID);
@@ -810,13 +809,15 @@ class DissolutionServiceTest {
                     .withCompanyNumber(COMPANY_NUMBER)
                     .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
                     .build();
+
+            command = new UpdateSignatoryDetailsCommand(transaction, COMPANY_NUMBER, USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
         }
 
         @Test
         void when_pending_dissolution_exists_then_signatory_details_are_updated() {
             when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
 
-            dissolutionService.findAndUpdateSignatory(COMPANY_NUMBER, transaction, command);
+            dissolutionService.findAndUpdateSignatory(command);
 
             verify(patcher, times(1)).updateSignatory(dissolution, command);
         }
@@ -825,7 +826,7 @@ class DissolutionServiceTest {
         void when_pending_dissolution_does_not_exist_then_dissolution_not_found_exception_thrown() {
             when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> dissolutionService.findAndUpdateSignatory(COMPANY_NUMBER, transaction, command))
+            assertThatThrownBy(() -> dissolutionService.findAndUpdateSignatory(command))
                     .isInstanceOf(DissolutionNotFoundException.class)
                     .hasMessage("Pending Dissolution not found for company number " + COMPANY_NUMBER);
 
@@ -838,7 +839,7 @@ class DissolutionServiceTest {
 
             when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
 
-            assertThatThrownBy(() -> dissolutionService.findAndUpdateSignatory(COMPANY_NUMBER, transaction, command))
+            assertThatThrownBy(() -> dissolutionService.findAndUpdateSignatory(command))
                     .isInstanceOf(InvalidTransactionStateException.class)
                     .hasMessage("Transaction status CLOSED does not match expected status OPEN");
 
@@ -847,15 +848,17 @@ class DissolutionServiceTest {
 
         @Test
         void when_transaction_is_not_linked_to_company_then_invalid_transaction_state_exception_thrown() {
+            final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
             transaction = aTransaction()
                     .withStatus(TransactionStatus.OPEN)
                     .withCompanyNumber("87654321") // Different company number
                     .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
                     .build();
+            command = new UpdateSignatoryDetailsCommand(transaction, COMPANY_NUMBER, USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
 
             when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
 
-            assertThatThrownBy(() -> dissolutionService.findAndUpdateSignatory(COMPANY_NUMBER, transaction, command))
+            assertThatThrownBy(() -> dissolutionService.findAndUpdateSignatory(command))
                     .isInstanceOf(InvalidTransactionStateException.class)
                     .hasMessage("Transaction does not belong to company " + COMPANY_NUMBER);
 
@@ -864,14 +867,16 @@ class DissolutionServiceTest {
 
         @Test
         void when_transaction_is_not_linked_to_dissolution_then_dissolution_not_linked_to_transaction_exception_thrown() {
+            final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
             transaction = aTransaction()
                     .withStatus(TransactionStatus.OPEN)
                     .withCompanyNumber(COMPANY_NUMBER)
                     .build();
 
+            command = new UpdateSignatoryDetailsCommand(transaction, COMPANY_NUMBER, USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
             when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
 
-            assertThatThrownBy(() -> dissolutionService.findAndUpdateSignatory(COMPANY_NUMBER, transaction, command))
+            assertThatThrownBy(() -> dissolutionService.findAndUpdateSignatory(command))
                     .isInstanceOf(DissolutionNotLinkedToTransactionException.class)
                     .hasMessage("Transaction is not linked to dissolution " + DISSOLUTION_ID);
 
@@ -881,10 +886,10 @@ class DissolutionServiceTest {
         @Test
         void when_non_applicant_attempts_to_update_signatory_details_then_dissolution_update_signatory_exception_thrown() {
             final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
-            command = new UpdateSignatoryDetailsCommand(OFFICER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
+            command = new UpdateSignatoryDetailsCommand(transaction, COMPANY_NUMBER, OFFICER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
             when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
 
-            assertThatThrownBy(() -> dissolutionService.findAndUpdateSignatory(COMPANY_NUMBER, transaction, command))
+            assertThatThrownBy(() -> dissolutionService.findAndUpdateSignatory(command))
                     .isInstanceOf(DissolutionUpdateSignatoryException.class)
                     .hasMessage("Only the applicant can update signatory");
 

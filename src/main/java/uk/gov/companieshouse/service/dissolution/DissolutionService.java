@@ -227,10 +227,14 @@ public class DissolutionService {
                 .orElseThrow(() -> new DissolutionNotFoundException(String.format("Draft dissolution not found for user %s and company number %s.", userId, companyNumber)));
     }
 
-    public void findAndUpdateSignatory(String companyNumber, Transaction transaction, UpdateSignatoryDetailsCommand command) {
-        final var dissolution = getPendingDissolution(companyNumber);
+    public void findAndUpdateSignatory(UpdateSignatoryDetailsCommand command) {
+        final var dissolution = getPendingDissolution(command.companyNumber());
 
-        TransactionValidator.of(transaction).hasStatus(TransactionStatus.OPEN).forCompany(companyNumber).isLinkedToDissolution(dissolution.getId()).validate();
+        TransactionValidator.of(command.transaction())
+                .hasStatus(TransactionStatus.OPEN)
+                .forCompany(command.companyNumber())
+                .isLinkedToDissolution(dissolution.getId())
+                .validate();
 
         if (!isApplicant(command.userId(), dissolution)) {
             throw new DissolutionUpdateSignatoryException("Only the applicant can update signatory");

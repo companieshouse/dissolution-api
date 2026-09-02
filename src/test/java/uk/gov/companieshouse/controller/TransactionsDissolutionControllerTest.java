@@ -693,10 +693,10 @@ class TransactionsDissolutionControllerTest {
         @Test
         void when_dissolution_does_not_exist_then_return_not_found() throws Exception {
             final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
-            final var command = new UpdateSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
+            final var command = new UpdateSignatoryDetailsCommand(transaction, COMPANY_NUMBER, USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
 
             doThrow(new DissolutionNotFoundException("Dissolution not found"))
-                    .when(dissolutionService).findAndUpdateSignatory(COMPANY_NUMBER, transaction, command);
+                    .when(dissolutionService).findAndUpdateSignatory(command);
 
             mockMvc
                     .perform(patch(DISSOLUTION_SIGNATORY_DETAILS_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
@@ -717,16 +717,16 @@ class TransactionsDissolutionControllerTest {
                             .requestAttr(TRANSACTION_KEY, transaction))
                     .andExpect(status().isNotFound());
 
-            verify(dissolutionService, never()).findAndUpdateSignatory(any(), any(), any());
+            verify(dissolutionService, never()).findAndUpdateSignatory(any());
         }
 
         @Test
         void when_transaction_is_not_open_then_return_conflict() throws Exception {
             final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
-            final var command = new UpdateSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
+            final var command = new UpdateSignatoryDetailsCommand(transaction, COMPANY_NUMBER, USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
 
             doThrow(new InvalidTransactionStateException("Transaction is already closed or closed pending payment"))
-                    .when(dissolutionService).findAndUpdateSignatory(COMPANY_NUMBER, transaction, command);
+                    .when(dissolutionService).findAndUpdateSignatory(command);
 
             mockMvc
                     .perform(patch(DISSOLUTION_SIGNATORY_DETAILS_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
@@ -740,10 +740,10 @@ class TransactionsDissolutionControllerTest {
         @Test
         void when_transaction_is_not_associated_with_the_company_then_return_conflict() throws Exception {
             final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
-            final var command = new UpdateSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
+            final var command = new UpdateSignatoryDetailsCommand(transaction, COMPANY_NUMBER, USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
 
             doThrow(new InvalidTransactionStateException("Transaction does not belong to company " + COMPANY_NUMBER))
-                    .when(dissolutionService).findAndUpdateSignatory(COMPANY_NUMBER, transaction, command);
+                    .when(dissolutionService).findAndUpdateSignatory(command);
 
             mockMvc
                     .perform(patch(DISSOLUTION_SIGNATORY_DETAILS_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
@@ -757,10 +757,10 @@ class TransactionsDissolutionControllerTest {
         @Test
         void when_transaction_is_not_linked_to_dissolution_then_return_bad_request() throws Exception {
             final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
-            final var command = new UpdateSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
+            final var command = new UpdateSignatoryDetailsCommand(transaction, COMPANY_NUMBER, USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
 
             doThrow(new DissolutionNotLinkedToTransactionException("Transaction is not linked to dissolution"))
-                    .when(dissolutionService).findAndUpdateSignatory(COMPANY_NUMBER, transaction, command);
+                    .when(dissolutionService).findAndUpdateSignatory(command);
 
             mockMvc
                     .perform(patch(DISSOLUTION_SIGNATORY_DETAILS_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
@@ -774,10 +774,10 @@ class TransactionsDissolutionControllerTest {
         @Test
         void when_officer_is_not_a_signatory_then_return_bad_request() throws Exception {
             final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
-            final var command = new UpdateSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
+            final var command = new UpdateSignatoryDetailsCommand(transaction, COMPANY_NUMBER, USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
 
             doThrow(new DissolutionUpdateSignatoryException("Signatory not found"))
-                    .when(dissolutionService).findAndUpdateSignatory(COMPANY_NUMBER, transaction, command);
+                    .when(dissolutionService).findAndUpdateSignatory(command);
 
             mockMvc
                     .perform(patch(DISSOLUTION_SIGNATORY_DETAILS_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
@@ -791,10 +791,10 @@ class TransactionsDissolutionControllerTest {
         @Test
         void when_officer_is_not_pending_approval_then_return_bad_request() throws Exception {
             final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
-            final var command = new UpdateSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
+            final var command = new UpdateSignatoryDetailsCommand(transaction, COMPANY_NUMBER, USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
 
             doThrow(new DissolutionUpdateSignatoryException("Signatory not pending approval"))
-                    .when(dissolutionService).findAndUpdateSignatory(COMPANY_NUMBER, transaction, command);
+                    .when(dissolutionService).findAndUpdateSignatory(command);
 
             mockMvc
                     .perform(patch(DISSOLUTION_SIGNATORY_DETAILS_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
@@ -811,10 +811,10 @@ class TransactionsDissolutionControllerTest {
             headers.set(EricConstants.ERIC_IDENTITY, OFFICER_ID);
 
             final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
-            final var command = new UpdateSignatoryDetailsCommand(OFFICER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
+            final var command = new UpdateSignatoryDetailsCommand(transaction, COMPANY_NUMBER, OFFICER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
 
             doThrow(new DissolutionUpdateSignatoryException("only the applicant can update the details of a signatory"))
-                    .when(dissolutionService).findAndUpdateSignatory(COMPANY_NUMBER, transaction, command);
+                    .when(dissolutionService).findAndUpdateSignatory(command);
 
             mockMvc
                     .perform(patch(DISSOLUTION_SIGNATORY_DETAILS_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
@@ -828,7 +828,7 @@ class TransactionsDissolutionControllerTest {
         @Test
         void when_signatory_is_changed_successfully_then_return_ok() throws Exception {
             final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
-            final var command = new UpdateSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
+            final var command = new UpdateSignatoryDetailsCommand(transaction, COMPANY_NUMBER, USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
 
             mockMvc
                     .perform(patch(DISSOLUTION_SIGNATORY_DETAILS_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
@@ -838,7 +838,7 @@ class TransactionsDissolutionControllerTest {
                             .content(asJsonString(body)))
                     .andExpect(status().isOk());
 
-            verify(dissolutionService, times(1)).findAndUpdateSignatory(COMPANY_NUMBER, transaction, command);
+            verify(dissolutionService, times(1)).findAndUpdateSignatory(command);
         }
     }
 

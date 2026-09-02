@@ -161,11 +161,13 @@ public class TransactionsDissolutionController {
             @Valid @RequestBody final DissolutionDirectorPatchRequest changeDetailsRequest) {
 
         final var command = new UpdateSignatoryDetailsCommand(
+                transaction,
+                companyNumber,
                 userId,
                 officerId,
                 changeDetailsRequest.getEmail(),
                 changeDetailsRequest.getOnBehalfName()
         );
-        dissolutionService.findAndUpdateSignatory(companyNumber, transaction, command);
+        dissolutionService.findAndUpdateSignatory(command);
     }
 }
