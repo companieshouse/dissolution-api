@@ -5,8 +5,7 @@ import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateCreatedBy;
 import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 import static uk.gov.companieshouse.util.DissolutionApplicantUtil.doesEmailBelongToApplicant;
@@ -24,7 +23,7 @@ class DissolutionApplicantUtilTest {
         Dissolution dissolution = aDissolution()
                 .withCreatedByEmail(EMAIL)
                 .build();
-        assertTrue(doesEmailBelongToApplicant(EMAIL, dissolution));
+        assertThat(doesEmailBelongToApplicant(EMAIL, dissolution)).isTrue();
     }
 
     @Test
@@ -32,7 +31,7 @@ class DissolutionApplicantUtilTest {
         Dissolution dissolution = aDissolution()
                 .withCreatedByEmail(EMAIL)
                 .build();
-        assertFalse(doesEmailBelongToApplicant(DIFFERENT_EMAIL, dissolution));
+        assertThat(doesEmailBelongToApplicant(DIFFERENT_EMAIL, dissolution)).isFalse();
     }
 
     @Test
@@ -42,7 +41,7 @@ class DissolutionApplicantUtilTest {
         Dissolution dissolution = aDissolution()
                 .withCreatedBy(createdBy)
                 .build();
-        assertTrue(isApplicant(USER_ID, dissolution));
+        assertThat(isApplicant(USER_ID, dissolution)).isTrue();
     }
 
     @Test
@@ -52,7 +51,7 @@ class DissolutionApplicantUtilTest {
         Dissolution dissolution = aDissolution()
                 .withCreatedBy(createdBy)
                 .build();
-        assertFalse(isApplicant(NON_APPLICANT_USER_ID, dissolution));
+        assertThat(isApplicant(NON_APPLICANT_USER_ID, dissolution)).isFalse();
     }
 
     @Test
@@ -62,6 +61,6 @@ class DissolutionApplicantUtilTest {
         Dissolution dissolution = aDissolution()
                 .withCreatedBy(null)
                 .build();
-        assertFalse(isApplicant(NON_APPLICANT_USER_ID, dissolution));
+        assertThat(isApplicant(NON_APPLICANT_USER_ID, dissolution)).isFalse();
     }
 }

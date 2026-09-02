@@ -13,7 +13,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.companieshouse.exception.DissolutionChangeSignatoryException;
+import uk.gov.companieshouse.exception.DissolutionUpdateSignatoryException;
 import uk.gov.companieshouse.exception.DissolutionDirectorApprovalException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
@@ -26,7 +26,7 @@ import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionSubmission;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
-import uk.gov.companieshouse.model.domain.ChangeSignatoryDetailsCommand;
+import uk.gov.companieshouse.model.domain.UpdateSignatoryDetailsCommand;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
@@ -336,7 +336,7 @@ class DissolutionPatcherTest {
         @Test
         void when_email_has_changed_then_saves_to_database_and_sends_notification_email() {
             dissolution = aDissolution().withDirectors(aDissolutionDirector().withOfficerId(OFFICER_ID)).build();
-            final var command = new ChangeSignatoryDetailsCommand(USER_ID, OFFICER_ID, OFFICER_EMAIL, null);
+            final var command = new UpdateSignatoryDetailsCommand(USER_ID, OFFICER_ID, OFFICER_EMAIL, null);
 
             patcher.updateSignatory(dissolution, command);
 
@@ -353,7 +353,7 @@ class DissolutionPatcherTest {
                     .withOfficerId(OFFICER_ID)
                     .withEmail(OFFICER_EMAIL);
             dissolution = aDissolution().withDirectors(director).build();
-            final var command = new ChangeSignatoryDetailsCommand(USER_ID, OFFICER_ID, OFFICER_EMAIL, ON_BEHALF_NAME);
+            final var command = new UpdateSignatoryDetailsCommand(USER_ID, OFFICER_ID, OFFICER_EMAIL, ON_BEHALF_NAME);
 
             patcher.updateSignatory(dissolution, command);
 
@@ -371,7 +371,7 @@ class DissolutionPatcherTest {
                     .withEmail(OFFICER_EMAIL)
                     .withOnBehalfName(ON_BEHALF_NAME);
             dissolution = aDissolution().withDirectors(director).build();
-            final var command = new ChangeSignatoryDetailsCommand(USER_ID, OFFICER_ID, OFFICER_EMAIL, ON_BEHALF_NAME);
+            final var command = new UpdateSignatoryDetailsCommand(USER_ID, OFFICER_ID, OFFICER_EMAIL, ON_BEHALF_NAME);
 
             patcher.updateSignatory(dissolution, command);
 
@@ -384,9 +384,9 @@ class DissolutionPatcherTest {
             dissolution = aDissolution()
                     .withDirectors(aDissolutionDirector().withOfficerId("other-officer"))
                     .build();
-            final var command = new ChangeSignatoryDetailsCommand(USER_ID, OFFICER_ID, OFFICER_EMAIL, ON_BEHALF_NAME);
+            final var command = new UpdateSignatoryDetailsCommand(USER_ID, OFFICER_ID, OFFICER_EMAIL, ON_BEHALF_NAME);
 
-            assertThrows(DissolutionChangeSignatoryException.class, () -> patcher.updateSignatory(dissolution, command));
+            assertThrows(DissolutionUpdateSignatoryException.class, () -> patcher.updateSignatory(dissolution, command));
 
             verify(repository, never()).save(any());
             verify(dissolutionEmailService, never()).notifySignatoryToSign(any(), any());
@@ -399,9 +399,9 @@ class DissolutionPatcherTest {
                             .withOfficerId(OFFICER_ID)
                             .withDirectorApproval(generateDirectorApproval()))
                     .build();
-            final var command = new ChangeSignatoryDetailsCommand(USER_ID, OFFICER_ID, OFFICER_EMAIL, ON_BEHALF_NAME);
+            final var command = new UpdateSignatoryDetailsCommand(USER_ID, OFFICER_ID, OFFICER_EMAIL, ON_BEHALF_NAME);
 
-            assertThrows(DissolutionChangeSignatoryException.class, () -> patcher.updateSignatory(dissolution, command));
+            assertThrows(DissolutionUpdateSignatoryException.class, () -> patcher.updateSignatory(dissolution, command));
 
             verify(repository, never()).save(any());
             verify(dissolutionEmailService, never()).notifySignatoryToSign(any(), any());
@@ -426,7 +426,7 @@ class DissolutionPatcherTest {
                     .withEmail("old@mail.com")
                     .withOnBehalfName("Existing Name");
             dissolution = aDissolution().withDirectors(director).build();
-            final var command = new ChangeSignatoryDetailsCommand(USER_ID, OFFICER_ID, requestEmail, ON_BEHALF_NAME);
+            final var command = new UpdateSignatoryDetailsCommand(USER_ID, OFFICER_ID, requestEmail, ON_BEHALF_NAME);
 
             patcher.updateSignatory(dissolution, command);
 

@@ -11,8 +11,6 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchRespo
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.dissolution.DissolutionEmailService;
 
-import java.util.Objects;
-
 @Service
 public class DissolutionDirectorPatcher {
 

@@ -2,7 +2,7 @@ package uk.gov.companieshouse.service.dissolution;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.exception.DissolutionChangeSignatoryException;
+import uk.gov.companieshouse.exception.DissolutionUpdateSignatoryException;
 import uk.gov.companieshouse.exception.DissolutionDirectorApprovalException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
@@ -12,7 +12,7 @@ import uk.gov.companieshouse.mapper.PaymentInformationMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
-import uk.gov.companieshouse.model.domain.ChangeSignatoryDetailsCommand;
+import uk.gov.companieshouse.model.domain.UpdateSignatoryDetailsCommand;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
@@ -76,15 +76,15 @@ public class DissolutionPatcher {
         return this.responseMapper.mapToDissolutionPatchResponse(dissolution);
     }
 
-    public void updateSignatory(Dissolution dissolution, ChangeSignatoryDetailsCommand command) {
+    public void updateSignatory(Dissolution dissolution, UpdateSignatoryDetailsCommand command) {
         final var officerId = command.officerId();
         final var email = command.officerEmail();
 
         DissolutionDirector signatory = dissolution.findSignatory(officerId)
-                .orElseThrow(() -> new DissolutionChangeSignatoryException(String.format("Director %s is not a signatory", officerId)));
+                .orElseThrow(() -> new DissolutionUpdateSignatoryException(String.format("Director %s is not a signatory", officerId)));
 
         if (signatory.hasDirectorApproval()) {
-            throw new DissolutionChangeSignatoryException(String.format("Signatory %s has already approved", officerId));
+            throw new DissolutionUpdateSignatoryException(String.format("Signatory %s has already approved", officerId));
         }
 
         if (signatory.hasDetailsChanged(email, command.onBehalfName())) {

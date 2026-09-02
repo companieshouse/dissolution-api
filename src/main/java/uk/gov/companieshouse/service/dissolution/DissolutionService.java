@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.exception.ConflictException;
-import uk.gov.companieshouse.exception.DissolutionChangeSignatoryException;
+import uk.gov.companieshouse.exception.DissolutionUpdateSignatoryException;
 import uk.gov.companieshouse.exception.DissolutionInvalidSignatoriesException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionSignatoryNotFoundException;
@@ -15,7 +15,7 @@ import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
-import uk.gov.companieshouse.model.domain.ChangeSignatoryDetailsCommand;
+import uk.gov.companieshouse.model.domain.UpdateSignatoryDetailsCommand;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.model.domain.DissolutionInitiationCommand;
 import uk.gov.companieshouse.model.domain.ResendSignatoryNotificationCommand;
@@ -227,14 +227,14 @@ public class DissolutionService {
                 .orElseThrow(() -> new DissolutionNotFoundException(String.format("Draft dissolution not found for user %s and company number %s.", userId, companyNumber)));
     }
 
-    public void findAndUpdateSignatory(String companyNumber, Transaction transaction, ChangeSignatoryDetailsCommand command) {
-        final Dissolution dissolution = getPendingDissolution(companyNumber);
-
-        if (!isApplicant(command.userId(), dissolution)) {
-            throw new DissolutionChangeSignatoryException("Only the applicant can update signatory");
-        }
+    public void findAndUpdateSignatory(String companyNumber, Transaction transaction, UpdateSignatoryDetailsCommand command) {
+        final var dissolution = getPendingDissolution(companyNumber);
 
         TransactionValidator.of(transaction).hasStatus(TransactionStatus.OPEN).forCompany(companyNumber).isLinkedToDissolution(dissolution.getId()).validate();
+
+        if (!isApplicant(command.userId(), dissolution)) {
+            throw new DissolutionUpdateSignatoryException("Only the applicant can update signatory");
+        }
 
         patcher.updateSignatory(dissolution, command);
     }

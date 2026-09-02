@@ -21,19 +21,10 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.Permission;
-import uk.gov.companieshouse.exception.ConflictException;
-import uk.gov.companieshouse.exception.DissolutionChangeSignatoryException;
-import uk.gov.companieshouse.exception.DissolutionDirectorApprovalException;
-import uk.gov.companieshouse.exception.DissolutionInvalidSignatoriesException;
-import uk.gov.companieshouse.exception.DissolutionNotFoundException;
-import uk.gov.companieshouse.exception.DissolutionSignatoryNotFoundException;
-import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
-import uk.gov.companieshouse.exception.InvalidTransactionStateException;
-import uk.gov.companieshouse.exception.NotFoundException;
-import uk.gov.companieshouse.exception.TransactionNotFoundException;
+import uk.gov.companieshouse.exception.*;
 import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 import uk.gov.companieshouse.mapper.DissolutionInitiationMapper;
-import uk.gov.companieshouse.model.domain.ChangeSignatoryDetailsCommand;
+import uk.gov.companieshouse.model.domain.UpdateSignatoryDetailsCommand;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
@@ -43,7 +34,6 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionLinks;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.service.CompanyProfileService;
 import uk.gov.companieshouse.service.TransactionService;
-import uk.gov.companieshouse.service.dissolution.DissolutionEmailService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 
 import java.util.Arrays;
@@ -98,9 +88,6 @@ class TransactionsDissolutionControllerTest {
 
     @MockitoBean
     private DissolutionService dissolutionService;
-
-    @MockitoBean
-    private DissolutionEmailService dissolutionEmailService;
 
     @MockitoBean
     private CompanyProfileService companyProfileService;
@@ -537,7 +524,7 @@ class TransactionsDissolutionControllerTest {
 
             mockMvc
                     .perform(post(DISSOLUTION_SIGNATORY_NOTIFICATION_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
-                                    .headers(headers))
+                            .headers(headers))
                     .andExpect(status().isUnauthorized());
         }
 
@@ -622,7 +609,7 @@ class TransactionsDissolutionControllerTest {
 
     @Nested
     @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-    class changeSignatoryDetails {
+    class updateSignatoryDetails {
         @Test
         void when_no_token_permissions_are_provided_then_return_unauthorised() throws Exception {
             final HttpHeaders headers = new HttpHeaders();
@@ -652,9 +639,9 @@ class TransactionsDissolutionControllerTest {
 
             mockMvc
                     .perform(patch(DISSOLUTION_SIGNATORY_DETAILS_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
-                                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                    .headers(headers)
-                                    .content(asJsonString(aDissolutionDirectorPatchRequest().build())))
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .headers(headers)
+                            .content(asJsonString(aDissolutionDirectorPatchRequest().build())))
                     .andExpect(status().isUnauthorized());
         }
 
@@ -664,10 +651,10 @@ class TransactionsDissolutionControllerTest {
 
             mockMvc
                     .perform(patch(DISSOLUTION_SIGNATORY_DETAILS_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
-                                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                    .headers(createHttpHeaders())
-                                    .requestAttr(TRANSACTION_KEY, transaction)
-                                    .content(asJsonString(body)))
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .headers(createHttpHeaders())
+                            .requestAttr(TRANSACTION_KEY, transaction)
+                            .content(asJsonString(body)))
                     .andExpect(status().is(HttpStatus.UNPROCESSABLE_CONTENT.value()))
                     .andExpect(content().json("{'email':'must not be blank'}"));
         }
@@ -678,10 +665,10 @@ class TransactionsDissolutionControllerTest {
 
             mockMvc
                     .perform(patch(DISSOLUTION_SIGNATORY_DETAILS_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
-                                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                    .headers(createHttpHeaders())
-                                    .requestAttr(TRANSACTION_KEY, transaction)
-                                    .content(asJsonString(body)))
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .headers(createHttpHeaders())
+                            .requestAttr(TRANSACTION_KEY, transaction)
+                            .content(asJsonString(body)))
                     .andExpect(status().is(HttpStatus.UNPROCESSABLE_CONTENT.value()))
                     .andExpect(content().json("{'email':'must be a well-formed email address'}"));
         }
@@ -695,10 +682,10 @@ class TransactionsDissolutionControllerTest {
 
             mockMvc
                     .perform(patch(DISSOLUTION_SIGNATORY_DETAILS_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
-                                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                    .headers(createHttpHeaders())
-                                    .requestAttr(TRANSACTION_KEY, transaction)
-                                    .content(asJsonString(body)))
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .headers(createHttpHeaders())
+                            .requestAttr(TRANSACTION_KEY, transaction)
+                            .content(asJsonString(body)))
                     .andExpect(status().is(HttpStatus.UNPROCESSABLE_CONTENT.value()))
                     .andExpect(content().json("{'onBehalfName':'size must be between 1 and 250'}"));
         }
@@ -706,17 +693,17 @@ class TransactionsDissolutionControllerTest {
         @Test
         void when_dissolution_does_not_exist_then_return_not_found() throws Exception {
             final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
-            final var command = new ChangeSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
+            final var command = new UpdateSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
 
             doThrow(new DissolutionNotFoundException("Dissolution not found"))
                     .when(dissolutionService).findAndUpdateSignatory(COMPANY_NUMBER, transaction, command);
 
             mockMvc
                     .perform(patch(DISSOLUTION_SIGNATORY_DETAILS_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
-                                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                    .headers(createHttpHeaders())
-                                    .requestAttr(TRANSACTION_KEY, transaction)
-                                    .content(asJsonString(body)))
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .headers(createHttpHeaders())
+                            .requestAttr(TRANSACTION_KEY, transaction)
+                            .content(asJsonString(body)))
                     .andExpect(status().isNotFound());
         }
 
@@ -736,7 +723,7 @@ class TransactionsDissolutionControllerTest {
         @Test
         void when_transaction_is_not_open_then_return_conflict() throws Exception {
             final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
-            final var command = new ChangeSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
+            final var command = new UpdateSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
 
             doThrow(new InvalidTransactionStateException("Transaction is already closed or closed pending payment"))
                     .when(dissolutionService).findAndUpdateSignatory(COMPANY_NUMBER, transaction, command);
@@ -753,7 +740,7 @@ class TransactionsDissolutionControllerTest {
         @Test
         void when_transaction_is_not_associated_with_the_company_then_return_conflict() throws Exception {
             final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
-            final var command = new ChangeSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
+            final var command = new UpdateSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
 
             doThrow(new InvalidTransactionStateException("Transaction does not belong to company " + COMPANY_NUMBER))
                     .when(dissolutionService).findAndUpdateSignatory(COMPANY_NUMBER, transaction, command);
@@ -770,7 +757,7 @@ class TransactionsDissolutionControllerTest {
         @Test
         void when_transaction_is_not_linked_to_dissolution_then_return_bad_request() throws Exception {
             final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
-            final var command = new ChangeSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
+            final var command = new UpdateSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
 
             doThrow(new DissolutionNotLinkedToTransactionException("Transaction is not linked to dissolution"))
                     .when(dissolutionService).findAndUpdateSignatory(COMPANY_NUMBER, transaction, command);
@@ -787,68 +774,68 @@ class TransactionsDissolutionControllerTest {
         @Test
         void when_officer_is_not_a_signatory_then_return_bad_request() throws Exception {
             final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
-            final var command = new ChangeSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
+            final var command = new UpdateSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
 
-            doThrow(new DissolutionChangeSignatoryException("Signatory not found"))
+            doThrow(new DissolutionUpdateSignatoryException("Signatory not found"))
                     .when(dissolutionService).findAndUpdateSignatory(COMPANY_NUMBER, transaction, command);
 
             mockMvc
                     .perform(patch(DISSOLUTION_SIGNATORY_DETAILS_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
-                                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                    .headers(createHttpHeaders())
-                                    .requestAttr(TRANSACTION_KEY, transaction)
-                                    .content(asJsonString(body)))
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .headers(createHttpHeaders())
+                            .requestAttr(TRANSACTION_KEY, transaction)
+                            .content(asJsonString(body)))
                     .andExpect(status().isBadRequest());
         }
 
         @Test
         void when_officer_is_not_pending_approval_then_return_bad_request() throws Exception {
             final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
-            final var command = new ChangeSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
+            final var command = new UpdateSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
 
-            doThrow(new DissolutionChangeSignatoryException("Signatory not pending approval"))
+            doThrow(new DissolutionUpdateSignatoryException("Signatory not pending approval"))
                     .when(dissolutionService).findAndUpdateSignatory(COMPANY_NUMBER, transaction, command);
 
             mockMvc
                     .perform(patch(DISSOLUTION_SIGNATORY_DETAILS_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
-                                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                    .headers(createHttpHeaders())
-                                    .requestAttr(TRANSACTION_KEY, transaction)
-                                    .content(asJsonString(body)))
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .headers(createHttpHeaders())
+                            .requestAttr(TRANSACTION_KEY, transaction)
+                            .content(asJsonString(body)))
                     .andExpect(status().isBadRequest());
         }
 
         @Test
-        void when_non_applicant_attempts_to_change_signatory_details_then_return_bad_request() throws Exception {
+        void when_non_applicant_attempts_to_update_signatory_details_then_return_bad_request() throws Exception {
             final HttpHeaders headers = createHttpHeaders();
             headers.set(EricConstants.ERIC_IDENTITY, OFFICER_ID);
 
             final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
-            final var command = new ChangeSignatoryDetailsCommand(OFFICER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
+            final var command = new UpdateSignatoryDetailsCommand(OFFICER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
 
-            doThrow(new DissolutionChangeSignatoryException("only the applicant can change the details of a signatory"))
+            doThrow(new DissolutionUpdateSignatoryException("only the applicant can update the details of a signatory"))
                     .when(dissolutionService).findAndUpdateSignatory(COMPANY_NUMBER, transaction, command);
 
             mockMvc
                     .perform(patch(DISSOLUTION_SIGNATORY_DETAILS_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
-                                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                    .headers(headers)
-                                    .requestAttr(TRANSACTION_KEY, transaction)
-                                    .content(asJsonString(body)))
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .headers(headers)
+                            .requestAttr(TRANSACTION_KEY, transaction)
+                            .content(asJsonString(body)))
                     .andExpect(status().isBadRequest());
         }
 
         @Test
         void when_signatory_is_changed_successfully_then_return_ok() throws Exception {
             final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
-            final var command = new ChangeSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
+            final var command = new UpdateSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
 
             mockMvc
                     .perform(patch(DISSOLUTION_SIGNATORY_DETAILS_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
-                                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                    .headers(createHttpHeaders())
-                                    .requestAttr(TRANSACTION_KEY, transaction)
-                                    .content(asJsonString(body)))
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .headers(createHttpHeaders())
+                            .requestAttr(TRANSACTION_KEY, transaction)
+                            .content(asJsonString(body)))
                     .andExpect(status().isOk());
 
             verify(dissolutionService, times(1)).findAndUpdateSignatory(COMPANY_NUMBER, transaction, command);

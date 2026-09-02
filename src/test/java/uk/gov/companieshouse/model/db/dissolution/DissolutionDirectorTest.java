@@ -29,6 +29,11 @@ class DissolutionDirectorTest {
         }
 
         @Test
+        void when_email_has_mixed_casing_and_whitespace_then_returns_false() {
+            assertThat(director.hasDetailsChanged("  EXISTING@EMAIL.COM  ", "existing name")).isFalse();
+        }
+
+        @Test
         void when_on_behalf_name_has_changed_then_returns_true() {
             assertThat(director.hasDetailsChanged("existing@email.com", "new name")).isTrue();
         }

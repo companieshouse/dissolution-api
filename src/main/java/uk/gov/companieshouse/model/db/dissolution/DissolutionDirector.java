@@ -64,6 +64,7 @@ public class DissolutionDirector {
     }
 
     public boolean hasDetailsChanged(String email, String onBehalfName) {
-        return !Objects.equals(this.email, email) || !Objects.equals(this.onBehalfName, onBehalfName);
+        final var trimmedEmail = email != null ? email.trim().toLowerCase() : null;
+        return !Objects.equals(this.email, trimmedEmail) || !Objects.equals(this.onBehalfName, onBehalfName);
     }
 }

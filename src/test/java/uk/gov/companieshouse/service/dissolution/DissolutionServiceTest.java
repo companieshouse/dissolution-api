@@ -17,7 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.exception.ConflictException;
-import uk.gov.companieshouse.exception.DissolutionChangeSignatoryException;
+import uk.gov.companieshouse.exception.DissolutionUpdateSignatoryException;
 import uk.gov.companieshouse.exception.DissolutionInvalidSignatoriesException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
@@ -32,7 +32,7 @@ import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
-import uk.gov.companieshouse.model.domain.ChangeSignatoryDetailsCommand;
+import uk.gov.companieshouse.model.domain.UpdateSignatoryDetailsCommand;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.model.domain.ResendSignatoryNotificationCommand;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
@@ -786,13 +786,13 @@ class DissolutionServiceTest {
     class findAndUpdateSignatory {
 
         private Dissolution dissolution;
-        private ChangeSignatoryDetailsCommand command;
+        private UpdateSignatoryDetailsCommand command;
         private Transaction transaction;
 
         @BeforeEach
         void initialize() {
             final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
-            command = new ChangeSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
+            command = new UpdateSignatoryDetailsCommand(USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
 
             final var createdBy = generateCreatedBy();
             createdBy.setUserId(USER_ID);
@@ -879,13 +879,13 @@ class DissolutionServiceTest {
         }
 
         @Test
-        void when_non_applicant_attempts_to_change_signatory_details_then_dissolution_change_signatory_exception_thrown() {
+        void when_non_applicant_attempts_to_update_signatory_details_then_dissolution_update_signatory_exception_thrown() {
             final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
-            command = new ChangeSignatoryDetailsCommand(OFFICER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
+            command = new UpdateSignatoryDetailsCommand(OFFICER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
             when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
 
             assertThatThrownBy(() -> dissolutionService.findAndUpdateSignatory(COMPANY_NUMBER, transaction, command))
-                    .isInstanceOf(DissolutionChangeSignatoryException.class)
+                    .isInstanceOf(DissolutionUpdateSignatoryException.class)
                     .hasMessage("Only the applicant can update signatory");
 
             verify(patcher, never()).updateSignatory(any(), any());
