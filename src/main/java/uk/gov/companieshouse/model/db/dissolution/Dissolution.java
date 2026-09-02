@@ -4,7 +4,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-import uk.gov.companieshouse.exception.DissolutionSignatoryNotFoundException;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.DissolutionStatus;
@@ -165,13 +164,11 @@ public class Dissolution {
                 : this.data.getDirectors();
     }
 
-    public String getSignatoryEmail(String signatoryId) {
-        return this.getSignatories().stream()
-                .filter(d -> d.getOfficerId().equals(signatoryId))
-                .map(DissolutionDirector::getEmail)
-                .findFirst()
-                .orElseThrow(() -> new DissolutionSignatoryNotFoundException(
-                        "No signatory found for signatory id " + signatoryId));
+    public Optional<DissolutionDirector> findSignatory(String officerId) {
+        return this.getSignatories()
+                .stream()
+                .filter(director -> director.getOfficerId().equals(officerId))
+                .findFirst();
     }
 
     public String getFilingKind() {

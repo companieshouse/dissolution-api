@@ -3,7 +3,6 @@ package uk.gov.companieshouse.model.db.dissolution;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import uk.gov.companieshouse.exception.DissolutionSignatoryNotFoundException;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.DissolutionStatus;
 
@@ -159,21 +158,21 @@ class DissolutionTest {
 
         @Test
         void when_data_is_not_initialised_then_returns_empty_list() {
-            var dissolution = new Dissolution();
+            final var dissolution = new Dissolution();
 
             assertThat(dissolution.getSignatories()).isEmpty();
         }
 
         @Test
         void when_directors_is_null_then_returns_empty_list() {
-            var dissolution = aDissolution().withDirectors((List<DissolutionDirector>) null).build();
+            final var dissolution = aDissolution().withDirectors((List<DissolutionDirector>) null).build();
 
             assertThat(dissolution.getSignatories()).isEmpty();
         }
 
         @Test
         void when_directors_are_set_then_returns_them() {
-            var dissolution = aDissolution()
+            final var dissolution = aDissolution()
                     .withOnlyDirector(aDissolutionDirector().withOfficerId("abc123"))
                     .build();
 
@@ -184,35 +183,36 @@ class DissolutionTest {
     }
 
     @Nested
-    class getSignatoryEmail {
+    class findSignatory {
 
         @Test
-        void when_data_is_not_initialised_then_exception_thrown() {
-            var dissolution = new Dissolution();
-
-            assertThrows(DissolutionSignatoryNotFoundException.class,
-                    () -> dissolution.getSignatoryEmail("abc123"));
+        void when_data_is_not_initialised_then_empty_optional_returned() {
+            final var dissolution = new Dissolution();
+            assertThat(dissolution.findSignatory("abc123")).isEmpty();
         }
 
         @Test
-        void when_no_signatory_matches_id_then_exception_thrown() {
-            var dissolution = aDissolution()
+        void when_no_signatory_matches_id_then_empty_optional_returned() {
+            final var dissolution = aDissolution()
                     .withOnlyDirector(aDissolutionDirector().withOfficerId("some-other-id"))
                     .build();
 
-            assertThrows(DissolutionSignatoryNotFoundException.class,
-                    () -> dissolution.getSignatoryEmail("abc123"));
+            assertThat(dissolution.findSignatory("abc123")).isEmpty();
         }
 
         @Test
         void when_signatory_matches_id_then_returns_their_email() {
-            var dissolution = aDissolution()
+            final var dissolution = aDissolution()
                     .withOnlyDirector(aDissolutionDirector()
                             .withOfficerId("abc123")
                             .withEmail("john@doe.com"))
                     .build();
 
-            assertThat(dissolution.getSignatoryEmail("abc123")).isEqualTo("john@doe.com");
+            assertThat(dissolution.findSignatory("abc123"))
+                    .isPresent()
+                    .get()
+                    .extracting(DissolutionDirector::getEmail)
+                    .isEqualTo("john@doe.com");
         }
     }
 

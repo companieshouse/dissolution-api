@@ -1,9 +1,13 @@
 package uk.gov.companieshouse.service.dissolution;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -11,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.exception.DissolutionDirectorApprovalException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
+import uk.gov.companieshouse.exception.DissolutionUpdateSignatoryException;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.mapper.DirectorApprovalMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
@@ -22,6 +27,7 @@ import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionSubmission;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
+import uk.gov.companieshouse.model.domain.UpdateSignatoryDetailsCommand;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
@@ -38,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -51,6 +58,7 @@ import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolu
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentInformation;
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
+import static uk.gov.companieshouse.fixtures.TransactionTestDataBuilder.aTransaction;
 
 @ExtendWith(MockitoExtension.class)
 class DissolutionPatcherTest {
@@ -86,6 +94,9 @@ class DissolutionPatcherTest {
     private static final String OFFICER_ID_TWO = "def456";
     private static final String EMAIL = "director@email.com";
     private static final String PRESENTER_EMAIL = "presenter@email.com";
+    private static final String OFFICER_EMAIL = "new@email.com";
+    private static final String ON_BEHALF_NAME = "on behalf name";
+    public static final String COMPANY_NUMBER = "12345678";
 
     private Dissolution dissolution;
     private DissolutionPatchResponse response;
@@ -318,6 +329,114 @@ class DissolutionPatcherTest {
 
         assertEquals(paymentInformation, dissolutionCaptor.getValue().getPaymentInformation());
         assertEquals(submission, dissolutionCaptor.getValue().getSubmission());
+    }
+
+    @Nested
+    @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
+    class updateSignatory {
+
+        @Test
+        void when_email_has_changed_then_saves_to_database_and_sends_notification_email() {
+            dissolution = aDissolution().withDirectors(aDissolutionDirector().withOfficerId(OFFICER_ID)).build();
+            final var command = new UpdateSignatoryDetailsCommand(aTransaction().build(), COMPANY_NUMBER, USER_ID, OFFICER_ID, OFFICER_EMAIL, null);
+
+            patcher.updateSignatory(dissolution, command);
+
+            verify(repository).save(dissolutionCaptor.capture());
+            verify(dissolutionEmailService).notifySignatoryToSign(dissolutionCaptor.capture(), eq(OFFICER_EMAIL));
+
+            assertEquals(OFFICER_EMAIL, dissolutionCaptor.getValue().getData().getDirectors().getFirst().getEmail());
+            assertNull(dissolutionCaptor.getValue().getData().getDirectors().getFirst().getOnBehalfName());
+        }
+
+        @Test
+        void when_on_behalf_name_has_changed_then_saves_to_database_and_sends_notification_email() {
+            final var director = aDissolutionDirector()
+                    .withOfficerId(OFFICER_ID)
+                    .withEmail(OFFICER_EMAIL);
+            dissolution = aDissolution().withDirectors(director).build();
+            final var command = new UpdateSignatoryDetailsCommand(aTransaction().build(), COMPANY_NUMBER, USER_ID, OFFICER_ID, OFFICER_EMAIL, ON_BEHALF_NAME);
+
+            patcher.updateSignatory(dissolution, command);
+
+            verify(repository).save(dissolutionCaptor.capture());
+            verify(dissolutionEmailService).notifySignatoryToSign(dissolutionCaptor.capture(), eq(OFFICER_EMAIL));
+
+            assertEquals(OFFICER_EMAIL, dissolutionCaptor.getValue().getData().getDirectors().getFirst().getEmail());
+            assertEquals(ON_BEHALF_NAME, dissolutionCaptor.getValue().getData().getDirectors().getFirst().getOnBehalfName());
+        }
+
+        @Test
+        void when_details_have_not_changed_then_does_not_save_or_send_notification_email() {
+            final var director = aDissolutionDirector()
+                    .withOfficerId(OFFICER_ID)
+                    .withEmail(OFFICER_EMAIL)
+                    .withOnBehalfName(ON_BEHALF_NAME);
+            dissolution = aDissolution().withDirectors(director).build();
+            final var command = new UpdateSignatoryDetailsCommand(aTransaction().build(), COMPANY_NUMBER, USER_ID, OFFICER_ID, OFFICER_EMAIL, ON_BEHALF_NAME);
+
+            patcher.updateSignatory(dissolution, command);
+
+            verify(repository, never()).save(any());
+            verify(dissolutionEmailService, never()).notifySignatoryToSign(any(), any());
+        }
+
+        @Test
+        void when_signatory_is_not_found_then_throws_exception_and_does_not_save() {
+            dissolution = aDissolution()
+                    .withDirectors(aDissolutionDirector().withOfficerId("other-officer"))
+                    .build();
+            final var command = new UpdateSignatoryDetailsCommand(aTransaction().build(), COMPANY_NUMBER, USER_ID, OFFICER_ID, OFFICER_EMAIL, ON_BEHALF_NAME);
+
+            assertThrows(DissolutionUpdateSignatoryException.class, () -> patcher.updateSignatory(dissolution, command));
+
+            verify(repository, never()).save(any());
+            verify(dissolutionEmailService, never()).notifySignatoryToSign(any(), any());
+        }
+
+        @Test
+        void when_signatory_has_already_approved_then_throws_exception_and_does_not_save() {
+            dissolution = aDissolution()
+                    .withDirectors(aDissolutionDirector()
+                            .withOfficerId(OFFICER_ID)
+                            .withDirectorApproval(generateDirectorApproval()))
+                    .build();
+            final var command = new UpdateSignatoryDetailsCommand(aTransaction().build(), COMPANY_NUMBER, USER_ID, OFFICER_ID, OFFICER_EMAIL, ON_BEHALF_NAME);
+
+            assertThrows(DissolutionUpdateSignatoryException.class, () -> patcher.updateSignatory(dissolution, command));
+
+            verify(repository, never()).save(any());
+            verify(dissolutionEmailService, never()).notifySignatoryToSign(any(), any());
+        }
+
+        @ParameterizedTest(name = "{index} => {0}")
+        @CsvSource(
+                delimiter = '|',
+                quoteCharacter = '\'',
+                value = {
+                        "'email is trimmed'    | ' new@email.com ' | 'new@email.com'",
+                        "'email is lowercased' | 'NEW@EMAIL.COM'   | 'new@email.com'",
+                }
+        )
+        void when_email_is_submitted_then_it_is_normalized(
+                String description,
+                String requestEmail,
+                String expectedStoredEmail
+        ) {
+            final var director = aDissolutionDirector()
+                    .withOfficerId(OFFICER_ID)
+                    .withEmail("old@mail.com")
+                    .withOnBehalfName("Existing Name");
+            dissolution = aDissolution().withDirectors(director).build();
+            final var command = new UpdateSignatoryDetailsCommand(aTransaction().build(), COMPANY_NUMBER, USER_ID, OFFICER_ID, requestEmail, ON_BEHALF_NAME);
+
+            patcher.updateSignatory(dissolution, command);
+
+            verify(repository).save(dissolutionCaptor.capture());
+
+            final var savedDirector = dissolutionCaptor.getValue().getData().getDirectors().getFirst();
+            assertEquals(expectedStoredEmail, savedDirector.getEmail());
+        }
     }
 
     private void assertReadyForPayment(boolean hasTransactionId, Dissolution dissolution) {

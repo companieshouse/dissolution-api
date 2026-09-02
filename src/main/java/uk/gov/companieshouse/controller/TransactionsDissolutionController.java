@@ -19,19 +19,21 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.exception.BadRequestException;
-import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.mapper.DissolutionInitiationMapper;
+import uk.gov.companieshouse.model.domain.UpdateSignatoryDetailsCommand;
+import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
+import uk.gov.companieshouse.model.domain.ResendSignatoryNotificationCommand;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionInitiationRequest;
-import uk.gov.companieshouse.model.domain.ResendSignatoryNotificationCommand;
+import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchRequest;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 import uk.gov.companieshouse.service.CompanyProfileService;
-import uk.gov.companieshouse.service.dissolution.DissolutionEmailService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 
 import static uk.gov.companieshouse.model.Constants.COMPANY_NUMBER_KEY;
+import static uk.gov.companieshouse.model.Constants.OFFICER_ID_KEY;
 import static uk.gov.companieshouse.model.Constants.TRANSACTION_KEY;
 import static uk.gov.companieshouse.util.EricHelper.getEmail;
 
@@ -42,17 +44,14 @@ import static uk.gov.companieshouse.util.EricHelper.getEmail;
 public class TransactionsDissolutionController {
 
     private final DissolutionService dissolutionService;
-    private final DissolutionEmailService dissolutionEmailService;
     private final CompanyProfileService companyProfileService;
     private final DissolutionInitiationMapper dissolutionInitiationMapper;
 
     public TransactionsDissolutionController(
             DissolutionService dissolutionService,
-            DissolutionEmailService dissolutionEmailService,
             CompanyProfileService companyProfileService,
             DissolutionInitiationMapper dissolutionInitiationMapper) {
         this.dissolutionService = dissolutionService;
-        this.dissolutionEmailService = dissolutionEmailService;
         this.companyProfileService = companyProfileService;
         this.dissolutionInitiationMapper = dissolutionInitiationMapper;
     }
@@ -133,15 +132,42 @@ public class TransactionsDissolutionController {
             @ApiResponse(responseCode = "404", description = "Dissolution Application or signatory not found"),
             @ApiResponse(responseCode = "409", description = "Transaction is not open, is not associated with the company or is not linked to the dissolution", content = @Content)
     })
-    @PostMapping("/signatories/{signatory-id}/signature-notification")
+    @PostMapping("/signatories/{officer_id}/signature-notification")
     @ResponseStatus(HttpStatus.OK)
     public void resendSignatoryNotification(
             @PathVariable(COMPANY_NUMBER_KEY) final String companyNumber,
             @RequestAttribute(TRANSACTION_KEY) Transaction transaction,
-            @PathVariable("signatory-id") final String signatoryId) {
+            @PathVariable(OFFICER_ID_KEY) final String officerId) {
 
-        final var command = new ResendSignatoryNotificationCommand(transaction, companyNumber, signatoryId);
+        final var command = new ResendSignatoryNotificationCommand(transaction, companyNumber, officerId);
 
-        dissolutionEmailService.notifySignatoryToSign(command);
+        dissolutionService.resendSignatoryNotification(command);
+    }
+
+    @Operation(summary = "Update Dissolution Signatory Details")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Dissolution signatory details successfully updated", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Officer is not a signatory, has already approved, user is not the applicant or transaction is not linked to the dissolution"),
+            @ApiResponse(responseCode = "404", description = "Dissolution Application or Company not found"),
+            @ApiResponse(responseCode = "409", description = "Transaction is not open, is not associated with the company", content = @Content)
+    })
+    @PatchMapping("/signatories/{officer_id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void updateSignatoryDetails(
+            @RequestHeader("ERIC-identity") String userId,
+            @PathVariable(COMPANY_NUMBER_KEY) final String companyNumber,
+            @RequestAttribute(TRANSACTION_KEY) Transaction transaction,
+            @PathVariable(OFFICER_ID_KEY) final String officerId,
+            @Valid @RequestBody final DissolutionDirectorPatchRequest changeDetailsRequest) {
+
+        final var command = new UpdateSignatoryDetailsCommand(
+                transaction,
+                companyNumber,
+                userId,
+                officerId,
+                changeDetailsRequest.getEmail(),
+                changeDetailsRequest.getOnBehalfName()
+        );
+        dissolutionService.findAndUpdateSignatory(command);
     }
 }
