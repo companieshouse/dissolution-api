@@ -4,7 +4,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-import uk.gov.companieshouse.exception.DissolutionSignatoryNotFoundException;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
 import uk.gov.companieshouse.model.enums.DissolutionStatus;
 
@@ -13,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Document(collection = "dissolutions")
 public class Dissolution {
@@ -160,13 +160,11 @@ public class Dissolution {
                 : this.data.getDirectors();
     }
 
-    public String getSignatoryEmail(String signatoryId) {
-        return this.getSignatories().stream()
-                .filter(d -> d.getOfficerId().equals(signatoryId))
-                .map(DissolutionDirector::getEmail)
-                .findFirst()
-                .orElseThrow(() -> new DissolutionSignatoryNotFoundException(
-                        "No signatory found for signatory id " + signatoryId));
+    public Optional<DissolutionDirector> findSignatory(String officerId) {
+        return this.getSignatories()
+                .stream()
+                .filter(director -> director.getOfficerId().equals(officerId))
+                .findFirst();
     }
 
     public List<DissolutionStatusChanged> getStatusHistory() {

@@ -2,6 +2,8 @@ package uk.gov.companieshouse.model.db.dissolution;
 
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.util.Objects;
+
 public class DissolutionDirector {
 
     @Field("officer_id")
@@ -59,5 +61,10 @@ public class DissolutionDirector {
 
     public void setDirectorApproval(DirectorApproval approval) {
         this.approval = approval;
+    }
+
+    public boolean hasDetailsChanged(String email, String onBehalfName) {
+        final var trimmedEmail = email != null ? email.trim().toLowerCase() : null;
+        return !Objects.equals(this.email, trimmedEmail) || !Objects.equals(this.onBehalfName, onBehalfName);
     }
 }

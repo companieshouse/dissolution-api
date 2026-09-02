@@ -11,8 +11,6 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchRespo
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.dissolution.DissolutionEmailService;
 
-import java.util.Objects;
-
 @Service
 public class DissolutionDirectorPatcher {
 
@@ -52,7 +50,7 @@ public class DissolutionDirectorPatcher {
     private void updateSignatory(DissolutionDirectorPatchRequest body, Dissolution dissolution, String officerId) throws DissolutionNotFoundException {
         DissolutionDirector director = this.findDirector(officerId, dissolution);
 
-        if (hasDataChanged(director, body)) {
+        if (director.hasDetailsChanged(body.getEmail(), body.getOnBehalfName())) {
 
             director.setEmail(body.getEmail().trim().toLowerCase());
             director.setOnBehalfName(body.getOnBehalfName());
@@ -61,9 +59,5 @@ public class DissolutionDirectorPatcher {
 
             dissolutionEmailService.notifySignatoryToSign(dissolution, director.getEmail());
         }
-    }
-
-    private boolean hasDataChanged(DissolutionDirector director, DissolutionDirectorPatchRequest body) {
-        return !director.getEmail().equals(body.getEmail()) || !Objects.equals(director.getOnBehalfName(), body.getOnBehalfName());
     }
 }

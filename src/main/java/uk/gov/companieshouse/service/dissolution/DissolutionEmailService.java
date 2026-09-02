@@ -2,16 +2,13 @@ package uk.gov.companieshouse.service.dissolution;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.config.EnvironmentConfig;
-import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.mapper.email.DissolutionEmailMapper;
 import uk.gov.companieshouse.mapper.email.EmailMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionRejectReason;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionVerdict;
-import uk.gov.companieshouse.model.domain.ResendSignatoryNotificationCommand;
 import uk.gov.companieshouse.model.dto.email.ApplicationAcceptedEmailData;
 import uk.gov.companieshouse.model.dto.email.ApplicationRejectedEmailData;
 import uk.gov.companieshouse.model.dto.email.EmailDocument;
@@ -21,8 +18,6 @@ import uk.gov.companieshouse.model.dto.email.SignatoryToSignEmailData;
 import uk.gov.companieshouse.model.dto.email.SuccessfulPaymentEmailData;
 import uk.gov.companieshouse.model.dto.email.SupportNotificationEmailData;
 import uk.gov.companieshouse.model.enums.VerdictResult;
-import uk.gov.companieshouse.repository.DissolutionRepository;
-import uk.gov.companieshouse.service.dissolution.validator.TransactionValidator;
 import uk.gov.companieshouse.service.email.EmailService;
 
 import java.util.List;
@@ -37,7 +32,6 @@ public class DissolutionEmailService {
     private final EmailService emailService;
     private final DissolutionDeadlineDateCalculator deadlineDateCalculator;
     private final EnvironmentConfig environmentConfig;
-    private final DissolutionRepository dissolutionRepository;
 
     @Autowired
     public DissolutionEmailService(
@@ -46,8 +40,7 @@ public class DissolutionEmailService {
             EmailMapper emailMapper,
             EmailService emailService,
             DissolutionDeadlineDateCalculator deadlineDateCalculator,
-            EnvironmentConfig environmentConfig,
-            DissolutionRepository dissolutionRepository
+            EnvironmentConfig environmentConfig
     ) {
         this.dissolutionEmailMapper = dissolutionEmailMapper;
         this.messageTypeCalculator = messageTypeCalculator;
@@ -55,7 +48,6 @@ public class DissolutionEmailService {
         this.emailService = emailService;
         this.deadlineDateCalculator = deadlineDateCalculator;
         this.environmentConfig = environmentConfig;
-        this.dissolutionRepository = dissolutionRepository;
     }
 
     public void sendSuccessfulPaymentEmail(Dissolution dissolution) {
@@ -164,7 +156,7 @@ public class DissolutionEmailService {
                 .stream()
                 .map(DissolutionDirector::getEmail)
                 .distinct()
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private EmailDocument<SignatoryToSignEmailData> mapToSignatoryToSignEmail(Dissolution dissolution, String signatoryEmail, MessageType messageType, String deadlineDate) {
@@ -181,20 +173,4 @@ public class DissolutionEmailService {
     private <T> void sendEmail(EmailDocument<T> emailDocument) {
         emailService.sendMessage(emailDocument);
     }
-
-	public void notifySignatoryToSign(ResendSignatoryNotificationCommand command) {
-		final var dissolution = dissolutionRepository.findPendingDissolutionByCompanyNumber(command.companyNumber())
-				.orElseThrow(() -> new DissolutionNotFoundException(
-						"No PENDING dissolution found for company number " + command.companyNumber()));
-
-		TransactionValidator.of(command.transaction())
-				.hasStatus(TransactionStatus.OPEN)
-				.forCompany(command.companyNumber())
-				.isLinkedToDissolution(dissolution.getId())
-				.validate();
-
-		final var signatoryEmail = dissolution.getSignatoryEmail(command.signatoryId());
-
-		notifySignatoryToSign(dissolution, signatoryEmail);
-	}
 }
