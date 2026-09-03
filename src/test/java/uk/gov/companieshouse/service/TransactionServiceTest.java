@@ -12,12 +12,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.ApiClient;
+import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.exception.URIValidationException;
+import uk.gov.companieshouse.api.handler.privatetransaction.PrivateTransactionResourceHandler;
+import uk.gov.companieshouse.api.handler.privatetransaction.request.PrivateTransactionPatch;
 import uk.gov.companieshouse.api.handler.transaction.TransactionsResourceHandler;
 import uk.gov.companieshouse.api.handler.transaction.request.TransactionsGet;
 import uk.gov.companieshouse.api.handler.transaction.request.TransactionsPaymentGet;
-import uk.gov.companieshouse.api.handler.transaction.request.TransactionsUpdate;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionPayment;
@@ -57,7 +59,13 @@ class TransactionServiceTest {
     private ApiClient apiClient;
 
     @Mock
+    private InternalApiClient internalApiClient;
+
+    @Mock
     private TransactionsResourceHandler transactionsResourceHandler;
+
+    @Mock
+    private PrivateTransactionResourceHandler privateTransactionResourceHandler;
 
     @Mock
     private TransactionsGet transactionsGet;
@@ -66,7 +74,7 @@ class TransactionServiceTest {
     private TransactionsPaymentGet transactionsPaymentGet;
 
     @Mock
-    private TransactionsUpdate transactionsUpdate;
+    private PrivateTransactionPatch transactionsPatch;
 
     @Mock
     private ApiResponse<Transaction> apiGetResponse;
@@ -228,8 +236,8 @@ class TransactionServiceTest {
 
         @BeforeEach
         void initialize() throws IOException {
-            when(apiClientProvider.getInternalApiClient()).thenReturn(apiClient);
-            when(apiClient.transactions()).thenReturn(transactionsResourceHandler);
+            when(apiClientProvider.getInternalApiClient()).thenReturn(internalApiClient);
+            when(internalApiClient.privateTransaction()).thenReturn(privateTransactionResourceHandler);
         }
 
         @Test
@@ -237,8 +245,8 @@ class TransactionServiceTest {
             var transaction = aTransaction().withCompanyNumber(COMPANY_NUMBER).withStatus(OPEN).build();
             var filing = new TransactionFiling(DISSOLUTION_ID, FILING_KIND_DS01, COMPANY_NAME);
 
-            when(transactionsResourceHandler.update(TRANSACTIONS_URL + TRANSACTION_ID, transaction)).thenReturn(transactionsUpdate);
-            when(transactionsUpdate.execute()).thenReturn(apiPatchResponse);
+            when(privateTransactionResourceHandler.patch(TRANSACTIONS_URL + TRANSACTION_ID, transaction)).thenReturn(transactionsPatch);
+            when(transactionsPatch.execute()).thenReturn(apiPatchResponse);
             when(apiPatchResponse.getStatusCode()).thenReturn(204);
 
             transactionService.updateTransaction(transaction, filing);
@@ -257,8 +265,8 @@ class TransactionServiceTest {
             var transaction = aTransaction().withCompanyNumber(COMPANY_NUMBER).withStatus(OPEN).build();
             var filing = new TransactionFiling(DISSOLUTION_ID, FILING_KIND_DS01, COMPANY_NAME);
 
-            when(transactionsResourceHandler.update(TRANSACTIONS_URL + TRANSACTION_ID, transaction)).thenReturn(transactionsUpdate);
-            when(transactionsUpdate.execute()).thenReturn(apiPatchResponse);
+            when(privateTransactionResourceHandler.patch(TRANSACTIONS_URL + TRANSACTION_ID, transaction)).thenReturn(transactionsPatch);
+            when(transactionsPatch.execute()).thenReturn(apiPatchResponse);
             when(apiPatchResponse.getStatusCode()).thenReturn(500);
 
             assertThrows(ServiceException.class, () -> transactionService.updateTransaction(transaction, filing));
@@ -269,8 +277,8 @@ class TransactionServiceTest {
             var transaction = aTransaction().withCompanyNumber(COMPANY_NUMBER).withStatus(OPEN).build();
             var filing = new TransactionFiling(DISSOLUTION_ID, FILING_KIND_DS01, COMPANY_NAME);
 
-            when(transactionsResourceHandler.update(TRANSACTIONS_URL + TRANSACTION_ID, transaction)).thenReturn(transactionsUpdate);
-            when(transactionsUpdate.execute()).thenThrow(TransactionFixtures.generateApiErrorResponseException(404, "404 Not Found"));
+            when(privateTransactionResourceHandler.patch(TRANSACTIONS_URL + TRANSACTION_ID, transaction)).thenReturn(transactionsPatch);
+            when(transactionsPatch.execute()).thenThrow(TransactionFixtures.generateApiErrorResponseException(404, "404 Not Found"));
 
             final var exception = assertThrows(TransactionNotFoundException.class, () -> transactionService.updateTransaction(transaction, filing));
             assertThat(exception.getMessage(),
@@ -282,8 +290,8 @@ class TransactionServiceTest {
             var transaction = aTransaction().withCompanyNumber(COMPANY_NUMBER).withStatus(OPEN).build();
             var filing = new TransactionFiling(DISSOLUTION_ID, FILING_KIND_DS01, COMPANY_NAME);
 
-            when(transactionsResourceHandler.update(TRANSACTIONS_URL + TRANSACTION_ID, transaction)).thenReturn(transactionsUpdate);
-            when(transactionsUpdate.execute()).thenThrow(ApiErrorResponseException.fromIOException(new IOException("ERROR")));
+            when(privateTransactionResourceHandler.patch(TRANSACTIONS_URL + TRANSACTION_ID, transaction)).thenReturn(transactionsPatch);
+            when(transactionsPatch.execute()).thenThrow(ApiErrorResponseException.fromIOException(new IOException("ERROR")));
 
             assertThrows(ServiceException.class, () -> transactionService.updateTransaction(transaction, filing));
         }
@@ -293,8 +301,8 @@ class TransactionServiceTest {
             var transaction = aTransaction().withCompanyNumber(COMPANY_NUMBER).withStatus(OPEN).build();
             var filing = new TransactionFiling(DISSOLUTION_ID, FILING_KIND_DS01, COMPANY_NAME);
 
-            when(transactionsResourceHandler.update(TRANSACTIONS_URL + TRANSACTION_ID, transaction)).thenReturn(transactionsUpdate);
-            when(transactionsUpdate.execute()).thenThrow(new URIValidationException("ERROR"));
+            when(privateTransactionResourceHandler.patch(TRANSACTIONS_URL + TRANSACTION_ID, transaction)).thenReturn(transactionsPatch);
+            when(transactionsPatch.execute()).thenThrow(new URIValidationException("ERROR"));
 
             assertThrows(ServiceException.class, () -> transactionService.updateTransaction(transaction, filing));
         }

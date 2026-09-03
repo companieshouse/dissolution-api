@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import uk.gov.companieshouse.api.ApiClient;
+import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.sdk.ApiClientService;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
@@ -32,7 +33,7 @@ public class RequestPassThroughApiClientProvider implements ApiClientProvider {
     }
 
     @Override
-    public ApiClient getInternalApiClient() throws IOException {
+    public InternalApiClient getInternalApiClient() throws IOException {
         return apiClientService.getInternalApiClient(getPassThroughTokenHeader());
     }
 
