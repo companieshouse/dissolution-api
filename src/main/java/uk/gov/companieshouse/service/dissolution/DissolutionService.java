@@ -5,20 +5,22 @@ import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.exception.ConflictException;
-import uk.gov.companieshouse.exception.DissolutionUpdateSignatoryException;
 import uk.gov.companieshouse.exception.DissolutionInvalidSignatoriesException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionSignatoryNotFoundException;
+import uk.gov.companieshouse.exception.DissolutionUpdateSignatoryException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
+import uk.gov.companieshouse.mapper.FilingKindMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
-import uk.gov.companieshouse.model.domain.UpdateSignatoryDetailsCommand;
+import uk.gov.companieshouse.model.domain.CreateDraftDissolutionCommand;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.model.domain.DissolutionInitiationCommand;
 import uk.gov.companieshouse.model.domain.ResendSignatoryNotificationCommand;
+import uk.gov.companieshouse.model.domain.UpdateSignatoryDetailsCommand;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
@@ -34,6 +36,7 @@ import uk.gov.companieshouse.service.CompanyOfficerService;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.validator.TransactionValidator;
 import uk.gov.companieshouse.service.payment.PaymentService;
+import uk.gov.companieshouse.service.transaction.TransactionFiling;
 
 import java.util.Map;
 import java.util.Optional;
@@ -57,9 +60,10 @@ public class DissolutionService {
     private final CompanyOfficerService companyOfficerService;
     private final DissolutionRequestMapper dissolutionRequestMapper;
     private final DissolutionEmailService emailService;
+    private final FilingKindMapper filingKindMapper;
 
     @Autowired
-    public DissolutionService(DissolutionCreator creator, DissolutionGetter getter, DissolutionPatcher patcher, DissolutionRepository repository, PaymentService paymentService, TransactionService transactionService, DissolutionResponseMapper responseMapper, Logger logger, CompanyOfficerService companyOfficerService, DissolutionRequestMapper dissolutionRequestMapper, DissolutionEmailService emailService) {
+    public DissolutionService(DissolutionCreator creator, DissolutionGetter getter, DissolutionPatcher patcher, DissolutionRepository repository, PaymentService paymentService, TransactionService transactionService, DissolutionResponseMapper responseMapper, Logger logger, CompanyOfficerService companyOfficerService, DissolutionRequestMapper dissolutionRequestMapper, DissolutionEmailService emailService, FilingKindMapper filingKindMapper) {
         this.creator = creator;
         this.getter = getter;
         this.patcher = patcher;
@@ -71,6 +75,7 @@ public class DissolutionService {
         this.companyOfficerService = companyOfficerService;
         this.dissolutionRequestMapper = dissolutionRequestMapper;
         this.emailService = emailService;
+        this.filingKindMapper = filingKindMapper;
     }
 
     public DissolutionCreateResponse create(DissolutionCreateRequest body, CompanyProfile companyProfile, Map<String, CompanyOfficer> directors, String userId, String ip, String email) {
@@ -181,14 +186,27 @@ public class DissolutionService {
                 .orElseThrow(() -> new DissolutionNotFoundException(String.format("Pending Dissolution not found for company number %s", companyNumber)));
     }
 
-    public DissolutionCreateDraftResponse createDraft(Transaction transaction, CompanyProfile companyProfile, String userId, String ip, String email) {
-        if (repository.findDraftDissolutionForUserAndCompany(userId, companyProfile.getCompanyNumber()).isPresent()) {
-            throw new ConflictException("Draft dissolution already exists for user " + userId);
+    public DissolutionCreateDraftResponse createDraft(CreateDraftDissolutionCommand command) {
+        if (repository.findDraftDissolutionForUserAndCompany(command.userId(), command.companyProfile().getCompanyNumber()).isPresent()) {
+            throw new ConflictException("Draft dissolution already exists for user " + command.userId());
         }
 
-        TransactionValidator.of(transaction).hasStatus(OPEN).forCompany(companyProfile.getCompanyNumber()).validate();
+        TransactionValidator.of(command.transaction()).hasStatus(OPEN).forCompany(command.companyProfile().getCompanyNumber()).validate();
 
-        return creator.createDraft(transaction, companyProfile, userId, ip, email);
+        final Dissolution dissolution = creator.createDraft(command);
+        repository.insert(dissolution);
+
+        try {
+            final var kind = filingKindMapper.mapApplicationTypeToFilingKind(dissolution.getApplicationType());
+            final var filing = new TransactionFiling(dissolution.getId(), kind, dissolution.getCompany().getName());
+            transactionService.updateTransaction(command.transaction(), filing);
+            return responseMapper.mapToDissolutionCreateDraftResponse(command.transaction(), dissolution);
+        } catch (RuntimeException e) {
+            // rollback so the client can create a draft again
+            logger.error(String.format("Failed to update transaction %s for dissolution %s, rolling back insert of draft dissolution", command.transaction().getId(), dissolution.getId()), e);
+            repository.deleteById(dissolution.getId());
+            throw e;
+        }
     }
 
     public void initiateDissolution(DissolutionInitiationCommand command) {

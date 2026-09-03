@@ -14,10 +14,10 @@ import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.mapper.DissolutionUserDataMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.domain.CreateDraftDissolutionCommand;
 import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
-import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateRequest;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.repository.DissolutionRepository;
@@ -25,7 +25,7 @@ import uk.gov.companieshouse.service.barcode.BarcodeGenerator;
 
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -90,27 +90,27 @@ public class DissolutionCreatorTest {
         verify(emailService).notifySignatoriesToSign(dissolution);
         verify(responseMapper).mapToDissolutionCreateResponse(dissolution);
 
-        assertEquals(response, result);
+        assertThat(result).isEqualTo(response);
     }
 
     @Test
-    void createDraft_mapsAndPersistsDissolution_returnsCreateDraftResponse() {
+    void createDraft_mapsDissolution_returnsDraftDissolution() {
         final Transaction transaction = TransactionTestDataBuilder.aTransaction().withStatus(TransactionStatus.OPEN).build();
         final DissolutionUserData userData = DissolutionFixtures.generateDissolutionUserData();
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
-        final DissolutionCreateDraftResponse response = new DissolutionCreateDraftResponse();
         final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setCompanyNumber(COMPANY_NUMBER);
+        final var command = new CreateDraftDissolutionCommand(transaction, company, USER_ID, IP, EMAIL);
 
         when(requestMapper.mapToDraftDissolution(transaction, company, userData)).thenReturn(dissolution);
-        when(responseMapper.mapToDissolutionCreateDraftResponse(transaction, dissolution)).thenReturn(response);
         when(userDataMapper.mapToUserData(USER_ID, IP, EMAIL)).thenReturn(userData);
 
-        final DissolutionCreateDraftResponse result = creator.createDraft(transaction, company, USER_ID, IP, EMAIL);
+        final Dissolution result = creator.createDraft(command);
 
-        verify(repository).insert(dissolution);
+        verify(repository, never()).insert(dissolution);
         verify(emailService, never()).notifySignatoriesToSign(dissolution);
+        verify(responseMapper, never()).mapToDissolutionCreateDraftResponse(transaction, dissolution);
 
-        assertEquals(response, result);
+        assertThat(result).isEqualTo(dissolution);
     }
 }

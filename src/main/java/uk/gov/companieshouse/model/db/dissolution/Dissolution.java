@@ -5,10 +5,10 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
+import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.DissolutionStatus;
 
 import java.time.LocalDateTime;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -167,6 +167,13 @@ public class Dissolution {
                 .findFirst();
     }
 
+    public ApplicationType getApplicationType() {
+        return Optional.ofNullable(this.data)
+                .map(DissolutionData::getApplication)
+                .map(DissolutionApplication::getType)
+                .orElseThrow(() -> new IllegalStateException("Dissolution does not have an application type"));
+    }
+
     public List<DissolutionStatusChanged> getStatusHistory() {
         return Collections.unmodifiableList(statusHistory);
     }
@@ -203,11 +210,11 @@ public class Dissolution {
     public LocalDateTime dateDissolutionInitiated() {
         return isTransactionModelDissolution()
                 ? this.getStatusHistory()
-                        .stream()
-                        .filter(statusChanged -> statusChanged.getStatus() == DissolutionStatus.PENDING)
-                        .map(DissolutionStatusChanged::getChangedAt)
-                        .findFirst()
-                        .orElseThrow(() -> new IllegalStateException("Dissolution has not been initiated: no PENDING status found in status history"))
+                .stream()
+                .filter(statusChanged -> statusChanged.getStatus() == DissolutionStatus.PENDING)
+                .map(DissolutionStatusChanged::getChangedAt)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Dissolution has not been initiated: no PENDING status found in status history"))
                 : this.getCreatedBy().getDateTime();
     }
 }

@@ -24,14 +24,17 @@ import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionExceptio
 import uk.gov.companieshouse.exception.DissolutionSignatoryNotFoundException;
 import uk.gov.companieshouse.exception.InvalidTransactionStateException;
 import uk.gov.companieshouse.exception.NotFoundException;
+import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.fixtures.CompanyProfileFixtures;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
 import uk.gov.companieshouse.fixtures.TransactionFixtures;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
+import uk.gov.companieshouse.mapper.FilingKindMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
+import uk.gov.companieshouse.model.domain.CreateDraftDissolutionCommand;
 import uk.gov.companieshouse.model.domain.UpdateSignatoryDetailsCommand;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.model.domain.ResendSignatoryNotificationCommand;
@@ -50,6 +53,7 @@ import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.CompanyOfficerService;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.payment.PaymentService;
+import uk.gov.companieshouse.service.transaction.TransactionFiling;
 
 import java.util.Map;
 import java.util.Optional;
@@ -144,7 +148,8 @@ class DissolutionServiceTest {
 
     @BeforeEach
     void setUp() {
-        dissolutionService = new DissolutionService(creator, getter, patcher, repository, paymentService, transactionService, responseMapper, logger, companyOfficerService, requestMapper, emailService);
+        final var filingKindMapper = new FilingKindMapper();
+        dissolutionService = new DissolutionService(creator, getter, patcher, repository, paymentService, transactionService, responseMapper, logger, companyOfficerService, requestMapper, emailService, filingKindMapper);
     }
 
     @Test
@@ -326,18 +331,56 @@ class DissolutionServiceTest {
     }
 
     @Test
-    void createDraft_createsDraftDissolution_returnsCreateDraftResponse() {
+    void createDraft_createsDraftDissolutionAndUpdatesTransaction_returnsCreateDraftResponse() {
         final Transaction transaction = aTransaction().withStatus(TransactionStatus.OPEN).withCompanyNumber(COMPANY_NUMBER).build();
-        final DissolutionCreateDraftResponse response = new DissolutionCreateDraftResponse();
+        final String expectedSelfLink = String.format("/company/%s/transaction/%s/dissolution", COMPANY_NUMBER, transaction.getId());
         final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setCompanyNumber(COMPANY_NUMBER);
+        Dissolution dissolution = aDissolution().
+                withId(DISSOLUTION_ID).
+                withCompanyNumber(COMPANY_NUMBER)
+                .withCompanyName(company.getCompanyName())
+                .withTransactionId(transaction.getId())
+                .build();
+        final var command = new CreateDraftDissolutionCommand(transaction, company, USER_ID, IP, EMAIL);
+        final var filing = new TransactionFiling(dissolution.getId(), FILING_KIND_DS01, company.getCompanyName());
 
         when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
-        when(creator.createDraft(transaction, company, USER_ID, IP, EMAIL)).thenReturn(response);
+        when(creator.createDraft(command)).thenReturn(dissolution);
 
-        final DissolutionCreateDraftResponse result = dissolutionService.createDraft(transaction, company, USER_ID, IP, EMAIL);
+        final DissolutionCreateDraftResponse result = dissolutionService.createDraft(command);
 
-        assertEquals(response, result);
+
+        assertEquals(DISSOLUTION_ID, result.getDissolutionId());
+        assertEquals(expectedSelfLink, result.getLinks().getSelf());
+
+        verify(repository).insert(dissolution);
+        verify(transactionService).updateTransaction(transaction, filing);
+    }
+
+    @Test
+    void createDraft_rollsBackInsert_andRethrows_ifUpdateTransactionFails() {
+        final Transaction transaction = aTransaction().withStatus(TransactionStatus.OPEN).withCompanyNumber(COMPANY_NUMBER).build();
+        final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
+        company.setCompanyNumber(COMPANY_NUMBER);
+        final Dissolution dissolution = aDissolution()
+                .withId(DISSOLUTION_ID)
+                .withCompanyNumber(COMPANY_NUMBER)
+                .withCompanyName(company.getCompanyName())
+                .withTransactionId(transaction.getId())
+                .build();
+
+        final var command = new CreateDraftDissolutionCommand(transaction, company, USER_ID, IP, EMAIL);
+        final var filing = new TransactionFiling(dissolution.getId(), FILING_KIND_DS01, company.getCompanyName());
+
+        when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
+        when(creator.createDraft(command)).thenReturn(dissolution);
+        doThrow(new ServiceException("Failed to update transaction")).when(transactionService).updateTransaction(transaction, filing);
+
+        assertThrows(ServiceException.class, () -> dissolutionService.createDraft(command));
+
+        verify(repository).insert(dissolution);
+        verify(repository).deleteById(DISSOLUTION_ID);
     }
 
     @Test
@@ -345,12 +388,13 @@ class DissolutionServiceTest {
         final Transaction transaction = aTransaction().withStatus(TransactionStatus.OPEN).withCompanyNumber(COMPANY_NUMBER).build();
         final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setCompanyNumber(COMPANY_NUMBER);
+        final var command = new CreateDraftDissolutionCommand(transaction, company, USER_ID, IP, EMAIL);
 
         when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.of(new Dissolution()));
 
-        assertThrows(ConflictException.class, () -> dissolutionService.createDraft(transaction, company, USER_ID, IP, EMAIL));
+        assertThrows(ConflictException.class, () -> dissolutionService.createDraft(command));
 
-        verify(creator, never()).createDraft(any(), any(), any(), any(), any());
+        verify(creator, never()).createDraft(any());
     }
 
     @Test
@@ -358,12 +402,13 @@ class DissolutionServiceTest {
         final Transaction transaction = aTransaction().withStatus(TransactionStatus.CLOSED).withCompanyNumber(COMPANY_NUMBER).build();
         final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setCompanyNumber(COMPANY_NUMBER);
+        final var command = new CreateDraftDissolutionCommand(transaction, company, USER_ID, IP, EMAIL);
 
         when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
 
-        assertThrows(InvalidTransactionStateException.class, () -> dissolutionService.createDraft(transaction, company, USER_ID, IP, EMAIL));
+        assertThrows(InvalidTransactionStateException.class, () -> dissolutionService.createDraft(command));
 
-        verify(creator, never()).createDraft(any(), any(), any(), any(), any());
+        verify(creator, never()).createDraft(any());
     }
 
     @Test
@@ -372,12 +417,13 @@ class DissolutionServiceTest {
         final Transaction transaction = aTransaction().withStatus(TransactionStatus.OPEN).withCompanyNumber(wrongCompanyNumber).build();
         final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setCompanyNumber(COMPANY_NUMBER);
+        final var command = new CreateDraftDissolutionCommand(transaction, company, USER_ID, IP, EMAIL);
 
         when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
 
-        assertThrows(InvalidTransactionStateException.class, () -> dissolutionService.createDraft(transaction, company, USER_ID, IP, EMAIL));
+        assertThrows(InvalidTransactionStateException.class, () -> dissolutionService.createDraft(command));
 
-        verify(creator, never()).createDraft(any(), any(), any(), any(), any());
+        verify(creator, never()).createDraft(any());
     }
 
     @Nested

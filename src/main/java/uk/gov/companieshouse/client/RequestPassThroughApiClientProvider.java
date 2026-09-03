@@ -31,6 +31,11 @@ public class RequestPassThroughApiClientProvider implements ApiClientProvider {
         return apiClientService.getApiClient(getPassThroughTokenHeader());
     }
 
+    @Override
+    public ApiClient getInternalApiClient() throws IOException {
+        return apiClientService.getInternalApiClient(getPassThroughTokenHeader());
+    }
+
     private String getPassThroughTokenHeader() {
         var attributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
         return attributes.getRequest().getHeader(ApiSdkManager.getEricPassthroughTokenHeader());

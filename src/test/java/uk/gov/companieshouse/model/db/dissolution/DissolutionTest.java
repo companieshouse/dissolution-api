@@ -3,6 +3,7 @@ package uk.gov.companieshouse.model.db.dissolution;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.DissolutionStatus;
 
 import java.time.LocalDateTime;
@@ -210,6 +211,47 @@ class DissolutionTest {
                     .get()
                     .extracting(DissolutionDirector::getEmail)
                     .isEqualTo("john@doe.com");
+        }
+    }
+
+    @Nested
+    class getApplicationType {
+
+        @Test
+        void when_data_is_not_initialised_then_exception_thrown() {
+            var dissolution = new Dissolution();
+
+            assertThrows(IllegalStateException.class, dissolution::getApplicationType);
+        }
+
+        @Test
+        void when_application_is_not_initialised_then_exception_thrown() {
+            var dissolution = aDissolution().build();
+            dissolution.getData().setApplication(null);
+
+            assertThrows(IllegalStateException.class, dissolution::getApplicationType);
+        }
+
+        @Test
+        void when_application_type_is_null_then_exception_thrown() {
+            var dissolution = aDissolution().build();
+            dissolution.getData().getApplication().setType(null);
+
+            assertThrows(IllegalStateException.class, dissolution::getApplicationType);
+        }
+
+        @Test
+        void when_application_is_DS01_then_return_the_correct_application_type() {
+            var dissolution = aDissolution().build();
+
+            assertThat(dissolution.getApplicationType()).isEqualTo(ApplicationType.DS01);
+        }
+
+        @Test
+        void when_application_is_LLDS01_then_return_the_correct_application_type() {
+            var dissolution = aDissolution().build();
+            dissolution.getData().getApplication().setType(ApplicationType.LLDS01);
+            assertThat(dissolution.getApplicationType()).isEqualTo(ApplicationType.LLDS01);
         }
     }
 }

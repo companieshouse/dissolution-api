@@ -24,6 +24,7 @@ import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.exception.*;
 import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 import uk.gov.companieshouse.mapper.DissolutionInitiationMapper;
+import uk.gov.companieshouse.model.domain.CreateDraftDissolutionCommand;
 import uk.gov.companieshouse.model.domain.UpdateSignatoryDetailsCommand;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
@@ -42,7 +43,6 @@ import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.isA;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -156,7 +156,7 @@ class TransactionsDissolutionControllerTest {
                         .requestAttr(TRANSACTION_KEY, transaction))
                 .andExpect(status().isNotFound());
 
-        verify(dissolutionService, never()).createDraft(any(), any(), any(), any(), any());
+        verify(dissolutionService, never()).createDraft(any());
     }
 
     @Test
@@ -169,7 +169,7 @@ class TransactionsDissolutionControllerTest {
                         .requestAttr(TRANSACTION_KEY, transaction))
                 .andExpect(status().isNotFound());
 
-        verify(dissolutionService, never()).createDraft(any(), any(), any(), any(), any());
+        verify(dissolutionService, never()).createDraft(any());
     }
 
     @Test
@@ -177,7 +177,7 @@ class TransactionsDissolutionControllerTest {
         final CompanyProfile companyProfile = generateCompanyProfile();
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
         when(companyProfileService.isCompanyClosable(isA(CompanyProfile.class))).thenReturn(true);
-        when(dissolutionService.createDraft(isA(Transaction.class), eq(companyProfile), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL)))
+        when(dissolutionService.createDraft(isA(CreateDraftDissolutionCommand.class)))
                 .thenThrow(new ConflictException("draft dissolution already exists"));
 
         mockMvc
@@ -193,7 +193,7 @@ class TransactionsDissolutionControllerTest {
         final CompanyProfile companyProfile = generateCompanyProfile();
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
         when(companyProfileService.isCompanyClosable(isA(CompanyProfile.class))).thenReturn(true);
-        when(dissolutionService.createDraft(isA(Transaction.class), eq(companyProfile), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL)))
+        when(dissolutionService.createDraft(isA(CreateDraftDissolutionCommand.class)))
                 .thenThrow(new InvalidTransactionStateException("transaction is not open"));
 
         mockMvc
@@ -209,7 +209,7 @@ class TransactionsDissolutionControllerTest {
         final CompanyProfile companyProfile = generateCompanyProfile();
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
         when(companyProfileService.isCompanyClosable(isA(CompanyProfile.class))).thenReturn(true);
-        when(dissolutionService.createDraft(isA(Transaction.class), eq(companyProfile), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL)))
+        when(dissolutionService.createDraft(isA(CreateDraftDissolutionCommand.class)))
                 .thenThrow(new InvalidTransactionStateException("transaction is not associated with the company"));
 
         mockMvc
@@ -230,7 +230,7 @@ class TransactionsDissolutionControllerTest {
                         .requestAttr(TRANSACTION_KEY, transaction))
                 .andExpect(status().isBadRequest());
 
-        verify(dissolutionService, never()).createDraft(any(), any(), any(), any(), any());
+        verify(dissolutionService, never()).createDraft(any());
     }
 
     @Test
@@ -238,7 +238,7 @@ class TransactionsDissolutionControllerTest {
         final CompanyProfile companyProfile = generateCompanyProfile();
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
         when(companyProfileService.isCompanyClosable(isA(CompanyProfile.class))).thenReturn(true);
-        when(dissolutionService.createDraft(isA(Transaction.class), eq(companyProfile), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL)))
+        when(dissolutionService.createDraft(isA(CreateDraftDissolutionCommand.class)))
                 .thenThrow(new RuntimeException("Some error occurred while creating draft dissolution"));
 
         mockMvc
@@ -259,7 +259,7 @@ class TransactionsDissolutionControllerTest {
 
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
         when(companyProfileService.isCompanyClosable(isA(CompanyProfile.class))).thenReturn(true);
-        when(dissolutionService.createDraft(isA(Transaction.class), eq(companyProfile), eq(USER_ID), eq(IP_ADDRESS), eq(EMAIL)))
+        when(dissolutionService.createDraft(isA(CreateDraftDissolutionCommand.class)))
                 .thenReturn(response);
 
         mockMvc

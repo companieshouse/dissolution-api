@@ -17,6 +17,7 @@ import uk.gov.companieshouse.api.handler.exception.URIValidationException;
 import uk.gov.companieshouse.api.handler.transaction.TransactionsResourceHandler;
 import uk.gov.companieshouse.api.handler.transaction.request.TransactionsGet;
 import uk.gov.companieshouse.api.handler.transaction.request.TransactionsPaymentGet;
+import uk.gov.companieshouse.api.handler.transaction.request.TransactionsUpdate;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionPayment;
@@ -24,6 +25,7 @@ import uk.gov.companieshouse.client.ApiClientProvider;
 import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.exception.TransactionNotFoundException;
 import uk.gov.companieshouse.fixtures.TransactionFixtures;
+import uk.gov.companieshouse.service.transaction.TransactionFiling;
 
 import java.io.IOException;
 
@@ -34,9 +36,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.DisplayNameGenerator.ReplaceUnderscores;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.api.model.transaction.TransactionStatus.OPEN;
 import static uk.gov.companieshouse.fixtures.FilingTestDataBuilder.aFiling;
 import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
 import static uk.gov.companieshouse.fixtures.TransactionTestDataBuilder.aTransaction;
+import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
+import static uk.gov.companieshouse.model.Constants.SUBMISSION_URI_PATTERN;
 
 @ExtendWith(MockitoExtension.class)
 class TransactionServiceTest {
@@ -61,10 +66,16 @@ class TransactionServiceTest {
     private TransactionsPaymentGet transactionsPaymentGet;
 
     @Mock
+    private TransactionsUpdate transactionsUpdate;
+
+    @Mock
     private ApiResponse<Transaction> apiGetResponse;
 
     @Mock
     private ApiResponse<TransactionPayment> apiGetPaymentResponse;
+
+    @Mock
+    private ApiResponse<Void> apiPatchResponse;
 
     @InjectMocks
     private TransactionService transactionService;
@@ -202,6 +213,90 @@ class TransactionServiceTest {
         void getPayment_throwsServiceException_ifIOExceptionOccurs() throws IOException, URIValidationException {
             when(transactionsPaymentGet.execute()).thenThrow(ApiErrorResponseException.fromIOException(new IOException("ERROR")));
             assertThrows(ServiceException.class, () -> transactionService.getPayment(PAYMENT_URI));
+        }
+    }
+
+    @Nested
+    @DisplayName("PATCH /transactions/{transaction_id}")
+    class PatchTransactionData {
+
+        public static final String COMPANY_NUMBER = "12345678";
+        private static final String DISSOLUTION_ID = "12345678";
+        private static final String TRANSACTION_ID = "tx-id-123";
+        private static final String COMPANY_NAME = "Some Company Ltd";
+        private static final String SUBMISSION_URI = String.format(SUBMISSION_URI_PATTERN, TRANSACTION_ID, DISSOLUTION_ID);
+
+        @BeforeEach
+        void initialize() throws IOException {
+            when(apiClientProvider.getInternalApiClient()).thenReturn(apiClient);
+            when(apiClient.transactions()).thenReturn(transactionsResourceHandler);
+        }
+
+        @Test
+        void when_transaction_is_updated_then_company_name_and_filing_resource_is_set_on_transaction() throws IOException, URIValidationException {
+            var transaction = aTransaction().withCompanyNumber(COMPANY_NUMBER).withStatus(OPEN).build();
+            var filing = new TransactionFiling(DISSOLUTION_ID, FILING_KIND_DS01, COMPANY_NAME);
+
+            when(transactionsResourceHandler.update(TRANSACTIONS_URL + TRANSACTION_ID, transaction)).thenReturn(transactionsUpdate);
+            when(transactionsUpdate.execute()).thenReturn(apiPatchResponse);
+            when(apiPatchResponse.getStatusCode()).thenReturn(204);
+
+            transactionService.updateTransaction(transaction, filing);
+
+            assertThat(transaction.getCompanyName()).isEqualTo(COMPANY_NAME);
+            assertThat(transaction.getResources()).containsOnlyKeys(SUBMISSION_URI);
+            final var resource = transaction.getResources().get(SUBMISSION_URI);
+            assertThat(resource.getKind()).isEqualTo(FILING_KIND_DS01);
+            assertThat(resource.getLinks()).containsEntry("resource", SUBMISSION_URI);
+            assertThat(resource.getLinks()).containsEntry("validation_status", SUBMISSION_URI + "/validation-status");
+            assertThat(resource.getLinks()).containsEntry("costs", SUBMISSION_URI + "/costs");
+        }
+
+        @Test
+        void when_patch_returns_non_204_then_service_exception_is_thrown() throws IOException, URIValidationException {
+            var transaction = aTransaction().withCompanyNumber(COMPANY_NUMBER).withStatus(OPEN).build();
+            var filing = new TransactionFiling(DISSOLUTION_ID, FILING_KIND_DS01, COMPANY_NAME);
+
+            when(transactionsResourceHandler.update(TRANSACTIONS_URL + TRANSACTION_ID, transaction)).thenReturn(transactionsUpdate);
+            when(transactionsUpdate.execute()).thenReturn(apiPatchResponse);
+            when(apiPatchResponse.getStatusCode()).thenReturn(500);
+
+            assertThrows(ServiceException.class, () -> transactionService.updateTransaction(transaction, filing));
+        }
+
+        @Test
+        void when_patch_returns_404_then_NotFoundException_is_thrown() throws IOException, URIValidationException {
+            var transaction = aTransaction().withCompanyNumber(COMPANY_NUMBER).withStatus(OPEN).build();
+            var filing = new TransactionFiling(DISSOLUTION_ID, FILING_KIND_DS01, COMPANY_NAME);
+
+            when(transactionsResourceHandler.update(TRANSACTIONS_URL + TRANSACTION_ID, transaction)).thenReturn(transactionsUpdate);
+            when(transactionsUpdate.execute()).thenThrow(TransactionFixtures.generateApiErrorResponseException(404, "404 Not Found"));
+
+            final var exception = assertThrows(TransactionNotFoundException.class, () -> transactionService.updateTransaction(transaction, filing));
+            assertThat(exception.getMessage(),
+                    is("Failed to update transaction as no transaction was found with id " + TRANSACTION_ID));
+        }
+
+        @Test
+        void when_io_exception_occurs_then_service_exception_is_thrown() throws IOException, URIValidationException {
+            var transaction = aTransaction().withCompanyNumber(COMPANY_NUMBER).withStatus(OPEN).build();
+            var filing = new TransactionFiling(DISSOLUTION_ID, FILING_KIND_DS01, COMPANY_NAME);
+
+            when(transactionsResourceHandler.update(TRANSACTIONS_URL + TRANSACTION_ID, transaction)).thenReturn(transactionsUpdate);
+            when(transactionsUpdate.execute()).thenThrow(ApiErrorResponseException.fromIOException(new IOException("ERROR")));
+
+            assertThrows(ServiceException.class, () -> transactionService.updateTransaction(transaction, filing));
+        }
+
+        @Test
+        void when_uri_validation_exception_occurs_then_service_exception_is_thrown() throws IOException, URIValidationException {
+            var transaction = aTransaction().withCompanyNumber(COMPANY_NUMBER).withStatus(OPEN).build();
+            var filing = new TransactionFiling(DISSOLUTION_ID, FILING_KIND_DS01, COMPANY_NAME);
+
+            when(transactionsResourceHandler.update(TRANSACTIONS_URL + TRANSACTION_ID, transaction)).thenReturn(transactionsUpdate);
+            when(transactionsUpdate.execute()).thenThrow(new URIValidationException("ERROR"));
+
+            assertThrows(ServiceException.class, () -> transactionService.updateTransaction(transaction, filing));
         }
     }
 }
