@@ -217,13 +217,13 @@ class DissolutionTest {
     }
 
     @Nested
-    class getFilingKind {
+    class getApplicationType {
 
         @Test
         void when_data_is_not_initialised_then_exception_thrown() {
             var dissolution = new Dissolution();
 
-            assertThrows(IllegalStateException.class, dissolution::getFilingKind);
+            assertThrows(IllegalStateException.class, dissolution::getApplicationType);
         }
 
         @Test
@@ -231,7 +231,7 @@ class DissolutionTest {
             var dissolution = aDissolution().build();
             dissolution.getData().setApplication(null);
 
-            assertThrows(IllegalStateException.class, dissolution::getFilingKind);
+            assertThrows(IllegalStateException.class, dissolution::getApplicationType);
         }
 
         @Test
@@ -239,21 +239,21 @@ class DissolutionTest {
             var dissolution = aDissolution().build();
             dissolution.getData().getApplication().setType(null);
 
-            assertThrows(IllegalStateException.class, dissolution::getFilingKind);
+            assertThrows(IllegalStateException.class, dissolution::getApplicationType);
         }
 
         @Test
         void when_application_is_DS01_then_return_the_correct_filing_kind() {
             var dissolution = aDissolution().build();
 
-            assertThat(dissolution.getFilingKind()).isEqualTo(FILING_KIND_DS01);
+            assertThat(dissolution.getApplicationType()).isEqualTo(ApplicationType.DS01);
         }
 
         @Test
         void when_application_is_LLDS01_then_return_the_correct_filing_kind() {
             var dissolution = aDissolution().build();
             dissolution.getData().getApplication().setType(ApplicationType.LLDS01);
-            assertThat(dissolution.getFilingKind()).isEqualTo(FILING_KIND_LLDS01);
+            assertThat(dissolution.getApplicationType()).isEqualTo(ApplicationType.LLDS01);
         }
     }
 }

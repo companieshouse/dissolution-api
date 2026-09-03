@@ -171,12 +171,11 @@ public class Dissolution {
                 .findFirst();
     }
 
-    public String getFilingKind() {
-        ApplicationType type = Optional.ofNullable(this.data)
+    public ApplicationType getApplicationType() {
+        return Optional.ofNullable(this.data)
                 .map(DissolutionData::getApplication)
                 .map(DissolutionApplication::getType)
                 .orElseThrow(() -> new IllegalStateException("Dissolution does not have an application type"));
-        return type == ApplicationType.LLDS01 ? FILING_KIND_LLDS01 : FILING_KIND_DS01;
     }
 
     public List<DissolutionStatusChanged> getStatusHistory() {

@@ -9,11 +9,15 @@ import uk.gov.companieshouse.config.FeeConfig;
 import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.mapper.filing.FilingDataMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import uk.gov.companieshouse.service.dissolution.validator.TransactionValidator;
 
 import java.util.Map;
+
+import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
+import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
 
 @Service
 public class FilingService {
@@ -52,8 +56,9 @@ public class FilingService {
     private void setFilingApiData(FilingApi filing, Context ctx) throws ServiceException {
         final var dissolution = ctx.dissolution();
         final var company = ctx.dissolution().getCompany();
+        final var kind = dissolution.getApplicationType() == ApplicationType.LLDS01 ? FILING_KIND_LLDS01 : FILING_KIND_DS01;
 
-        filing.setKind(dissolution.getFilingKind());
+        filing.setKind(kind);
         filing.setDescription(String.format(filingDescription, company.getName(), company.getNumber()));
         filing.setCost(feeConfig.getClosingPounds());
         filing.setData(buildFilingData(ctx));

@@ -14,6 +14,7 @@ import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.mapper.DissolutionUserDataMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.domain.CreateDraftDissolutionCommand;
 import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
@@ -99,11 +100,12 @@ public class DissolutionCreatorTest {
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
         final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
         company.setCompanyNumber(COMPANY_NUMBER);
+        final var command = new CreateDraftDissolutionCommand(transaction, company, USER_ID, IP, EMAIL);
 
         when(requestMapper.mapToDraftDissolution(transaction, company, userData)).thenReturn(dissolution);
         when(userDataMapper.mapToUserData(USER_ID, IP, EMAIL)).thenReturn(userData);
 
-        final Dissolution result = creator.createDraft(transaction, company, USER_ID, IP, EMAIL);
+        final Dissolution result = creator.createDraft(command);
 
         verify(repository, never()).insert(dissolution);
         verify(emailService, never()).notifySignatoriesToSign(dissolution);

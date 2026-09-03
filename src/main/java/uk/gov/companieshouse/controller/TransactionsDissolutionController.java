@@ -20,9 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.exception.BadRequestException;
 import uk.gov.companieshouse.mapper.DissolutionInitiationMapper;
-import uk.gov.companieshouse.model.domain.UpdateSignatoryDetailsCommand;
+import uk.gov.companieshouse.model.domain.CreateDraftDissolutionCommand;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.model.domain.ResendSignatoryNotificationCommand;
+import uk.gov.companieshouse.model.domain.UpdateSignatoryDetailsCommand;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionDirectorPatchRequest;
@@ -78,7 +79,15 @@ public class TransactionsDissolutionController {
             throw new BadRequestException("Company must be of a closable type, have an active status and must not be an overseas company");
         }
 
-        return dissolutionService.createDraft(transaction, company, userId, request.getRemoteAddr(), getEmail(authorisedUser));
+        final var command = new CreateDraftDissolutionCommand(
+                transaction,
+                company,
+                userId,
+                request.getRemoteAddr(),
+                getEmail(authorisedUser)
+        );
+
+        return dissolutionService.createDraft(command);
     }
 
     @Operation(summary = "Patch Dissolution Application Approval")

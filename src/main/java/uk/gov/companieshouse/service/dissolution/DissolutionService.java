@@ -5,20 +5,21 @@ import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.exception.ConflictException;
-import uk.gov.companieshouse.exception.DissolutionUpdateSignatoryException;
 import uk.gov.companieshouse.exception.DissolutionInvalidSignatoriesException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionSignatoryNotFoundException;
+import uk.gov.companieshouse.exception.DissolutionUpdateSignatoryException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
-import uk.gov.companieshouse.model.domain.UpdateSignatoryDetailsCommand;
+import uk.gov.companieshouse.model.domain.CreateDraftDissolutionCommand;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.model.domain.DissolutionInitiationCommand;
 import uk.gov.companieshouse.model.domain.ResendSignatoryNotificationCommand;
+import uk.gov.companieshouse.model.domain.UpdateSignatoryDetailsCommand;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
@@ -28,6 +29,7 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
+import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.DissolutionStatus;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.CompanyOfficerService;
@@ -40,6 +42,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import static uk.gov.companieshouse.api.model.transaction.TransactionStatus.OPEN;
+import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
+import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
 import static uk.gov.companieshouse.model.enums.DissolutionStatus.PENDING;
 import static uk.gov.companieshouse.util.DateTimeGenerator.generateCurrentDateTime;
 import static uk.gov.companieshouse.util.DissolutionApplicantUtil.isApplicant;
@@ -182,26 +186,28 @@ public class DissolutionService {
                 .orElseThrow(() -> new DissolutionNotFoundException(String.format("Pending Dissolution not found for company number %s", companyNumber)));
     }
 
-    public DissolutionCreateDraftResponse createDraft(Transaction transaction, CompanyProfile companyProfile, String userId, String ip, String email) {
-        if (repository.findDraftDissolutionForUserAndCompany(userId, companyProfile.getCompanyNumber()).isPresent()) {
-            throw new ConflictException("Draft dissolution already exists for user " + userId);
+    public DissolutionCreateDraftResponse createDraft(CreateDraftDissolutionCommand command) {
+        if (repository.findDraftDissolutionForUserAndCompany(command.userId(), command.companyProfile().getCompanyNumber()).isPresent()) {
+            throw new ConflictException("Draft dissolution already exists for user " + command.userId());
         }
 
-        TransactionValidator.of(transaction).hasStatus(OPEN).forCompany(companyProfile.getCompanyNumber()).validate();
+        TransactionValidator.of(command.transaction()).hasStatus(OPEN).forCompany(command.companyProfile().getCompanyNumber()).validate();
 
-        final Dissolution dissolution = creator.createDraft(transaction, companyProfile, userId, ip, email);
+        final Dissolution dissolution = creator.createDraft(command);
         repository.insert(dissolution);
 
+        final var kind = dissolution.getApplicationType() == ApplicationType.LLDS01 ? FILING_KIND_LLDS01 : FILING_KIND_DS01;
+
         try {
-            final var filing = new TransactionFiling(dissolution.getId(), dissolution.getFilingKind(), dissolution.getCompany().getName());
-            transactionService.updateTransaction(transaction, filing);
+            final var filing = new TransactionFiling(dissolution.getId(), kind, dissolution.getCompany().getName());
+            transactionService.updateTransaction(command.transaction(), filing);
         } catch (RuntimeException e) {
             // rollback so the client can create a draft again
-            logger.error(String.format("Failed to update transaction %s for dissolution %s, rolling back insert of draft dissolution", transaction.getId(), dissolution.getId()), e);
+            logger.error(String.format("Failed to update transaction %s for dissolution %s, rolling back insert of draft dissolution", command.transaction().getId(), dissolution.getId()), e);
             repository.deleteById(dissolution.getId());
             throw e;
         }
-        return responseMapper.mapToDissolutionCreateDraftResponse(transaction, dissolution);
+        return responseMapper.mapToDissolutionCreateDraftResponse(command.transaction(), dissolution);
     }
 
     public void initiateDissolution(DissolutionInitiationCommand command) {

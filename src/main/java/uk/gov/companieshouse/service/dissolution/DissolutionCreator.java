@@ -2,11 +2,11 @@ package uk.gov.companieshouse.service.dissolution;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
 import uk.gov.companieshouse.mapper.DissolutionUserDataMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.domain.CreateDraftDissolutionCommand;
 import uk.gov.companieshouse.model.domain.DissolutionUserData;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficer;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
@@ -57,8 +57,8 @@ public class DissolutionCreator {
         return responseMapper.mapToDissolutionCreateResponse(dissolution);
     }
 
-    public Dissolution createDraft(Transaction transaction, CompanyProfile companyProfile, String userId, String ip, String email) {
-        final DissolutionUserData userData = userDataMapper.mapToUserData(userId, ip, email);
-        return requestMapper.mapToDraftDissolution(transaction, companyProfile, userData);
+    public Dissolution createDraft(CreateDraftDissolutionCommand command) {
+        final DissolutionUserData userData = userDataMapper.mapToUserData(command.userId(), command.ipAddress(), command.email());
+        return requestMapper.mapToDraftDissolution(command.transaction(), command.companyProfile(), userData);
     }
 }
