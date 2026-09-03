@@ -196,18 +196,17 @@ public class DissolutionService {
         final Dissolution dissolution = creator.createDraft(command);
         repository.insert(dissolution);
 
-        final var kind = filingKindMapper.mapApplicationTypeToFilingKind(dissolution.getApplicationType());
-
         try {
+            final var kind = filingKindMapper.mapApplicationTypeToFilingKind(dissolution.getApplicationType());
             final var filing = new TransactionFiling(dissolution.getId(), kind, dissolution.getCompany().getName());
             transactionService.updateTransaction(command.transaction(), filing);
+            return responseMapper.mapToDissolutionCreateDraftResponse(command.transaction(), dissolution);
         } catch (RuntimeException e) {
             // rollback so the client can create a draft again
             logger.error(String.format("Failed to update transaction %s for dissolution %s, rolling back insert of draft dissolution", command.transaction().getId(), dissolution.getId()), e);
             repository.deleteById(dissolution.getId());
             throw e;
         }
-        return responseMapper.mapToDissolutionCreateDraftResponse(command.transaction(), dissolution);
     }
 
     public void initiateDissolution(DissolutionInitiationCommand command) {

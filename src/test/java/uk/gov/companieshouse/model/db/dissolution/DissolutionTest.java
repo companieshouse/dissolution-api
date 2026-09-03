@@ -241,14 +241,14 @@ class DissolutionTest {
         }
 
         @Test
-        void when_application_is_DS01_then_return_the_correct_filing_kind() {
+        void when_application_is_DS01_then_return_the_correct_application_type() {
             var dissolution = aDissolution().build();
 
             assertThat(dissolution.getApplicationType()).isEqualTo(ApplicationType.DS01);
         }
 
         @Test
-        void when_application_is_LLDS01_then_return_the_correct_filing_kind() {
+        void when_application_is_LLDS01_then_return_the_correct_application_type() {
             var dissolution = aDissolution().build();
             dissolution.getData().getApplication().setType(ApplicationType.LLDS01);
             assertThat(dissolution.getApplicationType()).isEqualTo(ApplicationType.LLDS01);
