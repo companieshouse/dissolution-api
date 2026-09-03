@@ -13,6 +13,7 @@ import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
+import uk.gov.companieshouse.mapper.FilingKindMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.domain.CreateDraftDissolutionCommand;
@@ -29,7 +30,6 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
-import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.DissolutionStatus;
 import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.CompanyOfficerService;
@@ -42,8 +42,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import static uk.gov.companieshouse.api.model.transaction.TransactionStatus.OPEN;
-import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
-import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
 import static uk.gov.companieshouse.model.enums.DissolutionStatus.PENDING;
 import static uk.gov.companieshouse.util.DateTimeGenerator.generateCurrentDateTime;
 import static uk.gov.companieshouse.util.DissolutionApplicantUtil.isApplicant;
@@ -62,9 +60,10 @@ public class DissolutionService {
     private final CompanyOfficerService companyOfficerService;
     private final DissolutionRequestMapper dissolutionRequestMapper;
     private final DissolutionEmailService emailService;
+    private final FilingKindMapper filingKindMapper;
 
     @Autowired
-    public DissolutionService(DissolutionCreator creator, DissolutionGetter getter, DissolutionPatcher patcher, DissolutionRepository repository, PaymentService paymentService, TransactionService transactionService, DissolutionResponseMapper responseMapper, Logger logger, CompanyOfficerService companyOfficerService, DissolutionRequestMapper dissolutionRequestMapper, DissolutionEmailService emailService) {
+    public DissolutionService(DissolutionCreator creator, DissolutionGetter getter, DissolutionPatcher patcher, DissolutionRepository repository, PaymentService paymentService, TransactionService transactionService, DissolutionResponseMapper responseMapper, Logger logger, CompanyOfficerService companyOfficerService, DissolutionRequestMapper dissolutionRequestMapper, DissolutionEmailService emailService, FilingKindMapper filingKindMapper) {
         this.creator = creator;
         this.getter = getter;
         this.patcher = patcher;
@@ -76,6 +75,7 @@ public class DissolutionService {
         this.companyOfficerService = companyOfficerService;
         this.dissolutionRequestMapper = dissolutionRequestMapper;
         this.emailService = emailService;
+        this.filingKindMapper = filingKindMapper;
     }
 
     public DissolutionCreateResponse create(DissolutionCreateRequest body, CompanyProfile companyProfile, Map<String, CompanyOfficer> directors, String userId, String ip, String email) {
@@ -196,7 +196,7 @@ public class DissolutionService {
         final Dissolution dissolution = creator.createDraft(command);
         repository.insert(dissolution);
 
-        final var kind = dissolution.getApplicationType() == ApplicationType.LLDS01 ? FILING_KIND_LLDS01 : FILING_KIND_DS01;
+        final var kind = filingKindMapper.mapApplicationTypeToFilingKind(dissolution.getApplicationType());
 
         try {
             final var filing = new TransactionFiling(dissolution.getId(), kind, dissolution.getCompany().getName());

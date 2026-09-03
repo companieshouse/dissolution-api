@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -20,6 +19,7 @@ import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder;
 import uk.gov.companieshouse.fixtures.TransactionFixtures;
 import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
+import uk.gov.companieshouse.mapper.FilingKindMapper;
 import uk.gov.companieshouse.mapper.filing.FilingDataMapper;
 import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
@@ -65,9 +65,8 @@ class FilingServiceTest {
     private FeeConfig feeConfig;
 
     @Mock
-    private FilingDataMapper mapper;
+    private FilingDataMapper filingDataMapper;
 
-    @InjectMocks
     private FilingService filingService;
 
     private Transaction transaction;
@@ -102,6 +101,9 @@ class FilingServiceTest {
         paymentDetails = new PaymentApi();
         paymentDetails.setPaymentMethod(PAYMENT_METHOD);
 
+        final var filingKindMapper = new FilingKindMapper();
+        filingService = new FilingService(dissolutionService, transactionService, transactionPaymentService, filingDataMapper, feeConfig, filingKindMapper);
+
         ReflectionTestUtils.setField(filingService, "filingDescription", FILING_DESCRIPTION);
     }
 
@@ -113,7 +115,7 @@ class FilingServiceTest {
         when(dissolutionService.getDissolutionById(DISSOLUTION_ID)).thenReturn(dissolution);
         when(transactionService.getPayment(PAYMENT_URI)).thenReturn(transactionPayment);
         when(transactionPaymentService.getPaymentSession(PAYMENT_REFERENCE)).thenReturn(paymentDetails);
-        when(mapper.mapToFilingData(dissolution, PAYMENT_REFERENCE, PAYMENT_METHOD)).thenReturn(expectedFilingData);
+        when(filingDataMapper.mapToFilingData(dissolution, PAYMENT_REFERENCE, PAYMENT_METHOD)).thenReturn(expectedFilingData);
         when(feeConfig.getClosingPounds()).thenReturn(DISSOLUTION_FEE);
 
         final var response = filingService.generateDissolutionFiling(transaction, DISSOLUTION_ID);

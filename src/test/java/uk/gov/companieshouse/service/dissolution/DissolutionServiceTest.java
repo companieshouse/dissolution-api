@@ -31,6 +31,7 @@ import uk.gov.companieshouse.fixtures.TransactionFixtures;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
 import uk.gov.companieshouse.mapper.DissolutionResponseMapper;
+import uk.gov.companieshouse.mapper.FilingKindMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.domain.CreateDraftDissolutionCommand;
@@ -148,7 +149,8 @@ class DissolutionServiceTest {
 
     @BeforeEach
     void setUp() {
-        dissolutionService = new DissolutionService(creator, getter, patcher, repository, paymentService, transactionService, responseMapper, logger, companyOfficerService, requestMapper, emailService);
+        final var filingKindMapper = new FilingKindMapper();
+        dissolutionService = new DissolutionService(creator, getter, patcher, repository, paymentService, transactionService, responseMapper, logger, companyOfficerService, requestMapper, emailService, filingKindMapper);
     }
 
     @Test

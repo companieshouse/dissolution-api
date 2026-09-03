@@ -25,7 +25,7 @@ import uk.gov.companieshouse.service.barcode.BarcodeGenerator;
 
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -90,7 +90,7 @@ public class DissolutionCreatorTest {
         verify(emailService).notifySignatoriesToSign(dissolution);
         verify(responseMapper).mapToDissolutionCreateResponse(dissolution);
 
-        assertEquals(response, result);
+        assertThat(result).isEqualTo(response);
     }
 
     @Test
@@ -111,6 +111,6 @@ public class DissolutionCreatorTest {
         verify(emailService, never()).notifySignatoriesToSign(dissolution);
         verify(responseMapper, never()).mapToDissolutionCreateDraftResponse(transaction, dissolution);
 
-        assertEquals(dissolution, result);
+        assertThat(result).isEqualTo(dissolution);
     }
 }
