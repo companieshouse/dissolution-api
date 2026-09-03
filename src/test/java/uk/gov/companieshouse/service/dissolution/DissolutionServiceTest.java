@@ -97,7 +97,6 @@ import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
 import static uk.gov.companieshouse.model.enums.DissolutionStatus.DRAFT;
 import static uk.gov.companieshouse.model.enums.DissolutionStatus.PENDING;
 import static uk.gov.companieshouse.model.enums.DissolutionStatus.SUBMITTED;
-import static uk.gov.companieshouse.util.EricHelper.getEmail;
 
 @ExtendWith(MockitoExtension.class)
 class DissolutionServiceTest {

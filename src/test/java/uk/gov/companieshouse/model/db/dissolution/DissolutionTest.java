@@ -15,8 +15,6 @@ import static org.junit.jupiter.api.DisplayNameGenerator.ReplaceUnderscores;
 import static uk.gov.companieshouse.fixtures.DissolutionDirectorTestDataBuilder.aDissolutionDirector;
 import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
-import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
-import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
 
 @DisplayNameGeneration(ReplaceUnderscores.class)
 class DissolutionTest {

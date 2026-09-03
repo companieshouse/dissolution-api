@@ -9,14 +9,10 @@ import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.DissolutionStatus;
 
 import java.time.LocalDateTime;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
-import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
-import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
 
 @Document(collection = "dissolutions")
 public class Dissolution {
