@@ -93,7 +93,7 @@ class RequestPassThroughApiClientProviderTest {
                 mocked.when(RequestContextHolder::currentRequestAttributes).thenReturn(requestAttributes);
                 when(apiClientService.getInternalApiClient(PASSTHROUGH_HEADER)).thenReturn(internalApiClient);
 
-                var result = provider.getInternalApiClient();
+                final InternalApiClient result = provider.getInternalApiClient();
 
                 assertThat(result).isEqualTo(internalApiClient);
                 verify(apiClientService, times(1)).getInternalApiClient(PASSTHROUGH_HEADER);

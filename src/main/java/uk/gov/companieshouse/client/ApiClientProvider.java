@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.client;
 
 import uk.gov.companieshouse.api.ApiClient;
+import uk.gov.companieshouse.api.InternalApiClient;
 
 import java.io.IOException;
 
@@ -11,5 +12,5 @@ import java.io.IOException;
 public interface ApiClientProvider {
 
     ApiClient getApiClient() throws IOException;
-    ApiClient getInternalApiClient() throws IOException;
+    InternalApiClient getInternalApiClient() throws IOException;
 }

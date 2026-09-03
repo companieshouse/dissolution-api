@@ -101,8 +101,8 @@ public class TransactionService {
         final var uri = "/transactions/" + transaction.getId();
         try {
             var resp = apiClientProvider.getInternalApiClient()
-                    .transactions()
-                    .update(uri, transaction)
+                    .privateTransaction()
+                    .patch(uri, transaction)
                     .execute();
 
             if (resp.getStatusCode() != 204) {
