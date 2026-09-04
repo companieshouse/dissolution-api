@@ -23,6 +23,9 @@ import static uk.gov.companieshouse.model.Constants.SUBMISSION_URI_PATTERN;
 @Service
 public class TransactionService {
 
+    static final String TRANSACTIONS_PRIVATE_API_PREFIX = "/private/transactions/";
+    static final String TRANSACTIONS_PUBLIC_API_PREFIX = "/transactions/";
+
     private final ApiClientProvider apiClientProvider;
 
     public TransactionService(ApiClientProvider apiClientProvider) {
@@ -30,7 +33,7 @@ public class TransactionService {
     }
 
     public Transaction getTransaction(String transactionId) {
-        final var uri = "/transactions/" + transactionId;
+        final var uri = TRANSACTIONS_PUBLIC_API_PREFIX + transactionId;
 
         try {
             return apiClientProvider.getApiClient()
@@ -98,7 +101,7 @@ public class TransactionService {
     }
 
     private void patchTransaction(Transaction transaction) throws ServiceException {
-        final var uri = "/transactions/" + transaction.getId();
+        final var uri = TRANSACTIONS_PRIVATE_API_PREFIX + transaction.getId();
         try {
             var resp = apiClientProvider.getInternalApiClient()
                     .privateTransaction()

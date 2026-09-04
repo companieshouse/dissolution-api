@@ -44,13 +44,16 @@ import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
 import static uk.gov.companieshouse.fixtures.TransactionTestDataBuilder.aTransaction;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
 import static uk.gov.companieshouse.model.Constants.SUBMISSION_URI_PATTERN;
+import static uk.gov.companieshouse.service.TransactionService.TRANSACTIONS_PRIVATE_API_PREFIX;
+import static uk.gov.companieshouse.service.TransactionService.TRANSACTIONS_PUBLIC_API_PREFIX;
 
 @ExtendWith(MockitoExtension.class)
 class TransactionServiceTest {
 
-    private static final String TRANSACTIONS_URL = "/transactions/";
+    public static final String GET_TRANSACTION_URI = TRANSACTIONS_PUBLIC_API_PREFIX + TRANSACTION_ID;
+    public static final String PATCH_TRANSACTION_URI = TRANSACTIONS_PRIVATE_API_PREFIX + TRANSACTION_ID;
     private static final String PAYMENT_REFERENCE = "somePaymentRef";
-    private static final String PAYMENT_URI = String.format("/transactions/%s/payment", TRANSACTION_ID);
+    private static final String PAYMENT_URI = TRANSACTIONS_PUBLIC_API_PREFIX + TRANSACTION_ID + "/payment";
 
     @Mock
     private ApiClientProvider apiClientProvider;
@@ -95,7 +98,7 @@ class TransactionServiceTest {
         void initialize() throws IOException {
             when(apiClientProvider.getApiClient()).thenReturn(apiClient);
             when(apiClient.transactions()).thenReturn(transactionsResourceHandler);
-            when(transactionsResourceHandler.get(TRANSACTIONS_URL + TRANSACTION_ID)).thenReturn(transactionsGet);
+            when(transactionsResourceHandler.get(GET_TRANSACTION_URI)).thenReturn(transactionsGet);
         }
 
         @Test
@@ -144,7 +147,7 @@ class TransactionServiceTest {
         void initialize() throws IOException, URIValidationException {
             when(apiClientProvider.getApiClient()).thenReturn(apiClient);
             when(apiClient.transactions()).thenReturn(transactionsResourceHandler);
-            when(transactionsResourceHandler.get(TRANSACTIONS_URL + TRANSACTION_ID)).thenReturn(transactionsGet);
+            when(transactionsResourceHandler.get(GET_TRANSACTION_URI)).thenReturn(transactionsGet);
             when(transactionsGet.execute()).thenReturn(apiGetResponse);
         }
 
@@ -225,12 +228,12 @@ class TransactionServiceTest {
     }
 
     @Nested
-    @DisplayName("PATCH /transactions/{transaction_id}")
+    @DisplayName("PATCH /private/transactions/{transaction_id}")
     class PatchTransactionData {
+
 
         public static final String COMPANY_NUMBER = "12345678";
         private static final String DISSOLUTION_ID = "12345678";
-        private static final String TRANSACTION_ID = "tx-id-123";
         private static final String COMPANY_NAME = "Some Company Ltd";
         private static final String SUBMISSION_URI = String.format(SUBMISSION_URI_PATTERN, TRANSACTION_ID, DISSOLUTION_ID);
 
@@ -245,7 +248,7 @@ class TransactionServiceTest {
             var transaction = aTransaction().withCompanyNumber(COMPANY_NUMBER).withStatus(OPEN).build();
             var filing = new TransactionFiling(DISSOLUTION_ID, FILING_KIND_DS01, COMPANY_NAME);
 
-            when(privateTransactionResourceHandler.patch(TRANSACTIONS_URL + TRANSACTION_ID, transaction)).thenReturn(transactionsPatch);
+            when(privateTransactionResourceHandler.patch(PATCH_TRANSACTION_URI, transaction)).thenReturn(transactionsPatch);
             when(transactionsPatch.execute()).thenReturn(apiPatchResponse);
             when(apiPatchResponse.getStatusCode()).thenReturn(204);
 
@@ -265,7 +268,7 @@ class TransactionServiceTest {
             var transaction = aTransaction().withCompanyNumber(COMPANY_NUMBER).withStatus(OPEN).build();
             var filing = new TransactionFiling(DISSOLUTION_ID, FILING_KIND_DS01, COMPANY_NAME);
 
-            when(privateTransactionResourceHandler.patch(TRANSACTIONS_URL + TRANSACTION_ID, transaction)).thenReturn(transactionsPatch);
+            when(privateTransactionResourceHandler.patch(PATCH_TRANSACTION_URI, transaction)).thenReturn(transactionsPatch);
             when(transactionsPatch.execute()).thenReturn(apiPatchResponse);
             when(apiPatchResponse.getStatusCode()).thenReturn(500);
 
@@ -277,7 +280,7 @@ class TransactionServiceTest {
             var transaction = aTransaction().withCompanyNumber(COMPANY_NUMBER).withStatus(OPEN).build();
             var filing = new TransactionFiling(DISSOLUTION_ID, FILING_KIND_DS01, COMPANY_NAME);
 
-            when(privateTransactionResourceHandler.patch(TRANSACTIONS_URL + TRANSACTION_ID, transaction)).thenReturn(transactionsPatch);
+            when(privateTransactionResourceHandler.patch(PATCH_TRANSACTION_URI, transaction)).thenReturn(transactionsPatch);
             when(transactionsPatch.execute()).thenThrow(TransactionFixtures.generateApiErrorResponseException(404, "404 Not Found"));
 
             final var exception = assertThrows(TransactionNotFoundException.class, () -> transactionService.updateTransaction(transaction, filing));
@@ -290,7 +293,7 @@ class TransactionServiceTest {
             var transaction = aTransaction().withCompanyNumber(COMPANY_NUMBER).withStatus(OPEN).build();
             var filing = new TransactionFiling(DISSOLUTION_ID, FILING_KIND_DS01, COMPANY_NAME);
 
-            when(privateTransactionResourceHandler.patch(TRANSACTIONS_URL + TRANSACTION_ID, transaction)).thenReturn(transactionsPatch);
+            when(privateTransactionResourceHandler.patch(PATCH_TRANSACTION_URI, transaction)).thenReturn(transactionsPatch);
             when(transactionsPatch.execute()).thenThrow(ApiErrorResponseException.fromIOException(new IOException("ERROR")));
 
             assertThrows(ServiceException.class, () -> transactionService.updateTransaction(transaction, filing));
@@ -301,7 +304,7 @@ class TransactionServiceTest {
             var transaction = aTransaction().withCompanyNumber(COMPANY_NUMBER).withStatus(OPEN).build();
             var filing = new TransactionFiling(DISSOLUTION_ID, FILING_KIND_DS01, COMPANY_NAME);
 
-            when(privateTransactionResourceHandler.patch(TRANSACTIONS_URL + TRANSACTION_ID, transaction)).thenReturn(transactionsPatch);
+            when(privateTransactionResourceHandler.patch(PATCH_TRANSACTION_URI, transaction)).thenReturn(transactionsPatch);
             when(transactionsPatch.execute()).thenThrow(new URIValidationException("ERROR"));
 
             assertThrows(ServiceException.class, () -> transactionService.updateTransaction(transaction, filing));
