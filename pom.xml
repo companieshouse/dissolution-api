@@ -42,11 +42,11 @@
         <!-- Source: https://github.com/companieshouse/api-security-java/releases -->
         <api-security-java.version>2.0.27</api-security-java.version>
         <!-- Source: https://github.com/companieshouse/api-sdk-java/releases -->
-        <api-sdk-java.version>7.1.2</api-sdk-java.version>
+        <api-sdk-java.version>7.2.3</api-sdk-java.version>
         <!-- Source: https://github.com/companieshouse/private-api-sdk-java/releases -->
-        <private-api-sdk-java.version>7.0.15</private-api-sdk-java.version>
+        <private-api-sdk-java.version>7.2.25</private-api-sdk-java.version>
         <!-- Source: https://github.com/companieshouse/api-sdk-manager-java-library/releases -->
-        <api-sdk-manager-java-library.version>3.0.25</api-sdk-manager-java-library.version>
+        <api-sdk-manager-java-library.version>3.0.30</api-sdk-manager-java-library.version>
         <!-- Source: https://github.com/companieshouse/structured-logging/releases -->
         <structured-logging.version>3.0.57</structured-logging.version>
         <!-- Source: https://github.com/companieshouse/environment-reader-library/releases -->
