@@ -23,8 +23,8 @@ import static uk.gov.companieshouse.model.Constants.SUBMISSION_URI_PATTERN;
 @Service
 public class TransactionService {
 
-    public static final String TRANSACTIONS_PRIVATE_API_PREFIX = "/private/transactions/";
-    public static final String TRANSACTIONS_PUBLIC_API_PREFIX = "/transactions/";
+    static final String TRANSACTIONS_PRIVATE_API_PREFIX = "/private/transactions/";
+    static final String TRANSACTIONS_PUBLIC_API_PREFIX = "/transactions/";
 
     private final ApiClientProvider apiClientProvider;
 
