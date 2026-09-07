@@ -13,10 +13,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
+import uk.gov.companieshouse.api.model.validationstatus.ValidationStatusResponse;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.mapper.ValidationStatusResponseMapper;
 import uk.gov.companieshouse.service.transaction.FilingService;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import static uk.gov.companieshouse.model.Constants.DISSOLUTION_ID_KEY;
 import static uk.gov.companieshouse.model.Constants.HEADER_ERIC_REQUEST_ID;
@@ -24,14 +27,16 @@ import static uk.gov.companieshouse.model.Constants.TRANSACTION_ID_KEY;
 import static uk.gov.companieshouse.model.Constants.TRANSACTION_KEY;
 
 @RestController
-@RequestMapping("/private/transactions/{transaction_id}/dissolution/{dissolution_id}/filings")
+@RequestMapping("/private/transactions/{transaction_id}/dissolution/{dissolution_id}")
 public class FilingController {
 
     private final FilingService filingService;
+    private final ValidationStatusResponseMapper validationStatusResponseMapper;
     private final Logger logger;
 
-    public FilingController(FilingService filingService, Logger logger) {
+    public FilingController(FilingService filingService, ValidationStatusResponseMapper validationStatusResponseMapper, Logger logger) {
         this.filingService = filingService;
+        this.validationStatusResponseMapper = validationStatusResponseMapper;
         this.logger = logger;
     }
 
@@ -43,7 +48,7 @@ public class FilingController {
             @ApiResponse(responseCode = "409", description = "Invalid transaction status"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
-    @GetMapping
+    @GetMapping("/filings")
     @ResponseStatus(HttpStatus.OK)
     public FilingApi[] getFiling(
             @RequestAttribute(TRANSACTION_KEY) Transaction transaction,
@@ -57,5 +62,28 @@ public class FilingController {
 
         FilingApi filing = filingService.generateDissolutionFiling(transaction, dissolutionId);
         return new FilingApi[]{filing};
+    }
+
+    @Operation(summary = "Get Dissolution filing validation status", tags = "Dissolution (Transaction Model)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Dissolution validation status determined successfully"),
+            @ApiResponse(responseCode = "400", description = "Dissolution not linked to transaction"),
+            @ApiResponse(responseCode = "404", description = "Dissolution not found"),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error")
+    })
+    @GetMapping("/validation-status")
+    @ResponseStatus(HttpStatus.OK)
+    public ValidationStatusResponse getValidationStatus(
+            @RequestAttribute(TRANSACTION_KEY) Transaction transaction,
+            @RequestHeader(HEADER_ERIC_REQUEST_ID) String requestId,
+            @PathVariable(TRANSACTION_ID_KEY) String transactionId,
+            @PathVariable(DISSOLUTION_ID_KEY) final String dissolutionId) {
+        var logCtx = new HashMap<String, Object>();
+        logCtx.put(TRANSACTION_ID_KEY, transactionId);
+        logCtx.put(DISSOLUTION_ID_KEY, dissolutionId);
+        logger.infoContext(requestId, "Attempting to validate dissolution for filing", logCtx);
+
+        var result = filingService.validateForFiling(transaction, dissolutionId);
+        return validationStatusResponseMapper.mapToValidationStatusResponse(result);
     }
 }

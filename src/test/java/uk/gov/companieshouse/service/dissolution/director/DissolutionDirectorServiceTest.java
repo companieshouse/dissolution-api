@@ -73,7 +73,7 @@ class DissolutionDirectorServiceTest {
     void checkPatchDirectorConstraints_OptionalEmpty_ChecksPass() throws DissolutionNotFoundException {
         Dissolution dissolution = aDissolution()
                 .withCreatedByEmail(EMAIL)
-                .withOnlyDirector(aDissolutionDirector().withEmail(EMAIL).withDirectorApproval(null))
+                .withOnlyDirector(aDissolutionDirector().withEmail(EMAIL).withDirectorApproval((DirectorApproval) null))
                 .build();
 
 

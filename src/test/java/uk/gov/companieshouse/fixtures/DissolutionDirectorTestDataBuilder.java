@@ -40,6 +40,10 @@ public class DissolutionDirectorTestDataBuilder {
         return this;
     }
 
+    public DissolutionDirectorTestDataBuilder withDirectorApproval(DirectorApprovalTestDataBuilder directorApprovalBuilder) {
+        return withDirectorApproval(directorApprovalBuilder.build());
+    }
+
     public DissolutionDirector build() {
         final DissolutionDirector director = new DissolutionDirector();
         director.setOfficerId(officerId);
