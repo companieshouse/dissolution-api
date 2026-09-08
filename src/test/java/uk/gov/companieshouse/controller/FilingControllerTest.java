@@ -21,9 +21,12 @@ import uk.gov.companieshouse.exception.InvalidTransactionStateException;
 import uk.gov.companieshouse.exception.TransactionNotFoundException;
 import uk.gov.companieshouse.fixtures.TransactionFixtures;
 import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
+import uk.gov.companieshouse.mapper.CostMapper;
 import uk.gov.companieshouse.mapper.ValidationStatusResponseMapper;
+import uk.gov.companieshouse.model.domain.DissolutionCost;
 import uk.gov.companieshouse.model.domain.ValidationResult;
 import uk.gov.companieshouse.service.TransactionService;
+import uk.gov.companieshouse.service.cost.CostService;
 import uk.gov.companieshouse.service.transaction.FilingService;
 
 import static org.mockito.Mockito.eq;
@@ -40,11 +43,12 @@ import static uk.gov.companieshouse.model.Constants.HEADER_ERIC_REQUEST_ID;
 import static uk.gov.companieshouse.model.Constants.TRANSACTION_KEY;
 
 @WebMvcTest(FilingController.class)
-@Import(ValidationStatusResponseMapper.class)
+@Import({ValidationStatusResponseMapper.class, CostMapper.class})
 class FilingControllerTest {
 
     private static final String FILING_URI = "/private/transactions/{transaction_id}/dissolution/{dissolution_id}/filings";
-    private static final String VALIDATION_STATUS_URI = "/private/transactions/{transaction_id}/dissolution/{dissolution_id}/validation-status";
+    private static final String VALIDATION_STATUS_URI = "/transactions/{transaction_id}/dissolution/{dissolution_id}/validation-status";
+    private static final String COST_URI = "/transactions/{transaction_id}/dissolution/{dissolution_id}/costs";
     private static final String DISSOLUTION_ID = "12345678";
     private static final String ERIC_REQUEST_ID = "XaBcDeF12345";
     private static final String PASS_THROUGH_HEADER = "545345345";
@@ -56,6 +60,9 @@ class FilingControllerTest {
 
     @MockitoBean
     private FilingService filingService;
+
+    @MockitoBean
+    private CostService costService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -291,6 +298,75 @@ class FilingControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(content().json(
                             "{\"is_valid\":false,\"errors\":[{\"error\":\"Dissolution status is PENDING, expected SUBMITTED\"}]}"));
+        }
+    }
+
+    @Nested
+    class GetCosts {
+
+        @Test
+        void when_dissolution_is_valid_then_OK_returned() throws Exception {
+            var dissolutionCost = new DissolutionCost("13", "ACME LTD", "12345678", "dissolution");
+            when(costService.getCosts(isA(Transaction.class), eq(DISSOLUTION_ID))).thenReturn(dissolutionCost);
+
+            mockMvc
+                    .perform(
+                            get(COST_URI, TRANSACTION_ID, DISSOLUTION_ID)
+                                    .headers(createHttpHeaders())
+                                    .requestAttr(TRANSACTION_KEY, transaction)
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(content().json("[{\"amount\":\"13\",\"product_type\":\"dissolution\"}]"));
+        }
+
+        @Test
+        void when_dissolution_not_found_then_NOT_FOUND_returned() throws Exception {
+            when(costService.getCosts(isA(Transaction.class), eq(DISSOLUTION_ID))).thenThrow(new DissolutionNotFoundException());
+
+            mockMvc
+                    .perform(
+                            get(COST_URI, TRANSACTION_ID, DISSOLUTION_ID)
+                                    .headers(createHttpHeaders())
+                                    .requestAttr(TRANSACTION_KEY, transaction)
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void when_dissolution_not_linked_to_transaction_then_BAD_REQUEST_returned() throws Exception {
+            when(costService.getCosts(isA(Transaction.class), eq(DISSOLUTION_ID)))
+                    .thenThrow(new DissolutionNotLinkedToTransactionException("dissolution not linked to transaction"));
+
+            mockMvc
+                    .perform(
+                            get(COST_URI, TRANSACTION_ID, DISSOLUTION_ID)
+                                    .headers(createHttpHeaders())
+                                    .requestAttr(TRANSACTION_KEY, transaction)
+                    )
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        void when_unexpected_exception_occurs_then_INTERNAL_SERVER_ERROR_returned() throws Exception {
+            when(costService.getCosts(isA(Transaction.class), eq(DISSOLUTION_ID))).thenThrow(new RuntimeException("Server down"));
+
+            mockMvc
+                    .perform(
+                            get(COST_URI, TRANSACTION_ID, DISSOLUTION_ID)
+                                    .headers(createHttpHeaders())
+                                    .requestAttr(TRANSACTION_KEY, transaction)
+                    )
+                    .andExpect(status().isInternalServerError());
+        }
+
+        @Test
+        void when_eric_identity_not_provided_then_UNAUTHORIZED_returned() throws Exception {
+            HttpHeaders headers = createHttpHeaders();
+            headers.remove(EricConstants.ERIC_IDENTITY);
+
+            mockMvc
+                    .perform(get(COST_URI, TRANSACTION_ID, DISSOLUTION_ID).headers(headers))
+                    .andExpect(status().isUnauthorized());
         }
     }
 
