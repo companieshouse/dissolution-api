@@ -19,7 +19,6 @@ import uk.gov.companieshouse.mapper.ValidationStatusResponseMapper;
 import uk.gov.companieshouse.service.transaction.FilingService;
 
 import java.util.HashMap;
-import java.util.Map;
 
 import static uk.gov.companieshouse.model.Constants.DISSOLUTION_ID_KEY;
 import static uk.gov.companieshouse.model.Constants.HEADER_ERIC_REQUEST_ID;
