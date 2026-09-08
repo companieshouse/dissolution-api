@@ -108,7 +108,10 @@ public class FilingController {
 			@PathVariable(DISSOLUTION_ID_KEY) String dissolutionId,
 			@RequestHeader(HEADER_ERIC_REQUEST_ID) String requestId) {
 
-        logger.info("Getting costs for transaction: " + transactionId + ", dissolution: " + dissolutionId + ", requestId: " + requestId);
+		var logCtx = new HashMap<String, Object>();
+		logCtx.put(TRANSACTION_ID_KEY, transactionId);
+		logCtx.put(DISSOLUTION_ID_KEY, dissolutionId);
+		logger.infoContext(requestId, "Getting costs for dissolution filing", logCtx);
 
 		var dissolutionCost = costService.getCosts(transaction, dissolutionId);
 		return List.of(costMapper.mapToCost(dissolutionCost));

@@ -2,6 +2,7 @@ package uk.gov.companieshouse.service.dissolution.validator;
 
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.domain.ValidationResult;
 import uk.gov.companieshouse.model.enums.DissolutionStatus;
 
@@ -28,7 +29,7 @@ public class FilingValidator {
     private void checkAllSignatoriesHaveApproved(Dissolution dissolution, ValidationResult result) {
         final var allSignatoriesHaveApproved = dissolution.getSignatories()
                 .stream()
-                .allMatch(signatory -> signatory.getDirectorApproval() != null);
+                .allMatch(DissolutionDirector::hasDirectorApproval);
 
         if (!allSignatoriesHaveApproved) {
             result.addError("Not all signatories have signed");

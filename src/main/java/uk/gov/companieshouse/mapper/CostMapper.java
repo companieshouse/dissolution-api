@@ -20,15 +20,15 @@ public class CostMapper {
 
     public Cost mapToCost(DissolutionCost dissolutionCost) {
         Cost cost = new Cost();
-        cost.setAmount(dissolutionCost.getAmount());
+        cost.setAmount(dissolutionCost.amount());
         cost.setClassOfPayment(List.of(PAYMENT_CLASS_OF_PAYMENT));
         cost.setAvailablePaymentMethods(List.of(PAYMENT_AVAILABLE_PAYMENT_METHOD));
-        cost.setDescription(String.format(PAYMENT_DESCRIPTION, dissolutionCost.getCompanyName(), dissolutionCost.getCompanyNumber()));
+        cost.setDescription(String.format(PAYMENT_DESCRIPTION, dissolutionCost.companyName(), dissolutionCost.companyNumber()));
         cost.setDescriptionIdentifier(PAYMENT_DESCRIPTION_IDENTIFIER);
         cost.setDescriptionValues(Collections.singletonMap("Key", "Value"));
         cost.setKind(RESOURCE_KIND);
         cost.setResourceKind(PAYMENT_SESSION);
-        cost.setProductType(dissolutionCost.getApplicationType());
+        cost.setProductType(dissolutionCost.applicationType());
 
         return cost;
     }

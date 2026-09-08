@@ -12,12 +12,12 @@ import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
 import uk.gov.companieshouse.fixtures.TransactionFixtures;
 import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
+import uk.gov.companieshouse.model.domain.DissolutionCost;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
@@ -50,7 +50,7 @@ class CostServiceTest {
     }
 
     @Test
-    void givenGetCostsCalled_returnsDissolutionCost_whenValidDissolutionId() throws DissolutionNotFoundException, DissolutionNotLinkedToTransactionException {
+    void when_valid_dissolution_then_dissolutionCost_returned() throws DissolutionNotFoundException, DissolutionNotLinkedToTransactionException {
         final var dissolution = aDissolution()
                 .withId(DISSOLUTION_ID)
                 .withCompanyNumber(COMPANY_NUMBER)
@@ -62,26 +62,23 @@ class CostServiceTest {
 
         var actualCost = costService.getCosts(transaction, DISSOLUTION_ID);
 
-        assertNotNull(actualCost);
-        assertEquals("10.00", actualCost.getAmount());
-        assertEquals(COMPANY_NAME, actualCost.getCompanyName());
-        assertEquals(COMPANY_NUMBER, actualCost.getCompanyNumber());
-        assertEquals(ApplicationType.DS01.getValue(), actualCost.getApplicationType());
+        assertThat(actualCost).isEqualTo(new DissolutionCost("10.00", COMPANY_NAME, COMPANY_NUMBER, ApplicationType.DS01.getValue()));
     }
 
     @Test
-    void givenGetCostsCalled_throwsDissolutionNotFoundException_whenInvalidDissolutionId() throws DissolutionNotFoundException, DissolutionNotLinkedToTransactionException {
+    void when_dissolution_not_found_then_exception_thrown() {
         when(dissolutionService.getDissolutionById(DISSOLUTION_ID))
                 .thenThrow(new DissolutionNotFoundException());
 
-        assertThrows(DissolutionNotFoundException.class, () -> costService.getCosts(transaction, DISSOLUTION_ID));
+        assertThatThrownBy(() -> costService.getCosts(transaction, DISSOLUTION_ID))
+                .isInstanceOf(DissolutionNotFoundException.class);
     }
 
     @Test
-    void givenGetCostsCalled_throwsDissolutionNotLinkedToTransactionException_whenDissolutionNotLinkedToTransaction() throws DissolutionNotFoundException, DissolutionNotLinkedToTransactionException {
+    void when_dissolution_not_linked_to_transaction_then_exception_thrown() {
         transaction = TransactionTestDataBuilder.aTransaction().withId(TRANSACTION_ID).build();
 
-        assertThrows(DissolutionNotLinkedToTransactionException.class,
-                () -> costService.getCosts(transaction, DISSOLUTION_ID));
+        assertThatThrownBy(() -> costService.getCosts(transaction, DISSOLUTION_ID))
+                .isInstanceOf(DissolutionNotLinkedToTransactionException.class);
     }
 }
