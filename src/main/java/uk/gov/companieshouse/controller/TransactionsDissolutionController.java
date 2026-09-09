@@ -41,7 +41,7 @@ import static uk.gov.companieshouse.util.EricHelper.getEmail;
 @SuppressWarnings("UastIncorrectHttpHeaderInspection")
 @RestController
 @Tag(name = "Dissolution (Transaction Model)", description = "Endpoints for managing dissolution requests via the transaction model")
-@RequestMapping("/company/{company-number}/transaction/{transaction_id}/dissolution")
+@RequestMapping("/company/{company-number}/transactions/{transaction_id}/dissolution")
 public class TransactionsDissolutionController {
 
     private final DissolutionService dissolutionService;

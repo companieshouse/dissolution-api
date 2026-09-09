@@ -67,11 +67,11 @@ import static uk.gov.companieshouse.model.Constants.TRANSACTION_KEY;
 @Import(DissolutionInitiationMapper.class)
 class TransactionsDissolutionControllerTest {
 
-    private static final String DISSOLUTION_URI = "/company/{company-number}/transaction/{transaction_id}/dissolution";
-    private static final String DISSOLUTION_APPROVAL_URI = "/company/{company-number}/transaction/{transaction_id}/dissolution/approve";
-    private static final String DISSOLUTION_INITIATION_URI = "/company/{company-number}/transaction/{transaction_id}/dissolution/initiation";
-    private static final String DISSOLUTION_SIGNATORY_NOTIFICATION_URI = "/company/{company-number}/transaction/{transaction_id}/dissolution/signatories/{signatory-id}/signature-notification";
-    private static final String DISSOLUTION_SIGNATORY_DETAILS_URI = "/company/{company-number}/transaction/{transaction_id}/dissolution/signatories/{officer_id}";
+    private static final String DISSOLUTION_URI = "/company/{company-number}/transactions/{transaction_id}/dissolution";
+    private static final String DISSOLUTION_APPROVAL_URI = DISSOLUTION_URI + "/approve";
+    private static final String DISSOLUTION_INITIATION_URI = DISSOLUTION_URI + "/initiation";
+    private static final String DISSOLUTION_SIGNATORY_DETAILS_URI = DISSOLUTION_URI + "/signatories/{officer_id}";
+    private static final String DISSOLUTION_SIGNATORY_NOTIFICATION_URI = DISSOLUTION_SIGNATORY_DETAILS_URI + "/signature-notification";
     private static final String COMPANY_NUMBER = "12345678";
     private static final String OFFICER_ID = "abc123";
     private static final String USER_ID = "1234";
@@ -253,7 +253,7 @@ class TransactionsDissolutionControllerTest {
         final DissolutionCreateDraftResponse response = new DissolutionCreateDraftResponse();
         response.setDissolutionId("dis-123");
         DissolutionLinks links = new DissolutionLinks();
-        links.setSelf("/company/" + COMPANY_NUMBER + "/transaction/" + TRANSACTION_ID + "/dissolution");
+        links.setSelf("/company/" + COMPANY_NUMBER + "/transactions/" + TRANSACTION_ID + "/dissolution");
         response.setLinks(links);
         final CompanyProfile companyProfile = generateCompanyProfile();
 
@@ -269,7 +269,7 @@ class TransactionsDissolutionControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(content().json(asJsonString(response)))
                 .andExpect(jsonPath("$.dissolution_id").value("dis-123"))
-                .andExpect(jsonPath("$.links.self").value("/company/" + COMPANY_NUMBER + "/transaction/" + TRANSACTION_ID + "/dissolution"));
+                .andExpect(jsonPath("$.links.self").value("/company/" + COMPANY_NUMBER + "/transactions/" + TRANSACTION_ID + "/dissolution"));
     }
 
     @Nested
