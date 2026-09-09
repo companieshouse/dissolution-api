@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.service.dissolution;
 
-import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -1231,7 +1230,7 @@ class DissolutionServiceTest {
 
             var command = new ResendSignatoryNotificationCommand(aTransaction().withCompanyNumber("123456").build(), "123456", "789");
 
-            AssertionsForClassTypes.assertThatThrownBy(() -> dissolutionService.resendSignatoryNotification(command)).isInstanceOf(DissolutionNotFoundException.class);
+            assertThatThrownBy(() -> dissolutionService.resendSignatoryNotification(command)).isInstanceOf(DissolutionNotFoundException.class);
         }
 
         @Test
@@ -1249,7 +1248,7 @@ class DissolutionServiceTest {
 
             var command = new ResendSignatoryNotificationCommand(transaction, "123456", "a-different-signatory-id");
 
-            AssertionsForClassTypes.assertThatThrownBy(() -> dissolutionService.resendSignatoryNotification(command)).isInstanceOf(DissolutionSignatoryNotFoundException.class);
+            assertThatThrownBy(() -> dissolutionService.resendSignatoryNotification(command)).isInstanceOf(DissolutionSignatoryNotFoundException.class);
         }
 
         @ParameterizedTest(name = "{index} => {0}")
@@ -1260,7 +1259,7 @@ class DissolutionServiceTest {
 
             var command = new ResendSignatoryNotificationCommand(transaction, "123456", "789");
 
-            AssertionsForClassTypes.assertThatThrownBy(() -> dissolutionService.resendSignatoryNotification(command)).isInstanceOf(expectedException).hasMessage(expectedMessage);
+            assertThatThrownBy(() -> dissolutionService.resendSignatoryNotification(command)).isInstanceOf(expectedException).hasMessage(expectedMessage);
         }
 
         static Stream<Arguments> invalidTransactions() {
