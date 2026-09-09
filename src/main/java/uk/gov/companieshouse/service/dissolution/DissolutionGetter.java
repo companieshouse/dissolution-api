@@ -33,14 +33,4 @@ public class DissolutionGetter {
                 .findByDataApplicationReference(applicationReference)
                 .map(responseMapper::mapToDissolutionGetResponse);
     }
-
-    public Optional<DissolutionGetResponse> getPendingDissolution(String companyNumber) {
-        return repository.findPendingDissolutionByCompanyNumber(companyNumber)
-                .map(responseMapper::mapToDissolutionGetResponse);
-    }
-
-    public Optional<DissolutionGetResponse> getDraftDissolution(String userId, String companyNumber) {
-        return repository.findDraftDissolutionForUserAndCompany(userId, companyNumber)
-                .map(responseMapper::mapToDissolutionGetResponse);
-    }
 }
