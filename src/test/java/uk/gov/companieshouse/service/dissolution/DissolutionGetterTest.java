@@ -34,29 +34,6 @@ class DissolutionGetterTest {
     public static final String APPLICATION_REFERENCE = "XYZ456";
 
     @Test
-    void getByCompanyNumber_findsDissolution_mapsToDissolutionResponse_returnsGetResponse() {
-        final Dissolution dissolution = DissolutionFixtures.generateDissolution();
-        final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse();
-
-        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
-        when(responseMapper.mapToDissolutionGetResponse(dissolution)).thenReturn(response);
-
-        final Optional<DissolutionGetResponse> result = getter.getByCompanyNumber(COMPANY_NUMBER);
-
-        assertTrue(result.isPresent());
-        assertEquals(response, result.get());
-    }
-
-    @Test
-    void getByCompanyNumber_doesNotFindDissolution_returnsOptionalEmpty() {
-        when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
-
-        final Optional<DissolutionGetResponse> result = getter.getByCompanyNumber(COMPANY_NUMBER);
-
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
     void getByApplicationReference_findsDissolution_mapsToDissolutionResponse_returnsGetResponse() {
         final Dissolution dissolution = DissolutionFixtures.generateDissolution();
         final DissolutionGetResponse response = DissolutionFixtures.generateDissolutionGetResponse();

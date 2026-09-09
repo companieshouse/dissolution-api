@@ -22,12 +22,6 @@ public class DissolutionGetter {
         this.responseMapper = responseMapper;
     }
 
-    public Optional<DissolutionGetResponse> getByCompanyNumber(String companyNumber) {
-        return repository
-                .findByCompanyNumber(companyNumber)
-                .map(responseMapper::mapToDissolutionGetResponse);
-    }
-
     public Optional<DissolutionGetResponse> getByApplicationReference(String applicationReference) {
         return repository
                 .findByDataApplicationReference(applicationReference)
