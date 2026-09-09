@@ -87,7 +87,7 @@ public class TransactionsDissolutionController {
                 getEmail(authorisedUser)
         );
 
-        return dissolutionService.createDraft(command);
+        return dissolutionService.createDraftDissolution(command);
     }
 
     @Operation(summary = "Patch Dissolution Application Approval")

@@ -317,7 +317,7 @@ class DissolutionServiceTest {
             when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
             when(creator.createDraft(command)).thenReturn(dissolution);
 
-            final DissolutionCreateDraftResponse result = dissolutionService.createDraft(command);
+            final DissolutionCreateDraftResponse result = dissolutionService.createDraftDissolution(command);
 
             assertThat(result).extracting(DissolutionCreateDraftResponse::getDissolutionId).isEqualTo(DISSOLUTION_ID);
             assertThat(result)
@@ -348,7 +348,7 @@ class DissolutionServiceTest {
             when(creator.createDraft(command)).thenReturn(dissolution);
             doThrow(new ServiceException("Failed to update transaction")).when(transactionService).updateTransaction(transaction, filing);
 
-            assertThatThrownBy(() -> dissolutionService.createDraft(command))
+            assertThatThrownBy(() -> dissolutionService.createDraftDissolution(command))
                     .isInstanceOf(ServiceException.class)
                     .hasMessage("Failed to update transaction");
 
@@ -365,7 +365,7 @@ class DissolutionServiceTest {
 
             when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.of(new Dissolution()));
 
-            assertThatThrownBy(() -> dissolutionService.createDraft(command))
+            assertThatThrownBy(() -> dissolutionService.createDraftDissolution(command))
                     .isInstanceOf(ConflictException.class);
 
             verify(creator, never()).createDraft(any());
@@ -380,7 +380,7 @@ class DissolutionServiceTest {
 
             when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> dissolutionService.createDraft(command))
+            assertThatThrownBy(() -> dissolutionService.createDraftDissolution(command))
                     .isInstanceOf(InvalidTransactionStateException.class);
 
             verify(creator, never()).createDraft(any());
@@ -396,7 +396,7 @@ class DissolutionServiceTest {
 
             when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> dissolutionService.createDraft(command))
+            assertThatThrownBy(() -> dissolutionService.createDraftDissolution(command))
                     .isInstanceOf(InvalidTransactionStateException.class);
 
             verify(creator, never()).createDraft(any());
@@ -411,7 +411,7 @@ class DissolutionServiceTest {
 
             when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(new Dissolution()));
 
-            assertThatThrownBy(() -> dissolutionService.createDraft(command))
+            assertThatThrownBy(() -> dissolutionService.createDraftDissolution(command))
                     .isInstanceOf(ConflictException.class).hasMessage("dissolution already exists for company " + COMPANY_NUMBER);
 
             verify(creator, never()).createDraft(any());
@@ -426,7 +426,7 @@ class DissolutionServiceTest {
 
             when(repository.findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, SUBMITTED)).thenReturn(Optional.of(new Dissolution()));
 
-            assertThatThrownBy(() -> dissolutionService.createDraft(command))
+            assertThatThrownBy(() -> dissolutionService.createDraftDissolution(command))
                     .isInstanceOf(ConflictException.class).hasMessage("dissolution already exists for company " + COMPANY_NUMBER);
 
             verify(creator, never()).createDraft(any());
@@ -460,7 +460,7 @@ class DissolutionServiceTest {
             when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
             when(creator.createDraft(command)).thenReturn(dissolution);
 
-            final DissolutionCreateDraftResponse result = dissolutionService.createDraft(command);
+            final DissolutionCreateDraftResponse result = dissolutionService.createDraftDissolution(command);
 
             assertThat(result).extracting(DissolutionCreateDraftResponse::getDissolutionId).isEqualTo(DISSOLUTION_ID);
             assertThat(result)
@@ -481,7 +481,7 @@ class DissolutionServiceTest {
 
             when(repository.findByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(new Dissolution()));
 
-            assertThatThrownBy(() -> dissolutionService.createDraft(command))
+            assertThatThrownBy(() -> dissolutionService.createDraftDissolution(command))
                     .isInstanceOf(ConflictException.class).hasMessage("dissolution already exists for company " + COMPANY_NUMBER);
 
             verify(creator, never()).createDraft(any());

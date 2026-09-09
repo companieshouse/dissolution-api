@@ -116,22 +116,18 @@ public class DissolutionService {
         return getter.getByApplicationReference(applicationReference);
     }
 
-    /**
-     * Resolves the dissolution application for the given company, falling back in order across
-     * a submitted dissolution, a pending (transaction-model) dissolution, a submitted dissolution
-     * with no verdict yet reached, and a draft dissolution for the given user. If found, the
-     * payment status is reconciled before being returned.
-     */
-    public Optional<DissolutionGetResponse> resolveDissolutionApplication(String userId, String companyNumber) {
-        final var dissolutionDto = findActiveDissolution(companyNumber)
-                .or(() -> findPendingDissolution(companyNumber))
-                .or(() -> findSubmittedDissolutionWithNoVerdict(companyNumber))
-                .or(() -> findDraftDissolution(userId, companyNumber))
-                .map(responseMapper::mapToDissolutionGetResponse);
+    public Dissolution getDissolutionById(String dissolutionId) {
+        return repository.findById(dissolutionId).orElseThrow(() -> new DissolutionNotFoundException("No dissolution found with id " + dissolutionId));
+    }
 
-        dissolutionDto.ifPresent(this::reconcilePaymentStatus);
+    public Dissolution getPendingDissolution(String companyNumber) {
+        return repository.findPendingDissolutionByCompanyNumber(companyNumber)
+                .orElseThrow(() -> new DissolutionNotFoundException(String.format("Pending Dissolution not found for company number %s", companyNumber)));
+    }
 
-        return dissolutionDto;
+    private Dissolution getDraftDissolution(String userId, String companyNumber) {
+        return repository.findDraftDissolutionForUserAndCompany(userId, companyNumber)
+                .orElseThrow(() -> new DissolutionNotFoundException(String.format("Draft dissolution not found for user %s and company number %s.", userId, companyNumber)));
     }
 
     public Optional<Dissolution> findActiveDissolution(String companyNumber) {
@@ -149,6 +145,31 @@ public class DissolutionService {
     public Optional<Dissolution> findSubmittedDissolutionWithNoVerdict(String companyNumber) {
         return repository.findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(companyNumber, DissolutionStatus.SUBMITTED)
                 .filter(dissolution -> !transactionService.hasVerdictBeenReached(dissolution.getTransactionId()));
+    }
+
+    private Optional<Dissolution> findInProgressDissolutionForCompany(String companyNumber) {
+        return findActiveDissolution(companyNumber)
+                .or(() -> findPendingDissolution(companyNumber))
+                .or(() -> findSubmittedDissolutionWithNoVerdict(companyNumber));
+    }
+
+    private Optional<Dissolution> findInProgressDissolutionForUserAndCompany(String userId, String companyNumber) {
+        return findInProgressDissolutionForCompany(companyNumber).or(() -> findDraftDissolution(userId, companyNumber));
+    }
+
+    /**
+     * Resolves the dissolution application for the given company, falling back in order across
+     * a submitted dissolution, a pending (transaction-model) dissolution, a submitted dissolution
+     * with no verdict yet reached, and a draft dissolution for the given user. If found, the
+     * payment status is reconciled before being returned.
+     */
+    public Optional<DissolutionGetResponse> resolveDissolutionApplication(String userId, String companyNumber) {
+        final var dissolutionDto = findInProgressDissolutionForUserAndCompany(userId, companyNumber)
+                .map(responseMapper::mapToDissolutionGetResponse);
+
+        dissolutionDto.ifPresent(this::reconcilePaymentStatus);
+
+        return dissolutionDto;
     }
 
     // This logic was moved verbatim from DissolutionController as part of a refactor and is not newly authored here.
@@ -177,26 +198,13 @@ public class DissolutionService {
         }
     }
 
-    public Dissolution getDissolutionById(String dissolutionId) {
-        return repository.findById(dissolutionId).orElseThrow(() -> new DissolutionNotFoundException("No dissolution found with id " + dissolutionId));
-    }
 
-    public Dissolution getPendingDissolution(String companyNumber) {
-        return repository.findPendingDissolutionByCompanyNumber(companyNumber)
-                .orElseThrow(() -> new DissolutionNotFoundException(String.format("Pending Dissolution not found for company number %s", companyNumber)));
-    }
-
-    public DissolutionCreateDraftResponse createDraft(CreateDraftDissolutionCommand command) {
+    public DissolutionCreateDraftResponse createDraftDissolution(CreateDraftDissolutionCommand command) {
         final var companyNumber = command.companyProfile().getCompanyNumber();
-        final var hasExistingDissolution = findActiveDissolution(companyNumber)
-                .or(() -> findPendingDissolution(companyNumber))
-                .or(() -> findSubmittedDissolutionWithNoVerdict(companyNumber))
-                .or(() -> findDraftDissolution(command.userId(), companyNumber))
-                .isPresent();
-
-        if (hasExistingDissolution) {
-            throw new ConflictException("dissolution already exists for company " + companyNumber);
-        }
+        findInProgressDissolutionForUserAndCompany(command.userId(), companyNumber)
+                .ifPresent(dissolution -> {
+                    throw new ConflictException("dissolution already exists for company " + companyNumber);
+                });
 
         TransactionValidator.of(command.transaction()).hasStatus(OPEN).forCompany(companyNumber).validate();
 
@@ -218,26 +226,15 @@ public class DissolutionService {
 
     public void initiateDissolution(DissolutionInitiationCommand command) {
         final var companyNumber = command.companyNumber();
-        final var hasExistingDissolution = findActiveDissolution(companyNumber)
-                .or(() -> findPendingDissolution(companyNumber))
-                .or(() -> findSubmittedDissolutionWithNoVerdict(companyNumber))
-                .isPresent();
+        findInProgressDissolutionForCompany(companyNumber)
+                .ifPresent(dissolution -> {
+                    throw new ConflictException("dissolution already exists for company " + companyNumber);
+                });
 
-        if (hasExistingDissolution) {
-            throw new ConflictException("dissolution already exists for company " + companyNumber);
-        }
-
-        final var dissolution = findDraftDissolution(command.userId(), companyNumber)
-                .orElseThrow(() -> new DissolutionNotFoundException(String.format("Draft dissolution not found for user %s and company number %s.", command.userId(), companyNumber)));
+        final var dissolution = getDraftDissolution(command.userId(), companyNumber);
         final var activeDirectors = companyOfficerService.getActiveDirectorsForCompany(command.companyNumber());
 
-        TransactionValidator.of(command.transaction()).hasStatus(OPEN).forCompany(command.companyNumber()).isLinkedToDissolution(dissolution.getId()).validate();
-
-        companyOfficerService
-                .areSelectedDirectorsValid(activeDirectors, command.signatories())
-                .ifPresent(error -> {
-                    throw new DissolutionInvalidSignatoriesException(error);
-                });
+        validateInitiateDissolution(command, dissolution.getId(), activeDirectors);
 
         final var signatories = dissolutionRequestMapper.mapToDissolutionDirectors(command.signatories(), activeDirectors);
 
@@ -248,6 +245,16 @@ public class DissolutionService {
         // if the email fails to send, the dissolution will still be saved with PENDING status. To be addressed in a future release.
         repository.save(dissolution);
         emailService.notifySignatoriesToSign(dissolution);
+    }
+
+    private void validateInitiateDissolution(DissolutionInitiationCommand command, String dissolutionId, Map<String, CompanyOfficer> activeDirectors) {
+        TransactionValidator.of(command.transaction()).hasStatus(OPEN).forCompany(command.companyNumber()).isLinkedToDissolution(dissolutionId).validate();
+
+        companyOfficerService
+                .areSelectedDirectorsValid(activeDirectors, command.signatories())
+                .ifPresent(error -> {
+                    throw new DissolutionInvalidSignatoriesException(error);
+                });
     }
 
     public void findAndUpdateSignatory(UpdateSignatoryDetailsCommand command) {
