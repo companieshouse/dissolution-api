@@ -8,6 +8,7 @@ import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionSubmission;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionVerdict;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
+import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.DissolutionStatus;
 
 import java.time.LocalDateTime;
@@ -89,6 +90,14 @@ public class DissolutionTestDataBuilder {
             data.setApplication(DissolutionFixtures.generateDissolutionApplication());
         }
         data.getApplication().setReference(reference);
+        return this;
+    }
+
+    public DissolutionTestDataBuilder withApplicationStatus(ApplicationStatus status) {
+        if (data.getApplication() == null) {
+            data.setApplication(DissolutionFixtures.generateDissolutionApplication());
+        }
+        data.getApplication().setStatus(status);
         return this;
     }
 
