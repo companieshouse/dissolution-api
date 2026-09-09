@@ -224,7 +224,7 @@ public class DissolutionService {
                 .isPresent();
 
         if (hasExistingDissolution) {
-            throw new ConflictException(String.format("dissolution already exists for company number %s", command.companyNumber()));
+            throw new ConflictException("dissolution already exists for company " + companyNumber);
         }
 
         final var dissolution = findDraftDissolution(command.userId(), companyNumber)
