@@ -10,8 +10,10 @@ import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.mapper.FilingKindMapper;
 import uk.gov.companieshouse.mapper.filing.FilingDataMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.domain.ValidationResult;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
+import uk.gov.companieshouse.service.dissolution.validator.FilingValidator;
 import uk.gov.companieshouse.service.dissolution.validator.TransactionValidator;
 
 import java.util.Map;
@@ -31,14 +33,16 @@ public class FilingService {
     private final FilingDataMapper filingDataMapper;
     private final FilingKindMapper filingKindMapper;
     private final FeeConfig feeConfig;
+    private final FilingValidator filingValidator;
 
-    public FilingService(DissolutionService dissolutionService, TransactionService transactionService, TransactionPaymentService transactionPaymentService, FilingDataMapper filingDataMapper, FeeConfig feeConfig, FilingKindMapper filingKindMapper) {
+    public FilingService(DissolutionService dissolutionService, TransactionService transactionService, TransactionPaymentService transactionPaymentService, FilingDataMapper filingDataMapper, FeeConfig feeConfig, FilingKindMapper filingKindMapper, FilingValidator filingValidator) {
         this.dissolutionService = dissolutionService;
         this.transactionService = transactionService;
         this.transactionPaymentService = transactionPaymentService;
         this.filingDataMapper = filingDataMapper;
         this.feeConfig = feeConfig;
         this.filingKindMapper = filingKindMapper;
+        this.filingValidator = filingValidator;
     }
 
     public FilingApi generateDissolutionFiling(Transaction transaction, String dissolutionId) {
@@ -50,6 +54,17 @@ public class FilingService {
 
         setFilingApiData(filing, context);
         return filing;
+    }
+
+    /**
+     * Determines whether a dissolution is currently in a state where it can be filed
+     */
+    public ValidationResult validateForFiling(Transaction transaction, String dissolutionId) {
+        TransactionValidator.of(transaction).isLinkedToDissolution(dissolutionId).validate();
+
+        final var dissolution = dissolutionService.getDissolutionById(dissolutionId);
+
+        return filingValidator.validate(dissolution);
     }
 
     private void setFilingApiData(FilingApi filing, Context ctx) throws ServiceException {

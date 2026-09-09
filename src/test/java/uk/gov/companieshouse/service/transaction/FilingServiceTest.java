@@ -2,6 +2,7 @@ package uk.gov.companieshouse.service.transaction;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -24,9 +25,11 @@ import uk.gov.companieshouse.mapper.filing.FilingDataMapper;
 import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
+import uk.gov.companieshouse.model.domain.ValidationResult;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
+import uk.gov.companieshouse.service.dissolution.validator.FilingValidator;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,9 +37,12 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.DisplayNameGenerator.ReplaceUnderscores;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.api.model.transaction.TransactionStatus.*;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDirectorApproval;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionDirector;
+import static uk.gov.companieshouse.fixtures.TransactionTestDataBuilder.aTransaction;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
 
@@ -67,6 +73,9 @@ class FilingServiceTest {
     @Mock
     private FilingDataMapper filingDataMapper;
 
+    @Mock
+    private FilingValidator filingValidator;
+
     private FilingService filingService;
 
     private Transaction transaction;
@@ -76,9 +85,9 @@ class FilingServiceTest {
 
     @BeforeEach
     void setup() {
-        transaction = TransactionTestDataBuilder.aTransaction()
+        transaction = aTransaction()
                 .withId(TRANSACTION_ID)
-                .withStatus(TransactionStatus.CLOSED)
+                .withStatus(CLOSED)
                 .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_LLDS01, DISSOLUTION_ID))
                 .withPaymentLink(PAYMENT_URI)
                 .build();
@@ -102,7 +111,7 @@ class FilingServiceTest {
         paymentDetails.setPaymentMethod(PAYMENT_METHOD);
 
         final var filingKindMapper = new FilingKindMapper();
-        filingService = new FilingService(dissolutionService, transactionService, transactionPaymentService, filingDataMapper, feeConfig, filingKindMapper);
+        filingService = new FilingService(dissolutionService, transactionService, transactionPaymentService, filingDataMapper, feeConfig, filingKindMapper, filingValidator);
 
         ReflectionTestUtils.setField(filingService, "filingDescription", FILING_DESCRIPTION);
     }
@@ -150,9 +159,9 @@ class FilingServiceTest {
 
     @Test
     void generateDissolutionFiling_throwsDissolutionNotLinkedToTransactionException_whenDissolutionNotLinkedToTransaction() {
-        transaction = TransactionTestDataBuilder.aTransaction()
+        transaction = aTransaction()
                 .withId(TRANSACTION_ID)
-                .withStatus(TransactionStatus.CLOSED)
+                .withStatus(CLOSED)
                 .build();
 
         assertThatThrownBy(() -> filingService.generateDissolutionFiling(transaction, DISSOLUTION_ID))
@@ -161,9 +170,9 @@ class FilingServiceTest {
 
     @Test
     void generateDissolutionFiling_throwsInvalidTransactionStateException_whenTransactionIsNotClosed() {
-        transaction = TransactionTestDataBuilder.aTransaction()
+        transaction = aTransaction()
                 .withId(TRANSACTION_ID)
-                .withStatus(TransactionStatus.OPEN)
+                .withStatus(OPEN)
                 .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_LLDS01, DISSOLUTION_ID))
                 .withPaymentLink(PAYMENT_URI)
                 .build();
@@ -180,5 +189,31 @@ class FilingServiceTest {
 
         assertThatThrownBy(() -> filingService.generateDissolutionFiling(transaction, DISSOLUTION_ID))
                 .isInstanceOf(ServiceException.class);
+    }
+
+    @Nested
+    class ValidateForFiling {
+
+        @Test
+        void when_dissolution_is_found_then_calls_validator_and_returns_its_result() {
+            final var expectedResult = new ValidationResult();
+
+            when(dissolutionService.getDissolutionById(DISSOLUTION_ID)).thenReturn(dissolution);
+            when(filingValidator.validate(dissolution)).thenReturn(expectedResult);
+
+            var result = filingService.validateForFiling(transaction, DISSOLUTION_ID);
+
+            verify(filingValidator).validate(dissolution);
+            assertThat(result).isSameAs(expectedResult);
+        }
+
+        @Test
+        void when_dissolution_does_not_exist_then_exception_thrown() {
+            when(dissolutionService.getDissolutionById(DISSOLUTION_ID))
+                    .thenThrow(new DissolutionNotFoundException());
+
+            assertThatThrownBy(() -> filingService.validateForFiling(transaction, DISSOLUTION_ID))
+                    .isInstanceOf(DissolutionNotFoundException.class);
+        }
     }
 }
