@@ -436,7 +436,7 @@ class DissolutionServiceTest {
         @Test
         void when_submitted_dissolution_exists_with_verdict_then_draft_dissolution_created() {
             final Transaction transaction = aTransaction().withStatus(TransactionStatus.OPEN).withCompanyNumber(COMPANY_NUMBER).build();
-            final String expectedSelfLink = String.format("/company/%s/transaction/%s/dissolution", COMPANY_NUMBER, transaction.getId());
+            final String expectedSelfLink = String.format(DISSOLUTION_BASE_URI_PATTERN, COMPANY_NUMBER, transaction.getId());
             final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
             company.setCompanyNumber(COMPANY_NUMBER);
             Dissolution dissolution = aDissolution().
