@@ -87,7 +87,7 @@ public class TransactionsDissolutionController {
                 getEmail(authorisedUser)
         );
 
-        return dissolutionService.createDraft(command);
+        return dissolutionService.createDraftDissolution(command);
     }
 
     @Operation(summary = "Patch Dissolution Application Approval")
@@ -95,7 +95,7 @@ public class TransactionsDissolutionController {
             @ApiResponse(responseCode = "204", description = "Dissolution Application successfully endorsed", content = @Content),
             @ApiResponse(responseCode = "400", description = "Dissolution Request director is not a signatory, has already approved or transaction is not linked to the dissolution"),
             @ApiResponse(responseCode = "404", description = "Dissolution Application or Company not found"),
-            @ApiResponse(responseCode = "409", description = "Transaction is not open, is not associated with the company", content = @Content)
+            @ApiResponse(responseCode = "409", description = "Transaction is not open, is not associated with the company or active dissolution exists for the company", content = @Content)
     })
     @PatchMapping("/approve")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -119,7 +119,7 @@ public class TransactionsDissolutionController {
             @ApiResponse(responseCode = "204", description = "Dissolution initiated"),
             @ApiResponse(responseCode = "400", description = "Signatories are invalid"),
             @ApiResponse(responseCode = "404", description = "Draft Dissolution not found"),
-            @ApiResponse(responseCode = "409", description = "Transaction is not open or is not associated with the company", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Transaction is not open, is not associated with the company or active dissolution exists for the company", content = @Content),
             @ApiResponse(responseCode = "422", description = "Request body failed validation")
     })
     @PostMapping("/initiation")

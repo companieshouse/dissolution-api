@@ -156,7 +156,7 @@ class TransactionsDissolutionControllerTest {
                         .requestAttr(TRANSACTION_KEY, transaction))
                 .andExpect(status().isNotFound());
 
-        verify(dissolutionService, never()).createDraft(any());
+        verify(dissolutionService, never()).createDraftDissolution(any());
     }
 
     @Test
@@ -169,7 +169,7 @@ class TransactionsDissolutionControllerTest {
                         .requestAttr(TRANSACTION_KEY, transaction))
                 .andExpect(status().isNotFound());
 
-        verify(dissolutionService, never()).createDraft(any());
+        verify(dissolutionService, never()).createDraftDissolution(any());
     }
 
     @Test
@@ -177,7 +177,7 @@ class TransactionsDissolutionControllerTest {
         final CompanyProfile companyProfile = generateCompanyProfile();
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
         when(companyProfileService.isCompanyClosable(isA(CompanyProfile.class))).thenReturn(true);
-        when(dissolutionService.createDraft(isA(CreateDraftDissolutionCommand.class)))
+        when(dissolutionService.createDraftDissolution(isA(CreateDraftDissolutionCommand.class)))
                 .thenThrow(new ConflictException("draft dissolution already exists"));
 
         mockMvc
@@ -193,7 +193,7 @@ class TransactionsDissolutionControllerTest {
         final CompanyProfile companyProfile = generateCompanyProfile();
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
         when(companyProfileService.isCompanyClosable(isA(CompanyProfile.class))).thenReturn(true);
-        when(dissolutionService.createDraft(isA(CreateDraftDissolutionCommand.class)))
+        when(dissolutionService.createDraftDissolution(isA(CreateDraftDissolutionCommand.class)))
                 .thenThrow(new InvalidTransactionStateException("transaction is not open"));
 
         mockMvc
@@ -209,7 +209,7 @@ class TransactionsDissolutionControllerTest {
         final CompanyProfile companyProfile = generateCompanyProfile();
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
         when(companyProfileService.isCompanyClosable(isA(CompanyProfile.class))).thenReturn(true);
-        when(dissolutionService.createDraft(isA(CreateDraftDissolutionCommand.class)))
+        when(dissolutionService.createDraftDissolution(isA(CreateDraftDissolutionCommand.class)))
                 .thenThrow(new InvalidTransactionStateException("transaction is not associated with the company"));
 
         mockMvc
@@ -230,7 +230,7 @@ class TransactionsDissolutionControllerTest {
                         .requestAttr(TRANSACTION_KEY, transaction))
                 .andExpect(status().isBadRequest());
 
-        verify(dissolutionService, never()).createDraft(any());
+        verify(dissolutionService, never()).createDraftDissolution(any());
     }
 
     @Test
@@ -238,7 +238,7 @@ class TransactionsDissolutionControllerTest {
         final CompanyProfile companyProfile = generateCompanyProfile();
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
         when(companyProfileService.isCompanyClosable(isA(CompanyProfile.class))).thenReturn(true);
-        when(dissolutionService.createDraft(isA(CreateDraftDissolutionCommand.class)))
+        when(dissolutionService.createDraftDissolution(isA(CreateDraftDissolutionCommand.class)))
                 .thenThrow(new RuntimeException("Some error occurred while creating draft dissolution"));
 
         mockMvc
@@ -259,7 +259,7 @@ class TransactionsDissolutionControllerTest {
 
         when(companyProfileService.getCompanyProfile(COMPANY_NUMBER, PASSTHROUGH_HEADER)).thenReturn(companyProfile);
         when(companyProfileService.isCompanyClosable(isA(CompanyProfile.class))).thenReturn(true);
-        when(dissolutionService.createDraft(isA(CreateDraftDissolutionCommand.class)))
+        when(dissolutionService.createDraftDissolution(isA(CreateDraftDissolutionCommand.class)))
                 .thenReturn(response);
 
         mockMvc

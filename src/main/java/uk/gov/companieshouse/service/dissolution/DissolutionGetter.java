@@ -22,25 +22,9 @@ public class DissolutionGetter {
         this.responseMapper = responseMapper;
     }
 
-    public Optional<DissolutionGetResponse> getByCompanyNumber(String companyNumber) {
-        return repository
-                .findByCompanyNumber(companyNumber)
-                .map(responseMapper::mapToDissolutionGetResponse);
-    }
-
     public Optional<DissolutionGetResponse> getByApplicationReference(String applicationReference) {
         return repository
                 .findByDataApplicationReference(applicationReference)
-                .map(responseMapper::mapToDissolutionGetResponse);
-    }
-
-    public Optional<DissolutionGetResponse> getPendingDissolution(String companyNumber) {
-        return repository.findPendingDissolutionByCompanyNumber(companyNumber)
-                .map(responseMapper::mapToDissolutionGetResponse);
-    }
-
-    public Optional<DissolutionGetResponse> getDraftDissolution(String userId, String companyNumber) {
-        return repository.findDraftDissolutionForUserAndCompany(userId, companyNumber)
                 .map(responseMapper::mapToDissolutionGetResponse);
     }
 }
