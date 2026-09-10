@@ -27,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionCertificate;
 import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
+import static uk.gov.companieshouse.model.Constants.DISSOLUTION_BASE_URI_PATTERN;
 import static uk.gov.companieshouse.model.Constants.DISSOLUTION_KIND;
 
 class DissolutionResponseMapperTest {
@@ -199,7 +200,7 @@ class DissolutionResponseMapperTest {
     @Test
     void mapToDissolutionCreateDraftResponse_mapsDissolutionAndTransaction() {
         final Transaction transaction = TransactionTestDataBuilder.aTransaction().withStatus(TransactionStatus.OPEN).build();
-        final String expectedSelfLink = String.format("/company/%s/transaction/%s/dissolution", COMPANY_NUMBER, transaction.getId());
+        final String expectedSelfLink = String.format(DISSOLUTION_BASE_URI_PATTERN, COMPANY_NUMBER, transaction.getId());
         transaction.setCompanyNumber(COMPANY_NUMBER);
 
         final Dissolution dissolution = DissolutionTestDataBuilder

@@ -16,7 +16,7 @@ public class SecurityConfig implements WebMvcConfigurer {
     private static final String FILINGS = "/private/transactions/**/filings";
     private static final String VALIDATION_STATUS = "/transactions/**/validation-status";
     private static final String COSTS = "/transactions/**/costs";
-    private static final String DISSOLUTION = "/company/*/transaction/*/dissolution";
+    private static final String DISSOLUTION = "/company/*/transactions/*/dissolution";
     private static final String DISSOLUTION_APPROVAL = DISSOLUTION + "/approve";
     private static final String DISSOLUTION_INITIATION = DISSOLUTION + "/initiation";
     private static final String SIGNATORY_DETAILS = DISSOLUTION + "/signatories/*";

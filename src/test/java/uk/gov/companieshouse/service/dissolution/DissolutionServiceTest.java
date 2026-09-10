@@ -95,6 +95,7 @@ import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolu
 import static uk.gov.companieshouse.fixtures.PaymentFixtures.generatePaymentPatchRequest;
 import static uk.gov.companieshouse.fixtures.TransactionFixtures.generateTransactionResource;
 import static uk.gov.companieshouse.fixtures.TransactionTestDataBuilder.aTransaction;
+import static uk.gov.companieshouse.model.Constants.DISSOLUTION_BASE_URI_PATTERN;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
 import static uk.gov.companieshouse.model.enums.DissolutionStatus.DRAFT;
 import static uk.gov.companieshouse.model.enums.DissolutionStatus.PENDING;
@@ -302,7 +303,7 @@ class DissolutionServiceTest {
         @Test
         void when_no_draft_dissolution_exists_then_create_draft_and_update_transaction() {
             final Transaction transaction = aTransaction().withStatus(TransactionStatus.OPEN).withCompanyNumber(COMPANY_NUMBER).build();
-            final String expectedSelfLink = String.format("/company/%s/transaction/%s/dissolution", COMPANY_NUMBER, transaction.getId());
+            final String expectedSelfLink = String.format(DISSOLUTION_BASE_URI_PATTERN, COMPANY_NUMBER, transaction.getId());
             final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
             company.setCompanyNumber(COMPANY_NUMBER);
             Dissolution dissolution = aDissolution().
@@ -435,7 +436,7 @@ class DissolutionServiceTest {
         @Test
         void when_submitted_dissolution_exists_with_verdict_then_draft_dissolution_created() {
             final Transaction transaction = aTransaction().withStatus(TransactionStatus.OPEN).withCompanyNumber(COMPANY_NUMBER).build();
-            final String expectedSelfLink = String.format("/company/%s/transaction/%s/dissolution", COMPANY_NUMBER, transaction.getId());
+            final String expectedSelfLink = String.format(DISSOLUTION_BASE_URI_PATTERN, COMPANY_NUMBER, transaction.getId());
             final CompanyProfile company = CompanyProfileFixtures.generateCompanyProfile();
             company.setCompanyNumber(COMPANY_NUMBER);
             Dissolution dissolution = aDissolution().
