@@ -3,6 +3,7 @@ package uk.gov.companieshouse.util;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
+import uk.gov.companieshouse.model.db.dissolution.CreatedBy;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,10 +57,8 @@ class DissolutionApplicantUtilTest {
 
     @Test
     void when_created_by_is_null_then_returns_false() {
-        final var createdBy = generateCreatedBy();
-        createdBy.setUserId(USER_ID);
         Dissolution dissolution = aDissolution()
-                .withCreatedBy(null)
+                .withCreatedBy((CreatedBy) null)
                 .build();
         assertThat(isApplicant(NON_APPLICANT_USER_ID, dissolution)).isFalse();
     }

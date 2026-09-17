@@ -25,6 +25,7 @@ import uk.gov.companieshouse.exception.*;
 import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 import uk.gov.companieshouse.mapper.DissolutionInitiationMapper;
 import uk.gov.companieshouse.model.domain.CreateDraftDissolutionCommand;
+import uk.gov.companieshouse.model.domain.ResendSignatoryNotificationCommand;
 import uk.gov.companieshouse.model.domain.UpdateSignatoryDetailsCommand;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
 import uk.gov.companieshouse.model.dto.companyprofile.CompanyProfile;
@@ -553,7 +554,20 @@ class TransactionsDissolutionControllerTest {
                             .requestAttr(TRANSACTION_KEY, transaction))
                     .andExpect(status().isOk());
 
-            verify(dissolutionService).resendSignatoryNotification(any());
+            verify(dissolutionService).resendSignatoryNotification(
+                    new ResendSignatoryNotificationCommand(transaction, COMPANY_NUMBER, USER_ID, OFFICER_ID));
+        }
+
+        @Test
+        void when_requestor_is_not_the_applicant_then_400_response() throws Exception {
+            doThrow(new NotDissolutionApplicantException("Only the applicant can resend a signatory notification"))
+                    .when(dissolutionService).resendSignatoryNotification(any());
+
+            mockMvc
+                    .perform(post(DISSOLUTION_SIGNATORY_NOTIFICATION_URI, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ID)
+                            .headers(createHttpHeaders())
+                            .requestAttr(TRANSACTION_KEY, transaction))
+                    .andExpect(status().isBadRequest());
         }
 
         @Test
@@ -813,7 +827,7 @@ class TransactionsDissolutionControllerTest {
             final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
             final var command = new UpdateSignatoryDetailsCommand(transaction, COMPANY_NUMBER, OFFICER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
 
-            doThrow(new DissolutionUpdateSignatoryException("only the applicant can update the details of a signatory"))
+            doThrow(new NotDissolutionApplicantException("only the applicant can update the details of a signatory"))
                     .when(dissolutionService).findAndUpdateSignatory(command);
 
             mockMvc
