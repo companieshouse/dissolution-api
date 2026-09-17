@@ -8,7 +8,7 @@ import uk.gov.companieshouse.exception.ConflictException;
 import uk.gov.companieshouse.exception.DissolutionInvalidSignatoriesException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionSignatoryNotFoundException;
-import uk.gov.companieshouse.exception.DissolutionUpdateSignatoryException;
+import uk.gov.companieshouse.exception.NotDissolutionApplicantException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.DissolutionRequestMapper;
@@ -267,14 +267,18 @@ public class DissolutionService {
                 .validate();
 
         if (!isApplicant(command.userId(), dissolution)) {
-            throw new DissolutionUpdateSignatoryException("Only the applicant can update signatory");
+            throw new NotDissolutionApplicantException("Only the applicant can update signatory");
         }
 
         patcher.updateSignatory(dissolution, command);
     }
 
     public void resendSignatoryNotification(ResendSignatoryNotificationCommand command) {
-        final Dissolution dissolution = getPendingDissolution(command.companyNumber());
+        final var dissolution = getPendingDissolution(command.companyNumber());
+
+        if (!isApplicant(command.userId(), dissolution)) {
+            throw new NotDissolutionApplicantException("Only the applicant can resend a signatory notification");
+        }
 
         TransactionValidator.of(command.transaction())
                 .hasStatus(TransactionStatus.OPEN)

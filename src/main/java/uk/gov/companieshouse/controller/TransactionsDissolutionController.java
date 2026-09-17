@@ -138,17 +138,19 @@ public class TransactionsDissolutionController {
     @Operation(summary = "Resend Signatory Notification Email")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Signatory notification email resent"),
+            @ApiResponse(responseCode = "400", description = "User is not the applicant"),
             @ApiResponse(responseCode = "404", description = "Dissolution Application or signatory not found"),
             @ApiResponse(responseCode = "409", description = "Transaction is not open, is not associated with the company or is not linked to the dissolution", content = @Content)
     })
     @PostMapping("/signatories/{officer_id}/signature-notification")
     @ResponseStatus(HttpStatus.OK)
     public void resendSignatoryNotification(
+            @RequestHeader("ERIC-identity") String userId,
             @PathVariable(COMPANY_NUMBER_KEY) final String companyNumber,
             @RequestAttribute(TRANSACTION_KEY) Transaction transaction,
             @PathVariable(OFFICER_ID_KEY) final String officerId) {
 
-        final var command = new ResendSignatoryNotificationCommand(transaction, companyNumber, officerId);
+        final var command = new ResendSignatoryNotificationCommand(transaction, companyNumber, userId, officerId);
 
         dissolutionService.resendSignatoryNotification(command);
     }

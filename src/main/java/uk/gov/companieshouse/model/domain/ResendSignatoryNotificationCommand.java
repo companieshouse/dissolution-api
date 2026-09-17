@@ -10,11 +10,13 @@ import static java.util.Objects.requireNonNull;
 public record ResendSignatoryNotificationCommand(
         Transaction transaction,
         String companyNumber,
+        String userId,
         String signatoryId) {
 
     public ResendSignatoryNotificationCommand {
         requireNonNull(transaction, "transaction must not be null");
         requireNonNull(companyNumber, "companyNumber must not be null");
+        requireNonNull(userId, "userId must not be null");
         requireNonNull(signatoryId, "signatoryId must not be null");
     }
 }

@@ -20,7 +20,7 @@ import uk.gov.companieshouse.exception.DissolutionInvalidSignatoriesException;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
 import uk.gov.companieshouse.exception.DissolutionSignatoryNotFoundException;
-import uk.gov.companieshouse.exception.DissolutionUpdateSignatoryException;
+import uk.gov.companieshouse.exception.NotDissolutionApplicantException;
 import uk.gov.companieshouse.exception.InvalidTransactionStateException;
 import uk.gov.companieshouse.exception.NotFoundException;
 import uk.gov.companieshouse.exception.ServiceException;
@@ -85,6 +85,7 @@ import static uk.gov.companieshouse.api.model.transaction.TransactionStatus.CLOS
 import static uk.gov.companieshouse.api.model.transaction.TransactionStatus.OPEN;
 import static uk.gov.companieshouse.fixtures.CompanyOfficerFixtures.generateCompanyOfficer;
 import static uk.gov.companieshouse.fixtures.CompanyOfficerTestDataBuilder.aCompanyOfficer;
+import static uk.gov.companieshouse.fixtures.CreatedByTestDataBuilder.aCreatedBy;
 import static uk.gov.companieshouse.fixtures.DirectorRequestTestDataBuilder.aDirectorRequest;
 import static uk.gov.companieshouse.fixtures.DissolutionDirectorPatchRequestTestDataBuilder.aDissolutionDirectorPatchRequest;
 import static uk.gov.companieshouse.fixtures.DissolutionDirectorTestDataBuilder.aDissolutionDirector;
@@ -1179,13 +1180,13 @@ class DissolutionServiceTest {
         }
 
         @Test
-        void when_non_applicant_attempts_to_update_signatory_details_then_dissolution_update_signatory_exception_thrown() {
+        void when_non_applicant_attempts_to_update_signatory_details_then_exception_thrown() {
             final DissolutionDirectorPatchRequest body = aDissolutionDirectorPatchRequest().build();
             command = new UpdateSignatoryDetailsCommand(transaction, COMPANY_NUMBER, OFFICER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
             when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
 
             assertThatThrownBy(() -> dissolutionService.findAndUpdateSignatory(command))
-                    .isInstanceOf(DissolutionUpdateSignatoryException.class)
+                    .isInstanceOf(NotDissolutionApplicantException.class)
                     .hasMessage("Only the applicant can update signatory");
 
             verify(patcher, never()).updateSignatory(any(), any());
@@ -1199,25 +1200,25 @@ class DissolutionServiceTest {
         @Test
         void sends_signing_notification_to_signatory() {
 
-            var companyNumber = "123456789";
-            var dissolutionId = "dissolution-id-1";
             var signatoryId = "signatory-id-1";
             var signatoryEmail = "signatory@test.co.uk";
 
-            final Dissolution pendingDissolution = aDissolution()
-                    .withId(dissolutionId)
-                    .withCompanyNumber(companyNumber)
+            var pendingDissolution = aDissolution()
+                    .withId(DISSOLUTION_ID)
+                    .withCompanyNumber(COMPANY_NUMBER)
+                    .withStatus(PENDING)
+                    .withCreatedBy(aCreatedBy().withUserId(USER_ID))
                     .withDirectors(aDissolutionDirector().withOfficerId(signatoryId).withEmail(signatoryEmail)).build();
 
-            when(repository.findPendingDissolutionByCompanyNumber(companyNumber)).thenReturn(of(pendingDissolution));
+            when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(of(pendingDissolution));
 
             var transaction = aTransaction()
-                    .withCompanyNumber(companyNumber)
+                    .withCompanyNumber(COMPANY_NUMBER)
                     .withStatus(OPEN)
-                    .withResources(generateTransactionResource(FILING_KIND_DS01, dissolutionId))
+                    .withResources(generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
                     .build();
 
-            var command = new ResendSignatoryNotificationCommand(transaction, companyNumber, signatoryId);
+            var command = new ResendSignatoryNotificationCommand(transaction, COMPANY_NUMBER, USER_ID, signatoryId);
 
             dissolutionService.resendSignatoryNotification(command);
 
@@ -1225,11 +1226,41 @@ class DissolutionServiceTest {
         }
 
         @Test
+        void when_requestor_is_not_the_applicant_then_exception_thrown() {
+
+            var signatoryId = "signatory-id-1";
+
+            var pendingDissolution = aDissolution()
+                    .withId(DISSOLUTION_ID)
+                    .withCompanyNumber(COMPANY_NUMBER)
+                    .withStatus(PENDING)
+                    .withCreatedBy(aCreatedBy().withUserId(USER_ID))
+                    .withDirectors(aDissolutionDirector().withOfficerId(signatoryId).withEmail("signatory@test.co.uk"))
+                    .build();
+
+            when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(of(pendingDissolution));
+
+            var transaction = aTransaction()
+                    .withCompanyNumber(COMPANY_NUMBER)
+                    .withStatus(OPEN)
+                    .withResources(generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
+                    .build();
+
+            var command = new ResendSignatoryNotificationCommand(transaction, COMPANY_NUMBER, "not-the-applicant", signatoryId);
+
+            assertThatThrownBy(() -> dissolutionService.resendSignatoryNotification(command))
+                    .isInstanceOf(NotDissolutionApplicantException.class)
+                    .hasMessage("Only the applicant can resend a signatory notification");
+
+            verify(emailService, never()).notifySignatoryToSign(any(), any());
+        }
+
+        @Test
         void when_no_PENDING_dissolution_exists_for_provided_company_number_then_exception_thrown() {
 
             when(repository.findPendingDissolutionByCompanyNumber(any())).thenReturn(empty());
 
-            var command = new ResendSignatoryNotificationCommand(aTransaction().withCompanyNumber("123456").build(), "123456", "789");
+            var command = new ResendSignatoryNotificationCommand(aTransaction().withCompanyNumber("123456").build(), "123456", "user123", "789");
 
             assertThatThrownBy(() -> dissolutionService.resendSignatoryNotification(command)).isInstanceOf(DissolutionNotFoundException.class);
         }
@@ -1238,16 +1269,19 @@ class DissolutionServiceTest {
         void when_no_signatory_found_for_signatory_id_then_exception_thrown() {
 
             when(repository.findPendingDissolutionByCompanyNumber(any())).thenReturn(of(aDissolution()
-                    .withId("a-dissolution-id")
+                    .withId(DISSOLUTION_ID)
+                    .withCompanyNumber(COMPANY_NUMBER)
+                    .withStatus(PENDING)
+                    .withCreatedBy(aCreatedBy().withUserId(USER_ID))
                     .withDirectors(aDissolutionDirector().withOfficerId("a-signatory-id")).build()));
 
             var transaction = aTransaction()
-                    .withCompanyNumber("123456")
+                    .withCompanyNumber(COMPANY_NUMBER)
                     .withStatus(OPEN)
-                    .withResources(generateTransactionResource(FILING_KIND_DS01, "a-dissolution-id"))
+                    .withResources(generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
                     .build();
 
-            var command = new ResendSignatoryNotificationCommand(transaction, "123456", "a-different-signatory-id");
+            var command = new ResendSignatoryNotificationCommand(transaction, COMPANY_NUMBER, USER_ID, "a-different-signatory-id");
 
             assertThatThrownBy(() -> dissolutionService.resendSignatoryNotification(command)).isInstanceOf(DissolutionSignatoryNotFoundException.class);
         }
@@ -1258,7 +1292,7 @@ class DissolutionServiceTest {
 
             when(repository.findPendingDissolutionByCompanyNumber(any())).thenReturn(of(aDissolution().withId("a-dissolution-id").withCompanyNumber("123456").build()));
 
-            var command = new ResendSignatoryNotificationCommand(transaction, "123456", "789");
+            var command = new ResendSignatoryNotificationCommand(transaction, "123456", "user123", "789");
 
             assertThatThrownBy(() -> dissolutionService.resendSignatoryNotification(command)).isInstanceOf(expectedException).hasMessage(expectedMessage);
         }

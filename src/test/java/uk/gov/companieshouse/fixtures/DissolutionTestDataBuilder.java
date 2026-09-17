@@ -77,6 +77,10 @@ public class DissolutionTestDataBuilder {
         return this;
     }
 
+    public DissolutionTestDataBuilder withCreatedBy(CreatedByTestDataBuilder createdByBuilder) {
+        return withCreatedBy(createdByBuilder.build());
+    }
+
     public DissolutionTestDataBuilder withCreatedByEmail(String email) {
         if (createdBy == null) {
             createdBy = new CreatedBy();
