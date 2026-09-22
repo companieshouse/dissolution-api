@@ -14,6 +14,7 @@ import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.api.util.security.EricConstants;
+import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.api.util.security.SecurityConstants;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
@@ -54,6 +55,9 @@ class FilingControllerTest {
     private static final String PASS_THROUGH_HEADER = "545345345";
     private static final String ERIC_ACCESS_TOKEN_HEADER = "ERIC-Access-Token";
     private static final String IDENTITY_HEADER_VALUE = "identity";
+    private static final String AUTHORISED_USER_HEADER = "ERIC-Authorised-User";
+    private static final String USER_ID = "1234";
+    private static final String EMAIL = "user@mail.com";
 
     @MockitoBean
     private TransactionService transactionService;
@@ -86,7 +90,7 @@ class FilingControllerTest {
 
         @Test
         void getFiling_returnsUnauthorised_ifEricIdentityIsNotProvided() throws Exception {
-            HttpHeaders headers = createHttpHeaders();
+            HttpHeaders headers = createApiKeyHttpHeaders();
             headers.remove(EricConstants.ERIC_IDENTITY);
 
             mockMvc
@@ -100,7 +104,7 @@ class FilingControllerTest {
 
         @Test
         void getFiling_returnsForbidden_ifEricIdentityTypeIsNotCorrect() throws Exception {
-            HttpHeaders headers = createHttpHeaders();
+            HttpHeaders headers = createApiKeyHttpHeaders();
             headers.set(EricConstants.ERIC_IDENTITY_TYPE, "some-incorrect-identity-type");
 
             mockMvc
@@ -114,7 +118,7 @@ class FilingControllerTest {
 
         @Test
         void getFiling_returnsForbidden_ifEricAuthorisedKeyRolesIsNotCorrect() throws Exception {
-            HttpHeaders headers = createHttpHeaders();
+            HttpHeaders headers = createApiKeyHttpHeaders();
             headers.set(EricConstants.ERIC_AUTHORISED_KEY_ROLES, "some-incorrect-authorised-key-roles-value");
 
             mockMvc
@@ -134,7 +138,7 @@ class FilingControllerTest {
             mockMvc
                     .perform(
                             get(FILING_URI, COMPANY_NUMBER, TRANSACTION_ID)
-                                    .headers(createHttpHeaders())
+                                    .headers(createApiKeyHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isNotFound());
@@ -147,7 +151,7 @@ class FilingControllerTest {
             mockMvc
                     .perform(
                             get(FILING_URI, COMPANY_NUMBER, TRANSACTION_ID)
-                                    .headers(createHttpHeaders())
+                                    .headers(createApiKeyHttpHeaders())
                     )
                     .andExpect(status().isNotFound());
 
@@ -163,7 +167,7 @@ class FilingControllerTest {
             mockMvc
                     .perform(
                             get(FILING_URI, COMPANY_NUMBER, TRANSACTION_ID)
-                                    .headers(createHttpHeaders())
+                                    .headers(createApiKeyHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isConflict());
@@ -177,7 +181,7 @@ class FilingControllerTest {
             mockMvc
                     .perform(
                             get(FILING_URI, COMPANY_NUMBER, TRANSACTION_ID)
-                                    .headers(createHttpHeaders())
+                                    .headers(createApiKeyHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isBadRequest());
@@ -191,7 +195,7 @@ class FilingControllerTest {
             mockMvc
                     .perform(
                             get(FILING_URI, COMPANY_NUMBER, TRANSACTION_ID)
-                                    .headers(createHttpHeaders())
+                                    .headers(createApiKeyHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isInternalServerError());
@@ -211,7 +215,7 @@ class FilingControllerTest {
             mockMvc
                     .perform(
                             get(FILING_URI, COMPANY_NUMBER, TRANSACTION_ID)
-                                    .headers(createHttpHeaders())
+                                    .headers(createApiKeyHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isOk())
@@ -230,7 +234,7 @@ class FilingControllerTest {
             mockMvc
                     .perform(
                             get(VALIDATION_STATUS_URI, COMPANY_NUMBER, TRANSACTION_ID)
-                                    .headers(createHttpHeaders())
+                                    .headers(createUserTokenHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isNotFound());
@@ -244,7 +248,7 @@ class FilingControllerTest {
             mockMvc
                     .perform(
                             get(VALIDATION_STATUS_URI, COMPANY_NUMBER, TRANSACTION_ID)
-                                    .headers(createHttpHeaders())
+                                    .headers(createUserTokenHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isBadRequest());
@@ -258,7 +262,7 @@ class FilingControllerTest {
             mockMvc
                     .perform(
                             get(VALIDATION_STATUS_URI, COMPANY_NUMBER, TRANSACTION_ID)
-                                    .headers(createHttpHeaders())
+                                    .headers(createUserTokenHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isInternalServerError());
@@ -274,7 +278,7 @@ class FilingControllerTest {
             mockMvc
                     .perform(
                             get(VALIDATION_STATUS_URI, COMPANY_NUMBER, TRANSACTION_ID)
-                                    .headers(createHttpHeaders())
+                                    .headers(createUserTokenHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isOk())
@@ -292,7 +296,7 @@ class FilingControllerTest {
             mockMvc
                     .perform(
                             get(VALIDATION_STATUS_URI, COMPANY_NUMBER, TRANSACTION_ID)
-                                    .headers(createHttpHeaders())
+                                    .headers(createUserTokenHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isOk())
@@ -312,7 +316,7 @@ class FilingControllerTest {
             mockMvc
                     .perform(
                             get(COST_URI, COMPANY_NUMBER, TRANSACTION_ID)
-                                    .headers(createHttpHeaders())
+                                    .headers(createApiKeyHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isOk())
@@ -326,7 +330,7 @@ class FilingControllerTest {
             mockMvc
                     .perform(
                             get(COST_URI, COMPANY_NUMBER, TRANSACTION_ID)
-                                    .headers(createHttpHeaders())
+                                    .headers(createApiKeyHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isNotFound());
@@ -340,7 +344,7 @@ class FilingControllerTest {
             mockMvc
                     .perform(
                             get(COST_URI, COMPANY_NUMBER, TRANSACTION_ID)
-                                    .headers(createHttpHeaders())
+                                    .headers(createApiKeyHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isBadRequest());
@@ -353,7 +357,7 @@ class FilingControllerTest {
             mockMvc
                     .perform(
                             get(COST_URI, COMPANY_NUMBER, TRANSACTION_ID)
-                                    .headers(createHttpHeaders())
+                                    .headers(createApiKeyHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isInternalServerError());
@@ -361,7 +365,7 @@ class FilingControllerTest {
 
         @Test
         void when_eric_identity_not_provided_then_UNAUTHORIZED_returned() throws Exception {
-            HttpHeaders headers = createHttpHeaders();
+            HttpHeaders headers = createApiKeyHttpHeaders();
             headers.remove(EricConstants.ERIC_IDENTITY);
 
             mockMvc
@@ -370,7 +374,7 @@ class FilingControllerTest {
         }
     }
 
-    private HttpHeaders createHttpHeaders() {
+    private HttpHeaders createApiKeyHttpHeaders() {
         HttpHeaders headers = new HttpHeaders();
 
         headers.add(EricConstants.ERIC_IDENTITY, IDENTITY_HEADER_VALUE);
@@ -378,6 +382,21 @@ class FilingControllerTest {
         headers.add(EricConstants.ERIC_AUTHORISED_KEY_ROLES, SecurityConstants.INTERNAL_USER_ROLE);
         headers.add(ERIC_ACCESS_TOKEN_HEADER, PASS_THROUGH_HEADER);
         headers.add(HEADER_ERIC_REQUEST_ID, ERIC_REQUEST_ID);
+
+        return headers;
+    }
+
+    private HttpHeaders createUserTokenHttpHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+
+        headers.add(EricConstants.ERIC_IDENTITY, USER_ID);
+        headers.add(AUTHORISED_USER_HEADER, EMAIL);
+        headers.add(HEADER_ERIC_REQUEST_ID, ERIC_REQUEST_ID);
+        headers.add(EricConstants.ERIC_AUTHORISED_TOKEN_PERMISSIONS, String.format(
+                "%s=%s %s=%s",
+                Permission.Key.COMPANY_NUMBER, COMPANY_NUMBER,
+                Permission.Key.COMPANY_STATUS, Permission.Value.UPDATE
+        ));
 
         return headers;
     }

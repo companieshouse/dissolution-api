@@ -13,8 +13,7 @@ locals {
       "/dissolution-request/*",
       "/dissolution-request",
       "/dissolution-request/*/payment",
-      "/transactions/*/dissolution/*",
-      "/private/transactions/*/dissolution/*/filings",
+      "/private/company/*/transactions/*/dissolution/filings",
       "/company/*/transactions/*/dissolution",
       "/company/*/transactions/*/dissolution/*"
   ]
