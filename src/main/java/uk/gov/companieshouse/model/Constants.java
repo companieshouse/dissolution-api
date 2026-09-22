@@ -40,7 +40,6 @@ public final class Constants {
 
    /* Path attributes */
    public static final String TRANSACTION_ID_KEY = "transaction_id";
-   public static final String DISSOLUTION_ID_KEY = "dissolution_id";
 
    // COMPANY_NUMBER_KEY has to use kebab-case to remain backward compatible with
    // the pre-migration dissolution controller and DissolutionTokenPermissionsInterceptor
@@ -56,7 +55,6 @@ public final class Constants {
    public static final String FILING_TYPE_PREFIX_DISSOLUTION = "dissolution";
 
    /* Transactions */
-   public static final String SUBMISSION_URI_PATTERN = "/transactions/%s/dissolution/%s";
    public static final String DISSOLUTION_BASE_URI_PATTERN = "/company/%s/transactions/%s/dissolution";
    public static final String LINK_RESOURCE = "resource";
 

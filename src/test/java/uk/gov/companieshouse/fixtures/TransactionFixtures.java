@@ -3,14 +3,13 @@ package uk.gov.companieshouse.fixtures;
 import com.google.api.client.http.HttpResponseException;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
-import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static uk.gov.companieshouse.model.Constants.DISSOLUTION_BASE_URI_PATTERN;
 import static uk.gov.companieshouse.model.Constants.LINK_RESOURCE;
-import static uk.gov.companieshouse.model.Constants.SUBMISSION_URI_PATTERN;
 
 public class TransactionFixtures {
 
@@ -31,14 +30,11 @@ public class TransactionFixtures {
         return TransactionTestDataBuilder.aTransaction().build();
     }
 
-    public static Transaction generateClosedTransaction() {
-        return TransactionTestDataBuilder.aTransaction().withStatus(TransactionStatus.CLOSED).build();
-    }
-
-    public static TransactionResourceTestDataBuilder generateTransactionResource(String kind, String dissolutionId) {
-        var link = new TransactionResourceTestDataBuilder.Link(LINK_RESOURCE, String.format(SUBMISSION_URI_PATTERN, TRANSACTION_ID, dissolutionId));
+    public static TransactionResourceTestDataBuilder generateTransactionResource(String kind, String companyNumber) {
+        final var uri = String.format(DISSOLUTION_BASE_URI_PATTERN, companyNumber, TRANSACTION_ID);
+        var link = TransactionResourceTestDataBuilder.Link.aLink(LINK_RESOURCE, uri);
         return TransactionResourceTestDataBuilder.aTransactionResource()
-                .withResourceKey(String.format(SUBMISSION_URI_PATTERN, TRANSACTION_ID, dissolutionId))
+                .withResourceKey(uri)
                 .withKind(kind)
                 .withLinks(link);
     }

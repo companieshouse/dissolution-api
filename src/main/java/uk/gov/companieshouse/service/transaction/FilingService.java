@@ -45,11 +45,15 @@ public class FilingService {
         this.filingValidator = filingValidator;
     }
 
-    public FilingApi generateDissolutionFiling(Transaction transaction, String dissolutionId) {
-        TransactionValidator.of(transaction).hasStatus(TransactionStatus.CLOSED).isLinkedToDissolution(dissolutionId).validate();
+    public FilingApi generateDissolutionFiling(Transaction transaction, String companyNumber, String transactionId) {
+        TransactionValidator.of(transaction)
+                .hasStatus(TransactionStatus.CLOSED)
+                .forCompany(companyNumber)
+                .isLinkedToDissolution(companyNumber, transactionId)
+                .validate();
 
         var filing = new FilingApi();
-        var dissolution = dissolutionService.getDissolutionById(dissolutionId);
+        var dissolution = dissolutionService.getDissolutionByTransactionAndCompany(transactionId, companyNumber);
         var context = new Context(dissolution, transaction);
 
         setFilingApiData(filing, context);
@@ -59,10 +63,13 @@ public class FilingService {
     /**
      * Determines whether a dissolution is currently in a state where it can be filed
      */
-    public ValidationResult validateForFiling(Transaction transaction, String dissolutionId) {
-        TransactionValidator.of(transaction).isLinkedToDissolution(dissolutionId).validate();
+    public ValidationResult validateForFiling(Transaction transaction, String companyNumber, String transactionId) {
+        TransactionValidator.of(transaction)
+                .forCompany(companyNumber)
+                .isLinkedToDissolution(companyNumber, transactionId)
+                .validate();
 
-        final var dissolution = dissolutionService.getDissolutionById(dissolutionId);
+        final var dissolution = dissolutionService.getDissolutionByTransactionAndCompany(transactionId, companyNumber);
 
         return filingValidator.validate(dissolution);
     }

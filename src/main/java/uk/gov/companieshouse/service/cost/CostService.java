@@ -18,9 +18,13 @@ public class CostService {
         this.feeConfig = feeConfig;
     }
 
-    public DissolutionCost getCosts(Transaction transaction, String dissolutionId) {
-        TransactionValidator.of(transaction).isLinkedToDissolution(dissolutionId).validate();
-        var dissolution = dissolutionService.getDissolutionById(dissolutionId);
+    public DissolutionCost getCosts(Transaction transaction, String companyNumber, String transactionId) {
+        TransactionValidator.of(transaction)
+                .forCompany(companyNumber)
+                .isLinkedToDissolution(companyNumber, transactionId)
+                .validate();
+
+        var dissolution = dissolutionService.getDissolutionByTransactionAndCompany(transactionId, companyNumber);
         var company = dissolution.getCompany();
         var applicationType = dissolution.getApplicationType();
 

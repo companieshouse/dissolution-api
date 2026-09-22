@@ -10,8 +10,6 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.config.FeeConfig;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
-import uk.gov.companieshouse.fixtures.TransactionFixtures;
-import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 import uk.gov.companieshouse.model.domain.DissolutionCost;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
@@ -20,7 +18,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
+import static uk.gov.companieshouse.fixtures.TransactionResourceTestDataBuilder.Link.aLink;
+import static uk.gov.companieshouse.fixtures.TransactionResourceTestDataBuilder.aTransactionResource;
+import static uk.gov.companieshouse.fixtures.TransactionTestDataBuilder.aTransaction;
+import static uk.gov.companieshouse.model.Constants.DISSOLUTION_BASE_URI_PATTERN;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
+import static uk.gov.companieshouse.model.Constants.LINK_RESOURCE;
 
 @ExtendWith(MockitoExtension.class)
 class CostServiceTest {
@@ -43,9 +46,14 @@ class CostServiceTest {
 
     @BeforeEach
     void setup() {
-        transaction = TransactionTestDataBuilder.aTransaction()
+        final var uri = String.format(DISSOLUTION_BASE_URI_PATTERN, COMPANY_NUMBER, TRANSACTION_ID);
+
+        transaction = aTransaction()
                 .withId(TRANSACTION_ID)
-                .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_LLDS01, DISSOLUTION_ID))
+                .withResources(aTransactionResource()
+                        .withResourceKey(uri)
+                        .withKind(FILING_KIND_LLDS01)
+                        .withLinks(aLink(LINK_RESOURCE, uri)))
                 .build();
     }
 
@@ -57,28 +65,28 @@ class CostServiceTest {
                 .withCompanyName(COMPANY_NAME)
                 .build();
 
-        when(dissolutionService.getDissolutionById(DISSOLUTION_ID)).thenReturn(dissolution);
+        when(dissolutionService.getDissolutionByTransactionAndCompany(TRANSACTION_ID, COMPANY_NUMBER)).thenReturn(dissolution);
         when(feeConfig.getClosingPounds()).thenReturn("10.00");
 
-        var actualCost = costService.getCosts(transaction, DISSOLUTION_ID);
+        var actualCost = costService.getCosts(transaction, COMPANY_NUMBER, TRANSACTION_ID);
 
         assertThat(actualCost).isEqualTo(new DissolutionCost("10.00", COMPANY_NAME, COMPANY_NUMBER, ApplicationType.DS01.getValue()));
     }
 
     @Test
     void when_dissolution_not_found_then_exception_thrown() {
-        when(dissolutionService.getDissolutionById(DISSOLUTION_ID))
+        when(dissolutionService.getDissolutionByTransactionAndCompany(TRANSACTION_ID, COMPANY_NUMBER))
                 .thenThrow(new DissolutionNotFoundException());
 
-        assertThatThrownBy(() -> costService.getCosts(transaction, DISSOLUTION_ID))
+        assertThatThrownBy(() -> costService.getCosts(transaction, COMPANY_NUMBER, TRANSACTION_ID))
                 .isInstanceOf(DissolutionNotFoundException.class);
     }
 
     @Test
     void when_dissolution_not_linked_to_transaction_then_exception_thrown() {
-        transaction = TransactionTestDataBuilder.aTransaction().withId(TRANSACTION_ID).build();
+        transaction = aTransaction().withId(TRANSACTION_ID).build();
 
-        assertThatThrownBy(() -> costService.getCosts(transaction, DISSOLUTION_ID))
+        assertThatThrownBy(() -> costService.getCosts(transaction, COMPANY_NUMBER, TRANSACTION_ID))
                 .isInstanceOf(DissolutionNotLinkedToTransactionException.class);
     }
 }

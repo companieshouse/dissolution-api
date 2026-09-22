@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
 import static uk.gov.companieshouse.model.Constants.LINK_RESOURCE;
-import static uk.gov.companieshouse.model.Constants.SUBMISSION_URI_PATTERN;
+import static uk.gov.companieshouse.model.Constants.DISSOLUTION_BASE_URI_PATTERN;
 
 public class TransactionValidator {
     private static final Set<String> DISSOLUTION_FILING_KINDS = Set.of(FILING_KIND_DS01, FILING_KIND_LLDS01);
@@ -48,16 +48,17 @@ public class TransactionValidator {
         });
     }
 
-    public TransactionValidator isLinkedToDissolution(String dissolutionId) {
+    public TransactionValidator isLinkedToDissolution(String companyNumber, String transactionId) {
         return addRule(tx -> {
-            final String submissionSelfLink = String.format(SUBMISSION_URI_PATTERN, tx.getId(), dissolutionId);
+            final String submissionSelfLink = String.format(DISSOLUTION_BASE_URI_PATTERN, companyNumber, transactionId);
 
             final boolean isLinked = Objects.nonNull(tx.getResources()) && tx.getResources().values().stream()
                     .filter(resource -> DISSOLUTION_FILING_KINDS.contains(resource.getKind()))
                     .anyMatch(resource -> submissionSelfLink.equals(Objects.requireNonNullElseGet(resource.getLinks(), Map::of).get(LINK_RESOURCE)));
 
             if (!isLinked) {
-                throw new DissolutionNotLinkedToTransactionException("Transaction is not linked to dissolution " + dissolutionId);
+                throw new DissolutionNotLinkedToTransactionException(
+                        String.format("Transaction %s is not linked to a dissolution for company %s", tx.getId(), companyNumber));
             }
         });
     }

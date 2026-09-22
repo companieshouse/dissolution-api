@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,7 +28,7 @@ import uk.gov.companieshouse.client.ApiClientProvider;
 import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.exception.TransactionNotFoundException;
 import uk.gov.companieshouse.fixtures.TransactionFixtures;
-import uk.gov.companieshouse.service.transaction.TransactionFiling;
+import uk.gov.companieshouse.service.transaction.DissolutionTransactionConfig;
 
 import java.io.IOException;
 
@@ -37,13 +38,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.DisplayNameGenerator.ReplaceUnderscores;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.api.model.transaction.TransactionStatus.OPEN;
 import static uk.gov.companieshouse.fixtures.FilingTestDataBuilder.aFiling;
 import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
 import static uk.gov.companieshouse.fixtures.TransactionTestDataBuilder.aTransaction;
+import static uk.gov.companieshouse.model.Constants.DISSOLUTION_BASE_URI_PATTERN;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
-import static uk.gov.companieshouse.model.Constants.SUBMISSION_URI_PATTERN;
 import static uk.gov.companieshouse.service.TransactionService.TRANSACTIONS_PRIVATE_API_PREFIX;
 import static uk.gov.companieshouse.service.TransactionService.TRANSACTIONS_PUBLIC_API_PREFIX;
 
@@ -232,10 +234,9 @@ class TransactionServiceTest {
     class PatchTransactionData {
 
 
-        public static final String COMPANY_NUMBER = "12345678";
-        private static final String DISSOLUTION_ID = "12345678";
+        private static final String COMPANY_NUMBER = "12345678";
         private static final String COMPANY_NAME = "Some Company Ltd";
-        private static final String SUBMISSION_URI = String.format(SUBMISSION_URI_PATTERN, TRANSACTION_ID, DISSOLUTION_ID);
+        private static final String SUBMISSION_URI = String.format(DISSOLUTION_BASE_URI_PATTERN, COMPANY_NUMBER, TRANSACTION_ID);
 
         @BeforeEach
         void initialize() throws IOException {
@@ -244,19 +245,21 @@ class TransactionServiceTest {
         }
 
         @Test
-        void when_transaction_is_updated_then_company_name_and_filing_resource_is_set_on_transaction() throws IOException, URIValidationException {
-            var transaction = aTransaction().withCompanyNumber(COMPANY_NUMBER).withStatus(OPEN).build();
-            var filing = new TransactionFiling(DISSOLUTION_ID, FILING_KIND_DS01, COMPANY_NAME);
+        void when_transaction_is_updated_then_company_name_and_filing_resource_is_set_on_patched_transaction() throws IOException, URIValidationException {
+            var transactionConfig = new DissolutionTransactionConfig(COMPANY_NUMBER, FILING_KIND_DS01, COMPANY_NAME);
+            var patchedTransactionCaptor = ArgumentCaptor.forClass(Transaction.class);
 
-            when(privateTransactionResourceHandler.patch(PATCH_TRANSACTION_URI, transaction)).thenReturn(transactionsPatch);
+            when(privateTransactionResourceHandler.patch(eq(PATCH_TRANSACTION_URI), patchedTransactionCaptor.capture())).thenReturn(transactionsPatch);
             when(transactionsPatch.execute()).thenReturn(apiPatchResponse);
             when(apiPatchResponse.getStatusCode()).thenReturn(204);
 
-            transactionService.updateTransaction(transaction, filing);
+            transactionService.configureTransactionForDissolution(TRANSACTION_ID, transactionConfig);
 
-            assertThat(transaction.getCompanyName()).isEqualTo(COMPANY_NAME);
-            assertThat(transaction.getResources()).containsOnlyKeys(SUBMISSION_URI);
-            final var resource = transaction.getResources().get(SUBMISSION_URI);
+            final var patchedTransaction = patchedTransactionCaptor.getValue();
+            assertThat(patchedTransaction.getId()).isEqualTo(TRANSACTION_ID);
+            assertThat(patchedTransaction.getCompanyName()).isEqualTo(COMPANY_NAME);
+            assertThat(patchedTransaction.getResources()).containsOnlyKeys(SUBMISSION_URI);
+            final var resource = patchedTransaction.getResources().get(SUBMISSION_URI);
             assertThat(resource.getKind()).isEqualTo(FILING_KIND_DS01);
             assertThat(resource.getLinks()).containsEntry("resource", SUBMISSION_URI);
             assertThat(resource.getLinks()).containsEntry("validation_status", SUBMISSION_URI + "/validation-status");
@@ -265,49 +268,45 @@ class TransactionServiceTest {
 
         @Test
         void when_patch_returns_non_204_then_service_exception_is_thrown() throws IOException, URIValidationException {
-            var transaction = aTransaction().withCompanyNumber(COMPANY_NUMBER).withStatus(OPEN).build();
-            var filing = new TransactionFiling(DISSOLUTION_ID, FILING_KIND_DS01, COMPANY_NAME);
+            var transactionConfig = new DissolutionTransactionConfig(COMPANY_NUMBER, FILING_KIND_DS01, COMPANY_NAME);
 
-            when(privateTransactionResourceHandler.patch(PATCH_TRANSACTION_URI, transaction)).thenReturn(transactionsPatch);
+            when(privateTransactionResourceHandler.patch(eq(PATCH_TRANSACTION_URI), any(Transaction.class))).thenReturn(transactionsPatch);
             when(transactionsPatch.execute()).thenReturn(apiPatchResponse);
             when(apiPatchResponse.getStatusCode()).thenReturn(500);
 
-            assertThrows(ServiceException.class, () -> transactionService.updateTransaction(transaction, filing));
+            assertThrows(ServiceException.class, () -> transactionService.configureTransactionForDissolution(TRANSACTION_ID, transactionConfig));
         }
 
         @Test
         void when_patch_returns_404_then_NotFoundException_is_thrown() throws IOException, URIValidationException {
-            var transaction = aTransaction().withCompanyNumber(COMPANY_NUMBER).withStatus(OPEN).build();
-            var filing = new TransactionFiling(DISSOLUTION_ID, FILING_KIND_DS01, COMPANY_NAME);
+            var transactionConfig = new DissolutionTransactionConfig(COMPANY_NUMBER, FILING_KIND_DS01, COMPANY_NAME);
 
-            when(privateTransactionResourceHandler.patch(PATCH_TRANSACTION_URI, transaction)).thenReturn(transactionsPatch);
+            when(privateTransactionResourceHandler.patch(eq(PATCH_TRANSACTION_URI), any(Transaction.class))).thenReturn(transactionsPatch);
             when(transactionsPatch.execute()).thenThrow(TransactionFixtures.generateApiErrorResponseException(404, "404 Not Found"));
 
-            final var exception = assertThrows(TransactionNotFoundException.class, () -> transactionService.updateTransaction(transaction, filing));
+            final var exception = assertThrows(TransactionNotFoundException.class, () -> transactionService.configureTransactionForDissolution(TRANSACTION_ID, transactionConfig));
             assertThat(exception.getMessage(),
                     is("Failed to update transaction as no transaction was found with id " + TRANSACTION_ID));
         }
 
         @Test
         void when_io_exception_occurs_then_service_exception_is_thrown() throws IOException, URIValidationException {
-            var transaction = aTransaction().withCompanyNumber(COMPANY_NUMBER).withStatus(OPEN).build();
-            var filing = new TransactionFiling(DISSOLUTION_ID, FILING_KIND_DS01, COMPANY_NAME);
+            var transactionConfig = new DissolutionTransactionConfig(COMPANY_NUMBER, FILING_KIND_DS01, COMPANY_NAME);
 
-            when(privateTransactionResourceHandler.patch(PATCH_TRANSACTION_URI, transaction)).thenReturn(transactionsPatch);
+            when(privateTransactionResourceHandler.patch(eq(PATCH_TRANSACTION_URI), any(Transaction.class))).thenReturn(transactionsPatch);
             when(transactionsPatch.execute()).thenThrow(ApiErrorResponseException.fromIOException(new IOException("ERROR")));
 
-            assertThrows(ServiceException.class, () -> transactionService.updateTransaction(transaction, filing));
+            assertThrows(ServiceException.class, () -> transactionService.configureTransactionForDissolution(TRANSACTION_ID, transactionConfig));
         }
 
         @Test
         void when_uri_validation_exception_occurs_then_service_exception_is_thrown() throws IOException, URIValidationException {
-            var transaction = aTransaction().withCompanyNumber(COMPANY_NUMBER).withStatus(OPEN).build();
-            var filing = new TransactionFiling(DISSOLUTION_ID, FILING_KIND_DS01, COMPANY_NAME);
+            var transactionConfig = new DissolutionTransactionConfig(COMPANY_NUMBER, FILING_KIND_DS01, COMPANY_NAME);
 
-            when(privateTransactionResourceHandler.patch(PATCH_TRANSACTION_URI, transaction)).thenReturn(transactionsPatch);
+            when(privateTransactionResourceHandler.patch(eq(PATCH_TRANSACTION_URI), any(Transaction.class))).thenReturn(transactionsPatch);
             when(transactionsPatch.execute()).thenThrow(new URIValidationException("ERROR"));
 
-            assertThrows(ServiceException.class, () -> transactionService.updateTransaction(transaction, filing));
+            assertThrows(ServiceException.class, () -> transactionService.configureTransactionForDissolution(TRANSACTION_ID, transactionConfig));
         }
     }
 }

@@ -11,14 +11,14 @@ import uk.gov.companieshouse.client.ApiClientProvider;
 import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.exception.TransactionNotFoundException;
 import uk.gov.companieshouse.model.Constants;
-import uk.gov.companieshouse.service.transaction.TransactionFiling;
+import uk.gov.companieshouse.service.transaction.DissolutionTransactionConfig;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static uk.gov.companieshouse.model.Constants.SUBMISSION_URI_PATTERN;
+import static uk.gov.companieshouse.model.Constants.DISSOLUTION_BASE_URI_PATTERN;
 
 @Service
 public class TransactionService {
@@ -76,12 +76,15 @@ public class TransactionService {
         }
     }
 
-    public void updateTransaction(Transaction transaction, final TransactionFiling filing) {
-        final var submissionUri = String.format(SUBMISSION_URI_PATTERN, transaction.getId(), filing.id());
+    public void configureTransactionForDissolution(String transactionId, final DissolutionTransactionConfig config) {
+        final var submissionUri = String.format(DISSOLUTION_BASE_URI_PATTERN, config.companyNumber(), transactionId);
         final var submissionLinks = createResourceLinks(submissionUri);
 
-        transaction.setCompanyName(filing.companyName());
-        transaction.setResources(Collections.singletonMap(submissionUri, createTransactionResource(filing.kind(), submissionLinks)));
+        final var transaction = new Transaction();
+        transaction.setId(transactionId);
+        transaction.setCompanyName(config.companyName());
+        transaction.setResources(Collections.singletonMap(submissionUri, createTransactionResource(config.filingKind(), submissionLinks)));
+
         patchTransaction(transaction);
     }
 
