@@ -11,20 +11,19 @@ import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.companieshouse.api.model.payment.PaymentApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionPayment;
-import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.config.FeeConfig;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
 import uk.gov.companieshouse.exception.InvalidTransactionStateException;
 import uk.gov.companieshouse.exception.ServiceException;
-import uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder;
 import uk.gov.companieshouse.fixtures.TransactionFixtures;
-import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 import uk.gov.companieshouse.mapper.FilingKindMapper;
 import uk.gov.companieshouse.mapper.filing.FilingDataMapper;
 import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
+import uk.gov.companieshouse.model.domain.GenerateFilingCommand;
+import uk.gov.companieshouse.model.domain.ValidateFilingCommand;
 import uk.gov.companieshouse.model.domain.ValidationResult;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.service.TransactionService;
@@ -39,9 +38,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.DisplayNameGenerator.ReplaceUnderscores;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.api.model.transaction.TransactionStatus.*;
+import static uk.gov.companieshouse.api.model.transaction.TransactionStatus.CLOSED;
+import static uk.gov.companieshouse.api.model.transaction.TransactionStatus.OPEN;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDirectorApproval;
 import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionDirector;
+import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 import static uk.gov.companieshouse.fixtures.TransactionTestDataBuilder.aTransaction;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
@@ -51,6 +52,7 @@ import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
 class FilingServiceTest {
 
     private static final String DISSOLUTION_ID = "12345678";
+    private static final String COMPANY_NUMBER = "12345678";
     private static final String TRANSACTION_ID = "tx-id-123";
     private static final String PAYMENT_URI = String.format("/transactions/%s/payment", TRANSACTION_ID);
     private static final String PAYMENT_REFERENCE = "somePaymentRef";
@@ -88,11 +90,11 @@ class FilingServiceTest {
         transaction = aTransaction()
                 .withId(TRANSACTION_ID)
                 .withStatus(CLOSED)
-                .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_LLDS01, DISSOLUTION_ID))
+                .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_LLDS01, COMPANY_NUMBER))
                 .withPaymentLink(PAYMENT_URI)
                 .build();
 
-        dissolution = DissolutionTestDataBuilder.aDissolution().withId(DISSOLUTION_ID).build();
+        dissolution = aDissolution().withId(DISSOLUTION_ID).withTransactionId(TRANSACTION_ID).build();
 
         final DirectorApproval approvalOne = generateDirectorApproval();
         approvalOne.setDateTime(LocalDateTime.of(2020, 10, 20, 0, 0));
@@ -121,13 +123,13 @@ class FilingServiceTest {
         final var expectedDescription = String.format(FILING_DESCRIPTION, dissolution.getCompany().getName(), dissolution.getCompany().getNumber());
         final var expectedFilingData = TransactionFixtures.generateFilingData(dissolution);
 
-        when(dissolutionService.getDissolutionById(DISSOLUTION_ID)).thenReturn(dissolution);
+        when(dissolutionService.getDissolutionByTransactionAndCompany(TRANSACTION_ID, COMPANY_NUMBER)).thenReturn(dissolution);
         when(transactionService.getPayment(PAYMENT_URI)).thenReturn(transactionPayment);
         when(transactionPaymentService.getPaymentSession(PAYMENT_REFERENCE)).thenReturn(paymentDetails);
         when(filingDataMapper.mapToFilingData(dissolution, PAYMENT_REFERENCE, PAYMENT_METHOD)).thenReturn(expectedFilingData);
         when(feeConfig.getClosingPounds()).thenReturn(DISSOLUTION_FEE);
 
-        final var response = filingService.generateDissolutionFiling(transaction, DISSOLUTION_ID);
+        final var response = filingService.generateDissolutionFiling(new GenerateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID));
 
         assertThat(response.getDescription()).isEqualTo(expectedDescription);
         assertThat(response.getKind()).isEqualTo(FILING_KIND_DS01);
@@ -139,21 +141,23 @@ class FilingServiceTest {
     void when_application_type_is_llds01_then_filing_kind_is_llds01() {
         dissolution.getData().getApplication().setType(ApplicationType.LLDS01);
 
-        when(dissolutionService.getDissolutionById(DISSOLUTION_ID)).thenReturn(dissolution);
+        when(dissolutionService.getDissolutionByTransactionAndCompany(TRANSACTION_ID, COMPANY_NUMBER)).thenReturn(dissolution);
         when(transactionService.getPayment(PAYMENT_URI)).thenReturn(transactionPayment);
         when(transactionPaymentService.getPaymentSession(PAYMENT_REFERENCE)).thenReturn(paymentDetails);
 
-        final var response = filingService.generateDissolutionFiling(transaction, DISSOLUTION_ID);
+        final var response = filingService.generateDissolutionFiling(new GenerateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID));
 
         assertThat(response.getKind()).isEqualTo(FILING_KIND_LLDS01);
     }
 
     @Test
     void when_dissolution_does_not_exist_then_dissolution_not_found_exception_thrown() {
-        when(dissolutionService.getDissolutionById(DISSOLUTION_ID))
+        when(dissolutionService.getDissolutionByTransactionAndCompany(TRANSACTION_ID, COMPANY_NUMBER))
                 .thenThrow(new DissolutionNotFoundException());
 
-        assertThatThrownBy(() -> filingService.generateDissolutionFiling(transaction, DISSOLUTION_ID))
+        final var command = new GenerateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID);
+
+        assertThatThrownBy(() -> filingService.generateDissolutionFiling(command))
                 .isInstanceOf(DissolutionNotFoundException.class);
     }
 
@@ -164,7 +168,11 @@ class FilingServiceTest {
                 .withStatus(CLOSED)
                 .build();
 
-        assertThatThrownBy(() -> filingService.generateDissolutionFiling(transaction, DISSOLUTION_ID))
+        when(dissolutionService.getDissolutionByTransactionAndCompany(TRANSACTION_ID, COMPANY_NUMBER)).thenReturn(dissolution);
+
+        final var command = new GenerateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID);
+
+        assertThatThrownBy(() -> filingService.generateDissolutionFiling(command))
                 .isInstanceOf(DissolutionNotLinkedToTransactionException.class);
     }
 
@@ -173,21 +181,25 @@ class FilingServiceTest {
         transaction = aTransaction()
                 .withId(TRANSACTION_ID)
                 .withStatus(OPEN)
-                .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_LLDS01, DISSOLUTION_ID))
+                .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_LLDS01, COMPANY_NUMBER))
                 .withPaymentLink(PAYMENT_URI)
                 .build();
 
-        assertThatThrownBy(() -> filingService.generateDissolutionFiling(transaction, DISSOLUTION_ID))
+        final var command = new GenerateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID);
+
+        assertThatThrownBy(() -> filingService.generateDissolutionFiling(command))
                 .isInstanceOf(InvalidTransactionStateException.class);
     }
 
     @Test
     void generateDissolutionFiling_throwsServiceException_whenPaymentRetrievalFails() {
-        when(dissolutionService.getDissolutionById(DISSOLUTION_ID)).thenReturn(dissolution);
+        when(dissolutionService.getDissolutionByTransactionAndCompany(TRANSACTION_ID, COMPANY_NUMBER)).thenReturn(dissolution);
         when(transactionService.getPayment(PAYMENT_URI))
                 .thenThrow(new ServiceException("payment error", new RuntimeException()));
 
-        assertThatThrownBy(() -> filingService.generateDissolutionFiling(transaction, DISSOLUTION_ID))
+        final var command = new GenerateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID);
+
+        assertThatThrownBy(() -> filingService.generateDissolutionFiling(command))
                 .isInstanceOf(ServiceException.class);
     }
 
@@ -198,10 +210,10 @@ class FilingServiceTest {
         void when_dissolution_is_found_then_calls_validator_and_returns_its_result() {
             final var expectedResult = new ValidationResult();
 
-            when(dissolutionService.getDissolutionById(DISSOLUTION_ID)).thenReturn(dissolution);
+            when(dissolutionService.getDissolutionByTransactionAndCompany(TRANSACTION_ID, COMPANY_NUMBER)).thenReturn(dissolution);
             when(filingValidator.validate(dissolution)).thenReturn(expectedResult);
 
-            var result = filingService.validateForFiling(transaction, DISSOLUTION_ID);
+            var result = filingService.validateForFiling(new ValidateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID));
 
             verify(filingValidator).validate(dissolution);
             assertThat(result).isSameAs(expectedResult);
@@ -209,10 +221,12 @@ class FilingServiceTest {
 
         @Test
         void when_dissolution_does_not_exist_then_exception_thrown() {
-            when(dissolutionService.getDissolutionById(DISSOLUTION_ID))
+            when(dissolutionService.getDissolutionByTransactionAndCompany(TRANSACTION_ID, COMPANY_NUMBER))
                     .thenThrow(new DissolutionNotFoundException());
 
-            assertThatThrownBy(() -> filingService.validateForFiling(transaction, DISSOLUTION_ID))
+            final var command = new ValidateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID);
+
+            assertThatThrownBy(() -> filingService.validateForFiling(command))
                     .isInstanceOf(DissolutionNotFoundException.class);
         }
     }

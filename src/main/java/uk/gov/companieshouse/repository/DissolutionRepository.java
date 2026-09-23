@@ -28,5 +28,8 @@ public interface DissolutionRepository extends MongoRepository<Dissolution, Stri
     @Query("{'company.number': ?1, 'status' : 'DRAFT', 'created_by.user_id': ?0}")
     Optional<Dissolution> findDraftDissolutionForUserAndCompany(String userId, String companyNumber);
 
+    @Query("{'transaction_id': ?0, 'company.number': ?1}")
+    Optional<Dissolution> findByTransactionIdAndCompanyNumber(String transactionId, String companyNumber);
+
     Optional<Dissolution> findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(String companyNumber, DissolutionStatus status);
 }

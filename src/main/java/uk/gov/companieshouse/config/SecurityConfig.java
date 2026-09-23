@@ -13,10 +13,10 @@ import uk.gov.companieshouse.interceptor.TransactionInterceptor;
 public class SecurityConfig implements WebMvcConfigurer {
 
     private static final String URI_PATTERN = "/dissolution-request/**";
-    private static final String FILINGS = "/private/transactions/**/filings";
-    private static final String VALIDATION_STATUS = "/transactions/**/validation-status";
-    private static final String COSTS = "/transactions/**/costs";
     private static final String DISSOLUTION = "/company/*/transactions/*/dissolution";
+    private static final String FILINGS = "/private/company/*/transactions/*/dissolution/filings";
+    private static final String VALIDATION_STATUS = DISSOLUTION + "/validation-status";
+    private static final String COSTS = DISSOLUTION + "/costs";
     private static final String DISSOLUTION_APPROVAL = DISSOLUTION + "/approve";
     private static final String DISSOLUTION_INITIATION = DISSOLUTION + "/initiation";
     private static final String SIGNATORY_DETAILS = DISSOLUTION + "/signatories/*";
@@ -28,7 +28,6 @@ public class SecurityConfig implements WebMvcConfigurer {
             "/dissolution-request/response",
             "/dissolution-request/{company-number}/resend-email/{email-address}",
             FILINGS,
-            VALIDATION_STATUS,
             COSTS
     };
 
@@ -38,9 +37,9 @@ public class SecurityConfig implements WebMvcConfigurer {
     );
 
     private static final String[] TRANSACTIONS_INCLUDE_LIST = {
-            "/transactions/**",
             FILINGS,
             VALIDATION_STATUS,
+            COSTS,
             DISSOLUTION,
             DISSOLUTION_APPROVAL,
             DISSOLUTION_INITIATION,
@@ -66,8 +65,8 @@ public class SecurityConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
-        registry.addInterceptor(tokenPermissionsInterceptor).addPathPatterns(URI_PATTERN, DISSOLUTION, DISSOLUTION_APPROVAL, DISSOLUTION_INITIATION, SIGNATORY_DETAILS, SIGNATORY_RESEND_NOTIFICATION).excludePathPatterns(TOKEN_PERMISSION_AUTH_EXCLUDE_LIST);
-        registry.addInterceptor(dissolutionTokenPermissionsInterceptor).addPathPatterns(URI_PATTERN, DISSOLUTION, DISSOLUTION_APPROVAL, DISSOLUTION_INITIATION, SIGNATORY_DETAILS, SIGNATORY_RESEND_NOTIFICATION).excludePathPatterns(TOKEN_PERMISSION_AUTH_EXCLUDE_LIST);
+        registry.addInterceptor(tokenPermissionsInterceptor).addPathPatterns(URI_PATTERN, DISSOLUTION, DISSOLUTION_APPROVAL, DISSOLUTION_INITIATION, SIGNATORY_DETAILS, SIGNATORY_RESEND_NOTIFICATION, VALIDATION_STATUS).excludePathPatterns(TOKEN_PERMISSION_AUTH_EXCLUDE_LIST);
+        registry.addInterceptor(dissolutionTokenPermissionsInterceptor).addPathPatterns(URI_PATTERN, DISSOLUTION, DISSOLUTION_APPROVAL, DISSOLUTION_INITIATION, SIGNATORY_DETAILS, SIGNATORY_RESEND_NOTIFICATION, VALIDATION_STATUS).excludePathPatterns(TOKEN_PERMISSION_AUTH_EXCLUDE_LIST);
         registry.addInterceptor(apiKeyPermissionsInterceptor).addPathPatterns(API_KEY_PERMISSION_AUTH_INCLUDE_LIST);
         registry.addInterceptor(transactionInterceptor).addPathPatterns(TRANSACTIONS_INCLUDE_LIST);
     }

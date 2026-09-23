@@ -10,6 +10,8 @@ import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.mapper.FilingKindMapper;
 import uk.gov.companieshouse.mapper.filing.FilingDataMapper;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
+import uk.gov.companieshouse.model.domain.GenerateFilingCommand;
+import uk.gov.companieshouse.model.domain.ValidateFilingCommand;
 import uk.gov.companieshouse.model.domain.ValidationResult;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
@@ -45,12 +47,17 @@ public class FilingService {
         this.filingValidator = filingValidator;
     }
 
-    public FilingApi generateDissolutionFiling(Transaction transaction, String dissolutionId) {
-        TransactionValidator.of(transaction).hasStatus(TransactionStatus.CLOSED).isLinkedToDissolution(dissolutionId).validate();
+    public FilingApi generateDissolutionFiling(GenerateFilingCommand command) {
+        var dissolution = dissolutionService.getDissolutionByTransactionAndCompany(command.transactionId(), command.companyNumber());
+
+        TransactionValidator.of(command.transaction())
+                .hasStatus(TransactionStatus.CLOSED)
+                .forCompany(command.companyNumber())
+                .isLinkedToDissolution(dissolution)
+                .validate();
 
         var filing = new FilingApi();
-        var dissolution = dissolutionService.getDissolutionById(dissolutionId);
-        var context = new Context(dissolution, transaction);
+        var context = new Context(dissolution, command.transaction());
 
         setFilingApiData(filing, context);
         return filing;
@@ -59,10 +66,13 @@ public class FilingService {
     /**
      * Determines whether a dissolution is currently in a state where it can be filed
      */
-    public ValidationResult validateForFiling(Transaction transaction, String dissolutionId) {
-        TransactionValidator.of(transaction).isLinkedToDissolution(dissolutionId).validate();
+    public ValidationResult validateForFiling(ValidateFilingCommand command) {
+        final var dissolution = dissolutionService.getDissolutionByTransactionAndCompany(command.transactionId(), command.companyNumber());
 
-        final var dissolution = dissolutionService.getDissolutionById(dissolutionId);
+        TransactionValidator.of(command.transaction())
+                .forCompany(command.companyNumber())
+                .isLinkedToDissolution(dissolution)
+                .validate();
 
         return filingValidator.validate(dissolution);
     }

@@ -36,7 +36,7 @@ import uk.gov.companieshouse.service.CompanyOfficerService;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.validator.TransactionValidator;
 import uk.gov.companieshouse.service.payment.PaymentService;
-import uk.gov.companieshouse.service.transaction.TransactionFiling;
+import uk.gov.companieshouse.service.transaction.DissolutionTransactionConfig;
 
 import java.util.Map;
 import java.util.Optional;
@@ -89,9 +89,9 @@ public class DissolutionService {
     }
 
     public void addDirectorApproval(String companyNumber, Transaction transaction, DissolutionDirectorApprovalCommand command) {
-        final Dissolution dissolution = getPendingDissolution(companyNumber);
+        final var dissolution = getPendingDissolution(companyNumber);
 
-        TransactionValidator.of(transaction).hasStatus(OPEN).forCompany(companyNumber).isLinkedToDissolution(dissolution.getId()).validate();
+        TransactionValidator.of(transaction).hasStatus(OPEN).forCompany(companyNumber).isLinkedToDissolution(dissolution).validate();
 
         patcher.addDirectorApproval(dissolution, command);
     }
@@ -118,6 +118,12 @@ public class DissolutionService {
 
     public Dissolution getDissolutionById(String dissolutionId) {
         return repository.findById(dissolutionId).orElseThrow(() -> new DissolutionNotFoundException("No dissolution found with id " + dissolutionId));
+    }
+
+    public Dissolution getDissolutionByTransactionAndCompany(String transactionId, String companyNumber) {
+        return repository.findByTransactionIdAndCompanyNumber(transactionId, companyNumber)
+                .orElseThrow(() -> new DissolutionNotFoundException(
+                        String.format("No dissolution found for transaction %s and company %s", transactionId, companyNumber)));
     }
 
     public Dissolution getPendingDissolution(String companyNumber) {
@@ -212,9 +218,9 @@ public class DissolutionService {
         repository.insert(dissolution);
 
         try {
-            final var kind = filingKindMapper.mapApplicationTypeToFilingKind(dissolution.getApplicationType());
-            final var filing = new TransactionFiling(dissolution.getId(), kind, dissolution.getCompany().getName());
-            transactionService.updateTransaction(command.transaction(), filing);
+            final var filingKind = filingKindMapper.mapApplicationTypeToFilingKind(dissolution.getApplicationType());
+            final var transactionConfig = new DissolutionTransactionConfig(companyNumber, filingKind, dissolution.getCompany().getName());
+            transactionService.configureTransactionForDissolution(command.transaction().getId(), transactionConfig);
             return responseMapper.mapToDissolutionCreateDraftResponse(command.transaction(), dissolution);
         } catch (RuntimeException e) {
             // rollback so the client can create a draft again
@@ -234,7 +240,7 @@ public class DissolutionService {
         final var dissolution = getDraftDissolution(command.userId(), companyNumber);
         final var activeDirectors = companyOfficerService.getActiveDirectorsForCompany(command.companyNumber());
 
-        validateInitiateDissolution(command, dissolution.getId(), activeDirectors);
+        validateInitiateDissolution(command, dissolution, activeDirectors);
 
         final var signatories = dissolutionRequestMapper.mapToDissolutionDirectors(command.signatories(), activeDirectors);
 
@@ -247,8 +253,8 @@ public class DissolutionService {
         emailService.notifySignatoriesToSign(dissolution);
     }
 
-    private void validateInitiateDissolution(DissolutionInitiationCommand command, String dissolutionId, Map<String, CompanyOfficer> activeDirectors) {
-        TransactionValidator.of(command.transaction()).hasStatus(OPEN).forCompany(command.companyNumber()).isLinkedToDissolution(dissolutionId).validate();
+    private void validateInitiateDissolution(DissolutionInitiationCommand command, Dissolution dissolution, Map<String, CompanyOfficer> activeDirectors) {
+        TransactionValidator.of(command.transaction()).hasStatus(OPEN).forCompany(command.companyNumber()).isLinkedToDissolution(dissolution).validate();
 
         companyOfficerService
                 .areSelectedDirectorsValid(activeDirectors, command.signatories())
@@ -263,7 +269,7 @@ public class DissolutionService {
         TransactionValidator.of(command.transaction())
                 .hasStatus(TransactionStatus.OPEN)
                 .forCompany(command.companyNumber())
-                .isLinkedToDissolution(dissolution.getId())
+                .isLinkedToDissolution(dissolution)
                 .validate();
 
         if (!isApplicant(command.userId(), dissolution)) {
@@ -283,7 +289,7 @@ public class DissolutionService {
         TransactionValidator.of(command.transaction())
                 .hasStatus(TransactionStatus.OPEN)
                 .forCompany(command.companyNumber())
-                .isLinkedToDissolution(dissolution.getId())
+                .isLinkedToDissolution(dissolution)
                 .validate();
 
         final var signatoryEmail = dissolution.findSignatory(command.signatoryId())

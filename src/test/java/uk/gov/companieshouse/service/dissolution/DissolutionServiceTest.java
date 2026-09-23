@@ -56,7 +56,7 @@ import uk.gov.companieshouse.repository.DissolutionRepository;
 import uk.gov.companieshouse.service.CompanyOfficerService;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.payment.PaymentService;
-import uk.gov.companieshouse.service.transaction.TransactionFiling;
+import uk.gov.companieshouse.service.transaction.DissolutionTransactionConfig;
 
 import java.util.Map;
 import java.util.Optional;
@@ -314,7 +314,7 @@ class DissolutionServiceTest {
                     .withTransactionId(transaction.getId())
                     .build();
             final var command = new CreateDraftDissolutionCommand(transaction, company, USER_ID, IP, EMAIL);
-            final var filing = new TransactionFiling(dissolution.getId(), FILING_KIND_DS01, company.getCompanyName());
+            final var transactionConfig = new DissolutionTransactionConfig(dissolution.getId(), FILING_KIND_DS01, company.getCompanyName());
 
             when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
             when(creator.createDraft(command)).thenReturn(dissolution);
@@ -328,7 +328,7 @@ class DissolutionServiceTest {
                     .isEqualTo(expectedSelfLink);
 
             verify(repository).insert(dissolution);
-            verify(transactionService).updateTransaction(transaction, filing);
+            verify(transactionService).configureTransactionForDissolution(transaction.getId(), transactionConfig);
         }
 
         @Test
@@ -344,11 +344,11 @@ class DissolutionServiceTest {
                     .build();
 
             final var command = new CreateDraftDissolutionCommand(transaction, company, USER_ID, IP, EMAIL);
-            final var filing = new TransactionFiling(dissolution.getId(), FILING_KIND_DS01, company.getCompanyName());
+            final var transactionConfig = new DissolutionTransactionConfig(dissolution.getId(), FILING_KIND_DS01, company.getCompanyName());
 
             when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER)).thenReturn(Optional.empty());
             when(creator.createDraft(command)).thenReturn(dissolution);
-            doThrow(new ServiceException("Failed to update transaction")).when(transactionService).updateTransaction(transaction, filing);
+            doThrow(new ServiceException("Failed to update transaction")).when(transactionService).configureTransactionForDissolution(transaction.getId(), transactionConfig);
 
             assertThatThrownBy(() -> dissolutionService.createDraftDissolution(command))
                     .isInstanceOf(ServiceException.class)
@@ -455,7 +455,7 @@ class DissolutionServiceTest {
                     .withTransactionId(prevTxId)
                     .build();
             final var command = new CreateDraftDissolutionCommand(transaction, company, USER_ID, IP, EMAIL);
-            final var filing = new TransactionFiling(dissolution.getId(), FILING_KIND_DS01, company.getCompanyName());
+            final var transactionConfig = new DissolutionTransactionConfig(dissolution.getId(), FILING_KIND_DS01, company.getCompanyName());
 
             when(repository.findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, SUBMITTED)).thenReturn(Optional.of(submittedDissolution));
             when(transactionService.hasVerdictBeenReached(prevTxId)).thenReturn(true);
@@ -471,7 +471,7 @@ class DissolutionServiceTest {
                     .isEqualTo(expectedSelfLink);
 
             verify(repository).insert(dissolution);
-            verify(transactionService).updateTransaction(transaction, filing);
+            verify(transactionService).configureTransactionForDissolution(transaction.getId(), transactionConfig);
         }
 
         @Test
@@ -507,6 +507,7 @@ class DissolutionServiceTest {
             dissolution = aDissolution()
                     .withId(DISSOLUTION_ID)
                     .withCompanyNumber(COMPANY_NUMBER)
+                    .withTransactionId(TRANSACTION_ID)
                     .withDirectors(aDissolutionDirector().withOfficerId(OFFICER_ID))
                     .build();
         }
@@ -516,7 +517,7 @@ class DissolutionServiceTest {
             final Transaction transaction = aTransaction()
                     .withStatus(TransactionStatus.OPEN)
                     .withCompanyNumber(COMPANY_NUMBER)
-                    .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
+                    .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, COMPANY_NUMBER))
                     .build();
 
             when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
@@ -532,7 +533,7 @@ class DissolutionServiceTest {
             final Transaction transaction = aTransaction()
                     .withStatus(TransactionStatus.OPEN)
                     .withCompanyNumber(COMPANY_NUMBER)
-                    .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
+                    .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, COMPANY_NUMBER))
                     .build();
 
             when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.empty());
@@ -550,7 +551,7 @@ class DissolutionServiceTest {
             final Transaction transaction = aTransaction()
                     .withStatus(TransactionStatus.CLOSED)
                     .withCompanyNumber(COMPANY_NUMBER)
-                    .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
+                    .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, COMPANY_NUMBER))
                     .build();
 
             when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
@@ -568,7 +569,7 @@ class DissolutionServiceTest {
             final Transaction transaction = aTransaction()
                     .withStatus(TransactionStatus.OPEN)
                     .withCompanyNumber("87654321") // Different company number
-                    .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
+                    .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, COMPANY_NUMBER))
                     .build();
 
             when(repository.findPendingDissolutionByCompanyNumber(COMPANY_NUMBER)).thenReturn(Optional.of(dissolution));
@@ -592,7 +593,7 @@ class DissolutionServiceTest {
 
             assertThatThrownBy(() -> dissolutionService.addDirectorApproval(COMPANY_NUMBER, transaction, directorApprovalData))
                     .isInstanceOf(DissolutionNotLinkedToTransactionException.class)
-                    .hasMessage("Transaction is not linked to dissolution " + DISSOLUTION_ID);
+                    .hasMessage("Transaction " + TRANSACTION_ID + " is not linked to a dissolution for company " + COMPANY_NUMBER);
 
             verify(repository, never()).findByCompanyNumber(COMPANY_NUMBER);
             verify(patcher, never()).addDirectorApproval(any(), any());
@@ -911,7 +912,7 @@ class DissolutionServiceTest {
 
         private final Transaction transaction = aTransaction()
                 .withId(TRANSACTION_ID)
-                .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
+                .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, COMPANY_NUMBER))
                 .build();
 
         @Test
@@ -952,7 +953,7 @@ class DissolutionServiceTest {
         @Test
         void when_DRAFT_dissolution_belongs_to_a_different_transaction_then_exception_thrown() {
             when(repository.findDraftDissolutionForUserAndCompany(USER_ID, COMPANY_NUMBER))
-                    .thenReturn(of(aDissolution().withId("some-other-dissolution-id").withTransactionId(TRANSACTION_ID).build()));
+                    .thenReturn(of(aDissolution().withId("some-other-dissolution-id").withTransactionId("a-different-transaction-id").build()));
 
             final var command = aDissolutionInitiationCommand().withTransaction(transaction).build();
 
@@ -1096,6 +1097,7 @@ class DissolutionServiceTest {
             dissolution = aDissolution()
                     .withId(DISSOLUTION_ID)
                     .withCompanyNumber(COMPANY_NUMBER)
+                    .withTransactionId(TRANSACTION_ID)
                     .withDirectors(aDissolutionDirector().withOfficerId(OFFICER_ID))
                     .withCreatedBy(createdBy)
                     .build();
@@ -1103,7 +1105,7 @@ class DissolutionServiceTest {
             transaction = aTransaction()
                     .withStatus(TransactionStatus.OPEN)
                     .withCompanyNumber(COMPANY_NUMBER)
-                    .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
+                    .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, COMPANY_NUMBER))
                     .build();
 
             command = new UpdateSignatoryDetailsCommand(transaction, COMPANY_NUMBER, USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
@@ -1148,7 +1150,7 @@ class DissolutionServiceTest {
             transaction = aTransaction()
                     .withStatus(TransactionStatus.OPEN)
                     .withCompanyNumber("87654321") // Different company number
-                    .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
+                    .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, COMPANY_NUMBER))
                     .build();
             command = new UpdateSignatoryDetailsCommand(transaction, COMPANY_NUMBER, USER_ID, OFFICER_ID, body.getEmail(), body.getOnBehalfName());
 
@@ -1174,7 +1176,7 @@ class DissolutionServiceTest {
 
             assertThatThrownBy(() -> dissolutionService.findAndUpdateSignatory(command))
                     .isInstanceOf(DissolutionNotLinkedToTransactionException.class)
-                    .hasMessage("Transaction is not linked to dissolution " + DISSOLUTION_ID);
+                    .hasMessage("Transaction " + TRANSACTION_ID + " is not linked to a dissolution for company " + COMPANY_NUMBER);
 
             verify(patcher, never()).updateSignatory(any(), any());
         }
@@ -1206,6 +1208,7 @@ class DissolutionServiceTest {
             var pendingDissolution = aDissolution()
                     .withId(DISSOLUTION_ID)
                     .withCompanyNumber(COMPANY_NUMBER)
+                    .withTransactionId(TRANSACTION_ID)
                     .withStatus(PENDING)
                     .withCreatedBy(aCreatedBy().withUserId(USER_ID))
                     .withDirectors(aDissolutionDirector().withOfficerId(signatoryId).withEmail(signatoryEmail)).build();
@@ -1215,7 +1218,7 @@ class DissolutionServiceTest {
             var transaction = aTransaction()
                     .withCompanyNumber(COMPANY_NUMBER)
                     .withStatus(OPEN)
-                    .withResources(generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
+                    .withResources(generateTransactionResource(FILING_KIND_DS01, COMPANY_NUMBER))
                     .build();
 
             var command = new ResendSignatoryNotificationCommand(transaction, COMPANY_NUMBER, USER_ID, signatoryId);
@@ -1233,6 +1236,7 @@ class DissolutionServiceTest {
             var pendingDissolution = aDissolution()
                     .withId(DISSOLUTION_ID)
                     .withCompanyNumber(COMPANY_NUMBER)
+                    .withTransactionId(TRANSACTION_ID)
                     .withStatus(PENDING)
                     .withCreatedBy(aCreatedBy().withUserId(USER_ID))
                     .withDirectors(aDissolutionDirector().withOfficerId(signatoryId).withEmail("signatory@test.co.uk"))
@@ -1243,7 +1247,7 @@ class DissolutionServiceTest {
             var transaction = aTransaction()
                     .withCompanyNumber(COMPANY_NUMBER)
                     .withStatus(OPEN)
-                    .withResources(generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
+                    .withResources(generateTransactionResource(FILING_KIND_DS01, COMPANY_NUMBER))
                     .build();
 
             var command = new ResendSignatoryNotificationCommand(transaction, COMPANY_NUMBER, "not-the-applicant", signatoryId);
@@ -1271,6 +1275,7 @@ class DissolutionServiceTest {
             when(repository.findPendingDissolutionByCompanyNumber(any())).thenReturn(of(aDissolution()
                     .withId(DISSOLUTION_ID)
                     .withCompanyNumber(COMPANY_NUMBER)
+                    .withTransactionId(TRANSACTION_ID)
                     .withStatus(PENDING)
                     .withCreatedBy(aCreatedBy().withUserId(USER_ID))
                     .withDirectors(aDissolutionDirector().withOfficerId("a-signatory-id")).build()));
@@ -1278,7 +1283,7 @@ class DissolutionServiceTest {
             var transaction = aTransaction()
                     .withCompanyNumber(COMPANY_NUMBER)
                     .withStatus(OPEN)
-                    .withResources(generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
+                    .withResources(generateTransactionResource(FILING_KIND_DS01, COMPANY_NUMBER))
                     .build();
 
             var command = new ResendSignatoryNotificationCommand(transaction, COMPANY_NUMBER, USER_ID, "a-different-signatory-id");
@@ -1302,23 +1307,23 @@ class DissolutionServiceTest {
                     Arguments.of("company number does not match", aTransaction()
                                     .withCompanyNumber("654321")
                                     .withStatus(OPEN)
-                                    .withResources(generateTransactionResource(FILING_KIND_DS01, "a-dissolution-id")).build(),
+                                    .withResources(generateTransactionResource(FILING_KIND_DS01, "123456")).build(),
                             InvalidTransactionStateException.class,
                             "Transaction does not belong to company 123456"
                     ),
                     Arguments.of("status is not OPEN", aTransaction()
                                     .withStatus(CLOSED)
                                     .withCompanyNumber("654321")
-                                    .withResources(generateTransactionResource(FILING_KIND_DS01, "a-dissolution-id")).build(),
+                                    .withResources(generateTransactionResource(FILING_KIND_DS01, "123456")).build(),
                             InvalidTransactionStateException.class,
                             "Transaction status CLOSED does not match expected status OPEN"
                     ),
                     Arguments.of("transaction is not linked to the dissolution", aTransaction()
-                                    .withResources(generateTransactionResource(FILING_KIND_DS01, "a-invalid-dissolution-id"))
+                                    .withResources(generateTransactionResource(FILING_KIND_DS01, "999999"))
                                     .withCompanyNumber("123456")
                                     .withStatus(OPEN).build(),
                             DissolutionNotLinkedToTransactionException.class,
-                            "Transaction is not linked to dissolution a-dissolution-id"
+                            "Transaction tx-id-123 is not linked to a dissolution for company 123456"
                     )
             );
         }

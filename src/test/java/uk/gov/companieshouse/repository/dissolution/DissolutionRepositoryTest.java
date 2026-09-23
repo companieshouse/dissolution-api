@@ -1,7 +1,7 @@
 package uk.gov.companieshouse.repository.dissolution;
 
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,8 +19,10 @@ import uk.gov.companieshouse.repository.DissolutionRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.DisplayNameGenerator.ReplaceUnderscores;
 import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 import static uk.gov.companieshouse.model.enums.DissolutionStatus.DRAFT;
 import static uk.gov.companieshouse.model.enums.DissolutionStatus.SUBMITTED;
@@ -109,24 +111,24 @@ class DissolutionRepositoryTest extends AbstractMongoConfig {
     }
 
     @Nested
-    @DisplayName("findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc")
-    class FindFirstByCompanyNumberAndStatus {
+    @DisplayNameGeneration(ReplaceUnderscores.class)
+    class findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc {
 
         @Test
-        void findsMostRecentlySubmittedDissolution() {
-            final String COMPANY_NUMBER = "913";
+        void when_multiple_submitted_dissolutions_exist_then_returns_the_most_recently_submitted() {
+            final var COMPANY_NUMBER = "913";
 
-            Dissolution older = aDissolution()
+            final var older = aDissolution()
                     .withCompanyNumber(COMPANY_NUMBER)
                     .withStatus(SUBMITTED, LocalDateTime.of(2024, 1, 1, 12, 0))
                     .build();
 
-            Dissolution newer = aDissolution()
+            final var newer = aDissolution()
                     .withCompanyNumber(COMPANY_NUMBER)
                     .withStatus(SUBMITTED, LocalDateTime.of(2024, 1, 1, 12, 5))
                     .build();
 
-            Dissolution draft = aDissolution()
+            final var draft = aDissolution()
                     .withCompanyNumber(COMPANY_NUMBER)
                     .withStatus(DRAFT)
                     .build();
@@ -135,25 +137,25 @@ class DissolutionRepositoryTest extends AbstractMongoConfig {
             dissolutionRepository.insert(older);
             dissolutionRepository.insert(draft);
 
-            final Dissolution result = dissolutionRepository
+            var result = dissolutionRepository
                     .findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, SUBMITTED)
                     .orElseThrow();
 
-            assertEquals(newer.getId(), result.getId());
-            assertEquals(SUBMITTED, result.getStatus());
+            assertThat(result.getId()).isEqualTo(newer.getId());
+            assertThat(result.getStatus()).isEqualTo(SUBMITTED);
         }
 
         @Test
-        void whenNoSubmittedDissolutionThenEmptyReturned() {
-            final String COMPANY_NUMBER = "914";
-            final String OTHER_COMPANY_NUMBER = "915";
+        void when_no_submitted_dissolution_exists_then_returns_empty() {
+            final var COMPANY_NUMBER = "914";
+            final var OTHER_COMPANY_NUMBER = "915";
 
-            Dissolution draft = aDissolution()
+            final var draft = aDissolution()
                     .withCompanyNumber(COMPANY_NUMBER)
                     .withStatus(DRAFT)
                     .build();
 
-            Dissolution otherCompanySubmitted = aDissolution()
+            final var otherCompanySubmitted = aDissolution()
                     .withCompanyNumber(OTHER_COMPANY_NUMBER)
                     .withStatus(SUBMITTED, LocalDateTime.of(2024, 1, 1, 12, 0))
                     .build();
@@ -161,9 +163,53 @@ class DissolutionRepositoryTest extends AbstractMongoConfig {
             dissolutionRepository.insert(draft);
             dissolutionRepository.insert(otherCompanySubmitted);
 
-            assertTrue(dissolutionRepository
-                    .findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, SUBMITTED)
-                    .isEmpty());
+            assertThat(dissolutionRepository
+                    .findFirstByCompanyNumberAndStatusOrderBySubmittedAtDesc(COMPANY_NUMBER, SUBMITTED))
+                    .isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayNameGeneration(ReplaceUnderscores.class)
+    class findByTransactionIdAndCompanyNumber {
+
+        @Test
+        void when_transaction_and_company_both_match_then_returns_the_dissolution() {
+            final var COMPANY_NUMBER = "931";
+            final var TRANSACTION_ID = "tx-931";
+
+            final var dissolution = aDissolution()
+                    .withCompanyNumber(COMPANY_NUMBER)
+                    .withTransactionId(TRANSACTION_ID)
+                    .build();
+            dissolutionRepository.insert(dissolution);
+
+            assertThat(dissolutionRepository.findByTransactionIdAndCompanyNumber(TRANSACTION_ID, COMPANY_NUMBER))
+                    .isPresent()
+                    .get()
+                    .extracting(Dissolution::getTransactionId)
+                    .isEqualTo(TRANSACTION_ID);
+        }
+
+        @Test
+        void when_company_number_does_not_match_the_dissolution_then_returns_empty() {
+            final var COMPANY_NUMBER = "932";
+            final var TRANSACTION_ID = "tx-932";
+
+            final var dissolution = aDissolution()
+                    .withCompanyNumber(COMPANY_NUMBER)
+                    .withTransactionId(TRANSACTION_ID)
+                    .build();
+            dissolutionRepository.insert(dissolution);
+
+            assertThat(dissolutionRepository.findByTransactionIdAndCompanyNumber(TRANSACTION_ID, "another-company"))
+                    .isEmpty();
+        }
+
+        @Test
+        void when_no_dissolution_exists_for_the_transaction_then_returns_empty() {
+            assertThat(dissolutionRepository.findByTransactionIdAndCompanyNumber("tx-does-not-exist", "933"))
+                    .isEmpty();
         }
     }
 

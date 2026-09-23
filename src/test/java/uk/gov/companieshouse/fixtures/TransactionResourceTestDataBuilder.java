@@ -14,6 +14,9 @@ public class TransactionResourceTestDataBuilder {
     }
 
     public record Link(String id, String uri) {
+        public static Link aLink(String id, String uri) {
+            return new Link(id, uri);
+        }
     }
 
     private String resourceKey = "";

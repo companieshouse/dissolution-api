@@ -14,6 +14,7 @@ import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.api.util.security.EricConstants;
+import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.api.util.security.SecurityConstants;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
@@ -24,12 +25,14 @@ import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 import uk.gov.companieshouse.mapper.CostMapper;
 import uk.gov.companieshouse.mapper.ValidationStatusResponseMapper;
 import uk.gov.companieshouse.model.domain.DissolutionCost;
+import uk.gov.companieshouse.model.domain.GenerateFilingCommand;
+import uk.gov.companieshouse.model.domain.GetDissolutionCostsCommand;
+import uk.gov.companieshouse.model.domain.ValidateFilingCommand;
 import uk.gov.companieshouse.model.domain.ValidationResult;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.cost.CostService;
 import uk.gov.companieshouse.service.transaction.FilingService;
 
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.isA;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -46,14 +49,17 @@ import static uk.gov.companieshouse.model.Constants.TRANSACTION_KEY;
 @Import({ValidationStatusResponseMapper.class, CostMapper.class})
 class FilingControllerTest {
 
-    private static final String FILING_URI = "/private/transactions/{transaction_id}/dissolution/{dissolution_id}/filings";
-    private static final String VALIDATION_STATUS_URI = "/transactions/{transaction_id}/dissolution/{dissolution_id}/validation-status";
-    private static final String COST_URI = "/transactions/{transaction_id}/dissolution/{dissolution_id}/costs";
-    private static final String DISSOLUTION_ID = "12345678";
+    private static final String FILING_URI = "/private/company/{company-number}/transactions/{transaction_id}/dissolution/filings";
+    private static final String VALIDATION_STATUS_URI = "/company/{company-number}/transactions/{transaction_id}/dissolution/validation-status";
+    private static final String COST_URI = "/company/{company-number}/transactions/{transaction_id}/dissolution/costs";
+    private static final String COMPANY_NUMBER = "12345678";
     private static final String ERIC_REQUEST_ID = "XaBcDeF12345";
     private static final String PASS_THROUGH_HEADER = "545345345";
     private static final String ERIC_ACCESS_TOKEN_HEADER = "ERIC-Access-Token";
     private static final String IDENTITY_HEADER_VALUE = "identity";
+    private static final String AUTHORISED_USER_HEADER = "ERIC-Authorised-User";
+    private static final String USER_ID = "1234";
+    private static final String EMAIL = "user@mail.com";
 
     @MockitoBean
     private TransactionService transactionService;
@@ -76,7 +82,7 @@ class FilingControllerTest {
         transaction = TransactionTestDataBuilder.aTransaction()
                 .withId(TRANSACTION_ID)
                 .withStatus(TransactionStatus.CLOSED)
-                .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, DISSOLUTION_ID))
+                .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, COMPANY_NUMBER))
                 .build();
         when(transactionService.getTransaction(TRANSACTION_ID)).thenReturn(transaction);
     }
@@ -86,12 +92,12 @@ class FilingControllerTest {
 
         @Test
         void getFiling_returnsUnauthorised_ifEricIdentityIsNotProvided() throws Exception {
-            HttpHeaders headers = createHttpHeaders();
+            HttpHeaders headers = createApiKeyHttpHeaders();
             headers.remove(EricConstants.ERIC_IDENTITY);
 
             mockMvc
                     .perform(
-                            get(FILING_URI, TRANSACTION_ID, DISSOLUTION_ID)
+                            get(FILING_URI, COMPANY_NUMBER, TRANSACTION_ID)
                                     .headers(headers)
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
@@ -100,12 +106,12 @@ class FilingControllerTest {
 
         @Test
         void getFiling_returnsForbidden_ifEricIdentityTypeIsNotCorrect() throws Exception {
-            HttpHeaders headers = createHttpHeaders();
+            HttpHeaders headers = createApiKeyHttpHeaders();
             headers.set(EricConstants.ERIC_IDENTITY_TYPE, "some-incorrect-identity-type");
 
             mockMvc
                     .perform(
-                            get(FILING_URI, TRANSACTION_ID, DISSOLUTION_ID)
+                            get(FILING_URI, COMPANY_NUMBER, TRANSACTION_ID)
                                     .headers(headers)
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
@@ -114,12 +120,12 @@ class FilingControllerTest {
 
         @Test
         void getFiling_returnsForbidden_ifEricAuthorisedKeyRolesIsNotCorrect() throws Exception {
-            HttpHeaders headers = createHttpHeaders();
+            HttpHeaders headers = createApiKeyHttpHeaders();
             headers.set(EricConstants.ERIC_AUTHORISED_KEY_ROLES, "some-incorrect-authorised-key-roles-value");
 
             mockMvc
                     .perform(
-                            get(FILING_URI, TRANSACTION_ID, DISSOLUTION_ID)
+                            get(FILING_URI, COMPANY_NUMBER, TRANSACTION_ID)
                                     .headers(headers)
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
@@ -128,13 +134,13 @@ class FilingControllerTest {
 
         @Test
         void getFiling_returnsNotFound_ifDissolutionNotFound() throws Exception {
-            when(filingService.generateDissolutionFiling(isA(Transaction.class), eq(DISSOLUTION_ID)))
+            when(filingService.generateDissolutionFiling(isA(GenerateFilingCommand.class)))
                     .thenThrow(new DissolutionNotFoundException("dissolution not found"));
 
             mockMvc
                     .perform(
-                            get(FILING_URI, TRANSACTION_ID, DISSOLUTION_ID)
-                                    .headers(createHttpHeaders())
+                            get(FILING_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                                    .headers(createApiKeyHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isNotFound());
@@ -146,24 +152,24 @@ class FilingControllerTest {
 
             mockMvc
                     .perform(
-                            get(FILING_URI, TRANSACTION_ID, DISSOLUTION_ID)
-                                    .headers(createHttpHeaders())
+                            get(FILING_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                                    .headers(createApiKeyHttpHeaders())
                     )
                     .andExpect(status().isNotFound());
 
-            verify(filingService, never()).generateDissolutionFiling(isA(Transaction.class), eq(DISSOLUTION_ID));
+            verify(filingService, never()).generateDissolutionFiling(isA(GenerateFilingCommand.class));
         }
 
         @Test
         void getFiling_returnsConflict_ifTransactionIsNotClosed() throws Exception {
             transaction.setStatus(TransactionStatus.OPEN);
-            when(filingService.generateDissolutionFiling(isA(Transaction.class), eq(DISSOLUTION_ID)))
+            when(filingService.generateDissolutionFiling(isA(GenerateFilingCommand.class)))
                     .thenThrow(new InvalidTransactionStateException("transaction is not closed"));
 
             mockMvc
                     .perform(
-                            get(FILING_URI, TRANSACTION_ID, DISSOLUTION_ID)
-                                    .headers(createHttpHeaders())
+                            get(FILING_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                                    .headers(createApiKeyHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isConflict());
@@ -171,13 +177,13 @@ class FilingControllerTest {
 
         @Test
         void getFiling_returnsBadRequest_ifDissolutionNotLinkedToTransaction() throws Exception {
-            when(filingService.generateDissolutionFiling(isA(Transaction.class), eq(DISSOLUTION_ID)))
+            when(filingService.generateDissolutionFiling(isA(GenerateFilingCommand.class)))
                     .thenThrow(new DissolutionNotLinkedToTransactionException("dissolution not linked to transaction"));
 
             mockMvc
                     .perform(
-                            get(FILING_URI, TRANSACTION_ID, DISSOLUTION_ID)
-                                    .headers(createHttpHeaders())
+                            get(FILING_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                                    .headers(createApiKeyHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isBadRequest());
@@ -185,18 +191,18 @@ class FilingControllerTest {
 
         @Test
         void getFiling_returnsInternalServerError_ifExceptionOccursWhenGeneratingFiling() throws Exception {
-            when(filingService.generateDissolutionFiling(isA(Transaction.class), eq(DISSOLUTION_ID)))
+            when(filingService.generateDissolutionFiling(isA(GenerateFilingCommand.class)))
                     .thenThrow(new RuntimeException("Some error occurred while generating dissolution filing"));
 
             mockMvc
                     .perform(
-                            get(FILING_URI, TRANSACTION_ID, DISSOLUTION_ID)
-                                    .headers(createHttpHeaders())
+                            get(FILING_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                                    .headers(createApiKeyHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isInternalServerError());
 
-            verify(filingService).generateDissolutionFiling(isA(Transaction.class), eq(DISSOLUTION_ID));
+            verify(filingService).generateDissolutionFiling(isA(GenerateFilingCommand.class));
         }
 
         @Test
@@ -205,13 +211,13 @@ class FilingControllerTest {
             filing.setDescription("12345678");
             FilingApi[] response = new FilingApi[]{filing};
 
-            when(filingService.generateDissolutionFiling(isA(Transaction.class), eq(DISSOLUTION_ID)))
+            when(filingService.generateDissolutionFiling(isA(GenerateFilingCommand.class)))
                     .thenReturn(filing);
 
             mockMvc
                     .perform(
-                            get(FILING_URI, TRANSACTION_ID, DISSOLUTION_ID)
-                                    .headers(createHttpHeaders())
+                            get(FILING_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                                    .headers(createApiKeyHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isOk())
@@ -224,13 +230,13 @@ class FilingControllerTest {
 
         @Test
         void when_no_dissolution_found_for_id_then_NOT_FOUND_returned() throws Exception {
-            when(filingService.validateForFiling(isA(Transaction.class), eq(DISSOLUTION_ID)))
+            when(filingService.validateForFiling(isA(ValidateFilingCommand.class)))
                     .thenThrow(new DissolutionNotFoundException("dissolution not found"));
 
             mockMvc
                     .perform(
-                            get(VALIDATION_STATUS_URI, TRANSACTION_ID, DISSOLUTION_ID)
-                                    .headers(createHttpHeaders())
+                            get(VALIDATION_STATUS_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                                    .headers(createUserTokenHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isNotFound());
@@ -238,13 +244,13 @@ class FilingControllerTest {
 
         @Test
         void when_dissolution_not_linked_to_transaction_then_BAD_REQUEST_returned() throws Exception {
-            when(filingService.validateForFiling(isA(Transaction.class), eq(DISSOLUTION_ID)))
+            when(filingService.validateForFiling(isA(ValidateFilingCommand.class)))
                     .thenThrow(new DissolutionNotLinkedToTransactionException("dissolution not linked to transaction"));
 
             mockMvc
                     .perform(
-                            get(VALIDATION_STATUS_URI, TRANSACTION_ID, DISSOLUTION_ID)
-                                    .headers(createHttpHeaders())
+                            get(VALIDATION_STATUS_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                                    .headers(createUserTokenHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isBadRequest());
@@ -252,29 +258,29 @@ class FilingControllerTest {
 
         @Test
         void when_unexpected_exception_occurs_then_INTERNAL_SERVER_ERROR_returned() throws Exception {
-            when(filingService.validateForFiling(isA(Transaction.class), eq(DISSOLUTION_ID)))
+            when(filingService.validateForFiling(isA(ValidateFilingCommand.class)))
                     .thenThrow(new RuntimeException("Some error occurred while validating dissolution"));
 
             mockMvc
                     .perform(
-                            get(VALIDATION_STATUS_URI, TRANSACTION_ID, DISSOLUTION_ID)
-                                    .headers(createHttpHeaders())
+                            get(VALIDATION_STATUS_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                                    .headers(createUserTokenHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isInternalServerError());
 
-            verify(filingService).validateForFiling(isA(Transaction.class), eq(DISSOLUTION_ID));
+            verify(filingService).validateForFiling(isA(ValidateFilingCommand.class));
         }
 
         @Test
         void when_dissolution_is_valid_then_OK_returned_with_valid_response() throws Exception {
-            when(filingService.validateForFiling(isA(Transaction.class), eq(DISSOLUTION_ID)))
+            when(filingService.validateForFiling(isA(ValidateFilingCommand.class)))
                     .thenReturn(new ValidationResult());
 
             mockMvc
                     .perform(
-                            get(VALIDATION_STATUS_URI, TRANSACTION_ID, DISSOLUTION_ID)
-                                    .headers(createHttpHeaders())
+                            get(VALIDATION_STATUS_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                                    .headers(createUserTokenHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isOk())
@@ -286,13 +292,13 @@ class FilingControllerTest {
             var validationResult = new ValidationResult();
             validationResult.addError("Dissolution status is PENDING, expected SUBMITTED");
 
-            when(filingService.validateForFiling(isA(Transaction.class), eq(DISSOLUTION_ID)))
+            when(filingService.validateForFiling(isA(ValidateFilingCommand.class)))
                     .thenReturn(validationResult);
 
             mockMvc
                     .perform(
-                            get(VALIDATION_STATUS_URI, TRANSACTION_ID, DISSOLUTION_ID)
-                                    .headers(createHttpHeaders())
+                            get(VALIDATION_STATUS_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                                    .headers(createUserTokenHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isOk())
@@ -307,12 +313,12 @@ class FilingControllerTest {
         @Test
         void when_dissolution_is_valid_then_OK_returned() throws Exception {
             var dissolutionCost = new DissolutionCost("13", "ACME LTD", "12345678", "dissolution");
-            when(costService.getCosts(isA(Transaction.class), eq(DISSOLUTION_ID))).thenReturn(dissolutionCost);
+            when(costService.getCosts(isA(GetDissolutionCostsCommand.class))).thenReturn(dissolutionCost);
 
             mockMvc
                     .perform(
-                            get(COST_URI, TRANSACTION_ID, DISSOLUTION_ID)
-                                    .headers(createHttpHeaders())
+                            get(COST_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                                    .headers(createApiKeyHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isOk())
@@ -321,12 +327,12 @@ class FilingControllerTest {
 
         @Test
         void when_dissolution_not_found_then_NOT_FOUND_returned() throws Exception {
-            when(costService.getCosts(isA(Transaction.class), eq(DISSOLUTION_ID))).thenThrow(new DissolutionNotFoundException());
+            when(costService.getCosts(isA(GetDissolutionCostsCommand.class))).thenThrow(new DissolutionNotFoundException());
 
             mockMvc
                     .perform(
-                            get(COST_URI, TRANSACTION_ID, DISSOLUTION_ID)
-                                    .headers(createHttpHeaders())
+                            get(COST_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                                    .headers(createApiKeyHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isNotFound());
@@ -334,13 +340,13 @@ class FilingControllerTest {
 
         @Test
         void when_dissolution_not_linked_to_transaction_then_BAD_REQUEST_returned() throws Exception {
-            when(costService.getCosts(isA(Transaction.class), eq(DISSOLUTION_ID)))
+            when(costService.getCosts(isA(GetDissolutionCostsCommand.class)))
                     .thenThrow(new DissolutionNotLinkedToTransactionException("dissolution not linked to transaction"));
 
             mockMvc
                     .perform(
-                            get(COST_URI, TRANSACTION_ID, DISSOLUTION_ID)
-                                    .headers(createHttpHeaders())
+                            get(COST_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                                    .headers(createApiKeyHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isBadRequest());
@@ -348,12 +354,12 @@ class FilingControllerTest {
 
         @Test
         void when_unexpected_exception_occurs_then_INTERNAL_SERVER_ERROR_returned() throws Exception {
-            when(costService.getCosts(isA(Transaction.class), eq(DISSOLUTION_ID))).thenThrow(new RuntimeException("Server down"));
+            when(costService.getCosts(isA(GetDissolutionCostsCommand.class))).thenThrow(new RuntimeException("Server down"));
 
             mockMvc
                     .perform(
-                            get(COST_URI, TRANSACTION_ID, DISSOLUTION_ID)
-                                    .headers(createHttpHeaders())
+                            get(COST_URI, COMPANY_NUMBER, TRANSACTION_ID)
+                                    .headers(createApiKeyHttpHeaders())
                                     .requestAttr(TRANSACTION_KEY, transaction)
                     )
                     .andExpect(status().isInternalServerError());
@@ -361,16 +367,16 @@ class FilingControllerTest {
 
         @Test
         void when_eric_identity_not_provided_then_UNAUTHORIZED_returned() throws Exception {
-            HttpHeaders headers = createHttpHeaders();
+            HttpHeaders headers = createApiKeyHttpHeaders();
             headers.remove(EricConstants.ERIC_IDENTITY);
 
             mockMvc
-                    .perform(get(COST_URI, TRANSACTION_ID, DISSOLUTION_ID).headers(headers))
+                    .perform(get(COST_URI, COMPANY_NUMBER, TRANSACTION_ID).headers(headers))
                     .andExpect(status().isUnauthorized());
         }
     }
 
-    private HttpHeaders createHttpHeaders() {
+    private HttpHeaders createApiKeyHttpHeaders() {
         HttpHeaders headers = new HttpHeaders();
 
         headers.add(EricConstants.ERIC_IDENTITY, IDENTITY_HEADER_VALUE);
@@ -378,6 +384,21 @@ class FilingControllerTest {
         headers.add(EricConstants.ERIC_AUTHORISED_KEY_ROLES, SecurityConstants.INTERNAL_USER_ROLE);
         headers.add(ERIC_ACCESS_TOKEN_HEADER, PASS_THROUGH_HEADER);
         headers.add(HEADER_ERIC_REQUEST_ID, ERIC_REQUEST_ID);
+
+        return headers;
+    }
+
+    private HttpHeaders createUserTokenHttpHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+
+        headers.add(EricConstants.ERIC_IDENTITY, USER_ID);
+        headers.add(AUTHORISED_USER_HEADER, EMAIL);
+        headers.add(HEADER_ERIC_REQUEST_ID, ERIC_REQUEST_ID);
+        headers.add(EricConstants.ERIC_AUTHORISED_TOKEN_PERMISSIONS, String.format(
+                "%s=%s %s=%s",
+                Permission.Key.COMPANY_NUMBER, COMPANY_NUMBER,
+                Permission.Key.COMPANY_STATUS, Permission.Value.UPDATE
+        ));
 
         return headers;
     }
