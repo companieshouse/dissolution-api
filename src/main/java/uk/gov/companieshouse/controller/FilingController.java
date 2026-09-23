@@ -17,6 +17,9 @@ import uk.gov.companieshouse.api.model.validationstatus.ValidationStatusResponse
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.CostMapper;
 import uk.gov.companieshouse.mapper.ValidationStatusResponseMapper;
+import uk.gov.companieshouse.model.domain.GenerateFilingCommand;
+import uk.gov.companieshouse.model.domain.GetDissolutionCostsCommand;
+import uk.gov.companieshouse.model.domain.ValidateFilingCommand;
 import uk.gov.companieshouse.service.cost.CostService;
 import uk.gov.companieshouse.service.transaction.FilingService;
 
@@ -66,7 +69,8 @@ public class FilingController {
 		logCtx.put(COMPANY_NUMBER_KEY, companyNumber);
 		logger.infoContext(requestId, "Attempting to generate dissolution filing", logCtx);
 
-		FilingApi filing = filingService.generateDissolutionFiling(transaction, companyNumber, transactionId);
+		final var command = new GenerateFilingCommand(transaction, companyNumber, transactionId);
+		FilingApi filing = filingService.generateDissolutionFiling(command);
 		return new FilingApi[]{filing};
 	}
 
@@ -89,7 +93,8 @@ public class FilingController {
 		logCtx.put(COMPANY_NUMBER_KEY, companyNumber);
 		logger.infoContext(requestId, "Attempting to validate dissolution for filing", logCtx);
 
-		var validationResult = filingService.validateForFiling(transaction, companyNumber, transactionId);
+		final var command = new ValidateFilingCommand(transaction, companyNumber, transactionId);
+		var validationResult = filingService.validateForFiling(command);
 		return validationStatusResponseMapper.mapToValidationStatusResponse(validationResult);
 	}
 
@@ -112,7 +117,8 @@ public class FilingController {
 		logCtx.put(COMPANY_NUMBER_KEY, companyNumber);
 		logger.infoContext(requestId, "Getting costs for dissolution filing", logCtx);
 
-		var dissolutionCost = costService.getCosts(transaction, companyNumber, transactionId);
+		final var command = new GetDissolutionCostsCommand(transaction, companyNumber, transactionId);
+		var dissolutionCost = costService.getCosts(command);
 		return List.of(costMapper.mapToCost(dissolutionCost));
 	}
 }

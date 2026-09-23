@@ -1,9 +1,9 @@
 package uk.gov.companieshouse.service.cost;
 
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.config.FeeConfig;
 import uk.gov.companieshouse.model.domain.DissolutionCost;
+import uk.gov.companieshouse.model.domain.GetDissolutionCostsCommand;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import uk.gov.companieshouse.service.dissolution.validator.TransactionValidator;
 
@@ -18,13 +18,14 @@ public class CostService {
         this.feeConfig = feeConfig;
     }
 
-    public DissolutionCost getCosts(Transaction transaction, String companyNumber, String transactionId) {
-        TransactionValidator.of(transaction)
-                .forCompany(companyNumber)
-                .isLinkedToDissolution(companyNumber, transactionId)
+    public DissolutionCost getCosts(GetDissolutionCostsCommand command) {
+        var dissolution = dissolutionService.getDissolutionByTransactionAndCompany(command.transactionId(), command.companyNumber());
+
+        TransactionValidator.of(command.transaction())
+                .forCompany(command.companyNumber())
+                .isLinkedToDissolution(dissolution)
                 .validate();
 
-        var dissolution = dissolutionService.getDissolutionByTransactionAndCompany(transactionId, companyNumber);
         var company = dissolution.getCompany();
         var applicationType = dissolution.getApplicationType();
 

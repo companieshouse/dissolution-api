@@ -11,6 +11,7 @@ import uk.gov.companieshouse.config.FeeConfig;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
 import uk.gov.companieshouse.model.domain.DissolutionCost;
+import uk.gov.companieshouse.model.domain.GetDissolutionCostsCommand;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 
@@ -63,12 +64,13 @@ class CostServiceTest {
                 .withId(DISSOLUTION_ID)
                 .withCompanyNumber(COMPANY_NUMBER)
                 .withCompanyName(COMPANY_NAME)
+                .withTransactionId(TRANSACTION_ID)
                 .build();
 
         when(dissolutionService.getDissolutionByTransactionAndCompany(TRANSACTION_ID, COMPANY_NUMBER)).thenReturn(dissolution);
         when(feeConfig.getClosingPounds()).thenReturn("10.00");
 
-        var actualCost = costService.getCosts(transaction, COMPANY_NUMBER, TRANSACTION_ID);
+        var actualCost = costService.getCosts(new GetDissolutionCostsCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID));
 
         assertThat(actualCost).isEqualTo(new DissolutionCost("10.00", COMPANY_NAME, COMPANY_NUMBER, ApplicationType.DS01.getValue()));
     }
@@ -78,7 +80,7 @@ class CostServiceTest {
         when(dissolutionService.getDissolutionByTransactionAndCompany(TRANSACTION_ID, COMPANY_NUMBER))
                 .thenThrow(new DissolutionNotFoundException());
 
-        assertThatThrownBy(() -> costService.getCosts(transaction, COMPANY_NUMBER, TRANSACTION_ID))
+        assertThatThrownBy(() -> costService.getCosts(new GetDissolutionCostsCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID)))
                 .isInstanceOf(DissolutionNotFoundException.class);
     }
 
@@ -86,7 +88,16 @@ class CostServiceTest {
     void when_dissolution_not_linked_to_transaction_then_exception_thrown() {
         transaction = aTransaction().withId(TRANSACTION_ID).build();
 
-        assertThatThrownBy(() -> costService.getCosts(transaction, COMPANY_NUMBER, TRANSACTION_ID))
+        final var dissolution = aDissolution()
+                .withId(DISSOLUTION_ID)
+                .withCompanyNumber(COMPANY_NUMBER)
+                .withCompanyName(COMPANY_NAME)
+                .withTransactionId(TRANSACTION_ID)
+                .build();
+
+        when(dissolutionService.getDissolutionByTransactionAndCompany(TRANSACTION_ID, COMPANY_NUMBER)).thenReturn(dissolution);
+
+        assertThatThrownBy(() -> costService.getCosts(new GetDissolutionCostsCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID)))
                 .isInstanceOf(DissolutionNotLinkedToTransactionException.class);
     }
 }

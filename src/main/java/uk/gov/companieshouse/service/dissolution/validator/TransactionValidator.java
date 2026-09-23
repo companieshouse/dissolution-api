@@ -5,6 +5,7 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
 import uk.gov.companieshouse.exception.InvalidTransactionStateException;
+import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,9 +49,10 @@ public class TransactionValidator {
         });
     }
 
-    public TransactionValidator isLinkedToDissolution(String companyNumber, String transactionId) {
+    public TransactionValidator isLinkedToDissolution(Dissolution dissolution) {
         return addRule(tx -> {
-            final String submissionSelfLink = String.format(DISSOLUTION_BASE_URI_PATTERN, companyNumber, transactionId);
+            final String companyNumber = dissolution.getCompany().getNumber();
+            final String submissionSelfLink = String.format(DISSOLUTION_BASE_URI_PATTERN, companyNumber, dissolution.getTransactionId());
 
             final boolean isLinked = Objects.nonNull(tx.getResources()) && tx.getResources().values().stream()
                     .filter(resource -> DISSOLUTION_FILING_KINDS.contains(resource.getKind()))

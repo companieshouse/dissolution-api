@@ -91,7 +91,7 @@ public class DissolutionService {
     public void addDirectorApproval(String companyNumber, Transaction transaction, DissolutionDirectorApprovalCommand command) {
         final var dissolution = getPendingDissolution(companyNumber);
 
-        TransactionValidator.of(transaction).hasStatus(OPEN).forCompany(companyNumber).isLinkedToDissolution(dissolution.getCompany().getNumber(), dissolution.getTransactionId()).validate();
+        TransactionValidator.of(transaction).hasStatus(OPEN).forCompany(companyNumber).isLinkedToDissolution(dissolution).validate();
 
         patcher.addDirectorApproval(dissolution, command);
     }
@@ -254,7 +254,7 @@ public class DissolutionService {
     }
 
     private void validateInitiateDissolution(DissolutionInitiationCommand command, Dissolution dissolution, Map<String, CompanyOfficer> activeDirectors) {
-        TransactionValidator.of(command.transaction()).hasStatus(OPEN).forCompany(command.companyNumber()).isLinkedToDissolution(dissolution.getCompany().getNumber(), dissolution.getTransactionId()).validate();
+        TransactionValidator.of(command.transaction()).hasStatus(OPEN).forCompany(command.companyNumber()).isLinkedToDissolution(dissolution).validate();
 
         companyOfficerService
                 .areSelectedDirectorsValid(activeDirectors, command.signatories())
@@ -269,7 +269,7 @@ public class DissolutionService {
         TransactionValidator.of(command.transaction())
                 .hasStatus(TransactionStatus.OPEN)
                 .forCompany(command.companyNumber())
-                .isLinkedToDissolution(dissolution.getCompany().getNumber(), dissolution.getTransactionId())
+                .isLinkedToDissolution(dissolution)
                 .validate();
 
         if (!isApplicant(command.userId(), dissolution)) {
@@ -289,7 +289,7 @@ public class DissolutionService {
         TransactionValidator.of(command.transaction())
                 .hasStatus(TransactionStatus.OPEN)
                 .forCompany(command.companyNumber())
-                .isLinkedToDissolution(dissolution.getCompany().getNumber(), dissolution.getTransactionId())
+                .isLinkedToDissolution(dissolution)
                 .validate();
 
         final var signatoryEmail = dissolution.findSignatory(command.signatoryId())

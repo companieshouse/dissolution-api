@@ -25,12 +25,14 @@ import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 import uk.gov.companieshouse.mapper.CostMapper;
 import uk.gov.companieshouse.mapper.ValidationStatusResponseMapper;
 import uk.gov.companieshouse.model.domain.DissolutionCost;
+import uk.gov.companieshouse.model.domain.GenerateFilingCommand;
+import uk.gov.companieshouse.model.domain.GetDissolutionCostsCommand;
+import uk.gov.companieshouse.model.domain.ValidateFilingCommand;
 import uk.gov.companieshouse.model.domain.ValidationResult;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.cost.CostService;
 import uk.gov.companieshouse.service.transaction.FilingService;
 
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.isA;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -132,7 +134,7 @@ class FilingControllerTest {
 
         @Test
         void getFiling_returnsNotFound_ifDissolutionNotFound() throws Exception {
-            when(filingService.generateDissolutionFiling(isA(Transaction.class), eq(COMPANY_NUMBER), eq(TRANSACTION_ID)))
+            when(filingService.generateDissolutionFiling(isA(GenerateFilingCommand.class)))
                     .thenThrow(new DissolutionNotFoundException("dissolution not found"));
 
             mockMvc
@@ -155,13 +157,13 @@ class FilingControllerTest {
                     )
                     .andExpect(status().isNotFound());
 
-            verify(filingService, never()).generateDissolutionFiling(isA(Transaction.class), eq(COMPANY_NUMBER), eq(TRANSACTION_ID));
+            verify(filingService, never()).generateDissolutionFiling(isA(GenerateFilingCommand.class));
         }
 
         @Test
         void getFiling_returnsConflict_ifTransactionIsNotClosed() throws Exception {
             transaction.setStatus(TransactionStatus.OPEN);
-            when(filingService.generateDissolutionFiling(isA(Transaction.class), eq(COMPANY_NUMBER), eq(TRANSACTION_ID)))
+            when(filingService.generateDissolutionFiling(isA(GenerateFilingCommand.class)))
                     .thenThrow(new InvalidTransactionStateException("transaction is not closed"));
 
             mockMvc
@@ -175,7 +177,7 @@ class FilingControllerTest {
 
         @Test
         void getFiling_returnsBadRequest_ifDissolutionNotLinkedToTransaction() throws Exception {
-            when(filingService.generateDissolutionFiling(isA(Transaction.class), eq(COMPANY_NUMBER), eq(TRANSACTION_ID)))
+            when(filingService.generateDissolutionFiling(isA(GenerateFilingCommand.class)))
                     .thenThrow(new DissolutionNotLinkedToTransactionException("dissolution not linked to transaction"));
 
             mockMvc
@@ -189,7 +191,7 @@ class FilingControllerTest {
 
         @Test
         void getFiling_returnsInternalServerError_ifExceptionOccursWhenGeneratingFiling() throws Exception {
-            when(filingService.generateDissolutionFiling(isA(Transaction.class), eq(COMPANY_NUMBER), eq(TRANSACTION_ID)))
+            when(filingService.generateDissolutionFiling(isA(GenerateFilingCommand.class)))
                     .thenThrow(new RuntimeException("Some error occurred while generating dissolution filing"));
 
             mockMvc
@@ -200,7 +202,7 @@ class FilingControllerTest {
                     )
                     .andExpect(status().isInternalServerError());
 
-            verify(filingService).generateDissolutionFiling(isA(Transaction.class), eq(COMPANY_NUMBER), eq(TRANSACTION_ID));
+            verify(filingService).generateDissolutionFiling(isA(GenerateFilingCommand.class));
         }
 
         @Test
@@ -209,7 +211,7 @@ class FilingControllerTest {
             filing.setDescription("12345678");
             FilingApi[] response = new FilingApi[]{filing};
 
-            when(filingService.generateDissolutionFiling(isA(Transaction.class), eq(COMPANY_NUMBER), eq(TRANSACTION_ID)))
+            when(filingService.generateDissolutionFiling(isA(GenerateFilingCommand.class)))
                     .thenReturn(filing);
 
             mockMvc
@@ -228,7 +230,7 @@ class FilingControllerTest {
 
         @Test
         void when_no_dissolution_found_for_id_then_NOT_FOUND_returned() throws Exception {
-            when(filingService.validateForFiling(isA(Transaction.class), eq(COMPANY_NUMBER), eq(TRANSACTION_ID)))
+            when(filingService.validateForFiling(isA(ValidateFilingCommand.class)))
                     .thenThrow(new DissolutionNotFoundException("dissolution not found"));
 
             mockMvc
@@ -242,7 +244,7 @@ class FilingControllerTest {
 
         @Test
         void when_dissolution_not_linked_to_transaction_then_BAD_REQUEST_returned() throws Exception {
-            when(filingService.validateForFiling(isA(Transaction.class), eq(COMPANY_NUMBER), eq(TRANSACTION_ID)))
+            when(filingService.validateForFiling(isA(ValidateFilingCommand.class)))
                     .thenThrow(new DissolutionNotLinkedToTransactionException("dissolution not linked to transaction"));
 
             mockMvc
@@ -256,7 +258,7 @@ class FilingControllerTest {
 
         @Test
         void when_unexpected_exception_occurs_then_INTERNAL_SERVER_ERROR_returned() throws Exception {
-            when(filingService.validateForFiling(isA(Transaction.class), eq(COMPANY_NUMBER), eq(TRANSACTION_ID)))
+            when(filingService.validateForFiling(isA(ValidateFilingCommand.class)))
                     .thenThrow(new RuntimeException("Some error occurred while validating dissolution"));
 
             mockMvc
@@ -267,12 +269,12 @@ class FilingControllerTest {
                     )
                     .andExpect(status().isInternalServerError());
 
-            verify(filingService).validateForFiling(isA(Transaction.class), eq(COMPANY_NUMBER), eq(TRANSACTION_ID));
+            verify(filingService).validateForFiling(isA(ValidateFilingCommand.class));
         }
 
         @Test
         void when_dissolution_is_valid_then_OK_returned_with_valid_response() throws Exception {
-            when(filingService.validateForFiling(isA(Transaction.class), eq(COMPANY_NUMBER), eq(TRANSACTION_ID)))
+            when(filingService.validateForFiling(isA(ValidateFilingCommand.class)))
                     .thenReturn(new ValidationResult());
 
             mockMvc
@@ -290,7 +292,7 @@ class FilingControllerTest {
             var validationResult = new ValidationResult();
             validationResult.addError("Dissolution status is PENDING, expected SUBMITTED");
 
-            when(filingService.validateForFiling(isA(Transaction.class), eq(COMPANY_NUMBER), eq(TRANSACTION_ID)))
+            when(filingService.validateForFiling(isA(ValidateFilingCommand.class)))
                     .thenReturn(validationResult);
 
             mockMvc
@@ -311,7 +313,7 @@ class FilingControllerTest {
         @Test
         void when_dissolution_is_valid_then_OK_returned() throws Exception {
             var dissolutionCost = new DissolutionCost("13", "ACME LTD", "12345678", "dissolution");
-            when(costService.getCosts(isA(Transaction.class), eq(COMPANY_NUMBER), eq(TRANSACTION_ID))).thenReturn(dissolutionCost);
+            when(costService.getCosts(isA(GetDissolutionCostsCommand.class))).thenReturn(dissolutionCost);
 
             mockMvc
                     .perform(
@@ -325,7 +327,7 @@ class FilingControllerTest {
 
         @Test
         void when_dissolution_not_found_then_NOT_FOUND_returned() throws Exception {
-            when(costService.getCosts(isA(Transaction.class), eq(COMPANY_NUMBER), eq(TRANSACTION_ID))).thenThrow(new DissolutionNotFoundException());
+            when(costService.getCosts(isA(GetDissolutionCostsCommand.class))).thenThrow(new DissolutionNotFoundException());
 
             mockMvc
                     .perform(
@@ -338,7 +340,7 @@ class FilingControllerTest {
 
         @Test
         void when_dissolution_not_linked_to_transaction_then_BAD_REQUEST_returned() throws Exception {
-            when(costService.getCosts(isA(Transaction.class), eq(COMPANY_NUMBER), eq(TRANSACTION_ID)))
+            when(costService.getCosts(isA(GetDissolutionCostsCommand.class)))
                     .thenThrow(new DissolutionNotLinkedToTransactionException("dissolution not linked to transaction"));
 
             mockMvc
@@ -352,7 +354,7 @@ class FilingControllerTest {
 
         @Test
         void when_unexpected_exception_occurs_then_INTERNAL_SERVER_ERROR_returned() throws Exception {
-            when(costService.getCosts(isA(Transaction.class), eq(COMPANY_NUMBER), eq(TRANSACTION_ID))).thenThrow(new RuntimeException("Server down"));
+            when(costService.getCosts(isA(GetDissolutionCostsCommand.class))).thenThrow(new RuntimeException("Server down"));
 
             mockMvc
                     .perform(

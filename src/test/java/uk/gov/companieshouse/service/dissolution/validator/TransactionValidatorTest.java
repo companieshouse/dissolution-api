@@ -14,6 +14,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.DisplayNameGenerator.ReplaceUnderscores;
+import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_LLDS01;
@@ -59,7 +60,7 @@ class TransactionValidatorTest {
         final var transaction = TransactionTestDataBuilder.aTransaction()
                 .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, COMPANY_NUMBER))
                 .build();
-        final var validator = TransactionValidator.of(transaction).isLinkedToDissolution("", TRANSACTION_ID);
+        final var validator = TransactionValidator.of(transaction).isLinkedToDissolution(aDissolution().withCompanyNumber("").withTransactionId(TRANSACTION_ID).build());
 
         assertThatThrownBy(validator::validate).isInstanceOf(DissolutionNotLinkedToTransactionException.class);
     }
@@ -67,7 +68,7 @@ class TransactionValidatorTest {
     @Test
     void when_resources_is_null_then_dissolution_not_linked_to_transaction_exception_thrown() {
         final var transaction = TransactionFixtures.generateTransaction();
-        final var validator = TransactionValidator.of(transaction).isLinkedToDissolution(COMPANY_NUMBER, TRANSACTION_ID);
+        final var validator = TransactionValidator.of(transaction).isLinkedToDissolution(aDissolution().withCompanyNumber(COMPANY_NUMBER).withTransactionId(TRANSACTION_ID).build());
 
         assertThatThrownBy(validator::validate).isInstanceOf(DissolutionNotLinkedToTransactionException.class);
     }
@@ -75,7 +76,7 @@ class TransactionValidatorTest {
     @Test
     void when_resources_is_empty_then_dissolution_not_linked_to_transaction_exception_thrown() {
         final var transaction = TransactionTestDataBuilder.aTransaction().withResources(Map.of()).build();
-        final var validator = TransactionValidator.of(transaction).isLinkedToDissolution(COMPANY_NUMBER, TRANSACTION_ID);
+        final var validator = TransactionValidator.of(transaction).isLinkedToDissolution(aDissolution().withCompanyNumber(COMPANY_NUMBER).withTransactionId(TRANSACTION_ID).build());
 
         assertThatThrownBy(validator::validate).isInstanceOf(DissolutionNotLinkedToTransactionException.class);
     }
@@ -85,7 +86,7 @@ class TransactionValidatorTest {
         var transaction = TransactionTestDataBuilder.aTransaction()
                 .withResources(TransactionFixtures.generateTransactionResource("some-other-kind", COMPANY_NUMBER))
                 .build();
-        final var validator = TransactionValidator.of(transaction).isLinkedToDissolution(COMPANY_NUMBER, TRANSACTION_ID);
+        final var validator = TransactionValidator.of(transaction).isLinkedToDissolution(aDissolution().withCompanyNumber(COMPANY_NUMBER).withTransactionId(TRANSACTION_ID).build());
 
         assertThatThrownBy(validator::validate).isInstanceOf(DissolutionNotLinkedToTransactionException.class);
     }
@@ -95,7 +96,7 @@ class TransactionValidatorTest {
         final var resourceBuilder = TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, COMPANY_NUMBER)
                 .withSingleLink(LINK_RESOURCE, "/transactions/other-tx/dissolution/other-sub");
         final var transaction = TransactionTestDataBuilder.aTransaction().withResources(resourceBuilder).build();
-        final var validator = TransactionValidator.of(transaction).isLinkedToDissolution(COMPANY_NUMBER, TRANSACTION_ID);
+        final var validator = TransactionValidator.of(transaction).isLinkedToDissolution(aDissolution().withCompanyNumber(COMPANY_NUMBER).withTransactionId(TRANSACTION_ID).build());
 
         assertThatThrownBy(validator::validate).isInstanceOf(DissolutionNotLinkedToTransactionException.class);
     }
@@ -107,7 +108,7 @@ class TransactionValidatorTest {
                 .withKind(FILING_KIND_DS01)
                 .withLinks((Map<String, String>) null);
         final var transaction = TransactionTestDataBuilder.aTransaction().withResources(resource).build();
-        final var validator = TransactionValidator.of(transaction).isLinkedToDissolution(COMPANY_NUMBER, TRANSACTION_ID);
+        final var validator = TransactionValidator.of(transaction).isLinkedToDissolution(aDissolution().withCompanyNumber(COMPANY_NUMBER).withTransactionId(TRANSACTION_ID).build());
 
         assertThatThrownBy(validator::validate).isInstanceOf(DissolutionNotLinkedToTransactionException.class);
     }
@@ -117,7 +118,7 @@ class TransactionValidatorTest {
         final var transaction = TransactionTestDataBuilder.aTransaction()
                 .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_DS01, COMPANY_NUMBER))
                 .build();
-        final var validator = TransactionValidator.of(transaction).isLinkedToDissolution(COMPANY_NUMBER, TRANSACTION_ID);
+        final var validator = TransactionValidator.of(transaction).isLinkedToDissolution(aDissolution().withCompanyNumber(COMPANY_NUMBER).withTransactionId(TRANSACTION_ID).build());
 
         assertThatCode(validator::validate).doesNotThrowAnyException();
     }
@@ -127,7 +128,7 @@ class TransactionValidatorTest {
         final var transaction = TransactionTestDataBuilder.aTransaction()
                 .withResources(TransactionFixtures.generateTransactionResource(FILING_KIND_LLDS01, COMPANY_NUMBER))
                 .build();
-        final var validator = TransactionValidator.of(transaction).isLinkedToDissolution(COMPANY_NUMBER, TRANSACTION_ID);
+        final var validator = TransactionValidator.of(transaction).isLinkedToDissolution(aDissolution().withCompanyNumber(COMPANY_NUMBER).withTransactionId(TRANSACTION_ID).build());
 
         assertThatCode(validator::validate).doesNotThrowAnyException();
     }
@@ -139,7 +140,7 @@ class TransactionValidatorTest {
                 .withSingleLink(LINK_RESOURCE, "/some-other/link");
         final var matchingResource = TransactionFixtures.generateTransactionResource(FILING_KIND_LLDS01, COMPANY_NUMBER);
         final var transaction = TransactionTestDataBuilder.aTransaction().withResources(nonMatchingResource, matchingResource).build();
-        final var validator = TransactionValidator.of(transaction).isLinkedToDissolution(COMPANY_NUMBER, TRANSACTION_ID);
+        final var validator = TransactionValidator.of(transaction).isLinkedToDissolution(aDissolution().withCompanyNumber(COMPANY_NUMBER).withTransactionId(TRANSACTION_ID).build());
 
         assertThatCode(validator::validate).doesNotThrowAnyException();
     }
@@ -155,7 +156,7 @@ class TransactionValidatorTest {
         final var validator = TransactionValidator.of(transaction)
                 .hasStatus(TransactionStatus.OPEN)
                 .forCompany(COMPANY_NUMBER)
-                .isLinkedToDissolution(COMPANY_NUMBER, TRANSACTION_ID);
+                .isLinkedToDissolution(aDissolution().withCompanyNumber(COMPANY_NUMBER).withTransactionId(TRANSACTION_ID).build());
 
         assertThatCode(validator::validate).doesNotThrowAnyException();
     }
