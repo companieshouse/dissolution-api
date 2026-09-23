@@ -155,7 +155,9 @@ class FilingServiceTest {
         when(dissolutionService.getDissolutionByTransactionAndCompany(TRANSACTION_ID, COMPANY_NUMBER))
                 .thenThrow(new DissolutionNotFoundException());
 
-        assertThatThrownBy(() -> filingService.generateDissolutionFiling(new GenerateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID)))
+        final var command = new GenerateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID);
+
+        assertThatThrownBy(() -> filingService.generateDissolutionFiling(command))
                 .isInstanceOf(DissolutionNotFoundException.class);
     }
 
@@ -168,7 +170,9 @@ class FilingServiceTest {
 
         when(dissolutionService.getDissolutionByTransactionAndCompany(TRANSACTION_ID, COMPANY_NUMBER)).thenReturn(dissolution);
 
-        assertThatThrownBy(() -> filingService.generateDissolutionFiling(new GenerateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID)))
+        final var command = new GenerateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID);
+
+        assertThatThrownBy(() -> filingService.generateDissolutionFiling(command))
                 .isInstanceOf(DissolutionNotLinkedToTransactionException.class);
     }
 
@@ -181,7 +185,9 @@ class FilingServiceTest {
                 .withPaymentLink(PAYMENT_URI)
                 .build();
 
-        assertThatThrownBy(() -> filingService.generateDissolutionFiling(new GenerateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID)))
+        final var command = new GenerateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID);
+
+        assertThatThrownBy(() -> filingService.generateDissolutionFiling(command))
                 .isInstanceOf(InvalidTransactionStateException.class);
     }
 
@@ -191,7 +197,9 @@ class FilingServiceTest {
         when(transactionService.getPayment(PAYMENT_URI))
                 .thenThrow(new ServiceException("payment error", new RuntimeException()));
 
-        assertThatThrownBy(() -> filingService.generateDissolutionFiling(new GenerateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID)))
+        final var command = new GenerateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID);
+
+        assertThatThrownBy(() -> filingService.generateDissolutionFiling(command))
                 .isInstanceOf(ServiceException.class);
     }
 
@@ -216,7 +224,9 @@ class FilingServiceTest {
             when(dissolutionService.getDissolutionByTransactionAndCompany(TRANSACTION_ID, COMPANY_NUMBER))
                     .thenThrow(new DissolutionNotFoundException());
 
-            assertThatThrownBy(() -> filingService.validateForFiling(new ValidateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID)))
+            final var command = new ValidateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID);
+
+            assertThatThrownBy(() -> filingService.validateForFiling(command))
                     .isInstanceOf(DissolutionNotFoundException.class);
         }
     }

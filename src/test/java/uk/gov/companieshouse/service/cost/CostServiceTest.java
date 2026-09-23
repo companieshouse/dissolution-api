@@ -80,7 +80,9 @@ class CostServiceTest {
         when(dissolutionService.getDissolutionByTransactionAndCompany(TRANSACTION_ID, COMPANY_NUMBER))
                 .thenThrow(new DissolutionNotFoundException());
 
-        assertThatThrownBy(() -> costService.getCosts(new GetDissolutionCostsCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID)))
+        final var command = new GetDissolutionCostsCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID);
+
+        assertThatThrownBy(() -> costService.getCosts(command))
                 .isInstanceOf(DissolutionNotFoundException.class);
     }
 
@@ -97,7 +99,9 @@ class CostServiceTest {
 
         when(dissolutionService.getDissolutionByTransactionAndCompany(TRANSACTION_ID, COMPANY_NUMBER)).thenReturn(dissolution);
 
-        assertThatThrownBy(() -> costService.getCosts(new GetDissolutionCostsCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID)))
+        final var command = new GetDissolutionCostsCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID);
+
+        assertThatThrownBy(() -> costService.getCosts(command))
                 .isInstanceOf(DissolutionNotLinkedToTransactionException.class);
     }
 }
