@@ -1,0 +1,29 @@
+{
+  "widgets": [
+    {
+      "type": "log",
+      "x": 0,
+      "y": 1,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "query": "SOURCE \"${dissolution_api_log_group_arn}\" |\nfields created, data.message\n| filter event = \"error\"\n| sort @timestamp desc\n| limit 10000",
+        "region": "${region}",
+        "stacked": false,
+        "view": "table",
+        "title": "dissolution-api errors"
+      }
+    },
+    {
+      "type": "text",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 1,
+      "properties": {
+        "markdown": "# Logs\n\n",
+        "background": "transparent"
+      }
+    }
+  ]
+}
