@@ -7,6 +7,8 @@ locals {
 }
 
 resource "aws_cloudwatch_dashboard" "overview" {
+  count = var.cloudwatch_dashboard_enabled ? 1 : 0
+
   dashboard_name = local.dashboard_name
 
   dashboard_body = templatefile("${path.module}/templates/dashboard.json.tftpl", {
