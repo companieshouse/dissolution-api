@@ -109,6 +109,12 @@ variable "multilb_cloudwatch_alarms_enabled" {
   default     = true
 }
 
+variable "cloudwatch_dashboard_enabled" {
+  description = "Whether to create the CloudWatch overview dashboard."
+  type        = bool
+  default     = false
+}
+
 # ------------------------------------------------------------------------------
 # Service environment variable configs
 # ------------------------------------------------------------------------------

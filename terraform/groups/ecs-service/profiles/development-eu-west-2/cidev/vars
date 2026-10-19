@@ -3,6 +3,9 @@ aws_profile = "development-eu-west-2"
 
 # service configs
 use_set_environment_files = true
+
+# cloudwatch
+cloudwatch_dashboard_enabled = true
  
 # scaling configs
 service_autoscale_enabled  = true

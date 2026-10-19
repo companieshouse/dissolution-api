@@ -6,6 +6,8 @@ data "aws_kms_key" "kms_key" {
   key_id = local.kms_alias
 }
 
+data "aws_caller_identity" "current" {}
+
 data "vault_generic_secret" "service_secrets" {
   path = "applications/${var.aws_profile}/${var.environment}/${local.stack_name}-stack/${local.service_name}"
 }
