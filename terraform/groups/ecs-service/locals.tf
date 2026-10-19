@@ -78,5 +78,8 @@ locals {
     { "name": "AES256_KEY", "valueFrom": local.global_secrets_arn_map.eric_aes256_key }
   ]
   eric_environment_filename = "eric.env"
+
+  dashboard_name = "dissolutions-${var.environment}"
+  dissolution_api_log_group_arn = "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/ecs/${local.name_prefix}/${local.service_name}"
 }
 
