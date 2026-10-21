@@ -79,7 +79,13 @@ locals {
   ]
   eric_environment_filename = "eric.env"
 
-  dashboard_name                = "dissolutions-${var.environment}"
-  dissolution_api_log_group_arn = "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/ecs/${local.name_prefix}/${local.service_name}"
+  dashboard_name                      = "dissolutions-${var.environment}"
+  log_group_arn_prefix                = "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/ecs"
+  filing_close_name_prefix            = "filing-close-${var.environment}"
+  filing_core_name_prefix             = "filing-core-${var.environment}"
+  dissolution_api_log_group_arn       = "${local.log_group_arn_prefix}/${local.filing_close_name_prefix}/dissolution-api"
+  dissolution_web_log_group_arn       = "${local.log_group_arn_prefix}/${local.filing_close_name_prefix}/dissolution-web"
+  transactions_api_log_group_arn      = "${local.log_group_arn_prefix}/${local.filing_core_name_prefix}/transactions-api"
+  chips_filing_consumer_log_group_arn = "${local.log_group_arn_prefix}/${local.filing_core_name_prefix}/chips-filing-consumer"
 }
 

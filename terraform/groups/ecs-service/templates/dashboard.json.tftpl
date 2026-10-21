@@ -7,7 +7,7 @@
       "width": 12,
       "height": 6,
       "properties": {
-        "query": "SOURCE \"${dissolution_api_log_group_arn}\" |\nfields created, data.message\n| filter event = \"error\"\n| sort @timestamp desc\n| limit 10000",
+        "query": "SOURCE \"${dissolution_api_log_group_arn}\" |\nfields @timestamp as Time, data.message as `Error Message`\n| filter event = \"error\"\n| sort @timestamp desc\n| limit 100",
         "region": "${region}",
         "stacked": false,
         "view": "table",
@@ -23,6 +23,48 @@
       "properties": {
         "markdown": "# Logs\n\n",
         "background": "transparent"
+      }
+    },
+    {
+      "type": "log",
+      "x": 12,
+      "y": 1,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "query": "SOURCE \"${dissolution_web_log_group_arn}\" |\nfields @timestamp as Time, data.message as `Error Message`\n| filter event = \"error\"\n| sort @timestamp desc\n| limit 100",
+        "region": "${region}",
+        "stacked": false,
+        "view": "table",
+        "title": "dissolution-web errors"
+      }
+    },
+    {
+      "type": "log",
+      "x": 0,
+      "y": 7,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "query": "SOURCE \"${transactions_api_log_group_arn}\" |\nfields @timestamp as Time, data.message as `Error Message`\n| filter event = \"error\"\n| sort @timestamp desc\n| limit 100",
+        "region": "${region}",
+        "stacked": false,
+        "view": "table",
+        "title": "transactions-api errors"
+      }
+    },
+    {
+      "type": "log",
+      "x": 12,
+      "y": 7,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "query": "SOURCE \"${chips_filing_consumer_log_group_arn}\" |\nfields @timestamp as Time, data.message as `Error Message`\n| filter event = \"error\"\n| sort @timestamp desc\n| limit 100",
+        "region": "${region}",
+        "stacked": false,
+        "view": "table",
+        "title": "chips-filing-consumer errors"
       }
     }
   ]
