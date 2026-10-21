@@ -7,7 +7,7 @@
     <parent>
         <groupId>uk.gov.companieshouse</groupId>
         <artifactId>companies-house-parent</artifactId>
-        <version>2.1.14</version>
+        <version>3.0.0</version>
         <relativePath/>
     </parent>
 
@@ -102,8 +102,6 @@
         <sonar.host.url>${CODE_ANALYSIS_HOST_URL}</sonar.host.url>
         <!--suppress UnresolvedMavenProperty -->
         <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
-        <sonar.login/>
-        <sonar.password/>
         <sonar.projectKey>uk.gov.companieshouse:dissolution-api</sonar.projectKey>
         <sonar.java.binaries>${project.basedir}/target,${project.basedir}/target/*</sonar.java.binaries>
 
@@ -300,7 +298,7 @@
         <dependency>
             <groupId>at.yawk.lz4</groupId>
             <artifactId>lz4-java</artifactId>
-            <version>1.11.2</version>
+            <version>1.12.0</version>
         </dependency>
         <!-- end of temporary override of dependencies to fix CVEs. -->
         <dependency>

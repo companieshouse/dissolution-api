@@ -79,12 +79,11 @@ public class FilingService {
 
     private void setFilingApiData(FilingApi filing, Context ctx) throws ServiceException {
         final var dissolution = ctx.dissolution();
-        final var company = ctx.dissolution().getCompany();
         final var kind = filingKindMapper.mapApplicationTypeToFilingKind(dissolution.getApplicationType());
 
-
         filing.setKind(kind);
-        filing.setDescription(String.format(filingDescription, company.getName(), company.getNumber()));
+        // Note: the filing description is used to determine the email template and subject line
+        filing.setDescription(filingDescription);
         filing.setCost(feeConfig.getClosingPounds());
         filing.setData(buildFilingData(ctx));
     }
