@@ -57,7 +57,7 @@ class FilingServiceTest {
     private static final String PAYMENT_URI = String.format("/transactions/%s/payment", TRANSACTION_ID);
     private static final String PAYMENT_REFERENCE = "somePaymentRef";
     private static final String PAYMENT_METHOD = "credit-card";
-    private static final String FILING_DESCRIPTION = "Dissolution application to strike off and dissolve a company %s (%s)";
+    private static final String FILING_DESCRIPTION = "Dissolution application to strike off and dissolve a company";
     private static final String DISSOLUTION_FEE = "10.00";
 
     @Mock
