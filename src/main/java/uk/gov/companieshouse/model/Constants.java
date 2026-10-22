@@ -49,6 +49,10 @@ public final class Constants {
    public static final String TRANSACTION_KEY = "transaction";
    public static final String OFFICER_ID_KEY = "officer_id";
 
+   /* Logging */
+   public static final String ACTION_KEY = "action";
+   public static final String USER_ID_KEY = "user_id";
+
    /* Filings */
    public static final String FILING_KIND_DS01 = "dissolution#ds01";
    public static final String FILING_KIND_LLDS01 = "dissolution#llds01";
