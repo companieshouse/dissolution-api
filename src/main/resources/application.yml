@@ -84,6 +84,7 @@ management:
     metrics:
       export:
         url: ${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/metrics
+        aggregation-temporality: delta
   endpoints:
     web:
       exposure:
