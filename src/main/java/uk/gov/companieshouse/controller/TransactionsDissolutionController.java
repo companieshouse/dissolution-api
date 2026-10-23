@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.exception.BadRequestException;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.mapper.DissolutionInitiationMapper;
 import uk.gov.companieshouse.model.domain.CreateDraftDissolutionCommand;
 import uk.gov.companieshouse.model.domain.DissolutionDirectorApprovalCommand;
@@ -34,9 +35,12 @@ import uk.gov.companieshouse.service.CompanyProfileService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 
 import static uk.gov.companieshouse.model.Constants.COMPANY_NUMBER_KEY;
+import static uk.gov.companieshouse.model.Constants.HEADER_ERIC_REQUEST_ID;
 import static uk.gov.companieshouse.model.Constants.OFFICER_ID_KEY;
 import static uk.gov.companieshouse.model.Constants.TRANSACTION_KEY;
+import static uk.gov.companieshouse.model.LogAction.DRAFT_DISSOLUTION_REQUESTED;
 import static uk.gov.companieshouse.util.EricHelper.getEmail;
+import static uk.gov.companieshouse.util.LogContext.forAction;
 
 @SuppressWarnings("UastIncorrectHttpHeaderInspection")
 @RestController
@@ -47,14 +51,17 @@ public class TransactionsDissolutionController {
     private final DissolutionService dissolutionService;
     private final CompanyProfileService companyProfileService;
     private final DissolutionInitiationMapper dissolutionInitiationMapper;
+    private final Logger logger;
 
     public TransactionsDissolutionController(
             DissolutionService dissolutionService,
             CompanyProfileService companyProfileService,
-            DissolutionInitiationMapper dissolutionInitiationMapper) {
+            DissolutionInitiationMapper dissolutionInitiationMapper,
+            Logger logger) {
         this.dissolutionService = dissolutionService;
         this.companyProfileService = companyProfileService;
         this.dissolutionInitiationMapper = dissolutionInitiationMapper;
+        this.logger = logger;
     }
 
     @Operation(summary = "Create Draft Dissolution Request")
@@ -69,9 +76,13 @@ public class TransactionsDissolutionController {
     public DissolutionCreateDraftResponse submitDraftDissolution(
             @RequestHeader("ERIC-identity") String userId,
             @RequestHeader("ERIC-Authorised-User") String authorisedUser,
+            @RequestHeader(value = HEADER_ERIC_REQUEST_ID, required = false) String requestId,
             @PathVariable(COMPANY_NUMBER_KEY) final String companyNumber,
             @RequestAttribute(TRANSACTION_KEY) Transaction transaction,
             HttpServletRequest request) {
+
+        logger.infoContext(requestId, "Draft dissolution requested",
+                forAction(DRAFT_DISSOLUTION_REQUESTED, companyNumber, transaction.getId()));
 
         final CompanyProfile company = companyProfileService.getCompanyProfile(companyNumber, request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader()));
 
