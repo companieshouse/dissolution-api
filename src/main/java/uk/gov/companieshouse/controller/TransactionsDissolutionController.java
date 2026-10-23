@@ -82,7 +82,7 @@ public class TransactionsDissolutionController {
             HttpServletRequest request) {
 
         logger.infoContext(requestId, "Draft dissolution requested",
-                forAction(DRAFT_DISSOLUTION_REQUESTED, companyNumber, transaction.getId(), userId));
+                forAction(DRAFT_DISSOLUTION_REQUESTED, companyNumber, transaction.getId()));
 
         final CompanyProfile company = companyProfileService.getCompanyProfile(companyNumber, request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader()));
 

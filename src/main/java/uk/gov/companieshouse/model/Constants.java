@@ -51,7 +51,6 @@ public final class Constants {
 
    /* Logging */
    public static final String ACTION_KEY = "action";
-   public static final String USER_ID_KEY = "user_id";
 
    /* Filings */
    public static final String FILING_KIND_DS01 = "dissolution#ds01";
