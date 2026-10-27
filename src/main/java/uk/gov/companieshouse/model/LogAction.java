@@ -6,7 +6,8 @@ package uk.gov.companieshouse.model;
  */
 public enum LogAction {
 
-    DRAFT_DISSOLUTION_REQUESTED("draft_dissolution_requested");
+    DISSOLUTION_DRAFT_REQUESTED("dissolution_draft_requested"),
+    DISSOLUTION_INITIATION_REQUESTED("dissolution_initiation_requested");
 
     private final String value;
 

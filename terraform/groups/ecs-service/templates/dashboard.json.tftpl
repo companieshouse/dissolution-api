@@ -1,53 +1,154 @@
 {
   "widgets": [
     {
-      "type": "log",
-      "x": 0,
-      "y": 7,
-      "width": 12,
-      "height": 6,
-      "properties": {
-        "query": "SOURCE \"${dissolution_api_log_group_arn}\" |\nfields @timestamp as Time, data.message as `Error Message`\n| filter event = \"error\"\n| sort @timestamp desc\n| limit 100",
-        "region": "${region}",
-        "stacked": false,
-        "view": "table",
-        "title": "dissolution-api errors"
-      }
-    },
-    {
       "type": "text",
       "x": 0,
       "y": 0,
       "width": 12,
       "height": 1,
-      "properties": {
-        "markdown": "# Transactions Flow Metrics\n\n",
-        "background": "transparent"
-      }
+      "properties": { "markdown": "# Legacy Flow Metrics\n\n", "background": "transparent" }
     },
     {
       "type": "text",
-      "x": 0,
-      "y": 6,
-      "width": 24,
+      "x": 12,
+      "y": 0,
+      "width": 12,
       "height": 1,
-      "properties": {
-        "markdown": "# Logs\n\n",
-        "background": "transparent"
-      }
+      "properties": { "markdown": "# Transactions Flow Metrics\n\n", "background": "transparent" }
     },
     {
       "type": "metric",
       "x": 0,
       "y": 1,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "${region}",
+        "title": "Legacy Dissolution Happy Requests",
+        "period": 3600,
+        "stat": "SampleCount",
+        "metrics": [
+          [ "ECS/AWSOTel/Application", "http.server.requests", "exception", "none", "method", "POST", "error", "none", "uri", "/dissolution-request/{company-number}", "outcome", "SUCCESS", "status", "201", { "id": "m1", "visible": false } ],
+          [ { "expression": "FILL(m1, 0)", "id": "e1", "label": "Create dissolution", "color": "#1f77b4" } ],
+          [ "ECS/AWSOTel/Application", "http.server.requests", "exception", "none", "method", "PATCH", "error", "none", "uri", "/dissolution-request/{company-number}", "outcome", "SUCCESS", "status", "200", { "id": "m2", "visible": false } ],
+          [ { "expression": "FILL(m2, 0)", "id": "e2", "label": "Add signatory approval", "color": "#2ca02c" } ],
+          [ "ECS/AWSOTel/Application", "http.server.requests", "exception", "none", "method", "PATCH", "error", "none", "uri", "/dissolution-request/{company-number}/directors/{director-id}", "outcome", "SUCCESS", "status", "200", { "id": "m3", "visible": false } ],
+          [ { "expression": "FILL(m3, 0)", "id": "e3", "label": "Update director details", "color": "#9467bd" } ],
+          [ "ECS/AWSOTel/Application", "http.server.requests", "exception", "none", "method", "POST", "error", "none", "uri", "/dissolution-request/{company-number}/resend-email/{email-address}", "outcome", "SUCCESS", "status", "200", { "id": "m4", "visible": false } ],
+          [ { "expression": "FILL(m4, 0)", "id": "e4", "label": "Resend email", "color": "#17becf" } ]
+        ]
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12,
+      "y": 1,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "${region}",
+        "title": "Transaction Dissolution Happy Requests",
+        "period": 3600,
+        "stat": "SampleCount",
+        "metrics": [
+          [ "ECS/AWSOTel/Application", "http.server.requests", "exception", "none", "method", "POST", "error", "none", "uri", "/company/{company-number}/transactions/{transaction_id}/dissolution", "outcome", "SUCCESS", "status", "201", { "id": "m5", "visible": false } ],
+          [ { "expression": "FILL(m5, 0)", "id": "e5", "label": "Draft dissolution", "color": "#1f77b4" } ],
+          [ "ECS/AWSOTel/Application", "http.server.requests", "exception", "none", "method", "POST", "error", "none", "uri", "/company/{company-number}/transactions/{transaction_id}/dissolution/initiation", "outcome", "SUCCESS", "status", "204", { "id": "m6", "visible": false } ],
+          [ { "expression": "FILL(m6, 0)", "id": "e6", "label": "Initiate dissolution", "color": "#2ca02c" } ]
+        ]
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 7,
       "width": 6,
       "height": 5,
       "properties": {
         "metrics": [
-          [ "ECS/AWSOTel/Application", "http.server.requests", "exception", "none", "method", "POST", "error", "none", "uri", "/company/{company-number}/transactions/{transaction_id}/dissolution", "outcome", "SUCCESS", "status", "201", { "region": "${region}" } ],
-          [ "...", "CLIENT_ERROR", ".", "404", { "region": "${region}" } ],
-          [ "...", "409", { "region": "${region}" } ],
-          [ "...", "400", { "region": "${region}" } ]
+          [ "ECS/AWSOTel/Application", "http.server.requests", "exception", "none", "method", "POST", "error", "none", "uri", "/dissolution-request/{company-number}", "outcome", "SUCCESS", "status", "201", { "region": "${region}", "label": "201 Created", "color": "#2ca02c" } ],
+          [ "...", "CLIENT_ERROR", ".", "400", { "region": "${region}", "label": "400 Bad Request", "color": "#ff7f0e" } ]
+        ],
+        "sparkline": true,
+        "view": "singleValue",
+        "region": "${region}",
+        "title": "Legacy Create Dissolution Requests",
+        "period": 300,
+        "stat": "SampleCount"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 6,
+      "y": 7,
+      "width": 6,
+      "height": 5,
+      "properties": {
+        "metrics": [
+          [ "ECS/AWSOTel/Application", "http.server.requests", "exception", "none", "method", "PATCH", "error", "none", "uri", "/dissolution-request/{company-number}", "outcome", "SUCCESS", "status", "200", { "region": "${region}", "label": "200 Success", "color": "#2ca02c" } ],
+          [ "...", "CLIENT_ERROR", ".", "400", { "region": "${region}", "label": "400 Bad Request", "color": "#ff7f0e" } ]
+        ],
+        "sparkline": true,
+        "view": "singleValue",
+        "region": "${region}",
+        "title": "Legacy Add Signatory Approval Requests",
+        "period": 300,
+        "stat": "SampleCount"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 12,
+      "width": 6,
+      "height": 4,
+      "properties": {
+        "metrics": [
+          [ "ECS/AWSOTel/Application", "http.server.requests", "exception", "none", "method", "PATCH", "error", "none", "uri", "/dissolution-request/{company-number}/directors/{director-id}", "outcome", "SUCCESS", "status", "200", { "region": "${region}", "label": "200 Success", "color": "#2ca02c" } ]
+        ],
+        "sparkline": true,
+        "view": "singleValue",
+        "region": "${region}",
+        "title": "Legacy Update Director Details Requests",
+        "period": 300,
+        "stat": "SampleCount"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 6,
+      "y": 12,
+      "width": 6,
+      "height": 4,
+      "properties": {
+        "metrics": [
+          [ "ECS/AWSOTel/Application", "http.server.requests", "exception", "none", "method", "POST", "error", "none", "uri", "/dissolution-request/{company-number}/resend-email/{email-address}", "outcome", "SUCCESS", "status", "200", { "region": "${region}", "label": "200 Success", "color": "#2ca02c" } ],
+          [ "...", "CLIENT_ERROR", ".", "404", { "region": "${region}", "label": "404 Not Found", "color": "#f2b134" } ]
+        ],
+        "sparkline": true,
+        "view": "singleValue",
+        "region": "${region}",
+        "title": "Legacy Resend Emails Requests",
+        "period": 300,
+        "stat": "SampleCount"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12,
+      "y": 7,
+      "width": 6,
+      "height": 5,
+      "properties": {
+        "metrics": [
+          [ "ECS/AWSOTel/Application", "http.server.requests", "exception", "none", "method", "POST", "error", "none", "uri", "/company/{company-number}/transactions/{transaction_id}/dissolution", "outcome", "SUCCESS", "status", "201", { "region": "${region}", "label": "201 Created", "color": "#2ca02c" } ],
+          [ "...", "CLIENT_ERROR", ".", "404", { "region": "${region}", "label": "404 Not Found", "color": "#f2b134" } ],
+          [ "...", "409", { "region": "${region}", "label": "409 Conflict", "color": "#bcbd22" } ],
+          [ "...", "400", { "region": "${region}", "label": "400 Bad Request", "color": "#ff7f0e" } ]
         ],
         "sparkline": true,
         "view": "singleValue",
@@ -59,9 +160,52 @@
       }
     },
     {
+      "type": "metric",
+      "x": 18,
+      "y": 7,
+      "width": 6,
+      "height": 5,
+      "properties": {
+        "metrics": [
+          [ "ECS/AWSOTel/Application", "http.server.requests", "exception", "none", "method", "POST", "error", "none", "uri", "/company/{company-number}/transactions/{transaction_id}/dissolution/initiation", "outcome", "SUCCESS", "status", "204", { "region": "${region}", "label": "204 Success", "color": "#2ca02c" } ],
+          [ "...", "CLIENT_ERROR", ".", "401", { "region": "${region}", "label": "401 Unauthorised", "color": "#ff9896" } ],
+          [ "...", "400", { "region": "${region}", "label": "400 Bad Request", "color": "#ff7f0e" } ],
+          [ "...", "404", { "region": "${region}", "label": "404 Not Found", "color": "#f2b134" } ]
+        ],
+        "sparkline": true,
+        "view": "singleValue",
+        "region": "${region}",
+        "period": 300,
+        "stat": "SampleCount",
+        "title": "Initiate Dissolution Requests"
+      }
+    },
+    {
+      "type": "text",
+      "x": 0,
+      "y": 16,
+      "width": 24,
+      "height": 1,
+      "properties": { "markdown": "# Logs\n\n", "background": "transparent" }
+    },
+    {
+      "type": "log",
+      "x": 0,
+      "y": 17,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "query": "SOURCE \"${dissolution_api_log_group_arn}\" |\nfields @timestamp as Time, data.message as `Error Message`\n| filter event = \"error\"\n| sort @timestamp desc\n| limit 100",
+        "region": "${region}",
+        "stacked": false,
+        "view": "table",
+        "title": "dissolution-api errors"
+      }
+    },
+    {
       "type": "log",
       "x": 12,
-      "y": 7,
+      "y": 17,
       "width": 12,
       "height": 6,
       "properties": {
@@ -75,7 +219,7 @@
     {
       "type": "log",
       "x": 0,
-      "y": 13,
+      "y": 23,
       "width": 12,
       "height": 6,
       "properties": {
@@ -89,7 +233,7 @@
     {
       "type": "log",
       "x": 12,
-      "y": 13,
+      "y": 23,
       "width": 12,
       "height": 6,
       "properties": {
@@ -98,27 +242,6 @@
         "stacked": false,
         "view": "table",
         "title": "chips-filing-consumer errors"
-      }
-    },
-    {
-      "type": "metric",
-      "x": 6,
-      "y": 1,
-      "width": 6,
-      "height": 5,
-      "properties": {
-        "metrics": [
-          [ "ECS/AWSOTel/Application", "http.server.requests", "exception", "none", "method", "POST", "error", "none", "uri", "/company/{company-number}/transactions/{transaction_id}/dissolution/initiation", "outcome", "SUCCESS", "status", "204", { "region": "${region}" } ],
-          [ "...", "CLIENT_ERROR", ".", "401", { "region": "${region}" } ],
-          [ "...", "400", { "region": "${region}" } ],
-          [ "...", "404", { "region": "${region}" } ]
-        ],
-        "sparkline": true,
-        "view": "singleValue",
-        "region": "${region}",
-        "period": 300,
-        "stat": "SampleCount",
-        "title": "Initiate Dissolution Requests"
       }
     }
   ]

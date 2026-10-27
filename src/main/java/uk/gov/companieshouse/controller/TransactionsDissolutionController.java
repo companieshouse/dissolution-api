@@ -38,7 +38,8 @@ import static uk.gov.companieshouse.model.Constants.COMPANY_NUMBER_KEY;
 import static uk.gov.companieshouse.model.Constants.HEADER_ERIC_REQUEST_ID;
 import static uk.gov.companieshouse.model.Constants.OFFICER_ID_KEY;
 import static uk.gov.companieshouse.model.Constants.TRANSACTION_KEY;
-import static uk.gov.companieshouse.model.LogAction.DRAFT_DISSOLUTION_REQUESTED;
+import static uk.gov.companieshouse.model.LogAction.DISSOLUTION_DRAFT_REQUESTED;
+import static uk.gov.companieshouse.model.LogAction.DISSOLUTION_INITIATION_REQUESTED;
 import static uk.gov.companieshouse.util.EricHelper.getEmail;
 import static uk.gov.companieshouse.util.LogContext.forAction;
 
@@ -82,7 +83,7 @@ public class TransactionsDissolutionController {
             HttpServletRequest request) {
 
         logger.infoContext(requestId, "Draft dissolution requested",
-                forAction(DRAFT_DISSOLUTION_REQUESTED, companyNumber, transaction.getId()));
+                forAction(DISSOLUTION_DRAFT_REQUESTED, companyNumber, transaction.getId()));
 
         final CompanyProfile company = companyProfileService.getCompanyProfile(companyNumber, request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader()));
 
@@ -137,9 +138,13 @@ public class TransactionsDissolutionController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void initiateDissolution(
             @RequestHeader("ERIC-identity") String userId,
+            @RequestHeader(value = HEADER_ERIC_REQUEST_ID, required = false) String requestId,
             @PathVariable(COMPANY_NUMBER_KEY) final String companyNumber,
             @RequestAttribute(TRANSACTION_KEY) Transaction transaction,
             @Valid @RequestBody final DissolutionInitiationRequest dissolutionInitiationRequest) {
+
+        logger.infoContext(requestId, "Dissolution initiation requested",
+                forAction(DISSOLUTION_INITIATION_REQUESTED, companyNumber, transaction.getId()));
 
         final var command = dissolutionInitiationMapper.toCommand(transaction, companyNumber, userId, dissolutionInitiationRequest);
 
