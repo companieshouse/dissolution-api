@@ -79,6 +79,7 @@ locals {
   ]
   eric_environment_filename = "eric.env"
 
+  # CloudWatch dashboard
   dashboard_name                      = "dissolutions-${var.environment}"
   log_group_arn_prefix                = "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/ecs"
   filing_close_name_prefix            = "filing-close-${var.environment}"
@@ -87,5 +88,23 @@ locals {
   dissolution_web_log_group_arn       = "${local.log_group_arn_prefix}/${local.filing_close_name_prefix}/dissolution-web"
   transactions_api_log_group_arn      = "${local.log_group_arn_prefix}/${local.filing_core_name_prefix}/transactions-api"
   chips_filing_consumer_log_group_arn = "${local.log_group_arn_prefix}/${local.filing_core_name_prefix}/chips-filing-consumer"
+
+  # Logs Insights queries counting transactions-api filing status updates per dissolution form type.
+  # Values are summed rather than filtered so each status shows 0 instead of "No data found".
+  dissolution_filing_types = ["ds01", "llds01"]
+  filing_status_queries    = {
+    for filing_type in local.dissolution_filing_types : filing_type => <<-EOT
+      SOURCE "${local.transactions_api_log_group_arn}" |
+      fields coalesce(data.action, "")      as action,
+             coalesce(data.filing_type, "") as filingType,
+             coalesce(data.status, "")      as status
+      | fields strcontains(action, "filing_status_updated")
+             * strcontains(filingType, "dissolution#${filing_type}") as isMatchingUpdate
+      | stats sum(isMatchingUpdate * strcontains(status, "received"))   as Received,
+              sum(isMatchingUpdate * strcontains(status, "processing")) as Processing,
+              sum(isMatchingUpdate * strcontains(status, "accepted"))   as Accepted,
+              sum(isMatchingUpdate * strcontains(status, "rejected"))   as Rejected
+    EOT
+  }
 }
 
