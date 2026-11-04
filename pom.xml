@@ -20,12 +20,15 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <argLine>-Dnet.bytebuddy.experimental=true</argLine>
+        <skip.unit.tests>false</skip.unit.tests>
 
         <!-- Plugin Versions -->
         <!-- Source: https://mvnrepository.com/artifact/com.google.cloud.tools/jib-maven-plugin -->
         <jib-maven-plugin.version>3.5.1</jib-maven-plugin.version>
         <!-- Source: https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-surefire-plugin -->
         <maven-surefire-plugin.version>3.5.6</maven-surefire-plugin.version>
+        <!-- Source: https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-failsafe-plugin -->
+        <maven-failsafe-plugin.version>3.5.6</maven-failsafe-plugin.version>
         <!-- Source: https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
         <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
         <!-- Source: https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-resources-plugin -->
@@ -612,7 +615,42 @@
                     <includes>
                         <include>**/*Test*.java</include>
                     </includes>
+                    <excludes>
+                        <exclude>**/*IT.java</exclude>
+                    </excludes>
+                    <skipTests>${skip.unit.tests}</skipTests>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${maven-failsafe-plugin.version}</version>
+                <configuration>
+                    <includes>
+                        <include>**/*IT.java</include>
+                    </includes>
+                    <!-- The repackaged Spring Boot jar nests classes under BOOT-INF, so add the raw classes directory. -->
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${project.build.outputDirectory}</additionalClasspathElement>
+                    </additionalClasspathElements>
+                    <!-- The API SDK reads these from the environment, so they point at the shared MockWebServer port (see AbstractIntegrationTest). -->
+                    <environmentVariables>
+                        <API_URL>http://localhost:8089</API_URL>
+                        <PAYMENTS_API_URL>http://localhost:8089</PAYMENTS_API_URL>
+                        <DOCUMENT_API_LOCAL_URL>http://localhost:8089</DOCUMENT_API_LOCAL_URL>
+                        <ORACLE_QUERY_API_URL>http://localhost:8089</ORACLE_QUERY_API_URL>
+                        <CHS_INTERNAL_API_KEY>test-internal-api-key</CHS_INTERNAL_API_KEY>
+                    </environmentVariables>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
