@@ -123,6 +123,7 @@ public abstract class AbstractIntegrationTest extends AbstractMongoConfig {
         // Replacing the dispatcher discards any queued responses; then drain recorded requests.
         MOCK_WEB_SERVER.setDispatcher(new QueueDispatcher());
         try {
+            // NOSONAR java:S108 - each take removes one recorded request; the loop ends when none remain.
             while (MOCK_WEB_SERVER.takeRequest(0, TimeUnit.MILLISECONDS) != null) {
                 // discard
             }
