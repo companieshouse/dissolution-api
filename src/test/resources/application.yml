@@ -56,14 +56,5 @@ kafka:
 logging:
   namespace: dissolution-api
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health
-      base-path: /
-      path-mapping:
-        health: /dissolution-api/healthcheck
-
 server:
   port: 3001
