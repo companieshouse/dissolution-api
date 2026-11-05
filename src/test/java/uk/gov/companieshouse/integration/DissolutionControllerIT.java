@@ -10,6 +10,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClient;
 import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
 import uk.gov.companieshouse.fixtures.BarcodeFixtures;
 import uk.gov.companieshouse.fixtures.CompanyOfficerFixtures;
@@ -20,10 +23,6 @@ import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficersResponse;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -38,17 +37,15 @@ class DissolutionControllerIT extends AbstractIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private final HttpClient httpClient = HttpClient.newHttpClient();
-
     @Test
-    void createDissolutionRequestReturns201AndPersistsDraftDissolution() throws Exception {
+    void createDissolutionRequestReturns201AndPersistsDraftDissolution() {
         stubOutboundCalls(profileResponse(CompanyProfileApiFixtures.generateCompanyProfileApi()), officersResponse());
 
-        final HttpResponse<String> response = post(ericUserHeaders(COMPANY_NUMBER),
+        final ResponseEntity<String> response = post(ericUserHeaders(COMPANY_NUMBER),
                 DissolutionFixtures.generateDissolutionCreateRequest());
 
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.CREATED.value());
-        final JsonNode body = objectMapper.readTree(response.body());
+        assertThat(response.getStatusCode().value()).isEqualTo(HttpStatus.CREATED.value());
+        final JsonNode body = objectMapper.readTree(response.getBody());
         assertThat(body.get("application_reference_number").asString()).isNotBlank();
 
         final List<Dissolution> stored = mongoTemplate.findAll(Dissolution.class);
@@ -59,70 +56,70 @@ class DissolutionControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void createDissolutionRequestReturns409WhenOneAlreadyExists() throws Exception {
+    void createDissolutionRequestReturns409WhenOneAlreadyExists() {
         mongoTemplate.insert(DissolutionTestDataBuilder.aDissolution().withCompanyNumber(COMPANY_NUMBER).build());
         stubOutboundCalls(profileResponse(CompanyProfileApiFixtures.generateCompanyProfileApi()), officersResponse());
 
-        final HttpResponse<String> response = post(ericUserHeaders(COMPANY_NUMBER),
+        final ResponseEntity<String> response = post(ericUserHeaders(COMPANY_NUMBER),
                 DissolutionFixtures.generateDissolutionCreateRequest());
 
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
+        assertThat(response.getStatusCode().value()).isEqualTo(HttpStatus.CONFLICT.value());
         assertThat(mongoTemplate.findAll(Dissolution.class)).hasSize(1);
     }
 
     @Test
-    void createDissolutionRequestReturns401WithoutEricHeaders() throws Exception {
-        final HttpResponse<String> response = post(new HttpHeaders(),
+    void createDissolutionRequestReturns401WithoutEricHeaders() {
+        final ResponseEntity<String> response = post(new HttpHeaders(),
                 DissolutionFixtures.generateDissolutionCreateRequest());
 
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+        assertThat(response.getStatusCode().value()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(mongoTemplate.findAll(Dissolution.class)).isEmpty();
     }
 
     @Test
-    void createDissolutionRequestReturns404WhenCompanyProfileNotFound() throws Exception {
+    void createDissolutionRequestReturns404WhenCompanyProfileNotFound() {
         stubOutboundCalls(new MockResponse().setResponseCode(HttpStatus.NOT_FOUND.value()), officersResponse());
 
-        final HttpResponse<String> response = post(ericUserHeaders(COMPANY_NUMBER),
+        final ResponseEntity<String> response = post(ericUserHeaders(COMPANY_NUMBER),
                 DissolutionFixtures.generateDissolutionCreateRequest());
 
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(response.getStatusCode().value()).isEqualTo(HttpStatus.NOT_FOUND.value());
         assertThat(mongoTemplate.findAll(Dissolution.class)).isEmpty();
     }
 
     @Test
-    void getDissolutionRequestReturns200WithInProgressDissolution() throws Exception {
+    void getDissolutionRequestReturns200WithInProgressDissolution() {
         mongoTemplate.insert(DissolutionTestDataBuilder.aDissolution().withCompanyNumber(COMPANY_NUMBER).build());
 
-        final HttpResponse<String> response = get(ericUserHeaders(COMPANY_NUMBER));
+        final ResponseEntity<String> response = get(ericUserHeaders(COMPANY_NUMBER));
 
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(objectMapper.readTree(response.body()).get("company_number").asString()).isEqualTo(COMPANY_NUMBER);
+        assertThat(response.getStatusCode().value()).isEqualTo(HttpStatus.OK.value());
+        assertThat(objectMapper.readTree(response.getBody()).get("company_number").asString()).isEqualTo(COMPANY_NUMBER);
     }
 
     @Test
-    void getDissolutionRequestReturns404WhenNoneExists() throws Exception {
-        final HttpResponse<String> response = get(ericUserHeaders(COMPANY_NUMBER));
+    void getDissolutionRequestReturns404WhenNoneExists() {
+        final ResponseEntity<String> response = get(ericUserHeaders(COMPANY_NUMBER));
 
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(response.getStatusCode().value()).isEqualTo(HttpStatus.NOT_FOUND.value());
     }
 
     @Test
-    void patchDissolutionRequestReturns422WhenOfficerIdMissing() throws Exception {
+    void patchDissolutionRequestReturns422WhenOfficerIdMissing() {
         final Map<String, Object> body = Map.of("has_approved", true, "ip_address", "127.0.0.1");
 
-        final HttpResponse<String> response = patch(ericUserHeaders(COMPANY_NUMBER), body);
+        final ResponseEntity<String> response = patch(ericUserHeaders(COMPANY_NUMBER), body);
 
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT.value());
+        assertThat(response.getStatusCode().value()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT.value());
     }
 
     @Test
-    void patchDissolutionRequestReturns404WhenNoneExists() throws Exception {
+    void patchDissolutionRequestReturns404WhenNoneExists() {
         final Map<String, Object> body = Map.of("officer_id", "abc123", "has_approved", true, "ip_address", "127.0.0.1");
 
-        final HttpResponse<String> response = patch(ericUserHeaders(COMPANY_NUMBER), body);
+        final ResponseEntity<String> response = patch(ericUserHeaders(COMPANY_NUMBER), body);
 
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(response.getStatusCode().value()).isEqualTo(HttpStatus.NOT_FOUND.value());
     }
 
     private void stubOutboundCalls(MockResponse profileResponse, MockResponse officersResponse) {
@@ -175,29 +172,37 @@ class DissolutionControllerIT extends AbstractIntegrationTest {
         }
     }
 
-    private HttpResponse<String> get(HttpHeaders headers) throws IOException, InterruptedException {
-        return send(HttpRequest.newBuilder(uri()).GET(), headers);
+    private ResponseEntity<String> get(HttpHeaders headers) {
+        return restClient().get()
+                .uri(DISSOLUTION_PATH)
+                .headers(h -> h.addAll(headers))
+                .exchange((request, response) -> toEntity(response));
     }
 
-    private HttpResponse<String> post(HttpHeaders headers, Object body) throws IOException, InterruptedException {
-        return send(HttpRequest.newBuilder(uri())
-                .POST(HttpRequest.BodyPublishers.ofString(toJson(body)))
-                .header(HttpHeaders.CONTENT_TYPE, "application/json"), headers);
+    private ResponseEntity<String> post(HttpHeaders headers, Object body) {
+        return restClient().post()
+                .uri(DISSOLUTION_PATH)
+                .headers(h -> h.addAll(headers))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(toJson(body))
+                .exchange((request, response) -> toEntity(response));
     }
 
-    private HttpResponse<String> patch(HttpHeaders headers, Object body) throws IOException, InterruptedException {
-        return send(HttpRequest.newBuilder(uri())
-                .method("PATCH", HttpRequest.BodyPublishers.ofString(toJson(body)))
-                .header(HttpHeaders.CONTENT_TYPE, "application/json"), headers);
+    private ResponseEntity<String> patch(HttpHeaders headers, Object body) {
+        return restClient().patch()
+                .uri(DISSOLUTION_PATH)
+                .headers(h -> h.addAll(headers))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(toJson(body))
+                .exchange((request, response) -> toEntity(response));
     }
 
-    private HttpResponse<String> send(HttpRequest.Builder builder, HttpHeaders headers) throws IOException, InterruptedException {
-        headers.forEach((name, values) -> values.forEach(value -> builder.header(name, value)));
-        return httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+    private RestClient restClient() {
+        return RestClient.create(baseUrl());
     }
 
-    private URI uri() {
-        return URI.create(baseUrl() + DISSOLUTION_PATH);
+    private static ResponseEntity<String> toEntity(RestClient.RequestHeadersSpec.ConvertibleClientHttpResponse response) throws IOException {
+        return ResponseEntity.status(response.getStatusCode()).body(response.bodyTo(String.class));
     }
 
     private String toJson(Object body) {
