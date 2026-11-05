@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.web.client.RestClient;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -77,6 +79,21 @@ public abstract class AbstractIntegrationTest extends AbstractMongoConfig {
 
     protected String baseUrl() {
         return String.format("http://localhost:%s", port);
+    }
+
+    /**
+     * Built per call because {@link #port} is only injected after the test instance is constructed.
+     */
+    protected RestClient restClient() {
+        return RestClient.create(baseUrl());
+    }
+
+    /**
+     * Reads the response body and status without throwing on 4xx/5xx, so tests can assert on error codes.
+     */
+    protected static ResponseEntity<String> toEntity(RestClient.RequestHeadersSpec.ConvertibleClientHttpResponse response)
+            throws IOException {
+        return ResponseEntity.status(response.getStatusCode()).body(response.bodyTo(String.class));
     }
 
     protected MockWebServer mockWebServer() {

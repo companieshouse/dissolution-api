@@ -12,7 +12,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestClient;
 import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
 import uk.gov.companieshouse.fixtures.BarcodeFixtures;
 import uk.gov.companieshouse.fixtures.CompanyOfficerFixtures;
@@ -22,7 +21,6 @@ import uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.dto.companyofficers.CompanyOfficersResponse;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -195,14 +193,6 @@ class DissolutionControllerIT extends AbstractIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(toJson(body))
                 .exchange((request, response) -> toEntity(response));
-    }
-
-    private RestClient restClient() {
-        return RestClient.create(baseUrl());
-    }
-
-    private static ResponseEntity<String> toEntity(RestClient.RequestHeadersSpec.ConvertibleClientHttpResponse response) throws IOException {
-        return ResponseEntity.status(response.getStatusCode()).body(response.bodyTo(String.class));
     }
 
     private String toJson(Object body) {
