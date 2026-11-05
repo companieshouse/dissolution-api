@@ -23,9 +23,14 @@ companyProfile:
 
 dissolution:
   pdfBucket: some-pdf-bucket
+  filingDescription: Dissolution filing
 
 documentRender:
   host: http://document-render-service
+
+email:
+  chsFinanceEmail: finance@example.com
+  chsSupportEmail: support@example.com
 
 env:
   name: local
