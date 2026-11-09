@@ -37,34 +37,18 @@
         <spring-boot-maven-plugin.version>${spring-boot.version}</spring-boot-maven-plugin.version>
 
         <!-- Companies House Internal Dependencies -->
-        <!-- Source: https://github.com/companieshouse/api-helper-java/releases -->
-        <api-helper-java.version>3.0.4</api-helper-java.version>
-        <!-- Source: https://github.com/companieshouse/api-security-java/releases -->
-        <api-security-java.version>2.0.27</api-security-java.version>
+        <ch-dependency-bom.version>0.1.37</ch-dependency-bom.version>
+        <ch-test-bom.version>0.1.37</ch-test-bom.version>
         <!-- Source: https://github.com/companieshouse/api-sdk-java/releases -->
         <api-sdk-java.version>7.2.3</api-sdk-java.version>
         <!-- Source: https://github.com/companieshouse/private-api-sdk-java/releases -->
         <private-api-sdk-java.version>7.2.25</private-api-sdk-java.version>
-        <!-- Source: https://github.com/companieshouse/api-sdk-manager-java-library/releases -->
-        <api-sdk-manager-java-library.version>3.0.30</api-sdk-manager-java-library.version>
-        <!-- Source: https://github.com/companieshouse/structured-logging/releases -->
-        <structured-logging.version>3.0.57</structured-logging.version>
-        <!-- Source: https://github.com/companieshouse/environment-reader-library/releases -->
-        <environment-reader-library.version>3.0.5</environment-reader-library.version>
-        <!-- Source: https://github.com/companieshouse/java-session-handler/releases -->
-        <java-session-handler.version>4.1.23</java-session-handler.version>
-        <!-- Source: https://github.com/companieshouse/ch-kafka/releases -->
-        <ch-kafka.version>3.0.17</ch-kafka.version>
-        <!-- Source: https://github.com/companieshouse/kafka-models/releases -->
-        <kafka-models.version>3.0.36</kafka-models.version>
 
         <!-- Dependency Versions -->
         <!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-dependencies -->
         <spring-boot.version>4.1.1</spring-boot.version>
         <!-- Source: https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-ui -->
         <springdoc-openapi.version>1.8.0</springdoc-openapi.version>
-        <!-- Source: https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
-        <commons-lang3.version>3.20.0</commons-lang3.version>
         <!-- Source: https://mvnrepository.com/artifact/org.apache.avro/avro -->
         <avro.version>1.12.1</avro.version>
         <!-- Source: https://mvnrepository.com/artifact/software.amazon.awssdk/bom -->
@@ -73,8 +57,6 @@
         <netty.version>4.2.17.Final</netty.version>
         <!-- Source: https://mvnrepository.com/artifact/io.projectreactor.netty/reactor-netty-core -->
         <reactor-netty-core.version>1.3.7</reactor-netty-core.version>
-        <!-- Source: https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-bom -->
-        <log4j-bom.version>2.26.1</log4j-bom.version>
         <!-- Source: https://mvnrepository.com/artifact/de.flapdoodle.embed/de.flapdoodle.embed.mongo -->
         <flapdoodle.version>4.33.0</flapdoodle.version>
         <!-- Source: https://mvnrepository.com/artifact/com.squareup.okhttp3/mockwebserver -->
@@ -87,14 +69,8 @@
         <swagger-ui.version>5.32.14</swagger-ui.version>
         <!-- Source: https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-http -->
         <jetty.version>12.1.11</jetty.version>
-        <!-- Source: https://mvnrepository.com/artifact/io.opentelemetry.instrumentation/opentelemetry-instrumentation-bom -->
-        <opentelemetry.version>2.29.0</opentelemetry.version>
-        <!-- Source: https://mvnrepository.com/artifact/com.google.guava/guava -->
-        <guava.version>33.6.0-jre</guava.version>
         <!-- Source: https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-bom -->
         <kotlin.version>2.3.21</kotlin.version>
-        <!-- Source: https://mvnrepository.com/artifact/org.apache.tomcat.embed/tomcat-embed-core -->
-        <tomcat.version>11.0.25</tomcat.version>
 
         <!-- Sonar Properties -->
         <sonar.projectName>dissolution-api</sonar.projectName>
@@ -109,56 +85,17 @@
 
     <dependencyManagement>
         <dependencies>
-
-            <!-- Source: https://mvnrepository.com/artifact/tools.jackson/jackson-bom -->
             <dependency>
-                <groupId>tools.jackson</groupId>
-                <artifactId>jackson-bom</artifactId>
-                <version>3.2.1</version>
+                <groupId>uk.gov.companieshouse</groupId>
+                <artifactId>ch-dependency-bom</artifactId>
+                <version>${ch-dependency-bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
-            <!-- Source: https://mvnrepository.com/artifact/com.fasterxml.jackson/jackson-bom -->
-            <dependency>
-                <groupId>com.fasterxml.jackson</groupId>
-                <artifactId>jackson-bom</artifactId>
-                <version>2.22.1</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <!-- Source: https://mvnrepository.com/artifact/ch.qos.logback/logback-core -->
-            <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-core</artifactId>
-                <version>1.5.38</version>
-                <scope>compile</scope>
-            </dependency>
-
             <dependency>
                 <groupId>uk.gov.companieshouse</groupId>
-                <artifactId>structured-logging</artifactId>
-                <version>${structured-logging.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>uk.gov.companieshouse</groupId>
-                <artifactId>java-session-handler</artifactId>
-                <version>${java-session-handler.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>uk.gov.companieshouse</groupId>
-                <artifactId>environment-reader-library</artifactId>
-                <version>${environment-reader-library.version}</version>
-            </dependency>
-
-            <!-- Source: https://mvnrepository.com/artifact/io.opentelemetry.instrumentation/opentelemetry-instrumentation-bom -->
-            <dependency>
-                <groupId>io.opentelemetry.instrumentation</groupId>
-                <artifactId>opentelemetry-instrumentation-bom</artifactId>
-                <version>${opentelemetry.version}</version>
+                <artifactId>ch-test-bom</artifactId>
+                <version>${ch-test-bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -206,21 +143,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>${commons-lang3.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.apache.avro</groupId>
                 <artifactId>avro</artifactId>
                 <version>${avro.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${guava.version}</version>
             </dependency>
 
             <!-- Source: https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-bom -->
@@ -231,31 +156,6 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
-            <!-- Source: https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-bom -->
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-bom</artifactId>
-                <version>2.26.1</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <!-- BEGIN CVE OVERRIDE          -->
-            <dependency>
-                <groupId>org.apache.tomcat.embed</groupId>
-                <artifactId>tomcat-embed-core</artifactId>
-                <version>${tomcat.version}</version>
-                <scope>compile</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.tomcat.embed</groupId>
-                <artifactId>tomcat-embed-websocket</artifactId>
-                <version>${tomcat.version}</version>
-                <scope>compile</scope>
-            </dependency>
-            <!-- END CVE           -->
 
             <!-- Source: https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5 -->
             <dependency>
@@ -293,14 +193,6 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- Start of temporary override of dependencies to fix CVEs. These should be removed once the kafka-models > 3.0.39 updates this library -->
-        <!-- Source: https://mvnrepository.com/artifact/at.yawk.lz4/lz4-java -->
-        <dependency>
-            <groupId>at.yawk.lz4</groupId>
-            <artifactId>lz4-java</artifactId>
-            <version>1.12.0</version>
-        </dependency>
-        <!-- end of temporary override of dependencies to fix CVEs. -->
         <dependency>
             <groupId>io.projectreactor.netty</groupId>
             <artifactId>reactor-netty-core</artifactId>
@@ -365,7 +257,6 @@
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>api-sdk-manager-java-library</artifactId>
-            <version>${api-sdk-manager-java-library.version}</version>
         </dependency>
 
         <dependency>
@@ -392,7 +283,6 @@
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
             <artifactId>opentelemetry-logback-appender-1.0</artifactId>
-            <version>${opentelemetry.version}-alpha</version>
             <scope>compile</scope>
         </dependency>
 
@@ -405,19 +295,16 @@
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>api-helper-java</artifactId>
-            <version>${api-helper-java.version}</version>
         </dependency>
 
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>api-security-java</artifactId>
-            <version>${api-security-java.version}</version>
         </dependency>
 
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>structured-logging</artifactId>
-            <version>${structured-logging.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>ch.qos.logback</groupId>
@@ -429,7 +316,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>${commons-lang3.version}</version>
         </dependency>
 
         <dependency>
@@ -518,7 +404,6 @@
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>ch-kafka</artifactId>
-            <version>${ch-kafka.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.kafka</groupId>
@@ -534,7 +419,6 @@
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>kafka-models</artifactId>
-            <version>${kafka-models.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-fileupload</groupId>
