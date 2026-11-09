@@ -71,16 +71,6 @@
         <jetty.version>12.1.11</jetty.version>
         <!-- Source: https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-bom -->
         <kotlin.version>2.3.21</kotlin.version>
-
-        <!-- Sonar Properties -->
-        <sonar.projectName>dissolution-api</sonar.projectName>
-        <!--suppress UnresolvedMavenProperty -->
-        <sonar.host.url>${CODE_ANALYSIS_HOST_URL}</sonar.host.url>
-        <!--suppress UnresolvedMavenProperty -->
-        <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
-        <sonar.projectKey>uk.gov.companieshouse:dissolution-api</sonar.projectKey>
-        <sonar.java.binaries>${project.basedir}/target,${project.basedir}/target/*</sonar.java.binaries>
-
     </properties>
 
     <dependencyManagement>
