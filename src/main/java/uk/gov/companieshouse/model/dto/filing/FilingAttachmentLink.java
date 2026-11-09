@@ -10,6 +10,9 @@ public class FilingAttachmentLink {
     @JsonProperty("href")
     private String href;
 
+    @JsonProperty("mimetype")
+    private String mimeType;
+
     public String getRelationship() {
         return relationship;
     }
@@ -24,5 +27,13 @@ public class FilingAttachmentLink {
 
     public void setHref(String href) {
         this.href = href;
+    }
+
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
     }
 }

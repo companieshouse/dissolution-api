@@ -97,6 +97,7 @@ class FilingDataMapperTest {
         Map<String, Object> linkMap = links.getFirst();
         assertEquals("dissolution", linkMap.get("rel"));
         assertEquals(expectedAttachmentUri, linkMap.get("href"));
+        assertEquals("application/pdf", linkMap.get("mimetype"));
     }
 
     @Test
