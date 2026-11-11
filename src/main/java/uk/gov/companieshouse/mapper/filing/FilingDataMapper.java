@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static uk.gov.companieshouse.model.Constants.CONTENT_TYPE_PDF;
+
 @Component
 public class FilingDataMapper {
 
@@ -86,6 +88,7 @@ public class FilingDataMapper {
         final FilingAttachmentLink attachmentLink = new FilingAttachmentLink();
         attachmentLink.setHref(String.format(CERTIFICATE_URI, dissolution.getCertificate().getBucket(), dissolution.getCertificate().getKey()));
         attachmentLink.setRelationship("dissolution");
+        attachmentLink.setMimeType(CONTENT_TYPE_PDF);
         return attachmentLink;
     }
 }
