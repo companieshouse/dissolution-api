@@ -2,6 +2,7 @@
 
 ## Technologies
 
+- test
 - [OpenJDK 11](https://jdk.java.net/archive/)
 - [Maven](https://maven.apache.org/download.cgi)
 - [Spring Boot](https://spring.io/projects/spring-boot)
