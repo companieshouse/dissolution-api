@@ -10,6 +10,7 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetDirector;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
+import uk.gov.companieshouse.model.enums.PaymentMethod;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -68,7 +69,7 @@ public class DissolutionResponseMapper extends ResponseMapper {
 
         if (dissolution.getPaymentInformation() != null) {
             Optional
-                    .ofNullable(dissolution.getPaymentInformation().getReference())
+                    .ofNullable(getPaymentReference(dissolution))
                     .ifPresent(paymentReference -> setPaymentReference(response, paymentReference));
         }
 
@@ -115,5 +116,13 @@ public class DissolutionResponseMapper extends ResponseMapper {
 
     private void setPaymentReference(DissolutionGetResponse response, String paymentReference) {
         response.setPaymentReference(paymentReference);
+    }
+
+    private String getPaymentReference(Dissolution dissolution) {
+        if(dissolution.getPaymentInformation().getMethod() != null && dissolution.getPaymentInformation().getMethod().getValue()
+                .equalsIgnoreCase(PaymentMethod.ACCOUNT.getValue())) {
+            return dissolution.getPaymentInformation().getAccountNumber();
+        }
+        return dissolution.getPaymentInformation().getReference();
     }
 }
