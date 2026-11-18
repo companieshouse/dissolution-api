@@ -183,7 +183,8 @@ public class DissolutionService {
     private void reconcilePaymentStatus(DissolutionGetResponse dissolutionGetResponse) {
         String paymentRef = dissolutionGetResponse.getPaymentReference();
 
-        if (paymentRef == null || paymentRef.isEmpty() || !dissolutionGetResponse.getApplicationStatus().equals(ApplicationStatus.PENDING_PAYMENT)) {
+        if (paymentRef == null || paymentRef.isEmpty() || dissolutionGetResponse.getApplicationStatus() == null
+                || !dissolutionGetResponse.getApplicationStatus().equals(ApplicationStatus.PENDING_PAYMENT)) {
             return;
         }
 

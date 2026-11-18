@@ -9,6 +9,7 @@ import uk.gov.companieshouse.fixtures.TransactionTestDataBuilder;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionCertificate;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
+import uk.gov.companieshouse.model.db.payment.PaymentInformation;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateDraftResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionCreateResponse;
 import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
@@ -17,6 +18,7 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionPatchResponse;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
 import uk.gov.companieshouse.model.enums.ApplicationType;
 import uk.gov.companieshouse.model.enums.DissolutionStatus;
+import uk.gov.companieshouse.model.enums.PaymentMethod;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -39,8 +41,12 @@ class DissolutionResponseMapperTest {
     private static final ApplicationStatus STATUS = ApplicationStatus.PAID;
     private static final ApplicationType TYPE = ApplicationType.DS01;
     private static final String REFERENCE = "reference123";
+    private static final String PAYMENT_REFERENCE_CARD = "pay-ref-123";
+    private static final String PAYMENT_REFERENCE_ACCOUNT = "9999-9999";
     private static final LocalDateTime CREATED_AT = LocalDateTime.now();
     private static final String EMAIL = "user@email.com";
+    private static final PaymentMethod PAYMENT_METHOD_CARD = PaymentMethod.CREDIT_CARD;
+    private static final PaymentMethod PAYMENT_METHOD_ACCOUNT = PaymentMethod.ACCOUNT;
 
     private final DissolutionResponseMapper mapper = new DissolutionResponseMapper();
 
@@ -77,6 +83,9 @@ class DissolutionResponseMapperTest {
         dissolution.getData().getApplication().setReference(REFERENCE);
         dissolution.getData().getApplication().setStatus(STATUS);
         dissolution.getData().getApplication().setType(TYPE);
+        dissolution.setPaymentInformation(new PaymentInformation());
+        dissolution.getPaymentInformation().setMethod(PAYMENT_METHOD_CARD);
+        dissolution.getPaymentInformation().setReference(PAYMENT_REFERENCE_CARD);
 
         dissolution.getCreatedBy().setEmail(EMAIL);
         dissolution.getCreatedBy().setDateTime(CREATED_AT);
@@ -94,6 +103,7 @@ class DissolutionResponseMapperTest {
         assertEquals(COMPANY_NUMBER, result.getCompanyNumber());
         assertEquals(Timestamp.valueOf(CREATED_AT), result.getCreatedAt());
         assertEquals(EMAIL, result.getCreatedBy());
+        assertEquals(PAYMENT_REFERENCE_CARD, result.getPaymentReference());
     }
 
     @Test
@@ -216,5 +226,19 @@ class DissolutionResponseMapperTest {
         assertEquals(DISSOLUTION_ID, result.getDissolutionId());
         assertEquals(expectedSelfLink, links.getSelf());
         assertNull(links.getPayment());
+    }
+
+    @Test
+    void mapToDissolutionGetResponseWithAccountPayment_setsPaymentReference() {
+        PaymentInformation paymentInformation = new PaymentInformation();
+        paymentInformation.setMethod(PAYMENT_METHOD_ACCOUNT);
+        paymentInformation.setAccountNumber(PAYMENT_REFERENCE_ACCOUNT);
+        final Dissolution dissolution = DissolutionTestDataBuilder.aDissolution().withTransactionId(TRANSACTION_ID).withStatus(DissolutionStatus.SUBMITTED)
+                .withPaymentInformation(paymentInformation).build();
+        final DissolutionGetResponse result = mapper.mapToDissolutionGetResponse(dissolution);
+
+        assertEquals(TRANSACTION_ID, result.getTransactionId());
+        assertEquals(DissolutionStatus.SUBMITTED, result.getDissolutionStatus());
+        assertEquals(PAYMENT_REFERENCE_ACCOUNT, result.getPaymentReference());
     }
 }
