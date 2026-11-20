@@ -24,6 +24,9 @@ import uk.gov.companieshouse.api.handler.transaction.request.TransactionsPayment
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionPayment;
+import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
+import uk.gov.companieshouse.exception.ConflictException;
+import uk.gov.companieshouse.fixtures.TransactionResourceTestDataBuilder.Link;
 import uk.gov.companieshouse.client.ApiClientProvider;
 import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.exception.TransactionNotFoundException;
@@ -43,6 +46,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.fixtures.FilingTestDataBuilder.aFiling;
 import static uk.gov.companieshouse.fixtures.TransactionFixtures.TRANSACTION_ID;
+import static uk.gov.companieshouse.fixtures.TransactionResourceTestDataBuilder.aTransactionResource;
 import static uk.gov.companieshouse.fixtures.TransactionTestDataBuilder.aTransaction;
 import static uk.gov.companieshouse.model.Constants.DISSOLUTION_BASE_URI_PATTERN;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
@@ -307,6 +311,85 @@ class TransactionServiceTest {
             when(transactionsPatch.execute()).thenThrow(new URIValidationException("ERROR"));
 
             assertThrows(ServiceException.class, () -> transactionService.configureTransactionForDissolution(TRANSACTION_ID, transactionConfig));
+        }
+    }
+
+    @Nested
+    @DisplayName("PATCH /private/transactions/{transaction_id} - remove costs")
+    class RemoveCostsFromTransaction {
+
+        private static final String RESOURCE_URI = "/company/12345678/transactions/" + TRANSACTION_ID;
+
+        @BeforeEach
+        void initialize() throws IOException {
+            when(apiClientProvider.getApiClient()).thenReturn(apiClient);
+            when(apiClient.transactions()).thenReturn(transactionsResourceHandler);
+            when(transactionsResourceHandler.get(GET_TRANSACTION_URI)).thenReturn(transactionsGet);
+        }
+
+        @Test
+        void removesCostsLink_whenTransactionIsOpenWithResources() throws IOException, URIValidationException {
+            var existingTransaction = aTransaction()
+                    .withStatus(TransactionStatus.OPEN)
+                    .withResources(aTransactionResource()
+                            .withResourceKey(RESOURCE_URI)
+                            .withKind(FILING_KIND_DS01)
+                            .withLinks(
+                                    Link.aLink("resource", RESOURCE_URI),
+                                    Link.aLink("validation_status", RESOURCE_URI + "/validation-status"),
+                                    Link.aLink("costs", RESOURCE_URI + "/costs")))
+                    .build();
+
+            var patchedTransactionCaptor = ArgumentCaptor.forClass(Transaction.class);
+
+            when(transactionsGet.execute()).thenReturn(apiGetResponse);
+            when(apiGetResponse.getData()).thenReturn(existingTransaction);
+
+            when(apiClientProvider.getInternalApiClient()).thenReturn(internalApiClient);
+            when(internalApiClient.privateTransaction()).thenReturn(privateTransactionResourceHandler);
+            when(privateTransactionResourceHandler.patch(eq(PATCH_TRANSACTION_URI), patchedTransactionCaptor.capture())).thenReturn(transactionsPatch);
+            when(transactionsPatch.execute()).thenReturn(apiPatchResponse);
+            when(apiPatchResponse.getStatusCode()).thenReturn(204);
+
+            transactionService.removeCostsFromTransactionIfApplicable(TRANSACTION_ID);
+
+            var patched = patchedTransactionCaptor.getValue();
+            var patchedResource = patched.getResources().get(RESOURCE_URI);
+            assertThat(patchedResource.getLinks()).doesNotContainKey("costs");
+            assertThat(patchedResource.getLinks()).containsEntry("resource", RESOURCE_URI);
+            assertThat(patchedResource.getLinks()).containsEntry("validation_status",  RESOURCE_URI + "/validation-status");
+        }
+
+        @Test
+        void throwsConflictException_whenTransactionIsClosed() throws ApiErrorResponseException, URIValidationException {
+            var closedTransaction = aTransaction().withStatus(TransactionStatus.CLOSED).build();
+
+            when(transactionsGet.execute()).thenReturn(apiGetResponse);
+            when(apiGetResponse.getData()).thenReturn(closedTransaction);
+
+            assertThrows(ConflictException.class,
+                    () -> transactionService.removeCostsFromTransactionIfApplicable(TRANSACTION_ID));
+        }
+
+        @Test
+        void throwsServiceException_whenPatchFails() throws IOException, URIValidationException {
+            var existingTransaction = aTransaction()
+                    .withStatus(TransactionStatus.OPEN)
+                    .withResources(aTransactionResource()
+                            .withResourceKey(RESOURCE_URI)
+                            .withLinks(Link.aLink("costs", RESOURCE_URI + "/costs")))
+                    .build();
+
+            when(transactionsGet.execute()).thenReturn(apiGetResponse);
+            when(apiGetResponse.getData()).thenReturn(existingTransaction);
+
+            when(apiClientProvider.getInternalApiClient()).thenReturn(internalApiClient);
+            when(internalApiClient.privateTransaction()).thenReturn(privateTransactionResourceHandler);
+            when(privateTransactionResourceHandler.patch(eq(PATCH_TRANSACTION_URI), any(Transaction.class))).thenReturn(transactionsPatch);
+            when(transactionsPatch.execute()).thenThrow(ApiErrorResponseException.fromIOException(new IOException("ERROR")));
+
+            assertThrows(ServiceException.class,
+                    () -> transactionService.removeCostsFromTransactionIfApplicable(TRANSACTION_ID));
         }
     }
 }

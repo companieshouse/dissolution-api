@@ -7,7 +7,9 @@ import uk.gov.companieshouse.api.handler.exception.URIValidationException;
 import uk.gov.companieshouse.api.model.transaction.Resource;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionPayment;
+import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.client.ApiClientProvider;
+import uk.gov.companieshouse.exception.ConflictException;
 import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.exception.TransactionNotFoundException;
 import uk.gov.companieshouse.model.Constants;
@@ -84,6 +86,40 @@ public class TransactionService {
         transaction.setId(transactionId);
         transaction.setCompanyName(config.companyName());
         transaction.setResources(Collections.singletonMap(submissionUri, createTransactionResource(config.filingKind(), submissionLinks)));
+
+        patchTransaction(transaction);
+    }
+
+    public void removeCostsFromTransactionIfApplicable(String transactionId){
+        var transaction = getTransaction(transactionId);
+
+        if (transaction == null) {
+            throw new TransactionNotFoundException(
+                    String.format("No transaction found with id %s", transactionId));
+        }
+
+        if(transaction.getStatus() == TransactionStatus.CLOSED){
+            throw new ConflictException("Cannot process pay by account: transaction is closed");
+        }
+
+        removeCostsFromTransaction(transaction);
+    }
+
+    private void removeCostsFromTransaction(Transaction existingTransaction) {
+        var resources = existingTransaction.getResources();
+
+        var resourceEntry = resources.entrySet().iterator().next();
+        var resourceUri = resourceEntry.getKey();
+        var existingResource = resourceEntry.getValue();
+
+        Map<String, String> links = new HashMap<>(existingResource.getLinks());
+        links.remove("costs");
+
+        var updatedResource = createTransactionResource(existingResource.getKind(), links);
+
+        var transaction = new Transaction();
+        transaction.setId(existingTransaction.getId());
+        transaction.setResources(Collections.singletonMap(resourceUri, updatedResource));
 
         patchTransaction(transaction);
     }
