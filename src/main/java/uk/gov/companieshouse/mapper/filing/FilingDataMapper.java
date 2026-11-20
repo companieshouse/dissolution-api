@@ -35,15 +35,16 @@ public class FilingDataMapper {
         this.objectMapper = objectMapper;
     }
 
-    public Map<String, Object> mapToFilingData(Dissolution dissolution, String paymentReference, String paymentMethod) {
+    public Map<String, Object> mapToFilingData(Dissolution dissolution, FilingPaymentData paymentData) {
         final FilingData data = new FilingData();
         final Company company = dissolution.getCompany();
 
         data.setCompanyName(company.getName());
         data.setCompanyNumber(company.getNumber());
         data.setOfficers(mapToOfficers(dissolution));
-        data.setPaymentReference(paymentReference);
-        data.setPaymentMethod(paymentMethod);
+        data.setPaymentMethod(paymentData.method());
+        data.setPaymentReference(paymentData.reference());
+        data.setAccountNumber(paymentData.accountNumber());
         data.setLinks(List.of(mapToAttachmentLink(dissolution)));
         data.setSignDate(dissolution.getCreatedBy().getDateTime().format(DATE_FORMATTER));
 

@@ -8,30 +8,27 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import uk.gov.companieshouse.api.model.payment.PaymentApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
-import uk.gov.companieshouse.api.model.transaction.TransactionPayment;
 import uk.gov.companieshouse.config.FeeConfig;
 import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
 import uk.gov.companieshouse.exception.InvalidTransactionStateException;
 import uk.gov.companieshouse.exception.ServiceException;
+import uk.gov.companieshouse.fixtures.PaymentFixtures;
 import uk.gov.companieshouse.fixtures.TransactionFixtures;
 import uk.gov.companieshouse.mapper.FilingKindMapper;
 import uk.gov.companieshouse.mapper.filing.FilingDataMapper;
-import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
+import uk.gov.companieshouse.mapper.filing.FilingPaymentData;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
-import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
 import uk.gov.companieshouse.model.domain.GenerateFilingCommand;
 import uk.gov.companieshouse.model.domain.ValidateFilingCommand;
 import uk.gov.companieshouse.model.domain.ValidationResult;
 import uk.gov.companieshouse.model.enums.ApplicationType;
-import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import uk.gov.companieshouse.service.dissolution.validator.FilingValidator;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.time.Month;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -40,8 +37,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.api.model.transaction.TransactionStatus.CLOSED;
 import static uk.gov.companieshouse.api.model.transaction.TransactionStatus.OPEN;
-import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDirectorApproval;
-import static uk.gov.companieshouse.fixtures.DissolutionFixtures.generateDissolutionDirector;
+import static uk.gov.companieshouse.fixtures.DirectorApprovalTestDataBuilder.aDirectorApproval;
+import static uk.gov.companieshouse.fixtures.DissolutionDirectorTestDataBuilder.aDissolutionDirector;
 import static uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder.aDissolution;
 import static uk.gov.companieshouse.fixtures.TransactionTestDataBuilder.aTransaction;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
@@ -56,7 +53,6 @@ class FilingServiceTest {
     private static final String TRANSACTION_ID = "tx-id-123";
     private static final String PAYMENT_URI = String.format("/transactions/%s/payment", TRANSACTION_ID);
     private static final String PAYMENT_REFERENCE = "somePaymentRef";
-    private static final String PAYMENT_METHOD = "credit-card";
     private static final String FILING_DESCRIPTION = "Dissolution application to strike off and dissolve a company";
     private static final String DISSOLUTION_FEE = "10.00";
 
@@ -64,10 +60,7 @@ class FilingServiceTest {
     private DissolutionService dissolutionService;
 
     @Mock
-    private TransactionService transactionService;
-
-    @Mock
-    private TransactionPaymentService transactionPaymentService;
+    private FilingPaymentDataResolver filingPaymentDataResolver;
 
     @Mock
     private FeeConfig feeConfig;
@@ -82,8 +75,7 @@ class FilingServiceTest {
 
     private Transaction transaction;
     private Dissolution dissolution;
-    private TransactionPayment transactionPayment;
-    private PaymentApi paymentDetails;
+    private FilingPaymentData filingPaymentData;
 
     @BeforeEach
     void setup() {
@@ -94,44 +86,33 @@ class FilingServiceTest {
                 .withPaymentLink(PAYMENT_URI)
                 .build();
 
-        dissolution = aDissolution().withId(DISSOLUTION_ID).withTransactionId(TRANSACTION_ID).build();
+        dissolution = aDissolution().withId(DISSOLUTION_ID)
+                .withOnlyDirector(
+                        aDissolutionDirector().withDirectorApproval(
+                                aDirectorApproval().withDateTime(LocalDateTime.of(2020, Month.OCTOBER, 20, 0, 0))))
+                .withTransactionId(TRANSACTION_ID)
+                .build();
 
-        final DirectorApproval approvalOne = generateDirectorApproval();
-        approvalOne.setDateTime(LocalDateTime.of(2020, 10, 20, 0, 0));
-
-        final DissolutionDirector directorOne = generateDissolutionDirector();
-        directorOne.setName("Director One");
-        directorOne.setOnBehalfName(null);
-        directorOne.setDirectorApproval(approvalOne);
-
-        dissolution.getData().setDirectors(List.of(directorOne));
-
-        transactionPayment = new TransactionPayment();
-        transactionPayment.setPaymentReference(PAYMENT_REFERENCE);
-
-        paymentDetails = new PaymentApi();
-        paymentDetails.setPaymentMethod(PAYMENT_METHOD);
+        filingPaymentData = PaymentFixtures.generateCardPaymentData(PAYMENT_REFERENCE);
 
         final var filingKindMapper = new FilingKindMapper();
-        filingService = new FilingService(dissolutionService, transactionService, transactionPaymentService, filingDataMapper, feeConfig, filingKindMapper, filingValidator);
+        filingService = new FilingService(dissolutionService, filingDataMapper, feeConfig, filingKindMapper, filingValidator, filingPaymentDataResolver);
 
         ReflectionTestUtils.setField(filingService, "filingDescription", FILING_DESCRIPTION);
     }
 
     @Test
     void when_dissolution_exists_then_filing_data_is_returned() {
-        final var expectedDescription = String.format(FILING_DESCRIPTION, dissolution.getCompany().getName(), dissolution.getCompany().getNumber());
         final var expectedFilingData = TransactionFixtures.generateFilingData(dissolution);
 
         when(dissolutionService.getDissolutionByTransactionAndCompany(TRANSACTION_ID, COMPANY_NUMBER)).thenReturn(dissolution);
-        when(transactionService.getPayment(PAYMENT_URI)).thenReturn(transactionPayment);
-        when(transactionPaymentService.getPaymentSession(PAYMENT_REFERENCE)).thenReturn(paymentDetails);
-        when(filingDataMapper.mapToFilingData(dissolution, PAYMENT_REFERENCE, PAYMENT_METHOD)).thenReturn(expectedFilingData);
+        when(filingPaymentDataResolver.resolve(dissolution, transaction)).thenReturn(filingPaymentData);
+        when(filingDataMapper.mapToFilingData(dissolution, filingPaymentData)).thenReturn(expectedFilingData);
         when(feeConfig.getClosingPounds()).thenReturn(DISSOLUTION_FEE);
 
         final var response = filingService.generateDissolutionFiling(new GenerateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID));
 
-        assertThat(response.getDescription()).isEqualTo(expectedDescription);
+        assertThat(response.getDescription()).isEqualTo(FILING_DESCRIPTION);
         assertThat(response.getKind()).isEqualTo(FILING_KIND_DS01);
         assertThat(response.getData()).isEqualTo(expectedFilingData);
         assertThat(response.getCost()).isEqualTo(DISSOLUTION_FEE);
@@ -142,8 +123,7 @@ class FilingServiceTest {
         dissolution.getData().getApplication().setType(ApplicationType.LLDS01);
 
         when(dissolutionService.getDissolutionByTransactionAndCompany(TRANSACTION_ID, COMPANY_NUMBER)).thenReturn(dissolution);
-        when(transactionService.getPayment(PAYMENT_URI)).thenReturn(transactionPayment);
-        when(transactionPaymentService.getPaymentSession(PAYMENT_REFERENCE)).thenReturn(paymentDetails);
+        when(filingPaymentDataResolver.resolve(dissolution, transaction)).thenReturn(filingPaymentData);
 
         final var response = filingService.generateDissolutionFiling(new GenerateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID));
 
@@ -192,9 +172,9 @@ class FilingServiceTest {
     }
 
     @Test
-    void generateDissolutionFiling_throwsServiceException_whenPaymentRetrievalFails() {
+    void generateDissolutionFiling_throwsServiceException_whenPaymentResolutionFails() {
         when(dissolutionService.getDissolutionByTransactionAndCompany(TRANSACTION_ID, COMPANY_NUMBER)).thenReturn(dissolution);
-        when(transactionService.getPayment(PAYMENT_URI))
+        when(filingPaymentDataResolver.resolve(dissolution, transaction))
                 .thenThrow(new ServiceException("payment error", new RuntimeException()));
 
         final var command = new GenerateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID);

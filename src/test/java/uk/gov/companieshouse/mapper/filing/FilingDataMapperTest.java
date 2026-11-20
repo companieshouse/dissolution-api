@@ -9,6 +9,7 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 import uk.gov.companieshouse.exception.FilingDataMapperException;
 import uk.gov.companieshouse.fixtures.DissolutionFixtures;
+import uk.gov.companieshouse.fixtures.PaymentFixtures;
 import uk.gov.companieshouse.model.db.dissolution.DirectorApproval;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.db.dissolution.DissolutionDirector;
@@ -32,10 +33,13 @@ class FilingDataMapperTest {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final String DISSOLUTION_ID = "12345678";
     private static final String PAYMENT_REFERENCE = "somePaymentRef";
-    private static final String PAYMENT_METHOD = "credit-card";
+    private static final String ACCOUNT_NUMBER = "222222";
     public static final String DEFAULT_FORENAME = "John";
     public static final String DEFAULT_SURNAME = "DOE";
     private static final String ON_BEHALF_NAME = "on behalf name";
+
+    private static final FilingPaymentData CARD_PAYMENT = PaymentFixtures.generateCardPaymentData(PAYMENT_REFERENCE);
+    private static final FilingPaymentData ACCOUNT_PAYMENT = PaymentFixtures.generateAccountPaymentData(ACCOUNT_NUMBER);
 
     private ObjectMapper objectMapper;
 
@@ -70,12 +74,13 @@ class FilingDataMapperTest {
         var expectedDirectorSignDate = expectedDissolutionDirector.getDirectorApproval().getDateTime().format(DATE_FORMATTER);
         var expectedAttachmentUri = String.format("s3://%s/%s", dissolution.getCertificate().getBucket(), dissolution.getCertificate().getKey());
 
-        final Map<String, Object> result = mapper.mapToFilingData(dissolution, PAYMENT_REFERENCE, PAYMENT_METHOD);
+        final Map<String, Object> result = mapper.mapToFilingData(dissolution, CARD_PAYMENT);
 
         assertEquals(expectedCompany.getName(), result.get("company_name"));
         assertEquals(expectedCompany.getNumber(), result.get("company_number"));
         assertEquals(PAYMENT_REFERENCE, result.get("payment_reference"));
-        assertEquals(PAYMENT_METHOD, result.get("payment_method"));
+        assertEquals(PaymentFixtures.CREDIT_CARD_PAYMENT_METHOD, result.get("payment_method"));
+        assertFalse(result.containsKey("account_number"));
 
         assertEquals(expectedSignDate, result.get("sign_date"));
 
@@ -105,7 +110,7 @@ class FilingDataMapperTest {
     void mapToFilingData_includesOnBehalfName_whenDirectorIsSigningOnBehalf() {
         dissolution.getData().getDirectors().get(0).setOnBehalfName(ON_BEHALF_NAME);
 
-        final Map<String, Object> result = mapper.mapToFilingData(dissolution, PAYMENT_REFERENCE, PAYMENT_METHOD);
+        final Map<String, Object> result = mapper.mapToFilingData(dissolution, CARD_PAYMENT);
 
         List<Map<String, Object>> officers = (List<Map<String, Object>>) result.get("officers");
         assertEquals(1, officers.size());
@@ -137,7 +142,7 @@ class FilingDataMapperTest {
         var expectedDissolutionDirector = dissolution.getData().getDirectors().getLast();
         var expectedSignDate = expectedDissolutionDirector.getDirectorApproval().getDateTime().format(DATE_FORMATTER);
 
-        final Map<String, Object> result = mapper.mapToFilingData(dissolution, PAYMENT_REFERENCE, PAYMENT_METHOD);
+        final Map<String, Object> result = mapper.mapToFilingData(dissolution, CARD_PAYMENT);
 
         List<Map<String, Object>> officers = (List<Map<String, Object>>) result.get("officers");
         assertEquals(2, officers.size());
@@ -159,7 +164,7 @@ class FilingDataMapperTest {
         var expectedDissolutionDirector = dissolution.getData().getDirectors().getFirst();
         expectedDissolutionDirector.setName(DEFAULT_SURNAME);
 
-        final Map<String, Object> result = mapper.mapToFilingData(dissolution, PAYMENT_REFERENCE, PAYMENT_METHOD);
+        final Map<String, Object> result = mapper.mapToFilingData(dissolution, CARD_PAYMENT);
 
         List<Map<String, Object>> officers = (List<Map<String, Object>>) result.get("officers");
         assertEquals(1, officers.size());
@@ -168,6 +173,15 @@ class FilingDataMapperTest {
         Map<String, Object> personNameMap = (Map<String, Object>) officerMap.get("person_name");
         assertFalse(personNameMap.containsKey("forename"));
         assertEquals(DEFAULT_SURNAME, personNameMap.get("surname"));
+    }
+
+    @Test
+    void mapToFilingData_setsAccountNumberAndOmitsPaymentReference_whenPaidByAccount() {
+        final Map<String, Object> result = mapper.mapToFilingData(dissolution, ACCOUNT_PAYMENT);
+
+        assertEquals(PaymentFixtures.ACCOUNT_PAYMENT_METHOD, result.get("payment_method"));
+        assertEquals(ACCOUNT_NUMBER, result.get("account_number"));
+        assertFalse(result.containsKey("payment_reference"));
     }
 
     @Test
@@ -182,7 +196,7 @@ class FilingDataMapperTest {
 
         FilingDataMapperException ex = assertThrows(
                 FilingDataMapperException.class,
-                () -> mapper.mapToFilingData(dissolution, PAYMENT_REFERENCE, PAYMENT_METHOD)
+                () -> mapper.mapToFilingData(dissolution, CARD_PAYMENT)
         );
         assertEquals(expected, ex.getMessage());
     }

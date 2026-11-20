@@ -13,12 +13,9 @@ import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.model.domain.GenerateFilingCommand;
 import uk.gov.companieshouse.model.domain.ValidateFilingCommand;
 import uk.gov.companieshouse.model.domain.ValidationResult;
-import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import uk.gov.companieshouse.service.dissolution.validator.FilingValidator;
 import uk.gov.companieshouse.service.dissolution.validator.TransactionValidator;
-
-import java.util.Map;
 
 @Service
 public class FilingService {
@@ -30,21 +27,19 @@ public class FilingService {
     private String filingDescription;
 
     private final DissolutionService dissolutionService;
-    private final TransactionService transactionService;
-    private final TransactionPaymentService transactionPaymentService;
+    private final FilingPaymentDataResolver filingPaymentDataResolver;
     private final FilingDataMapper filingDataMapper;
     private final FilingKindMapper filingKindMapper;
     private final FeeConfig feeConfig;
     private final FilingValidator filingValidator;
 
-    public FilingService(DissolutionService dissolutionService, TransactionService transactionService, TransactionPaymentService transactionPaymentService, FilingDataMapper filingDataMapper, FeeConfig feeConfig, FilingKindMapper filingKindMapper, FilingValidator filingValidator) {
+    public FilingService(DissolutionService dissolutionService, FilingDataMapper filingDataMapper, FeeConfig feeConfig, FilingKindMapper filingKindMapper, FilingValidator filingValidator, FilingPaymentDataResolver filingPaymentDataResolver) {
         this.dissolutionService = dissolutionService;
-        this.transactionService = transactionService;
-        this.transactionPaymentService = transactionPaymentService;
         this.filingDataMapper = filingDataMapper;
         this.feeConfig = feeConfig;
         this.filingKindMapper = filingKindMapper;
         this.filingValidator = filingValidator;
+        this.filingPaymentDataResolver = filingPaymentDataResolver;
     }
 
     public FilingApi generateDissolutionFiling(GenerateFilingCommand command) {
@@ -74,29 +69,21 @@ public class FilingService {
                 .isLinkedToDissolution(dissolution)
                 .validate();
 
+        // TODO: validate account payment
+
         return filingValidator.validate(dissolution);
     }
 
     private void setFilingApiData(FilingApi filing, Context ctx) throws ServiceException {
         final var dissolution = ctx.dissolution();
         final var kind = filingKindMapper.mapApplicationTypeToFilingKind(dissolution.getApplicationType());
+        final var payment = filingPaymentDataResolver.resolve(dissolution, ctx.transaction());
+        final var data = filingDataMapper.mapToFilingData(dissolution, payment);
 
         filing.setKind(kind);
         // Note: the filing description is used to determine the email template and subject line
         filing.setDescription(filingDescription);
-        filing.setCost(feeConfig.getClosingPounds());
-        filing.setData(buildFilingData(ctx));
-    }
-
-    private Map<String, Object> buildFilingData(Context ctx) {
-        final var paymentDetails = transactionService.getPayment(
-                ctx.transaction().getLinks().getPayment());
-        final var paymentSession = transactionPaymentService.getPaymentSession(
-                paymentDetails.getPaymentReference());
-
-        return filingDataMapper.mapToFilingData(
-                ctx.dissolution(),
-                paymentDetails.getPaymentReference(),
-                paymentSession.getPaymentMethod());
+        filing.setCost(feeConfig.getClosingPounds()); // TODO: Set to 0 if payment is account
+        filing.setData(data);
     }
 }
