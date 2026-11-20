@@ -98,7 +98,7 @@ public class TransactionService {
                     String.format("No transaction found with id %s", transactionId));
         }
 
-        if(isClosed(transaction)){
+        if(transaction.getStatus() == TransactionStatus.CLOSED){
             throw new ConflictException("Cannot process pay by account: transaction is closed");
         }
 
@@ -122,10 +122,6 @@ public class TransactionService {
         transaction.setResources(Collections.singletonMap(resourceUri, updatedResource));
 
         patchTransaction(transaction);
-    }
-
-    private boolean isClosed(Transaction transaction){
-        return transaction != null && transaction.getStatus() == TransactionStatus.CLOSED;
     }
 
     private Resource createTransactionResource(String kind, Map<String, String> links) {

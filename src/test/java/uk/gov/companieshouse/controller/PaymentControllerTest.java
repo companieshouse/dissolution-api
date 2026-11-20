@@ -14,6 +14,7 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
+import uk.gov.companieshouse.model.enums.PaymentMethod;
 import uk.gov.companieshouse.model.enums.PaymentStatus;
 import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
@@ -22,6 +23,7 @@ import uk.gov.companieshouse.service.payment.PaymentService;
 
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.never;
@@ -42,6 +44,7 @@ class PaymentControllerTest {
     private static final String APPLICATION_REFERENCE = "12345678";
 
     private static final String IDENTITY_HEADER_VALUE = "identity";
+    private static final String TRANSACTION_ID = "153641-745217-950226";
 
     @MockitoBean
     private DissolutionService dissolutionService;
@@ -249,6 +252,75 @@ class PaymentControllerTest {
                 .andExpect(status().isNoContent());
 
         verify(dissolutionService).handlePayment(isA(PaymentPatchRequest.class), eq(APPLICATION_REFERENCE));
+        verify(transactionService, never()).removeCostsFromTransactionIfApplicable(anyString());
+    }
+
+    @Test
+    void patchPaymentDataRequest_removesCostsFromTransaction_ifPaidByAccountAndTransactionExists() throws Exception {
+        final DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
+        dissolutionGetResponse.setApplicationStatus(ApplicationStatus.PENDING_PAYMENT);
+        dissolutionGetResponse.setTransactionId(TRANSACTION_ID);
+
+        final PaymentPatchRequest body = generateAccountPaymentPatchRequest();
+
+        when(dissolutionService.getByApplicationReference(APPLICATION_REFERENCE)).thenReturn(Optional.of(dissolutionGetResponse));
+
+        mockMvc
+                .perform(
+                        patch(PAYMENT_URI, APPLICATION_REFERENCE)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(asJsonString(body))
+                                .headers(createHttpHeaders())
+                )
+                .andExpect(status().isNoContent());
+
+        verify(transactionService).removeCostsFromTransactionIfApplicable(TRANSACTION_ID);
+    }
+
+    @Test
+    void patchPaymentDataRequest_doesNotRemoveCostsFromTransaction_ifPaidByAccountAndNoTransactionExists() throws Exception {
+        final DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
+        dissolutionGetResponse.setApplicationStatus(ApplicationStatus.PENDING_PAYMENT);
+        dissolutionGetResponse.setTransactionId(null);
+
+        final PaymentPatchRequest body = generateAccountPaymentPatchRequest();
+
+        when(dissolutionService.getByApplicationReference(APPLICATION_REFERENCE)).thenReturn(Optional.of(dissolutionGetResponse));
+
+        mockMvc
+                .perform(
+                        patch(PAYMENT_URI, APPLICATION_REFERENCE)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(asJsonString(body))
+                                .headers(createHttpHeaders())
+                )
+                .andExpect(status().isNoContent());
+
+        verify(transactionService, never()).removeCostsFromTransactionIfApplicable(anyString());
+    }
+
+    @Test
+    void patchPaymentDataRequest_doesNotRemoveCostsFromTransaction_ifPaidByCardEvenIfTransactionExists() throws Exception {
+        final DissolutionGetResponse dissolutionGetResponse = generateDissolutionGetResponse();
+        dissolutionGetResponse.setApplicationStatus(ApplicationStatus.PENDING_PAYMENT);
+        dissolutionGetResponse.setTransactionId(TRANSACTION_ID);
+
+        final PaymentPatchRequest body = generatePaymentPatchRequest();
+        body.setStatus(PaymentStatus.PAID);
+        body.setPaymentMethod(PaymentMethod.CREDIT_CARD);
+
+        when(dissolutionService.getByApplicationReference(APPLICATION_REFERENCE)).thenReturn(Optional.of(dissolutionGetResponse));
+
+        mockMvc
+                .perform(
+                        patch(PAYMENT_URI, APPLICATION_REFERENCE)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(asJsonString(body))
+                                .headers(createHttpHeaders())
+                )
+                .andExpect(status().isNoContent());
+
+        verify(transactionService, never()).removeCostsFromTransactionIfApplicable(anyString());
     }
 
     @Test
@@ -293,6 +365,16 @@ class PaymentControllerTest {
                 .andExpect(status().isNoContent());
 
         verify(dissolutionService, never()).handlePayment(isA(PaymentPatchRequest.class), eq(APPLICATION_REFERENCE));
+    }
+
+    private PaymentPatchRequest generateAccountPaymentPatchRequest() {
+        final PaymentPatchRequest body = generatePaymentPatchRequest();
+        body.setStatus(PaymentStatus.PAID);
+        body.setPaymentMethod(PaymentMethod.ACCOUNT);
+        body.setPaymentReference(null);
+        body.setAccountNumber("12345678");
+
+        return body;
     }
 
     private HttpHeaders createHttpHeaders() {
