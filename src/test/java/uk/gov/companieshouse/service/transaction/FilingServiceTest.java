@@ -53,8 +53,10 @@ class FilingServiceTest {
     private static final String TRANSACTION_ID = "tx-id-123";
     private static final String PAYMENT_URI = String.format("/transactions/%s/payment", TRANSACTION_ID);
     private static final String PAYMENT_REFERENCE = "somePaymentRef";
+    private static final String ACCOUNT_NUMBER = "222222";
     private static final String FILING_DESCRIPTION = "Dissolution application to strike off and dissolve a company";
     private static final String DISSOLUTION_FEE = "10.00";
+    private static final String ACCOUNT_PAYMENT_COST = "0";
 
     @Mock
     private DissolutionService dissolutionService;
@@ -128,6 +130,18 @@ class FilingServiceTest {
         final var response = filingService.generateDissolutionFiling(new GenerateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID));
 
         assertThat(response.getKind()).isEqualTo(FILING_KIND_LLDS01);
+    }
+
+    @Test
+    void when_payment_method_is_account_then_filing_cost_is_zero() {
+        dissolution.getData().getApplication().setType(ApplicationType.LLDS01);
+
+        when(dissolutionService.getDissolutionByTransactionAndCompany(TRANSACTION_ID, COMPANY_NUMBER)).thenReturn(dissolution);
+        when(filingPaymentDataResolver.resolve(dissolution, transaction)).thenReturn(PaymentFixtures.generateAccountPaymentData(ACCOUNT_NUMBER));
+
+        final var response = filingService.generateDissolutionFiling(new GenerateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID));
+
+        assertThat(response.getCost()).isEqualTo(ACCOUNT_PAYMENT_COST);
     }
 
     @Test

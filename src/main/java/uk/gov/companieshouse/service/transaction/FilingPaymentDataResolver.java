@@ -32,7 +32,7 @@ public class FilingPaymentDataResolver {
         return new FilingPaymentData(paymentSession.getPaymentMethod(), paymentDetails.getPaymentReference(), null);
     }
 
-    public boolean isAccountPayment(Dissolution dissolution) {
+    private boolean isAccountPayment(Dissolution dissolution) {
         final PaymentInformation paymentInformation = dissolution.getPaymentInformation();
         return paymentInformation != null && paymentInformation.getMethod() == PaymentMethod.ACCOUNT;
     }

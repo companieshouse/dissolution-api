@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.service.transaction;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
@@ -83,7 +84,7 @@ public class FilingService {
         filing.setKind(kind);
         // Note: the filing description is used to determine the email template and subject line
         filing.setDescription(filingDescription);
-        filing.setCost(feeConfig.getClosingPounds()); // TODO: Set to 0 if payment is account
+        filing.setCost(StringUtils.isEmpty(payment.accountNumber()) ? feeConfig.getClosingPounds() : "0");
         filing.setData(data);
     }
 }
