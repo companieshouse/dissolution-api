@@ -23,13 +23,13 @@ public class FilingPaymentDataResolver {
         final PaymentInformation paymentInformation = dissolution.getPaymentInformation();
 
         if (isAccountPayment(dissolution)) {
-            return new FilingPaymentData(PaymentMethod.ACCOUNT.getValue(), null, paymentInformation.getAccountNumber());
+            return new FilingPaymentData(paymentInformation.getMethod(), null, paymentInformation.getAccountNumber());
         }
 
         final var paymentDetails = transactionService.getPayment(transaction.getLinks().getPayment());
         final var paymentSession = transactionPaymentService.getPaymentSession(paymentDetails.getPaymentReference());
 
-        return new FilingPaymentData(paymentSession.getPaymentMethod(), paymentDetails.getPaymentReference(), null);
+        return new FilingPaymentData(PaymentMethod.fromValue(paymentSession.getPaymentMethod()), paymentDetails.getPaymentReference(), null);
     }
 
     private boolean isAccountPayment(Dissolution dissolution) {

@@ -42,7 +42,7 @@ public class FilingDataMapper {
         data.setCompanyName(company.getName());
         data.setCompanyNumber(company.getNumber());
         data.setOfficers(mapToOfficers(dissolution));
-        data.setPaymentMethod(paymentData.method());
+        data.setPaymentMethod(paymentData.method().getValue());
         data.setPaymentReference(paymentData.reference());
         data.setAccountNumber(paymentData.accountNumber());
         data.setLinks(List.of(mapToAttachmentLink(dissolution)));

@@ -89,11 +89,11 @@ public class PaymentFixtures {
     }
 
     public static FilingPaymentData generateCardPaymentData(String paymentReference) {
-        return new FilingPaymentData(CREDIT_CARD_PAYMENT_METHOD, paymentReference, null);
+        return new FilingPaymentData(PaymentMethod.CREDIT_CARD, paymentReference, null);
     }
 
     public static FilingPaymentData generateAccountPaymentData(String accountNumber) {
-        return new FilingPaymentData(ACCOUNT_PAYMENT_METHOD, null, accountNumber);
+        return new FilingPaymentData(PaymentMethod.ACCOUNT, null, accountNumber);
     }
 
     public static RefundRequest generateRefundRequest() {

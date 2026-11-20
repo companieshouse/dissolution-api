@@ -16,6 +16,7 @@ import uk.gov.companieshouse.model.domain.ValidateFilingCommand;
 import uk.gov.companieshouse.model.domain.ValidationResult;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import uk.gov.companieshouse.service.dissolution.validator.FilingValidator;
+import uk.gov.companieshouse.service.dissolution.validator.PaymentValidator;
 import uk.gov.companieshouse.service.dissolution.validator.TransactionValidator;
 
 @Service
@@ -33,14 +34,16 @@ public class FilingService {
     private final FilingKindMapper filingKindMapper;
     private final FeeConfig feeConfig;
     private final FilingValidator filingValidator;
+    private final PaymentValidator paymentValidator;
 
-    public FilingService(DissolutionService dissolutionService, FilingDataMapper filingDataMapper, FeeConfig feeConfig, FilingKindMapper filingKindMapper, FilingValidator filingValidator, FilingPaymentDataResolver filingPaymentDataResolver) {
+    public FilingService(DissolutionService dissolutionService, FilingDataMapper filingDataMapper, FeeConfig feeConfig, FilingKindMapper filingKindMapper, FilingValidator filingValidator, FilingPaymentDataResolver filingPaymentDataResolver, PaymentValidator paymentValidator) {
         this.dissolutionService = dissolutionService;
         this.filingDataMapper = filingDataMapper;
         this.feeConfig = feeConfig;
         this.filingKindMapper = filingKindMapper;
         this.filingValidator = filingValidator;
         this.filingPaymentDataResolver = filingPaymentDataResolver;
+        this.paymentValidator = paymentValidator;
     }
 
     public FilingApi generateDissolutionFiling(GenerateFilingCommand command) {
@@ -70,8 +73,6 @@ public class FilingService {
                 .isLinkedToDissolution(dissolution)
                 .validate();
 
-        // TODO: validate account payment
-
         return filingValidator.validate(dissolution);
     }
 
@@ -80,6 +81,10 @@ public class FilingService {
         final var kind = filingKindMapper.mapApplicationTypeToFilingKind(dissolution.getApplicationType());
         final var payment = filingPaymentDataResolver.resolve(dissolution, ctx.transaction());
         final var data = filingDataMapper.mapToFilingData(dissolution, payment);
+
+        paymentValidator.checkBusinessRules(payment).ifPresent(error -> {
+            throw new ServiceException(error);
+        });
 
         filing.setKind(kind);
         // Note: the filing description is used to determine the email template and subject line

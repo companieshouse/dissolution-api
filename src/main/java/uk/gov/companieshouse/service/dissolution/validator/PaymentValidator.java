@@ -2,7 +2,7 @@ package uk.gov.companieshouse.service.dissolution.validator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
+import uk.gov.companieshouse.model.domain.PaymentDetails;
 import uk.gov.companieshouse.model.enums.PaymentMethod;
 
 import java.util.Optional;
@@ -14,33 +14,31 @@ public class PaymentValidator {
     private static final String ERROR_PAYMENT_REFERENCE_CANNOT_BE_EMPTY_FOR_CARD_PAYMENT = "You must provide a payment reference number for a card payment";
     private static final String ERROR_ACCOUNT_NUMBER_CANNOT_BE_EMPTY_FOR_ACCOUNT_PAYMENT = "You must provide an account number to pay by account";
 
-    public Optional<String> checkBusinessRules(PaymentPatchRequest body) {
-        if (isPaymentReferenceAndAccountNumberProvided(body)) {
+    public Optional<String> checkBusinessRules(PaymentDetails details) {
+        if (isPaymentReferenceAndAccountNumberProvided(details)) {
             return Optional.of(ERROR_CANNOT_SUBMIT_BOTH_PAYMENT_REFERENCE_AND_ACCOUNT_NUMBER);
         }
 
-        if (isPaymentReferenceNotProvidedForCardPayment(body)) {
+        if (isPaymentReferenceNotProvidedForCardPayment(details)) {
             return Optional.of(ERROR_PAYMENT_REFERENCE_CANNOT_BE_EMPTY_FOR_CARD_PAYMENT);
         }
 
-        if (isAccountNumberNotProvidedForAccountPayment(body)) {
+        if (isAccountNumberNotProvidedForAccountPayment(details)) {
             return Optional.of(ERROR_ACCOUNT_NUMBER_CANNOT_BE_EMPTY_FOR_ACCOUNT_PAYMENT);
         }
 
         return Optional.empty();
     }
 
-    private boolean isPaymentReferenceAndAccountNumberProvided(PaymentPatchRequest body) {
-        return  !StringUtils.isEmpty(body.getPaymentReference()) &&
-                !StringUtils.isEmpty(body.getAccountNumber());
+    private boolean isPaymentReferenceAndAccountNumberProvided(PaymentDetails details) {
+        return  !StringUtils.isEmpty(details.getPaymentReference()) && !StringUtils.isEmpty(details.getAccountNumber());
     }
 
-    private boolean isPaymentReferenceNotProvidedForCardPayment(PaymentPatchRequest body) {
-        return body.getPaymentMethod() == PaymentMethod.CREDIT_CARD && StringUtils.isEmpty(body.getPaymentReference());
+    private boolean isPaymentReferenceNotProvidedForCardPayment(PaymentDetails details) {
+        return details.getPaymentMethod() == PaymentMethod.CREDIT_CARD && StringUtils.isEmpty(details.getPaymentReference());
     }
 
-    private boolean isAccountNumberNotProvidedForAccountPayment(PaymentPatchRequest body) {
-        return  body.getPaymentMethod() == PaymentMethod.ACCOUNT &&
-                StringUtils.isEmpty(body.getAccountNumber());
+    private boolean isAccountNumberNotProvidedForAccountPayment(PaymentDetails details) {
+        return  details.getPaymentMethod() == PaymentMethod.ACCOUNT && StringUtils.isEmpty(details.getAccountNumber());
     }
 }

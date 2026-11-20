@@ -24,8 +24,10 @@ import uk.gov.companieshouse.model.domain.GenerateFilingCommand;
 import uk.gov.companieshouse.model.domain.ValidateFilingCommand;
 import uk.gov.companieshouse.model.domain.ValidationResult;
 import uk.gov.companieshouse.model.enums.ApplicationType;
+import uk.gov.companieshouse.model.enums.PaymentMethod;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import uk.gov.companieshouse.service.dissolution.validator.FilingValidator;
+import uk.gov.companieshouse.service.dissolution.validator.PaymentValidator;
 
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -98,7 +100,7 @@ class FilingServiceTest {
         filingPaymentData = PaymentFixtures.generateCardPaymentData(PAYMENT_REFERENCE);
 
         final var filingKindMapper = new FilingKindMapper();
-        filingService = new FilingService(dissolutionService, filingDataMapper, feeConfig, filingKindMapper, filingValidator, filingPaymentDataResolver);
+        filingService = new FilingService(dissolutionService, filingDataMapper, feeConfig, filingKindMapper, filingValidator, filingPaymentDataResolver, new PaymentValidator());
 
         ReflectionTestUtils.setField(filingService, "filingDescription", FILING_DESCRIPTION);
     }
@@ -195,6 +197,20 @@ class FilingServiceTest {
 
         assertThatThrownBy(() -> filingService.generateDissolutionFiling(command))
                 .isInstanceOf(ServiceException.class);
+    }
+
+    @Test
+    void when_payment_data_is_invalid_then_service_exception_thrown() {
+        FilingPaymentData invalidPaymentData = new FilingPaymentData(PaymentMethod.ACCOUNT, PAYMENT_REFERENCE, ACCOUNT_NUMBER);
+
+        when(dissolutionService.getDissolutionByTransactionAndCompany(TRANSACTION_ID, COMPANY_NUMBER)).thenReturn(dissolution);
+        when(filingPaymentDataResolver.resolve(dissolution, transaction)).thenReturn(invalidPaymentData);
+
+        final var command = new GenerateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID);
+
+        assertThatThrownBy(() -> filingService.generateDissolutionFiling(command))
+                .isInstanceOf(ServiceException.class)
+                .hasMessage("You cannot submit both a payment reference number and an account number");
     }
 
     @Nested
