@@ -90,7 +90,7 @@
         <!-- Source: https://mvnrepository.com/artifact/io.opentelemetry.instrumentation/opentelemetry-instrumentation-bom -->
         <opentelemetry.version>2.29.0</opentelemetry.version>
         <!-- Source: https://mvnrepository.com/artifact/com.google.guava/guava -->
-        <guava.version>33.6.0-jre</guava.version>
+        <guava.version>33.7.1-jre</guava.version>
         <!-- Source: https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-bom -->
         <kotlin.version>2.3.21</kotlin.version>
         <!-- Source: https://mvnrepository.com/artifact/org.apache.tomcat.embed/tomcat-embed-core -->
