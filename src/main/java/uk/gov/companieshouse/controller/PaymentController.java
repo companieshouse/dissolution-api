@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.controller;
 
+import com.nimbusds.oauth2.sdk.util.StringUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -20,7 +21,9 @@ import uk.gov.companieshouse.model.dto.dissolution.DissolutionGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentGetResponse;
 import uk.gov.companieshouse.model.dto.payment.PaymentPatchRequest;
 import uk.gov.companieshouse.model.enums.ApplicationStatus;
+import uk.gov.companieshouse.model.enums.PaymentMethod;
 import uk.gov.companieshouse.model.enums.PaymentStatus;
+import uk.gov.companieshouse.service.TransactionService;
 import uk.gov.companieshouse.service.dissolution.DissolutionService;
 import uk.gov.companieshouse.service.dissolution.validator.PaymentValidator;
 import uk.gov.companieshouse.service.payment.PaymentService;
@@ -34,16 +37,18 @@ public class PaymentController {
     private final DissolutionService dissolutionService;
     private final PaymentService paymentService;
     private final PaymentValidator paymentValidator;
+    private final TransactionService transactionService;
 
     public PaymentController(
             DissolutionService dissolutionService,
             PaymentService paymentService,
-            PaymentValidator paymentValidator
+            PaymentValidator paymentValidator, TransactionService transactionService
     ) {
         super();
         this.dissolutionService = dissolutionService;
         this.paymentService = paymentService;
         this.paymentValidator = paymentValidator;
+        this.transactionService = transactionService;
     }
 
     @Operation(summary = "Get Payment UI Data", tags = "Dissolution")
@@ -94,6 +99,11 @@ public class PaymentController {
                 throw new InternalServerErrorException(e.getMessage());
             } catch (DissolutionNotFoundException e) {
                 throw new NotFoundException();
+            }
+
+            if (PaymentMethod.ACCOUNT.equals(body.getPaymentMethod())
+                && StringUtils.isNotBlank(dissolutionInfo.getTransactionId())) {
+                transactionService.removeCostsFromTransactionIfApplicable(dissolutionInfo.getTransactionId());
             }
         } else {
             try {
