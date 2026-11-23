@@ -65,6 +65,7 @@ public class FilingDataMapper {
         officer.setSignDate(director.getDirectorApproval().getDateTime().format(DATE_FORMATTER));
         officer.setEmail(director.getEmail());
         officer.setIpAddress(director.getDirectorApproval().getIpAddress());
+        officer.setUserId(director.getDirectorApproval().getUserId());
         Optional.ofNullable(director.getOnBehalfName()).ifPresent(officer::setOnBehalfName);
 
         return officer;

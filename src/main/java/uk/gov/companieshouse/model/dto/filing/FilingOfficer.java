@@ -21,6 +21,9 @@ public class FilingOfficer {
     @JsonProperty("on_behalf_name")
     private String onBehalfName;
 
+    @JsonProperty("user_id")
+    private String userId;
+
     public FilingPersonName getPersonName() {
         return personName;
     }
@@ -59,5 +62,13 @@ public class FilingOfficer {
 
     public void setOnBehalfName(String onBehalfName) {
         this.onBehalfName = onBehalfName;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }

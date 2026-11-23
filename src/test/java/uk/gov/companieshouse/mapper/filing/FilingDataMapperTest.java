@@ -86,6 +86,7 @@ class FilingDataMapperTest {
         assertEquals(expectedDissolutionDirector.getEmail(), officerMap.get("email"));
         assertEquals(expectedDissolutionDirector.getDirectorApproval().getIpAddress(), officerMap.get("ip_address"));
         assertEquals(expectedDirectorSignDate, officerMap.get("sign_date"));
+        assertEquals(expectedDissolutionDirector.getDirectorApproval().getUserId(), officerMap.get("user_id"));
         assertFalse(officerMap.containsKey("on_behalf_name"));
 
         Map<String, Object> personNameMap = (Map<String, Object>) officerMap.get("person_name");
@@ -146,6 +147,7 @@ class FilingDataMapperTest {
         assertEquals(expectedDissolutionDirector.getEmail(), officerMap.get("email"));
         assertEquals(expectedDissolutionDirector.getDirectorApproval().getIpAddress(), officerMap.get("ip_address"));
         assertEquals(expectedSignDate, officerMap.get("sign_date"));
+        assertEquals(expectedDissolutionDirector.getDirectorApproval().getUserId(), officerMap.get("user_id"));
         assertFalse(officerMap.containsKey("on_behalf_name"));
 
         Map<String, Object> personNameMap = (Map<String, Object>) officerMap.get("person_name");
