@@ -1,12 +1,13 @@
 package uk.gov.companieshouse.model.dto.payment;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import uk.gov.companieshouse.model.domain.PaymentDetails;
 import uk.gov.companieshouse.model.enums.PaymentMethod;
 import uk.gov.companieshouse.model.enums.PaymentStatus;
 
 import java.sql.Timestamp;
 
-public class PaymentPatchRequest {
+public class PaymentPatchRequest implements PaymentDetails {
     private PaymentStatus status;
 
     @JsonProperty("payment_reference")
