@@ -15,7 +15,7 @@ public class EnvironmentConfig {
     @Value("${email.chsFinanceEmail}")
     private String chsFinanceEmail;
 
-    @Value("$email.chsSupportEmail")
+    @Value("${email.chsSupportEmail}")
     private String chsSupportEmail;
     
     @Value("${cdn.host}")

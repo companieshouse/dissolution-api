@@ -16,6 +16,20 @@
 
 3. Dissolution API can be accessed using `http://api.chs.local:4001/dissolution-request` from within a docker container
 
+## Running tests
+
+| Command                 | Runs                                                                 |
+|-------------------------|----------------------------------------------------------------------|
+| `make test-unit`        | Unit tests in `src/test` (Surefire)                                  |
+| `make test-integration` | Integration tests (`*IT.java`) in `src/it` (Failsafe)                |
+| `make test`             | Both                                                                 |
+
+Integration tests start the application on a random port against a MongoDB Testcontainer, with all outbound HTTP
+stubbed by WireMock, so **Docker must be running**. The repository tests in `src/test` also use a MongoDB
+Testcontainer. To run a single IT class: `mvn verify -Dskip.unit.tests=true -Dit.test=TransactionsDissolutionIT`.
+
+`-DskipTests=true` skips both suites; use `-Dskip.unit.tests=true` or `-Dskip.integration.tests=true` to skip one.
+
 ## Manually build the Docker container
 
 You must be connected to the VPN

@@ -7,8 +7,11 @@ import org.testcontainers.utility.DockerImageName;
 
 public class AbstractMongoConfig {
 
+    // Shared with AbstractIntegrationTest so repository tests and integration tests run against the same server.
+    public static final String MONGO_IMAGE = "mongo:8.2.5-noble";
+
     public static final MongoDBContainer mongoDBContainer = new MongoDBContainer(
-            DockerImageName.parse("mongo:5"));
+            DockerImageName.parse(MONGO_IMAGE));
 
     @DynamicPropertySource
     public static void setProperties(DynamicPropertyRegistry registry) {

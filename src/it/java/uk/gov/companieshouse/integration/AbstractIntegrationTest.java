@@ -3,8 +3,8 @@ package uk.gov.companieshouse.integration;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
-import static uk.gov.companieshouse.model.Constants.HEADER_ERIC_REQUEST_ID;
 
+import com.google.api.client.auth.oauth2.TokenResponse;
 import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +13,6 @@ import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTe
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
@@ -24,9 +23,10 @@ import tools.jackson.databind.json.JsonMapper;
 import uk.gov.companieshouse.api.ApiClient;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.http.ApiKeyHttpClient;
+import uk.gov.companieshouse.api.http.HttpClient;
+import uk.gov.companieshouse.api.http.OAuthHttpClient;
 import uk.gov.companieshouse.api.sdk.ApiClientService;
-import uk.gov.companieshouse.api.util.security.EricConstants;
-import uk.gov.companieshouse.api.util.security.Permission;
+import uk.gov.companieshouse.config.AbstractMongoConfig;
 
 /**
  * Base class for integration tests. Runs the full application on a random port against a shared
@@ -38,6 +38,7 @@ import uk.gov.companieshouse.api.util.security.Permission;
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("it")
 @AutoConfigureRestTestClient
+// Setting baseUrlProperties replaces the default, so wiremock.server.baseUrl must be listed explicitly.
 @EnableWireMock(@ConfigureWireMock(baseUrlProperties = {
         "wiremock.server.baseUrl",
         "api.url",
@@ -51,18 +52,13 @@ import uk.gov.companieshouse.api.util.security.Permission;
 }))
 public abstract class AbstractIntegrationTest {
 
-    protected static final String ERIC_REQUEST_ID = "XaBcDeF12345";
-    protected static final String ERIC_IDENTITY_VALUE = "user123";
-    protected static final String ERIC_EMAIL = "user@mail.com";
-    protected static final String ERIC_ACCESS_TOKEN = "{\"token_type\":\"Bearer\",\"access_token\":\"test-token\",\"expires_in\":3600}";
+    private static final String TEST_API_KEY = "test-api-key";
 
-    // Started once for every IT class rather than via @Container, which would stop it after each class
-    // while Spring's cached context still points at it.
     @ServiceConnection
-    static final MongoDBContainer MONGO = new MongoDBContainer("mongo:8.2.5-noble");
+    static final MongoDBContainer mongoDBContainer = new MongoDBContainer(AbstractMongoConfig.MONGO_IMAGE);
 
     static {
-        MONGO.start();
+        mongoDBContainer.start();
     }
 
     @Autowired
@@ -75,7 +71,8 @@ public abstract class AbstractIntegrationTest {
     protected JsonMapper jsonMapper;
 
     // The real ApiClientService builds SDK clients from API_URL etc. environment variables, which
-    // can't be changed at runtime. Mocking it lets the SDK target WireMock's random port instead.
+    // can't be changed at runtime. Mocking it lets the SDK target WireMock's random port instead,
+    // while still authenticating with whatever pass-through token the application hands it.
     @MockitoBean
     protected ApiClientService apiClientService;
 
@@ -89,18 +86,32 @@ public abstract class AbstractIntegrationTest {
     }
 
     private void stubSdkClients() throws IOException {
-        final ApiClient apiClient = pointAtWireMock(new ApiClient(new ApiKeyHttpClient("test-api-key")));
-        final InternalApiClient internalApiClient = pointAtWireMock(new InternalApiClient(new ApiKeyHttpClient("test-api-key")));
-        internalApiClient.setInternalBasePath(wireMockBaseUrl);
-
+        when(apiClientService.getApiClient()).thenAnswer(inv -> configureWireMock(new ApiClient(new ApiKeyHttpClient(TEST_API_KEY))));
+        when(apiClientService.getInternalApiClient()).thenAnswer(inv -> internalApiClient(new ApiKeyHttpClient(TEST_API_KEY)));
         // any() rather than anyString(): the pass-through header is null when no ERIC-Access-Token is sent.
-        when(apiClientService.getApiClient()).thenReturn(apiClient);
-        when(apiClientService.getApiClient(any())).thenReturn(apiClient);
-        when(apiClientService.getInternalApiClient()).thenReturn(internalApiClient);
-        when(apiClientService.getInternalApiClient(any())).thenReturn(internalApiClient);
+        when(apiClientService.getApiClient(any())).thenAnswer(inv -> configureWireMock(new ApiClient(httpClientFor(inv.getArgument(0)))));
+        when(apiClientService.getInternalApiClient(any())).thenAnswer(inv -> internalApiClient(httpClientFor(inv.getArgument(0))));
     }
 
-    private <T extends ApiClient> T pointAtWireMock(T apiClient) {
+    private InternalApiClient internalApiClient(HttpClient httpClient) {
+        final InternalApiClient internalApiClient = configureWireMock(new InternalApiClient(httpClient));
+        internalApiClient.setInternalBasePath(wireMockBaseUrl);
+        return internalApiClient;
+    }
+
+    /**
+     * Mirrors {@code ApiSdkManager.getSDK(passthroughHeader)}: a Bearer pass-through token becomes an
+     * {@link OAuthHttpClient}, so tests can verify the caller's token reaches downstream APIs.
+     */
+    private HttpClient httpClientFor(String passthroughHeader) throws IOException {
+        if (passthroughHeader == null || passthroughHeader.isEmpty()) {
+            return new ApiKeyHttpClient(TEST_API_KEY);
+        }
+        final String accessToken = jsonMapper.readTree(passthroughHeader).get("access_token").asString();
+        return new OAuthHttpClient(new TokenResponse().setAccessToken(accessToken));
+    }
+
+    private <T extends ApiClient> T configureWireMock(T apiClient) {
         apiClient.setBasePath(wireMockBaseUrl);
         apiClient.setBasePaymentsPath(wireMockBaseUrl);
         apiClient.setBaseDocumentAPIPath(wireMockBaseUrl);
@@ -110,26 +121,5 @@ public abstract class AbstractIntegrationTest {
 
     protected String toJson(Object body) {
         return jsonMapper.writeValueAsString(body);
-    }
-
-    /**
-     * Headers for a signed-in user authorised to dissolve the given company, as provided by the ERIC gateway.
-     */
-    protected HttpHeaders ericUserHeaders(final String companyNumber) {
-        return ericUserHeaders(ERIC_IDENTITY_VALUE, companyNumber);
-    }
-
-    protected HttpHeaders ericUserHeaders(final String userId, final String companyNumber) {
-        final HttpHeaders headers = new HttpHeaders();
-        headers.add(EricConstants.ERIC_IDENTITY, userId);
-        headers.add("ERIC-Authorised-User", ERIC_EMAIL);
-        headers.add(HEADER_ERIC_REQUEST_ID, ERIC_REQUEST_ID);
-        headers.add(EricConstants.ERIC_AUTHORISED_TOKEN_PERMISSIONS, String.format(
-                "%s=%s %s=%s",
-                Permission.Key.COMPANY_NUMBER, companyNumber,
-                Permission.Key.COMPANY_STATUS, Permission.Value.UPDATE
-        ));
-        headers.add("ERIC-Access-Token", ERIC_ACCESS_TOKEN);
-        return headers;
     }
 }

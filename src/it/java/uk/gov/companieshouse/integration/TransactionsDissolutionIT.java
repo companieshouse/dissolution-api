@@ -23,18 +23,28 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static uk.gov.companieshouse.model.Constants.DISSOLUTION_BASE_URI_PATTERN;
 import static uk.gov.companieshouse.model.Constants.FILING_KIND_DS01;
+import static uk.gov.companieshouse.model.Constants.HEADER_ERIC_REQUEST_ID;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.client.RestTestClient;
 import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
+import uk.gov.companieshouse.api.util.security.EricConstants;
+import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.fixtures.CompanyOfficerFixtures;
 import uk.gov.companieshouse.fixtures.CompanyProfileApiFixtures;
 import uk.gov.companieshouse.fixtures.CreatedByTestDataBuilder;
@@ -56,6 +66,12 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
     private static final String OTHER_COMPANY_NUMBER = "99999";
     private static final String TRANSACTION_ID = TransactionFixtures.TRANSACTION_ID;
     private static final String OTHER_USER_ID = "someone-else";
+
+    private static final String ERIC_REQUEST_ID = "XaBcDeF12345";
+    private static final String ERIC_IDENTITY_VALUE = "user123";
+    private static final String ERIC_EMAIL = "user@mail.com";
+    private static final String ERIC_ACCESS_TOKEN = "{\"token_type\":\"Bearer\",\"access_token\":\"test-token\",\"expires_in\":3600}";
+    private static final String FORWARDED_AUTHORIZATION = "Bearer test-token";
 
     private static final String DISSOLUTION_PATH = "/company/{companyNumber}/transactions/{transactionId}/dissolution";
     private static final String APPROVE_PATH = DISSOLUTION_PATH + "/approve";
@@ -81,6 +97,56 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
     }
 
     @Nested
+    @DisplayName("Authorisation")
+    class Authorisation {
+
+        static Stream<Arguments> endpoints() {
+            return Stream.of(
+                    Arguments.of(HttpMethod.POST, DISSOLUTION_PATH, new Object[]{}),
+                    Arguments.of(HttpMethod.PATCH, APPROVE_PATH, new Object[]{}),
+                    Arguments.of(HttpMethod.POST, INITIATION_PATH, new Object[]{}),
+                    Arguments.of(HttpMethod.POST, RESEND_NOTIFICATION_PATH, new Object[]{OFFICER_ONE}),
+                    Arguments.of(HttpMethod.PATCH, SIGNATORY_PATH, new Object[]{OFFICER_ONE}));
+        }
+
+        @ParameterizedTest(name = "{0} {1}")
+        @MethodSource("endpoints")
+        @DisplayName("returns 401 and calls no downstream services when ERIC headers are missing")
+        void returns401WithoutEricHeaders(HttpMethod method, String path, Object[] extraUriVars) {
+            insertDissolution(DissolutionStatus.PENDING, aDissolution());
+
+            client.method(method).uri(path, uriVars(extraUriVars))
+                    .exchange()
+                    .expectStatus().isUnauthorized();
+
+            assertDissolutionUntouched();
+        }
+
+        @ParameterizedTest(name = "{0} {1}")
+        @MethodSource("endpoints")
+        @DisplayName("returns 401 and calls no downstream services when the user is not authorised for the company")
+        void returns401WhenUserNotAuthorisedForCompany(HttpMethod method, String path, Object[] extraUriVars) {
+            insertDissolution(DissolutionStatus.PENDING, aDissolution());
+
+            client.method(method).uri(path, uriVars(extraUriVars))
+                    .headers(h -> h.addAll(ericUserHeaders(ERIC_IDENTITY_VALUE, OTHER_COMPANY_NUMBER)))
+                    .exchange()
+                    .expectStatus().isUnauthorized();
+
+            assertDissolutionUntouched();
+        }
+
+        private void assertDissolutionUntouched() {
+            final Dissolution stored = findOnlyDissolution();
+            assertThat(stored.getStatus()).isEqualTo(DissolutionStatus.PENDING);
+            assertThat(stored.getData().getDirectors())
+                    .extracting(DissolutionDirector::getEmail, DissolutionDirector::hasDirectorApproval)
+                    .containsExactlyInAnyOrder(tuple(OFFICER_ONE_EMAIL, false), tuple(OFFICER_TWO_EMAIL, false));
+            verify(0, anyRequestedFor(anyUrl()));
+        }
+    }
+
+    @Nested
     @DisplayName("POST " + DISSOLUTION_PATH)
     class CreateDraftDissolution {
 
@@ -91,8 +157,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
             stubCompanyProfile(CompanyProfileApiFixtures.generateCompanyProfileApi());
             stubFor(patch(PRIVATE_TRANSACTION_URI).willReturn(noContent()));
 
-            client.post().uri(DISSOLUTION_PATH, COMPANY_NUMBER, TRANSACTION_ID)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPost(DISSOLUTION_PATH)
                     .exchange()
                     .expectStatus().isCreated()
                     .expectBody()
@@ -106,32 +171,10 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
                 assertThat(dissolution.getCreatedBy().getUserId()).isEqualTo(ERIC_IDENTITY_VALUE);
                 assertThat(dissolution.getCreatedBy().getEmail()).isEqualTo(ERIC_EMAIL);
             });
-            verify(1, getRequestedFor(urlEqualTo(TRANSACTION_URI)));
-            verify(1, patchRequestedFor(urlEqualTo(PRIVATE_TRANSACTION_URI))
+            verify(1, getRequestedFor(urlEqualTo(TRANSACTION_URI)).withHeader(HttpHeaders.AUTHORIZATION, equalTo(FORWARDED_AUTHORIZATION)));
+            verify(1, getRequestedFor(urlEqualTo(COMPANY_PROFILE_URI)).withHeader(HttpHeaders.AUTHORIZATION, equalTo(FORWARDED_AUTHORIZATION)));
+            verify(1, patchRequestedFor(urlEqualTo(PRIVATE_TRANSACTION_URI)).withHeader(HttpHeaders.AUTHORIZATION, equalTo(FORWARDED_AUTHORIZATION))
                     .withRequestBody(matchingJsonPath("$.resources['" + String.format(DISSOLUTION_BASE_URI_PATTERN, COMPANY_NUMBER, TRANSACTION_ID) + "'].kind", equalTo(FILING_KIND_DS01))));
-        }
-
-        @Test
-        @DisplayName("returns 401 and calls no downstream services when ERIC headers are missing")
-        void returns401WithoutEricHeaders() {
-            client.post().uri(DISSOLUTION_PATH, COMPANY_NUMBER, TRANSACTION_ID)
-                    .exchange()
-                    .expectStatus().isUnauthorized();
-
-            assertThat(mongoTemplate.findAll(Dissolution.class)).isEmpty();
-            verify(0, anyRequestedFor(anyUrl()));
-        }
-
-        @Test
-        @DisplayName("returns 401 when the user is not authorised for the company")
-        void returns401WhenUserNotAuthorisedForCompany() {
-            client.post().uri(DISSOLUTION_PATH, COMPANY_NUMBER, TRANSACTION_ID)
-                    .headers(h -> h.addAll(ericUserHeaders(OTHER_COMPANY_NUMBER)))
-                    .exchange()
-                    .expectStatus().isUnauthorized();
-
-            assertThat(mongoTemplate.findAll(Dissolution.class)).isEmpty();
-            verify(0, anyRequestedFor(anyUrl()));
         }
 
         @Test
@@ -139,8 +182,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
         void returns404WhenTransactionNotFound() {
             stubFor(get(TRANSACTION_URI).willReturn(notFound()));
 
-            client.post().uri(DISSOLUTION_PATH, COMPANY_NUMBER, TRANSACTION_ID)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPost(DISSOLUTION_PATH)
                     .exchange()
                     .expectStatus().isNotFound();
 
@@ -153,8 +195,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
         void returns500WhenTransactionApiFails() {
             stubFor(get(TRANSACTION_URI).willReturn(serverError()));
 
-            client.post().uri(DISSOLUTION_PATH, COMPANY_NUMBER, TRANSACTION_ID)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPost(DISSOLUTION_PATH)
                     .exchange()
                     .expectStatus().is5xxServerError();
 
@@ -167,8 +208,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
             stubTransaction(openTransaction());
             stubFor(get(COMPANY_PROFILE_URI).willReturn(notFound()));
 
-            client.post().uri(DISSOLUTION_PATH, COMPANY_NUMBER, TRANSACTION_ID)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPost(DISSOLUTION_PATH)
                     .exchange()
                     .expectStatus().isNotFound();
 
@@ -184,8 +224,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
             stubTransaction(openTransaction());
             stubCompanyProfile(dissolvedCompany);
 
-            client.post().uri(DISSOLUTION_PATH, COMPANY_NUMBER, TRANSACTION_ID)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPost(DISSOLUTION_PATH)
                     .exchange()
                     .expectStatus().isBadRequest();
 
@@ -199,8 +238,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
             stubTransaction(transaction(TransactionStatus.CLOSED));
             stubCompanyProfile(CompanyProfileApiFixtures.generateCompanyProfileApi());
 
-            client.post().uri(DISSOLUTION_PATH, COMPANY_NUMBER, TRANSACTION_ID)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPost(DISSOLUTION_PATH)
                     .exchange()
                     .expectStatus().isEqualTo(409);
 
@@ -215,8 +253,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
             stubTransaction(openTransaction());
             stubCompanyProfile(CompanyProfileApiFixtures.generateCompanyProfileApi());
 
-            client.post().uri(DISSOLUTION_PATH, COMPANY_NUMBER, TRANSACTION_ID)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPost(DISSOLUTION_PATH)
                     .exchange()
                     .expectStatus().isEqualTo(409);
 
@@ -232,8 +269,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
             stubCompanyProfile(CompanyProfileApiFixtures.generateCompanyProfileApi());
             stubFor(patch(PRIVATE_TRANSACTION_URI).willReturn(serverError()));
 
-            client.post().uri(DISSOLUTION_PATH, COMPANY_NUMBER, TRANSACTION_ID)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPost(DISSOLUTION_PATH)
                     .exchange()
                     .expectStatus().is5xxServerError();
 
@@ -252,8 +288,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
             insertDissolution(DissolutionStatus.PENDING, aDissolution());
             stubTransaction(openTransaction());
 
-            client.patch().uri(APPROVE_PATH, COMPANY_NUMBER, TRANSACTION_ID)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPatch(APPROVE_PATH)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(approvalBody(OFFICER_ONE, true))
                     .exchange()
@@ -278,8 +313,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
                     .withStatus(201)
                     .withHeader("Location", "s3://some-pdf-bucket/certificate.pdf")));
 
-            client.patch().uri(APPROVE_PATH, COMPANY_NUMBER, TRANSACTION_ID)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPatch(APPROVE_PATH)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(approvalBody(OFFICER_TWO, true))
                     .exchange()
@@ -297,8 +331,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
         void returns404WhenNoPendingDissolution() {
             stubTransaction(openTransaction());
 
-            client.patch().uri(APPROVE_PATH, COMPANY_NUMBER, TRANSACTION_ID)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPatch(APPROVE_PATH)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(approvalBody(OFFICER_ONE, true))
                     .exchange()
@@ -311,8 +344,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
             insertDissolution(DissolutionStatus.PENDING, aDissolution());
             stubTransaction(openTransaction());
 
-            client.patch().uri(APPROVE_PATH, COMPANY_NUMBER, TRANSACTION_ID)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPatch(APPROVE_PATH)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(approvalBody("unknown999", true))
                     .exchange()
@@ -328,8 +360,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
             insertDissolution(DissolutionStatus.PENDING, aDissolution());
             stubTransaction(transaction(TransactionStatus.CLOSED));
 
-            client.patch().uri(APPROVE_PATH, COMPANY_NUMBER, TRANSACTION_ID)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPatch(APPROVE_PATH)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(approvalBody(OFFICER_ONE, true))
                     .exchange()
@@ -344,8 +375,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
             insertDissolution(DissolutionStatus.PENDING, aDissolution());
             stubTransaction(openTransaction());
 
-            client.patch().uri(APPROVE_PATH, COMPANY_NUMBER, TRANSACTION_ID)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPatch(APPROVE_PATH)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(Map.of("officer_id", "", "has_approved", false))
                     .exchange()
@@ -370,8 +400,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
             stubTransaction(openTransaction());
             stubOfficers(OFFICER_ONE, OFFICER_TWO);
 
-            client.post().uri(INITIATION_PATH, COMPANY_NUMBER, TRANSACTION_ID)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPost(INITIATION_PATH)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(initiationBody(Map.of("officer_id", OFFICER_ONE, "email", "new.one@doe.com"),
                             Map.of("officer_id", OFFICER_TWO, "email", "new.two@doe.com")))
@@ -396,8 +425,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
             stubTransaction(openTransaction());
             stubOfficers(OFFICER_ONE, OFFICER_TWO);
 
-            client.post().uri(INITIATION_PATH, COMPANY_NUMBER, TRANSACTION_ID)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPost(INITIATION_PATH)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(initiationBody(Map.of("officer_id", "unknown999", "email", "nobody@doe.com")))
                     .exchange()
@@ -412,8 +440,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
         void returns404WhenNoDraft() {
             stubTransaction(openTransaction());
 
-            client.post().uri(INITIATION_PATH, COMPANY_NUMBER, TRANSACTION_ID)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPost(INITIATION_PATH)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(initiationBody(Map.of("officer_id", OFFICER_ONE, "email", OFFICER_ONE_EMAIL)))
                     .exchange()
@@ -428,8 +455,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
             insertDissolution(DissolutionStatus.PENDING, aDissolution());
             stubTransaction(openTransaction());
 
-            client.post().uri(INITIATION_PATH, COMPANY_NUMBER, TRANSACTION_ID)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPost(INITIATION_PATH)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(initiationBody(Map.of("officer_id", OFFICER_ONE, "email", OFFICER_ONE_EMAIL)))
                     .exchange()
@@ -444,8 +470,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
             insertDissolution(DissolutionStatus.DRAFT, aDissolution());
             stubTransaction(openTransaction());
 
-            client.post().uri(INITIATION_PATH, COMPANY_NUMBER, TRANSACTION_ID)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPost(INITIATION_PATH)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(initiationBody())
                     .exchange()
@@ -467,8 +492,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
             insertDissolution(DissolutionStatus.PENDING, aDissolution());
             stubTransaction(openTransaction());
 
-            client.post().uri(RESEND_NOTIFICATION_PATH, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ONE)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPost(RESEND_NOTIFICATION_PATH, OFFICER_ONE)
                     .exchange()
                     .expectStatus().isOk();
 
@@ -482,8 +506,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
             insertDissolution(DissolutionStatus.PENDING, aDissolution());
             stubTransaction(openTransaction());
 
-            client.post().uri(RESEND_NOTIFICATION_PATH, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ONE)
-                    .headers(h -> h.addAll(ericUserHeaders(OTHER_USER_ID, COMPANY_NUMBER)))
+            asUser(OTHER_USER_ID, client.post(), RESEND_NOTIFICATION_PATH, OFFICER_ONE)
                     .exchange()
                     .expectStatus().isBadRequest();
 
@@ -496,8 +519,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
             insertDissolution(DissolutionStatus.PENDING, aDissolution());
             stubTransaction(openTransaction());
 
-            client.post().uri(RESEND_NOTIFICATION_PATH, COMPANY_NUMBER, TRANSACTION_ID, "unknown999")
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPost(RESEND_NOTIFICATION_PATH, "unknown999")
                     .exchange()
                     .expectStatus().isBadRequest();
 
@@ -509,8 +531,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
         void returns404WhenNoPendingDissolution() {
             stubTransaction(openTransaction());
 
-            client.post().uri(RESEND_NOTIFICATION_PATH, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ONE)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPost(RESEND_NOTIFICATION_PATH, OFFICER_ONE)
                     .exchange()
                     .expectStatus().isNotFound();
 
@@ -528,8 +549,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
             insertDissolution(DissolutionStatus.PENDING, aDissolution());
             stubTransaction(openTransaction());
 
-            client.patch().uri(SIGNATORY_PATH, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ONE)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPatch(SIGNATORY_PATH, OFFICER_ONE)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(Map.of("email", "Jane.Doe@Mail.com", "on_behalf_name", "Jane Doe"))
                     .exchange()
@@ -548,8 +568,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
                     signatory(OFFICER_TWO, OFFICER_TWO_EMAIL)));
             stubTransaction(openTransaction());
 
-            client.patch().uri(SIGNATORY_PATH, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ONE)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPatch(SIGNATORY_PATH, OFFICER_ONE)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(Map.of("email", "jane.doe@mail.com"))
                     .exchange()
@@ -564,8 +583,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
             insertDissolution(DissolutionStatus.PENDING, aDissolution());
             stubTransaction(openTransaction());
 
-            client.patch().uri(SIGNATORY_PATH, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ONE)
-                    .headers(h -> h.addAll(ericUserHeaders(OTHER_USER_ID, COMPANY_NUMBER)))
+            asUser(OTHER_USER_ID, client.patch(), SIGNATORY_PATH, OFFICER_ONE)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(Map.of("email", "jane.doe@mail.com"))
                     .exchange()
@@ -580,8 +598,7 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
             insertDissolution(DissolutionStatus.PENDING, aDissolution());
             stubTransaction(openTransaction());
 
-            client.patch().uri(SIGNATORY_PATH, COMPANY_NUMBER, TRANSACTION_ID, OFFICER_ONE)
-                    .headers(h -> h.addAll(ericUserHeaders(COMPANY_NUMBER)))
+            authorisedPatch(SIGNATORY_PATH, OFFICER_ONE)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(Map.of("email", "not-an-email"))
                     .exchange()
@@ -658,5 +675,40 @@ class TransactionsDissolutionIT extends AbstractIntegrationTest {
     @SafeVarargs
     private static Map<String, Object> initiationBody(Map<String, String>... directors) {
         return Map.of("directors", List.of(directors));
+    }
+
+    private RestTestClient.RequestBodySpec authorisedPost(String path, Object... extraUriVars) {
+        return asUser(ERIC_IDENTITY_VALUE, client.post(), path, extraUriVars);
+    }
+
+    private RestTestClient.RequestBodySpec authorisedPatch(String path, Object... extraUriVars) {
+        return asUser(ERIC_IDENTITY_VALUE, client.patch(), path, extraUriVars);
+    }
+
+    private static RestTestClient.RequestBodySpec asUser(String userId, RestTestClient.RequestBodyUriSpec request,
+                                                         String path, Object... extraUriVars) {
+        return request.uri(path, uriVars(extraUriVars))
+                .headers(h -> h.addAll(ericUserHeaders(userId, COMPANY_NUMBER)));
+    }
+
+    private static Object[] uriVars(Object... extraUriVars) {
+        return Stream.concat(Stream.of(COMPANY_NUMBER, TRANSACTION_ID), Arrays.stream(extraUriVars)).toArray();
+    }
+
+    /**
+     * Headers for a signed-in user authorised to dissolve the given company, as provided by the ERIC gateway.
+     */
+    private static HttpHeaders ericUserHeaders(String userId, String companyNumber) {
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add(EricConstants.ERIC_IDENTITY, userId);
+        headers.add("ERIC-Authorised-User", ERIC_EMAIL);
+        headers.add(HEADER_ERIC_REQUEST_ID, ERIC_REQUEST_ID);
+        headers.add(EricConstants.ERIC_AUTHORISED_TOKEN_PERMISSIONS, String.format(
+                "%s=%s %s=%s",
+                Permission.Key.COMPANY_NUMBER, companyNumber,
+                Permission.Key.COMPANY_STATUS, Permission.Value.UPDATE
+        ));
+        headers.add("ERIC-Access-Token", ERIC_ACCESS_TOKEN);
+        return headers;
     }
 }
