@@ -86,17 +86,11 @@ public abstract class AbstractIntegrationTest {
     }
 
     private void stubSdkClients() throws IOException {
-        when(apiClientService.getApiClient()).thenAnswer(inv -> configureWireMock(new ApiClient(new ApiKeyHttpClient(TEST_API_KEY))));
-        when(apiClientService.getInternalApiClient()).thenAnswer(inv -> internalApiClient(new ApiKeyHttpClient(TEST_API_KEY)));
+        when(apiClientService.getApiClient()).thenAnswer(inv -> configureWireMock(new ApiClient(httpClientFor(null))));
+        when(apiClientService.getInternalApiClient()).thenAnswer(inv -> configureWireMock(new InternalApiClient(httpClientFor(null))));
         // any() rather than anyString(): the pass-through header is null when no ERIC-Access-Token is sent.
         when(apiClientService.getApiClient(any())).thenAnswer(inv -> configureWireMock(new ApiClient(httpClientFor(inv.getArgument(0)))));
-        when(apiClientService.getInternalApiClient(any())).thenAnswer(inv -> internalApiClient(httpClientFor(inv.getArgument(0))));
-    }
-
-    private InternalApiClient internalApiClient(HttpClient httpClient) {
-        final InternalApiClient internalApiClient = configureWireMock(new InternalApiClient(httpClient));
-        internalApiClient.setInternalBasePath(wireMockBaseUrl);
-        return internalApiClient;
+        when(apiClientService.getInternalApiClient(any())).thenAnswer(inv -> configureWireMock(new InternalApiClient(httpClientFor(inv.getArgument(0)))));
     }
 
     /**
@@ -116,6 +110,9 @@ public abstract class AbstractIntegrationTest {
         apiClient.setBasePaymentsPath(wireMockBaseUrl);
         apiClient.setBaseDocumentAPIPath(wireMockBaseUrl);
         apiClient.setBaseOracleQueryApiPath(wireMockBaseUrl);
+        if (apiClient instanceof InternalApiClient internalApiClient) {
+            internalApiClient.setInternalBasePath(wireMockBaseUrl);
+        }
         return apiClient;
     }
 
