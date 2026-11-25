@@ -36,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.DisplayNameGenerator.ReplaceUnderscores;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.api.model.transaction.TransactionStatus.CLOSED;
 import static uk.gov.companieshouse.api.model.transaction.TransactionStatus.OPEN;
@@ -143,7 +144,7 @@ class FilingServiceTest {
 
         final var response = filingService.generateDissolutionFiling(new GenerateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID));
 
-        assertThat(response.getCost()).isEqualTo(ACCOUNT_PAYMENT_COST);
+        assertThat(response.getCost()).isNullOrEmpty();
     }
 
     @Test
@@ -210,7 +211,9 @@ class FilingServiceTest {
 
         assertThatThrownBy(() -> filingService.generateDissolutionFiling(command))
                 .isInstanceOf(ServiceException.class)
-                .hasMessage("You cannot submit both a payment reference number and an account number");
+                .hasMessage("Payment validation failed while generating dissolution filing data: You cannot submit both a payment reference number and an account number");
+
+        verifyNoInteractions(filingDataMapper);
     }
 
     @Nested

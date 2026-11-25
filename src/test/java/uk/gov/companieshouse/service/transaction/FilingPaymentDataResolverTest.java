@@ -100,6 +100,17 @@ class FilingPaymentDataResolverTest {
     }
 
     @Test
+    void when_transaction_has_no_payment_link_then_service_exception_is_thrown() {
+        transaction.getLinks().setPayment(null);
+
+        assertThatThrownBy(() -> resolver.resolve(dissolution, transaction))
+                .isInstanceOf(ServiceException.class)
+                .hasMessageContaining(TRANSACTION_ID);
+
+        verifyNoInteractions(transactionService, transactionPaymentService);
+    }
+
+    @Test
     void when_transaction_payment_retrieval_fails_then_service_exception_is_propagated() {
         when(transactionService.getPayment(PAYMENT_URI))
                 .thenThrow(new ServiceException("payment error", new RuntimeException()));
@@ -118,6 +129,41 @@ class FilingPaymentDataResolverTest {
 
         assertThatThrownBy(() -> resolver.resolve(dissolution, transaction))
                 .isInstanceOf(ServiceException.class);
+    }
+
+    @Test
+    void when_payment_session_method_is_unknown_then_service_exception_is_thrown() {
+        paymentDetails.setPaymentMethod("paypal");
+        when(transactionService.getPayment(PAYMENT_URI)).thenReturn(transactionPayment);
+        when(transactionPaymentService.getPaymentSession(PAYMENT_REFERENCE)).thenReturn(paymentDetails);
+
+        assertThatThrownBy(() -> resolver.resolve(dissolution, transaction))
+                .isInstanceOf(ServiceException.class)
+                .hasMessageContaining(TRANSACTION_ID)
+                .hasMessageContaining("paypal");
+    }
+
+    @Test
+    void when_payment_session_method_is_known_but_unsupported_then_service_exception_is_thrown() {
+        paymentDetails.setPaymentMethod(PaymentFixtures.ACCOUNT_PAYMENT_METHOD);
+        when(transactionService.getPayment(PAYMENT_URI)).thenReturn(transactionPayment);
+        when(transactionPaymentService.getPaymentSession(PAYMENT_REFERENCE)).thenReturn(paymentDetails);
+
+        assertThatThrownBy(() -> resolver.resolve(dissolution, transaction))
+                .isInstanceOf(ServiceException.class)
+                .hasMessageContaining(TRANSACTION_ID)
+                .hasMessageContaining("account");
+    }
+
+    @Test
+    void when_payment_session_method_is_null_then_service_exception_is_thrown() {
+        paymentDetails.setPaymentMethod(null);
+        when(transactionService.getPayment(PAYMENT_URI)).thenReturn(transactionPayment);
+        when(transactionPaymentService.getPaymentSession(PAYMENT_REFERENCE)).thenReturn(paymentDetails);
+
+        assertThatThrownBy(() -> resolver.resolve(dissolution, transaction))
+                .isInstanceOf(ServiceException.class)
+                .hasMessageContaining(TRANSACTION_ID);
     }
 
     private DissolutionTestDataBuilder aDissolutionApplication() {
