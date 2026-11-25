@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static uk.gov.companieshouse.model.Constants.CONTENT_TYPE_PDF;
+
 @Component
 public class FilingDataMapper {
 
@@ -33,15 +35,16 @@ public class FilingDataMapper {
         this.objectMapper = objectMapper;
     }
 
-    public Map<String, Object> mapToFilingData(Dissolution dissolution, String paymentReference, String paymentMethod) {
+    public Map<String, Object> mapToFilingData(Dissolution dissolution, FilingPaymentData paymentData) {
         final FilingData data = new FilingData();
         final Company company = dissolution.getCompany();
 
         data.setCompanyName(company.getName());
         data.setCompanyNumber(company.getNumber());
         data.setOfficers(mapToOfficers(dissolution));
-        data.setPaymentReference(paymentReference);
-        data.setPaymentMethod(paymentMethod);
+        data.setPaymentMethod(paymentData.method().getValue());
+        data.setPaymentReference(paymentData.reference());
+        data.setAccountNumber(paymentData.accountNumber());
         data.setLinks(List.of(mapToAttachmentLink(dissolution)));
         data.setSignDate(dissolution.getCreatedBy().getDateTime().format(DATE_FORMATTER));
 
@@ -86,6 +89,7 @@ public class FilingDataMapper {
         final FilingAttachmentLink attachmentLink = new FilingAttachmentLink();
         attachmentLink.setHref(String.format(CERTIFICATE_URI, dissolution.getCertificate().getBucket(), dissolution.getCertificate().getKey()));
         attachmentLink.setRelationship("dissolution");
+        attachmentLink.setMimeType(CONTENT_TYPE_PDF);
         return attachmentLink;
     }
 }

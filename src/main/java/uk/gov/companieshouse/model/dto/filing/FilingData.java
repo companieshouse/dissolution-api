@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.model.dto.filing;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
@@ -15,11 +16,16 @@ public class FilingData {
     @JsonProperty("officers")
     private List<FilingOfficer> officers;
 
+    @JsonProperty("payment_method")
+    private String paymentMethod;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("payment_reference")
     private String paymentReference;
 
-    @JsonProperty("payment_method")
-    private String paymentMethod;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("account_number")
+    private String accountNumber;
 
     @JsonProperty("links")
     private List<FilingAttachmentLink> links;
@@ -65,6 +71,14 @@ public class FilingData {
 
     public void setPaymentMethod(String paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public String getAccountNumber() {
+        return accountNumber;
+    }
+
+    public void setAccountNumber(String accountNumber) {
+        this.accountNumber = accountNumber;
     }
 
     public List<FilingAttachmentLink> getLinks() {

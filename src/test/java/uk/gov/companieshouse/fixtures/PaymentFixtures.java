@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.fixtures;
 
 import org.jspecify.annotations.NonNull;
+import uk.gov.companieshouse.mapper.filing.FilingPaymentData;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
 import uk.gov.companieshouse.model.db.payment.RefundInformation;
 import uk.gov.companieshouse.model.dto.payment.PaymentDescriptionValues;
@@ -17,10 +18,13 @@ import uk.gov.companieshouse.model.enums.RefundStatus;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 
 public class PaymentFixtures {
 
+    public static final String CREDIT_CARD_PAYMENT_METHOD = "credit-card";
+    public static final String ACCOUNT_PAYMENT_METHOD = "account";
     private static final int DS01_REFUND_AMOUNT_PENCE = 1300;
 
     public static PaymentGetResponse generatePaymentGetResponse(String eTag, String companyNumber) {
@@ -47,7 +51,7 @@ public class PaymentFixtures {
         item.setDescriptionValues(new PaymentDescriptionValues());
         item.setProductType(ApplicationType.DS01);
         item.setAmount("33");
-        item.setAvailablePaymentMethods(List.of("credit-card"));
+        item.setAvailablePaymentMethods(List.of(CREDIT_CARD_PAYMENT_METHOD));
         item.setClassOfPayment(List.of("data-maintenance"));
         item.setKind("dissolution-request#payment-details");
         item.setResourceKind("dissolution-request#dissolution-request");
@@ -72,6 +76,24 @@ public class PaymentFixtures {
         paymentInformation.setDateTime(LocalDateTime.now());
 
         return paymentInformation;
+    }
+
+    public static PaymentInformation generateAccountPaymentInformation(String accountNumber) {
+        PaymentInformation paymentInformation = new PaymentInformation();
+
+        paymentInformation.setMethod(PaymentMethod.ACCOUNT);
+        paymentInformation.setAccountNumber(accountNumber);
+        paymentInformation.setDateTime(LocalDateTime.of(2026, Month.JANUARY, 1, 0, 0));
+
+        return paymentInformation;
+    }
+
+    public static FilingPaymentData generateCardPaymentData(String paymentReference) {
+        return new FilingPaymentData(PaymentMethod.CREDIT_CARD, paymentReference, null);
+    }
+
+    public static FilingPaymentData generateAccountPaymentData(String accountNumber) {
+        return new FilingPaymentData(PaymentMethod.ACCOUNT, null, accountNumber);
     }
 
     public static RefundRequest generateRefundRequest() {
