@@ -1,0 +1,10 @@
+# Layered on top of src/test/resources/application.yml for integration tests only (see AbstractIntegrationTest).
+# Outbound host properties (api.url, chips.host, ...) are pointed at WireMock by @ConfigureWireMock(baseUrlProperties).
+# MongoDB is wired by the @ServiceConnection Testcontainer.
+
+dissolution:
+  filingDescription: Dissolution filing
+
+email:
+  chsFinanceEmail: finance@example.com
+  chsSupportEmail: support@example.com
