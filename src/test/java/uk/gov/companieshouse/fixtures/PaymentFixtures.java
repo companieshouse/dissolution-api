@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.fixtures;
 
 import org.jspecify.annotations.NonNull;
-import uk.gov.companieshouse.mapper.filing.FilingPaymentData;
 import uk.gov.companieshouse.model.db.payment.PaymentInformation;
 import uk.gov.companieshouse.model.db.payment.RefundInformation;
 import uk.gov.companieshouse.model.dto.payment.PaymentDescriptionValues;
@@ -86,14 +85,6 @@ public class PaymentFixtures {
         paymentInformation.setDateTime(LocalDateTime.of(2026, Month.JANUARY, 1, 0, 0));
 
         return paymentInformation;
-    }
-
-    public static FilingPaymentData generateCardPaymentData(String paymentReference) {
-        return new FilingPaymentData(PaymentMethod.CREDIT_CARD, paymentReference, null);
-    }
-
-    public static FilingPaymentData generateAccountPaymentData(String accountNumber) {
-        return new FilingPaymentData(PaymentMethod.ACCOUNT, null, accountNumber);
     }
 
     public static RefundRequest generateRefundRequest() {

@@ -14,7 +14,6 @@ import uk.gov.companieshouse.exception.DissolutionNotFoundException;
 import uk.gov.companieshouse.exception.DissolutionNotLinkedToTransactionException;
 import uk.gov.companieshouse.exception.InvalidTransactionStateException;
 import uk.gov.companieshouse.exception.ServiceException;
-import uk.gov.companieshouse.fixtures.PaymentFixtures;
 import uk.gov.companieshouse.fixtures.TransactionFixtures;
 import uk.gov.companieshouse.mapper.FilingKindMapper;
 import uk.gov.companieshouse.mapper.filing.FilingDataMapper;
@@ -98,7 +97,7 @@ class FilingServiceTest {
                 .withTransactionId(TRANSACTION_ID)
                 .build();
 
-        filingPaymentData = PaymentFixtures.generateCardPaymentData(PAYMENT_REFERENCE);
+        filingPaymentData = FilingPaymentData.card(PAYMENT_REFERENCE);
 
         final var filingKindMapper = new FilingKindMapper();
         filingService = new FilingService(dissolutionService, filingDataMapper, feeConfig, filingKindMapper, filingValidator, filingPaymentDataResolver, new PaymentValidator());
@@ -140,7 +139,7 @@ class FilingServiceTest {
         dissolution.getData().getApplication().setType(ApplicationType.LLDS01);
 
         when(dissolutionService.getDissolutionByTransactionAndCompany(TRANSACTION_ID, COMPANY_NUMBER)).thenReturn(dissolution);
-        when(filingPaymentDataResolver.resolve(dissolution, transaction)).thenReturn(PaymentFixtures.generateAccountPaymentData(ACCOUNT_NUMBER));
+        when(filingPaymentDataResolver.resolve(dissolution, transaction)).thenReturn(FilingPaymentData.account(ACCOUNT_NUMBER));
 
         final var response = filingService.generateDissolutionFiling(new GenerateFilingCommand(transaction, COMPANY_NUMBER, TRANSACTION_ID));
 

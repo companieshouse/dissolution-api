@@ -40,8 +40,8 @@ class FilingDataMapperTest {
     public static final String DEFAULT_SURNAME = "DOE";
     private static final String ON_BEHALF_NAME = "on behalf name";
 
-    private static final FilingPaymentData CARD_PAYMENT = PaymentFixtures.generateCardPaymentData(PAYMENT_REFERENCE);
-    private static final FilingPaymentData ACCOUNT_PAYMENT = PaymentFixtures.generateAccountPaymentData(ACCOUNT_NUMBER);
+    private static final FilingPaymentData CARD_PAYMENT = FilingPaymentData.card(PAYMENT_REFERENCE);
+    private static final FilingPaymentData ACCOUNT_PAYMENT = FilingPaymentData.account(ACCOUNT_NUMBER);
 
     private ObjectMapper objectMapper;
 

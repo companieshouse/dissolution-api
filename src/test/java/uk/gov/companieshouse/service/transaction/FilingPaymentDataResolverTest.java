@@ -13,6 +13,7 @@ import uk.gov.companieshouse.exception.ServiceException;
 import uk.gov.companieshouse.fixtures.DissolutionTestDataBuilder;
 import uk.gov.companieshouse.fixtures.PaymentFixtures;
 import uk.gov.companieshouse.fixtures.TransactionFixtures;
+import uk.gov.companieshouse.mapper.filing.FilingPaymentData;
 import uk.gov.companieshouse.model.db.dissolution.Dissolution;
 import uk.gov.companieshouse.service.TransactionService;
 
@@ -83,7 +84,7 @@ class FilingPaymentDataResolverTest {
 
         final var result = resolver.resolve(dissolution, transaction);
 
-        assertThat(result).isEqualTo(PaymentFixtures.generateAccountPaymentData(ACCOUNT_NUMBER));
+        assertThat(result).isEqualTo(FilingPaymentData.account(ACCOUNT_NUMBER));
         verifyNoInteractions(transactionService, transactionPaymentService);
     }
 
@@ -96,7 +97,7 @@ class FilingPaymentDataResolverTest {
 
         final var result = resolver.resolve(dissolution, transaction);
 
-        assertThat(result).isEqualTo(PaymentFixtures.generateCardPaymentData(PAYMENT_REFERENCE));
+        assertThat(result).isEqualTo(FilingPaymentData.card(PAYMENT_REFERENCE));
     }
 
     @Test
