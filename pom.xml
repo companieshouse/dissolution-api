@@ -37,7 +37,7 @@
         <spring-boot-maven-plugin.version>${spring-boot.version}</spring-boot-maven-plugin.version>
 
         <!-- Companies House Internal Dependencies -->
-        <ch-bom.version>0.1.37</ch-bom.version>
+        <ch-bom.version>0.1.42</ch-bom.version>
         <!-- Source: https://github.com/companieshouse/api-sdk-java/releases -->
         <api-sdk-java.version>7.2.3</api-sdk-java.version>
         <!-- Source: https://github.com/companieshouse/private-api-sdk-java/releases -->
@@ -70,8 +70,6 @@
         <swagger-ui.version>5.34.1</swagger-ui.version>
         <!-- Source: https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-http -->
         <jetty.version>12.1.11</jetty.version>
-        <!-- Source: https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-bom -->
-        <kotlin.version>2.3.21</kotlin.version>
     </properties>
 
     <dependencyManagement>
@@ -147,15 +145,6 @@
                 <groupId>org.apache.avro</groupId>
                 <artifactId>avro</artifactId>
                 <version>${avro.version}</version>
-            </dependency>
-
-            <!-- Source: https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-bom -->
-            <dependency>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-bom</artifactId>
-                <version>${kotlin.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
             </dependency>
 
             <!-- Source: https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5 -->
